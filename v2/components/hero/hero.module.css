@@ -884,7 +884,13 @@
   transition: background 0.4s, box-shadow 0.4s;
 }
 .act.on {
-  color: var(--color-ink);
+  /* dusk grade: the lit label lightens to cream so it stays legible over the
+     dark veil (unlit stays faint grey, which reads on both day and dusk) */
+  color: color-mix(
+    in srgb,
+    var(--color-ink),
+    var(--color-cream) calc(var(--grade, 0) * 100%)
+  );
 }
 .act.on i {
   background: var(--color-forest);

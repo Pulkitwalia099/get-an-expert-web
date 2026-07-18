@@ -61,7 +61,7 @@ const FACES: { l: string; t: string; c: keyof typeof styles }[] = [
   { l: "50%", t: "26%", c: "faceA" },
   { l: "17%", t: "31%", c: "faceB" },
   { l: "80%", t: "47%", c: "faceA" },
-  { l: "40%", t: "32%", c: "faceD" },
+  { l: "37%", t: "45%", c: "faceD" }, // moved off the searchline band (was 40%/32%)
   { l: "60%", t: "84%", c: "faceE" },
   { l: "28%", t: "70%", c: "faceB" },
 ];
@@ -268,7 +268,9 @@ export default function HeroFilm() {
         duo.style.transform = `translate(-50%,-50%) translateY(${-rec * 5}vh) scale(${
           1 - rec * 0.52
         })`;
-        duo.style.opacity = String(1 - rec * 0.82);
+        // dusk: sink the receded pane further so it does not read as a muddy
+        // slab over the globe; it returns to normal as the day grade returns.
+        duo.style.opacity = String((1 - rec * 0.82) * (1 - grade * 0.6));
         duo.style.filter = `blur(${rec * 2.5}px) saturate(${1 - rec * 0.3})`;
         duo.style.zIndex = rec > 0.45 ? "4" : "10";
       }
