@@ -1,6 +1,7 @@
 import Reveal from "@/components/Reveal";
 import SiteHeader from "@/components/SiteHeader";
 import HeroFilm from "@/components/hero/HeroFilm";
+import DeliveredStrip from "@/components/DeliveredStrip";
 import Demo from "@/components/Demo";
 import Moments from "@/components/Moments";
 import Experts from "@/components/Experts";
@@ -26,6 +27,7 @@ export default function Home() {
       <SiteHeader />
       <main>
         <HeroFilm />
+        <DeliveredStrip />
         <Reveal>
           <Demo />
         </Reveal>
