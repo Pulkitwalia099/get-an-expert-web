@@ -1,12 +1,16 @@
 "use client";
 
-/* Globe.tsx - the R3F globe for Act 2 ("the search that travels").
+/* Globe.tsx - the R3F globe for Act 02 ("the search"), restructured for "The Wall".
  *
- * A fibonacci-sphere dot field (matte ink, never blooms) sits low in frame and
- * rotates as the film scrubs. Idle cities glow bronze (expert activity). As the
- * search scans, the active city lifts to green and throws an arc up toward the
- * probe; after the scan one arc holds forest-green (the match). Bloom is applied
- * only to the green search activity so the dot field stays quiet behind it.
+ * A fibonacci-sphere dot field (matte ink, never blooms) sits centered in the
+ * search theatre and rotates as the film scrubs. Idle cities glow bronze (expert
+ * activity within approved access). As the search scans, the active city lifts to
+ * green and throws an arc up toward the detached probe; after the scan one dot
+ * (Barcelona, index 0) holds forest-green as the match. Bloom is applied only to
+ * the green search activity so the dot field stays quiet behind it.
+ *
+ * The globe also projects the held match dot to screen coordinates each frame
+ * (matchDotRef), so the DOM match card can emerge from exactly that point.
  *
  * Choreography numbers come from film.ts (shared with the DOM timeline). The one
  * approximation vs the 2D prototype: the arc reaches a fixed world anchor that
@@ -16,7 +20,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import { useMemo, useRef, type RefObject } from "react";
 import * as THREE from "three";
-import { CITIES, PHASES, clamp, easeIO, lerp, seg } from "./film";
+import { CITIES, MATCH_HOLDS_AT, PHASES, easeIO, lerp, seg } from "./film";
 import { readGlobePalette } from "./tokens";
 
 const CAM_Z = 6.2;
@@ -35,7 +39,7 @@ function fibonacci(n: number, R: number): Float32Array {
   return out;
 }
 
-/* the same city placement the prototype used, scaled to radius R */
+/* city placement spread over the sphere, scaled to radius R */
 function cityLocals(R: number): THREE.Vector3[] {
   return CITIES.map((_, i) => {
     const a = (i / CITIES.length) * Math.PI * 2;
@@ -81,18 +85,23 @@ const ARC_SEGMENTS = 24;
 
 type SceneProps = {
   progressRef: RefObject<number>;
+  matchDotRef: RefObject<[number, number]>;
   mobile: boolean;
   reduced: boolean;
   staticProgress: number;
 };
 
-function GlobeScene({ progressRef, mobile, reduced, staticProgress }: SceneProps) {
-  const { gl } = useThree();
+function GlobeScene({
+  progressRef,
+  matchDotRef,
+  mobile,
+  reduced,
+  staticProgress,
+}: SceneProps) {
+  const { gl, camera } = useThree();
   const palette = useMemo(readGlobePalette, []);
-  const R = mobile ? 2.6 : 3.2;
+  const R = mobile ? 1.7 : 2.0;
   const N = mobile ? 480 : 850;
-  // drop the sphere center below the frame so only the upper cap rises into view
-  const groupY = -R * 0.75;
 
   const positions = useMemo(() => fibonacci(N, R), [N, R]);
   const cities = useMemo(() => cityLocals(R), [R]);
@@ -104,7 +113,7 @@ function GlobeScene({ progressRef, mobile, reduced, staticProgress }: SceneProps
   const pointUniforms = useMemo(
     () => ({
       uAlpha: { value: 0 },
-      uSize: { value: mobile ? 2.6 : 2.4 },
+      uSize: { value: mobile ? 2.8 : 2.6 },
       uDpr: { value: gl.getPixelRatio() },
       uZFront: { value: R - CAM_Z },
       uZBack: { value: -R - CAM_Z },
@@ -137,6 +146,7 @@ function GlobeScene({ progressRef, mobile, reduced, staticProgress }: SceneProps
   const anchor = useMemo(() => new THREE.Vector3(), []);
   const control = useMemo(() => new THREE.Vector3(), []);
   const tmp = useMemo(() => new THREE.Vector3(), []);
+  const proj = useMemo(() => new THREE.Vector3(), []);
   const matchColor = useMemo(
     () => palette.sage.clone().multiplyScalar(2.4),
     [palette]
@@ -152,25 +162,23 @@ function GlobeScene({ progressRef, mobile, reduced, staticProgress }: SceneProps
     const p = reduced ? staticProgress : progressRef.current;
     const t = state.clock.elapsedTime;
 
-    // globe fades in over Act 1->2, then clears as the product panel rises (Act 3)
-    const alpha =
-      easeIO(seg(p, PHASES.globeIn[0], PHASES.globeIn[1])) *
-      (1 - easeIO(seg(p, PHASES.globeOut[0], PHASES.globeOut[1])));
+    // the theatre wrapper (DOM) owns the fade in/out; the dot field stays full.
+    const alpha = 1;
 
     group.rotation.y = (reduced ? 0.6 : t * 0.025) + p * 2.6;
     if (pointsMat.current) pointsMat.current.uniforms.uAlpha.value = alpha;
 
-    // where the probe sits, mapped from screen % to a world Y the arc reaches
-    const flyEase = easeIO(seg(p, PHASES.probeFly[0], PHASES.probeFly[1]));
-    anchor.set(0, lerp(0.2, 1.3, flyEase), 0.8);
+    // where the probe sits, mapped to a world Y the arc reaches up toward
+    const flyEase = easeIO(seg(p, PHASES.probeIn[0], PHASES.probeIn[1]));
+    anchor.set(0, lerp(0.2, R * 0.95, flyEase), 0.8);
 
-    // which city is the search touching
+    // which city is the search touching (spec globe window: 0.26 -> 0.52)
     const scan = seg(p, PHASES.scan[0], PHASES.scan[1]);
     const activeIdx = Math.min(
       CITIES.length - 1,
       Math.floor(scan * CITIES.length)
     );
-    const matchHolds = p > PHASES.matchResolve[0];
+    const matchHolds = p > MATCH_HOLDS_AT;
 
     // update every marker's look + visibility (cull the back hemisphere)
     for (let i = 0; i < cities.length; i++) {
@@ -180,14 +188,28 @@ function GlobeScene({ progressRef, mobile, reduced, staticProgress }: SceneProps
       const front = cityWorld.z > 0.05;
       const isMatch = matchHolds && i === 0;
       const isActive = !matchHolds && i === activeIdx && scan > 0 && scan < 1;
-      mesh.visible = front && alpha > 0.02;
+      mesh.visible = front;
       const mat = mesh.material as THREE.MeshBasicMaterial;
       mat.opacity = alpha;
       if (isMatch) mat.color.copy(matchColor);
       else if (isActive) mat.color.copy(activeColor);
       else mat.color.copy(palette.bronze);
-      const s = isMatch ? 1.7 : isActive ? 1.4 : 1;
+      const s = isMatch ? 1.9 : isActive ? 1.5 : 1;
       mesh.scale.setScalar(s);
+    }
+
+    // project the held match dot (Barcelona) to screen coords for the DOM origin
+    if (matchHolds) {
+      const held = cityRefs.current[0];
+      if (held) {
+        held.getWorldPosition(proj);
+        proj.project(camera);
+        const rect = gl.domElement.getBoundingClientRect();
+        const sx = rect.left + (proj.x * 0.5 + 0.5) * rect.width;
+        const sy = rect.top + (-proj.y * 0.5 + 0.5) * rect.height;
+        matchDotRef.current[0] = (sx / window.innerWidth) * 100;
+        matchDotRef.current[1] = (sy / window.innerHeight) * 100;
+      }
     }
 
     // draw the one arc that matters (active during the scan, match after)
@@ -195,16 +217,13 @@ function GlobeScene({ progressRef, mobile, reduced, staticProgress }: SceneProps
     const targetIdx = matchHolds ? 0 : activeIdx;
     const targetMesh = cityRefs.current[targetIdx];
     let drawn = 0;
-    if (targetMesh && alpha > 0.02 && (matchHolds || (scan > 0 && scan < 1))) {
+    if (targetMesh && (matchHolds || (scan > 0 && scan < 1))) {
       targetMesh.getWorldPosition(cityWorld);
       if (cityWorld.z > 0.05) {
         const drawT = matchHolds
           ? 1
           : seg(scan * CITIES.length - activeIdx, 0.15, 0.85);
-        control
-          .copy(cityWorld)
-          .add(anchor)
-          .multiplyScalar(0.5);
+        control.copy(cityWorld).add(anchor).multiplyScalar(0.5);
         control.y += cityWorld.distanceTo(anchor) * 0.32;
         control.z += 0.5;
         const count = Math.max(2, Math.floor(ARC_SEGMENTS * drawT) + 1);
@@ -234,7 +253,7 @@ function GlobeScene({ progressRef, mobile, reduced, staticProgress }: SceneProps
 
   return (
     <>
-      <group ref={groupRef} position={[0, groupY, 0]}>
+      <group ref={groupRef} position={[0, 0, 0]}>
         <points>
           <bufferGeometry>
             <bufferAttribute
@@ -264,7 +283,7 @@ function GlobeScene({ progressRef, mobile, reduced, staticProgress }: SceneProps
               cityRefs.current[i] = el;
             }}
           >
-            <sphereGeometry args={[0.04, 14, 14]} />
+            <sphereGeometry args={[0.045, 14, 14]} />
             <meshBasicMaterial transparent color={palette.bronze} />
           </mesh>
         ))}
@@ -285,6 +304,7 @@ function GlobeScene({ progressRef, mobile, reduced, staticProgress }: SceneProps
 
 type GlobeProps = {
   progressRef: RefObject<number>;
+  matchDotRef: RefObject<[number, number]>;
   mobile: boolean;
   reduced: boolean;
   /** film progress to freeze on when reduced motion is on */
@@ -294,6 +314,7 @@ type GlobeProps = {
 
 export default function Globe({
   progressRef,
+  matchDotRef,
   mobile,
   reduced,
   staticProgress = 0.55,
@@ -311,6 +332,7 @@ export default function Globe({
     >
       <GlobeScene
         progressRef={progressRef}
+        matchDotRef={matchDotRef}
         mobile={mobile}
         reduced={reduced}
         staticProgress={staticProgress}

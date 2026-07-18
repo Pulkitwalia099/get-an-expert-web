@@ -1,17 +1,28 @@
 "use client";
 
-/* HeroFilm.tsx - Acts 1 and 2 of the hero film ("the search that travels").
+/* HeroFilm.tsx - the hero film restructured to "The Wall".
  *
- * Act 1: the headline + composer; the ask auto-types on load (never scroll-gated).
- * Act 2: the composer shrinks to a probe and flies over the R3F globe while the
- *        search scans cities; one arc holds green and the match card resolves.
+ * The beats, in scroll order (all from docs/hero-film-v2-spec.html):
+ *   01 THE WALL   - you open INSIDE a Claude Code session; agent lines stream on
+ *                   load and end on the bronze wall line; the ask auto-types in
+ *                   the composer docked inside the session (never scroll-gated).
+ *   02 THE SEARCH - the session recedes in depth (scales down + blurs + drops
+ *                   behind the globe); the composer detaches upward as a probe on
+ *                   a dashed tether; the R3F globe, radar sweep, candidate faces,
+ *                   scan cards and live counter play the search theatre.
+ *   03 THE MATCH  - one dot holds green; a flash rings it; the expert head pops
+ *                   out from that dot's projected screen point, then the card
+ *                   unfolds. The session returns from depth, the expert chat docks
+ *                   to its right, and the probe flies home into the composer.
+ *   04 DELIVERED  - the context payload travels session -> chat; the expert reply
+ *                   types "On it."; the video attachment lands; confetti bursts;
+ *                   the finale dims the panes and closes with the whisper + CTAs.
  *
- * A Lenis smooth-scroll drives a scrubbed GSAP ScrollTrigger master timeline
- * (both directions). The timeline advances a single film-progress value that
- * this component applies imperatively to the DOM layers, and shares (via a ref)
- * with the globe so the two stay locked. Acts 3+4 are Day 4; the constants in
- * film.ts (ACT2_END, TRACK_VH) are the two knobs that turn them on.
- */
+ * A Lenis smooth-scroll drives a scrubbed GSAP ScrollTrigger, which advances a
+ * single film-progress value. A rAF loop applies that value imperatively across
+ * every DOM layer each frame, and shares it (progressRef) plus the projected
+ * match dot (matchDotRef) with the R3F globe so the two stay locked. All phase
+ * boundaries live in film.ts. */
 
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -19,12 +30,12 @@ import Lenis from "lenis";
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import {
-  ACT2_END,
   ASK,
-  CITIES,
   PHASES,
   TRACK_VH,
   actForProgress,
+  clamp,
+  easeBack,
   easeIO,
   lerp,
   seg,
@@ -33,42 +44,87 @@ import styles from "./hero.module.css";
 
 const Globe = dynamic(() => import("./Globe"), { ssr: false });
 
+/* candidate glyph field: position + a token-derived gradient class (people green
+   and expert bronze, cycled). No real faces, silhouettes only. */
+const FACES: { l: string; t: string; c: keyof typeof styles }[] = [
+  { l: "30%", t: "38%", c: "faceA" },
+  { l: "70%", t: "36%", c: "faceB" },
+  { l: "24%", t: "58%", c: "faceF" },
+  { l: "76%", t: "60%", c: "faceE" },
+  { l: "34%", t: "78%", c: "faceD" },
+  { l: "66%", t: "80%", c: "faceF" },
+  { l: "50%", t: "26%", c: "faceA" },
+  { l: "17%", t: "31%", c: "faceB" },
+  { l: "80%", t: "47%", c: "faceA" },
+  { l: "40%", t: "32%", c: "faceD" },
+  { l: "60%", t: "84%", c: "faceE" },
+  { l: "28%", t: "70%", c: "faceB" },
+];
+
 export default function HeroFilm() {
+  // structural
   const trackRef = useRef<HTMLElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const headRef = useRef<HTMLDivElement>(null);
-  const probeRef = useRef<HTMLDivElement>(null);
-  const txRef = useRef<HTMLDivElement>(null);
-  const caretRef = useRef<HTMLSpanElement>(null);
-  const searchlineRef = useRef<HTMLDivElement>(null);
-  const matchRef = useRef<HTMLDivElement>(null);
   const cueRef = useRef<HTMLDivElement>(null);
+
+  // the session duo
+  const duoRef = useRef<HTMLDivElement>(null);
+  const sessionRef = useRef<HTMLDivElement>(null);
+  const chatRef = useRef<HTMLDivElement>(null);
+  const streamRef = useRef<HTMLDivElement>(null);
+  const composerRef = useRef<HTMLDivElement>(null);
+  const composerTxRef = useRef<HTMLSpanElement>(null);
+  const caretRef = useRef<HTMLSpanElement>(null);
+
+  // probe + tether
+  const probeRef = useRef<HTMLDivElement>(null);
+  const tetherRef = useRef<HTMLDivElement>(null);
+
+  // search theatre
+  const theatreRef = useRef<HTMLDivElement>(null);
+  const searchlineRef = useRef<HTMLDivElement>(null);
+  const counterRef = useRef<HTMLDivElement>(null);
+  const countRef = useRef<HTMLElement>(null);
+  const scanRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const faceRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const flashRef = useRef<HTMLDivElement>(null);
+
+  // match card
+  const matchRef = useRef<HTMLDivElement>(null);
+  const matchInfoRef = useRef<HTMLDivElement>(null);
+  const matchDotRef = useRef<[number, number]>([58, 62]);
+
+  // chat contents
+  const slotRef = useRef<HTMLDivElement>(null);
+  const residentRef = useRef<HTMLDivElement>(null);
+  const ctxMsgRef = useRef<HTMLDivElement>(null);
+  const payloadRef = useRef<HTMLDivElement>(null);
+  const replyRef = useRef<HTMLDivElement>(null);
+  const replyTxRef = useRef<HTMLSpanElement>(null);
+  const deliverRef = useRef<HTMLDivElement>(null);
+  const chipRef = useRef<HTMLDivElement>(null);
+
+  // finale
+  const whisperRef = useRef<HTMLDivElement>(null);
+  const whisperSubRef = useRef<HTMLDivElement>(null);
+  const finaleRef = useRef<HTMLDivElement>(null);
   const actRefs = useRef<(HTMLSpanElement | null)[]>([]);
 
-  // Act 3+4 layers
-  const productRef = useRef<HTMLDivElement>(null);
-  const residentRef = useRef<HTMLDivElement>(null);
-  const chipRefs = useRef<(HTMLSpanElement | null)[]>([]);
-  const replyRef = useRef<HTMLDivElement>(null);
-  const agentLineRef = useRef<HTMLDivElement>(null);
-  const deliverRef = useRef<HTMLDivElement>(null);
-  const whisperRef = useRef<HTMLDivElement>(null);
-  const ctaRef = useRef<HTMLDivElement>(null);
-
+  // driver + one-shot state
   const progressRef = useRef(0);
   const typedRef = useRef(false);
-  const typeTimerRef = useRef<number>(0);
-  const typeIntervalRef = useRef<number>(0);
+  const replyStartedRef = useRef(false);
+  const burstArmedRef = useRef(true);
+  const confettiTimers = useRef<number[]>([]);
 
   const [reduced, setReduced] = useState(false);
   const [mobile, setMobile] = useState(false);
 
   // detect environment after mount (SSR-safe; avoids hydration mismatch)
   useEffect(() => {
-    setReduced(
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    );
-    const mq = window.matchMedia("(max-width: 700px)");
+    setReduced(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+    const mq = window.matchMedia("(max-width: 760px)");
     setMobile(mq.matches);
     const onChange = () => setMobile(mq.matches);
     mq.addEventListener("change", onChange);
@@ -80,220 +136,338 @@ export default function HeroFilm() {
       "(prefers-reduced-motion: reduce)"
     ).matches;
 
-    // Reduced motion: no pin, no scrub. Freeze the composed frame; the CSS
-    // .reduced layout stacks the poster and the globe renders one static frame.
+    // the expert reply types once, when its beat arrives
+    const typeReply = () => {
+      if (replyStartedRef.current) return;
+      replyStartedRef.current = true;
+      const T = "I know what you're looking for. On it.";
+      let i = 0;
+      const iv = window.setInterval(() => {
+        if (replyTxRef.current) replyTxRef.current.textContent = T.slice(0, ++i);
+        if (i >= T.length) window.clearInterval(iv);
+      }, 26);
+    };
+
+    // time-based intro: the agent lines stream in on load
+    const lineEls = streamRef.current
+      ? Array.from(streamRef.current.querySelectorAll<HTMLElement>("[data-line]"))
+      : [];
+    const lineTimers = lineEls.map((l, i) =>
+      window.setTimeout(() => l.classList.add(styles.on), 500 + i * 850)
+    );
+
+    // the ask auto-types after the wall lands (never scroll-gated)
+    let typeIv = 0;
+    const typeTimer = window.setTimeout(() => {
+      let i = 0;
+      typeIv = window.setInterval(() => {
+        if (composerTxRef.current)
+          composerTxRef.current.textContent = ASK.slice(0, ++i);
+        if (i >= ASK.length) {
+          window.clearInterval(typeIv);
+          typedRef.current = true;
+          if (caretRef.current) caretRef.current.style.display = "none";
+        }
+      }, 32);
+    }, 500 + lineEls.length * 850 + 500);
+
+    // Reduced motion: static composed poster, no pin. The .reduced CSS stacks
+    // the duo with the chat expanded; fill the ask + reply text and stop.
     if (isReduced) {
       typedRef.current = true;
-      if (txRef.current) txRef.current.textContent = ASK;
+      if (composerTxRef.current) composerTxRef.current.textContent = ASK;
       if (caretRef.current) caretRef.current.style.display = "none";
-      return;
+      typeReply();
+      return () => {
+        window.clearTimeout(typeTimer);
+        window.clearInterval(typeIv);
+        lineTimers.forEach((t) => window.clearTimeout(t));
+      };
     }
 
+    // one satisfying delivery confetti burst, re-armed when scrolling back
+    const burst = () => {
+      if (!burstArmedRef.current) return;
+      burstArmedRef.current = false;
+      const stage = stageRef.current;
+      const cr = chatRef.current?.getBoundingClientRect();
+      if (!stage || !cr) return;
+      const cssVar = (v: string) =>
+        getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+      const colors = [
+        cssVar("--color-forest"),
+        cssVar("--color-bronze"),
+        cssVar("--color-sage"),
+        cssVar("--color-bronze-ink"),
+        cssVar("--color-ink"),
+      ];
+      const ox = ((cr.left + cr.width * 0.5) / window.innerWidth) * 100;
+      const oy = Math.max(8, ((cr.top + 70) / window.innerHeight) * 100);
+      for (let i = 0; i < 46; i++) {
+        const e = document.createElement("i");
+        e.className = styles.confetti;
+        e.style.left = `${ox}%`;
+        e.style.top = `${oy}%`;
+        e.style.background = colors[i % colors.length];
+        stage.appendChild(e);
+        e.style.width = `${6 + Math.random() * 7}px`;
+        e.style.height = `${10 + Math.random() * 8}px`;
+        const a = Math.random() * Math.PI * 2;
+        const d = 80 + Math.random() * 230;
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() => {
+            e.style.transform = `translate(${Math.cos(a) * d}px, ${
+              Math.sin(a) * d + 100
+            }px) rotate(${Math.random() * 540 - 270}deg)`;
+            e.style.opacity = "0";
+          })
+        );
+        confettiTimers.current.push(window.setTimeout(() => e.remove(), 1900));
+      }
+    };
+
     // apply one film-progress value across every DOM layer
-    const applyDOM = (p: number) => {
-      const vw = window.innerWidth;
+    const apply = (p: number) => {
+      const ih = window.innerHeight;
 
-      // headline lifts away
-      const hs = easeIO(seg(p, PHASES.headOut[0], PHASES.headOut[1]));
+      // headline lifts away; scroll cue fades
+      const ho = easeIO(seg(p, PHASES.headOut[0], PHASES.headOut[1]));
       if (headRef.current) {
-        headRef.current.style.opacity = String(1 - hs);
-        headRef.current.style.transform = `translateX(-50%) translateY(${-hs * 90}px)`;
+        headRef.current.style.opacity = String(1 - ho);
+        headRef.current.style.transform = `translateX(-50%) translateY(${-ho * 70}px)`;
+      }
+      if (cueRef.current)
+        cueRef.current.style.opacity = String(1 - easeIO(seg(p, 0.03, 0.09)));
+
+      // the duo recedes in depth, then returns
+      const rec =
+        easeIO(seg(p, PHASES.duoRecede[0], PHASES.duoRecede[1])) -
+        easeIO(seg(p, PHASES.duoReturn[0], PHASES.duoReturn[1]));
+      const duo = duoRef.current;
+      if (duo) {
+        duo.style.transform = `translate(-50%,-50%) translateY(${-rec * 5}vh) scale(${
+          1 - rec * 0.52
+        })`;
+        duo.style.opacity = String(1 - rec * 0.82);
+        duo.style.filter = `blur(${rec * 2.5}px) saturate(${1 - rec * 0.3})`;
+        duo.style.zIndex = rec > 0.45 ? "4" : "10";
       }
 
-      // probe departs, shrinks, sways, holds through Act 2's finish
-      const ps = easeIO(seg(p, PHASES.probeFly[0], PHASES.probeFly[1]));
-      const probeTop = lerp(47, 24, ps);
-      const probeW = lerp(Math.min(620, vw * 0.92), Math.min(400, vw * 0.86), ps);
-      const sway =
-        Math.sin(p * 16) *
-        10 *
-        easeIO(seg(p, PHASES.probeSway[0], PHASES.probeSway[1])) *
-        (1 - easeIO(seg(p, PHASES.probeSwaySettle[0], PHASES.probeSwaySettle[1])));
-      const fade = easeIO(seg(p, PHASES.probeOut[0], PHASES.probeOut[1]));
-      if (probeRef.current) {
-        probeRef.current.style.width = `${probeW}px`;
-        probeRef.current.style.top = `${probeTop}%`;
-        probeRef.current.style.transform = `translateX(calc(-50% + ${sway}px))`;
-        probeRef.current.style.opacity = String(1 - fade);
-        probeRef.current.classList.toggle(
-          styles.lit,
-          typedRef.current && p > 0.08
-        );
-        probeRef.current.classList.toggle(
-          styles.searching,
-          p > PHASES.searchingClass[0] && p < PHASES.searchingClass[1]
-        );
+      // composer detaches to the probe, then flies home into the session
+      const pi = easeIO(seg(p, PHASES.probeIn[0], PHASES.probeIn[1]));
+      const pr = easeIO(seg(p, 0.56, 0.66));
+      if (composerRef.current)
+        composerRef.current.style.opacity = String(Math.min(1 - pi + pr, 1));
+      const compR = composerRef.current?.getBoundingClientRect();
+      const homeT =
+        compR && compR.height ? ((compR.top + compR.height / 2) / ih) * 100 : 66;
+      const probe = probeRef.current;
+      if (probe) {
+        probe.style.opacity = String(Math.min(pi, 1 - seg(p, 0.645, 0.672)));
+        probe.style.top = `${lerp(lerp(34, 17, pi), homeT, pr)}%`;
+        probe.style.transform = `translateX(-50%) scale(${1 - pr * 0.22})`;
+      }
+      if (tetherRef.current) {
+        tetherRef.current.style.opacity = String(pi - easeIO(seg(p, 0.5, 0.58)));
+        tetherRef.current.style.top = "24%";
+        tetherRef.current.style.height = "18vh";
       }
 
-      // the city-scan search line, sitting just under the probe
+      // the search theatre (globe wrapper + searchline + counter)
+      const th =
+        easeIO(seg(p, PHASES.theatre[0], PHASES.theatre[1])) -
+        easeIO(seg(p, 0.52, 0.6));
+      if (theatreRef.current) theatreRef.current.style.opacity = String(th);
+      if (searchlineRef.current) searchlineRef.current.style.opacity = String(th);
+      if (counterRef.current) counterRef.current.style.opacity = String(th);
+      const scan = seg(p, 0.26, 0.52);
+      if (countRef.current)
+        countRef.current.textContent = Math.floor(
+          lerp(0, 4183, scan)
+        ).toLocaleString();
       if (searchlineRef.current) {
-        searchlineRef.current.style.top = `calc(${probeTop}% + 72px)`;
-        searchlineRef.current.style.opacity =
-          p > PHASES.searchlineOn[0] && p < PHASES.searchlineOn[1] ? "1" : "0";
-        const scan = seg(p, PHASES.scan[0], PHASES.scan[1]);
-        if (p < 0.18) {
+        if (p < 0.26)
           searchlineRef.current.innerHTML =
-            "searching <b>4,000+ experts</b> across <b>60 countries</b>…";
-        } else if (p < 0.52) {
-          const city =
-            CITIES[Math.min(CITIES.length - 1, Math.floor(scan * CITIES.length))];
-          searchlineRef.current.innerHTML = `scanning <b>${city}</b>…`;
-        } else {
+            "searching <b>4,183 experts</b> across <b>61 countries</b>…";
+        else if (p < 0.5)
           searchlineRef.current.innerHTML =
-            "matched on <b>craft</b>, <b>track record</b>, <b>availability</b>";
-        }
+            "matching on <b>craft</b>, <b>track record</b>, <b>availability</b>…";
+        else searchlineRef.current.innerHTML = "<b>one profile holds.</b>";
       }
 
-      // ---------- Act 2 finish -> Act 3: the match flies into the session ----------
-      // The match card resolves under the probe, then flies to the chat slot of
-      // the product panel and dissolves as the resident card takes over (a FLIP
-      // handoff: fixed start/end tuned by eye, not a pixel-locked rect measure).
-      const ms = easeIO(seg(p, PHASES.matchResolve[0], PHASES.matchResolve[1]));
-      const fly = easeIO(seg(p, PHASES.matchFly[0], PHASES.matchFly[1]));
-      const flyOut = easeIO(seg(p, PHASES.matchFlyOut[0], PHASES.matchFlyOut[1]));
-      if (matchRef.current) {
-        const curL = lerp(50, 69, fly); // % across the stage: center -> chat side
-        const curTop = lerp(probeTop + 10, 40, fly) - Math.sin(fly * Math.PI) * 7;
-        matchRef.current.style.left = `${curL}%`;
-        matchRef.current.style.top = `${curTop}%`;
-        matchRef.current.style.transform = `translate(-50%, -50%) translateY(${lerp(
-          28,
-          0,
-          ms
-        )}px) scale(${lerp(0.94, lerp(1, 0.82, fly), ms)})`;
-        matchRef.current.style.opacity = String(ms * (1 - flyOut));
-      }
-
-      // the real product splitscreen rises into view
-      const rise = easeIO(seg(p, PHASES.productRise[0], PHASES.productRise[1]));
-      if (productRef.current) {
-        productRef.current.style.opacity = rise > 0.01 ? "1" : "0";
-        productRef.current.style.transform = `translate(-50%, calc(-50% + ${lerp(
-          64,
-          0,
-          rise
-        )}vh)) scale(${lerp(0.96, 1, rise)})`;
-      }
-
-      // the match resolves inside the chat slot with a receiving glow
-      const land = easeIO(seg(p, PHASES.matchLand[0], PHASES.matchLand[1]));
-      if (residentRef.current) {
-        residentRef.current.style.opacity = String(land);
-        residentRef.current.style.transform = `translateY(${lerp(10, 0, land)}px) scale(${lerp(
-          0.94,
-          1,
-          land
-        )})`;
-        const glow = Math.sin(land * Math.PI); // peaks mid-landing, eases off
-        residentRef.current.style.boxShadow = `0 0 0 ${lerp(
-          0,
-          5,
-          glow
-        )}px color-mix(in srgb, var(--color-sage) ${lerp(
-          0,
-          42,
-          glow
-        )}%, transparent), 0 18px 40px -18px color-mix(in srgb, var(--color-forest) 35%, transparent)`;
-      }
-
-      // context chips arc from the app pane to the chat side (staggered)
-      chipRefs.current.forEach((el, i) => {
-        if (!el) return;
-        const cp = easeIO(seg(p, PHASES.chips[0] + i * 0.11, PHASES.chips[1]));
-        const x = lerp(31, 66, cp);
-        const y = lerp(58, 44, cp) - Math.sin(cp * Math.PI) * 11;
-        el.style.left = `${x}%`;
-        el.style.top = `${y}%`;
-        el.style.opacity = String(rise > 0.4 ? Math.sin(cp * Math.PI) : 0);
+      // scan cards flicker through their verdicts
+      const csA = PHASES.scanCards[0];
+      const csB = PHASES.scanCards[1];
+      const span = (csB - csA) / 4;
+      scanRefs.current.forEach((c, i) => {
+        if (!c) return;
+        const s = csA + i * span;
+        const vis =
+          seg(p, s, s + span * 0.35) -
+          (i < 3 ? seg(p, s + span * 0.8, s + span) : seg(p, 0.56, 0.6));
+        const v = clamp(vis, 0, 1);
+        c.style.opacity = String(v);
+        c.style.transform = `translateY(${(1 - v) * 14}px)`;
       });
 
-      // expert reply: immediate, "On it."
+      // candidate faces flicker around the globe during the scan
+      const scn = seg(p, 0.24, 0.5);
+      faceRefs.current.forEach((f, i) => {
+        if (!f) return;
+        const st = i * 0.068;
+        const loc = seg(scn, st, st + 0.16);
+        let vis = Math.sin(Math.min(loc, 1) * Math.PI);
+        vis *= 1 - seg(p, 0.5, 0.545);
+        f.style.opacity = String(vis * 0.95);
+        f.style.transform = `translate(-50%,-50%) scale(${0.4 + vis * 0.7})`;
+      });
+
+      // the match: head pops from the projected dot, then the card unfolds
+      const mrRaw = seg(p, PHASES.matchResolve[0], PHASES.matchResolve[1]);
+      const mr = easeIO(mrRaw);
+      const headT = seg(mrRaw, 0, 0.5);
+      const cardT = seg(mrRaw, 0.45, 1);
+      const pop = headT > 0 ? easeBack(headT) : 0;
+      const fly = easeIO(seg(p, PHASES.matchFly[0], PHASES.matchFly[1]));
+      const dot = matchDotRef.current;
+      if (matchRef.current) {
+        matchRef.current.style.opacity = String(
+          (mrRaw > 0 ? Math.min(1, mrRaw * 3.5) : 0) - easeIO(seg(p, 0.72, 0.75))
+        );
+        matchRef.current.style.left = `${lerp(lerp(dot[0], 50, mr), 71, fly)}%`;
+        matchRef.current.style.top = `${lerp(lerp(dot[1], 44, mr), 42, fly)}%`;
+        matchRef.current.style.transform = `translate(-50%,-50%) scale(${lerp(
+          lerp(0.25, 1, pop),
+          0.72,
+          fly
+        )})`;
+        matchRef.current.style.borderRadius = `${lerp(40, 14, cardT)}px`;
+        matchRef.current.style.padding = `${lerp(5, 13, cardT)}px ${lerp(
+          5,
+          18,
+          cardT
+        )}px`;
+      }
+      if (matchInfoRef.current) {
+        matchInfoRef.current.style.maxWidth = `${cardT * 240}px`;
+        matchInfoRef.current.style.opacity = String(cardT);
+        matchInfoRef.current.style.marginLeft = `${cardT * 2}px`;
+      }
+      if (flashRef.current) {
+        flashRef.current.style.left = `${dot[0]}%`;
+        flashRef.current.style.top = `${dot[1]}%`;
+        flashRef.current.style.opacity = String(
+          Math.sin(Math.min(mrRaw * 2.2, 1) * Math.PI)
+        );
+        flashRef.current.style.transform = `translate(-50%,-50%) scale(${
+          1 + mrRaw * 5
+        })`;
+      }
+
+      // the expert chat pane docks to the right of the returning session
+      const dock = easeIO(seg(p, PHASES.chatDock[0], PHASES.chatDock[1]));
+      const chat = chatRef.current;
+      if (chat) {
+        chat.style.height =
+          dock >= 1
+            ? "auto"
+            : dock > 0
+            ? `${sessionRef.current?.offsetHeight ?? 0}px`
+            : "0";
+        chat.style.width = `${dock * 330}px`;
+        chat.style.opacity = String(dock);
+        chat.style.marginLeft = `${dock * 14}px`;
+      }
+      const slot = slotRef.current;
+      if (slot) {
+        slot.style.opacity = String(dock * (1 - seg(p, 0.72, 0.74)));
+        slot.classList.toggle(styles.glow, fly > 0.3 && fly < 1);
+      }
+      if (p > 0.73) {
+        if (slot) slot.style.display = "none";
+        residentRef.current?.classList.add(styles.on);
+      } else {
+        if (slot) slot.style.display = "grid";
+        residentRef.current?.classList.remove(styles.on);
+      }
+
+      // context payload travels session -> chat, lands as a sent message
+      const pay = seg(p, PHASES.payload[0], PHASES.payload[1]);
+      if (payloadRef.current) {
+        payloadRef.current.style.opacity = String(
+          pay > 0 && pay < 1 ? Math.min(1, pay * 4) * (1 - seg(pay, 0.85, 1)) : 0
+        );
+        payloadRef.current.style.left = `${lerp(36, 64, easeIO(pay))}%`;
+        payloadRef.current.style.top = `${
+          lerp(60, 42, easeIO(pay)) - Math.sin(pay * Math.PI) * 6
+        }%`;
+      }
+      if (ctxMsgRef.current) {
+        ctxMsgRef.current.style.opacity = String(
+          pay >= 1 || p > PHASES.payload[1] ? 1 : 0
+        );
+        ctxMsgRef.current.style.transform = "none";
+      }
+
+      // expert reply, then delivery
+      if (p > PHASES.reply[0]) typeReply();
       const rep = easeIO(seg(p, PHASES.reply[0], PHASES.reply[1]));
       if (replyRef.current) {
         replyRef.current.style.opacity = String(rep);
-        replyRef.current.style.transform = `translateY(${lerp(10, 0, rep)}px)`;
+        replyRef.current.style.transform = `translateY(${(1 - rep) * 8}px)`;
       }
-
-      // ---------- Act 4: delivered ----------
-      // the agent continues in the app pane
-      const agentEase = easeIO(seg(p, PHASES.agentOn[0], PHASES.agentOn[1]));
-      if (agentLineRef.current) {
-        agentLineRef.current.style.opacity = String(agentEase);
-        agentLineRef.current.style.transform = `translateY(${lerp(8, 0, agentEase)}px)`;
-      }
-
-      // delivery lands in the session
+      if (p > PHASES.deliver[0] + 0.015) burst();
+      if (p < 0.8) burstArmedRef.current = true;
       const del = easeIO(seg(p, PHASES.deliver[0], PHASES.deliver[1]));
       if (deliverRef.current) {
         deliverRef.current.style.opacity = String(del);
-        deliverRef.current.style.transform = `translateY(${lerp(
-          10,
-          0,
-          del
-        )}px) scale(${lerp(0.9, 1, del)})`;
+        deliverRef.current.style.transform = `translateY(${(1 - del) * 8}px)`;
+      }
+      if (chipRef.current) {
+        chipRef.current.style.opacity = String(easeIO(seg(p, 0.88, 0.91)));
+        chipRef.current.style.transform = "none";
       }
 
-      // whisper line
-      const whisp = easeIO(seg(p, PHASES.whisper[0], PHASES.whisper[1]));
-      if (whisperRef.current) {
-        whisperRef.current.style.opacity = String(whisp);
-        whisperRef.current.style.transform = `translateX(-50%) translateY(${lerp(
-          8,
-          0,
-          whisp
-        )}px)`;
+      // finale: dim the panes, whisper, sub-line, CTAs
+      const dim = easeIO(seg(p, PHASES.dim[0], PHASES.dim[1]));
+      if (duo)
+        duo.style.opacity = String(
+          Math.min(parseFloat(duo.style.opacity || "1"), 1 - dim * 0.92)
+        );
+      if (whisperRef.current)
+        whisperRef.current.style.opacity = String(
+          easeIO(seg(p, PHASES.whisper[0], PHASES.whisper[1]))
+        );
+      const wsub = easeIO(seg(p, 0.93, 0.97));
+      if (whisperSubRef.current) {
+        whisperSubRef.current.style.opacity = String(wsub);
+        whisperSubRef.current.style.transform = `translateX(-50%) translateY(${
+          (1 - wsub) * 10
+        }px)`;
       }
-
-      // closing CTAs rise
-      const cta = easeIO(seg(p, PHASES.ctas[0], PHASES.ctas[1]));
-      if (ctaRef.current) {
-        ctaRef.current.style.opacity = String(cta);
-        ctaRef.current.style.transform = `translateX(-50%) translateY(${lerp(
-          14,
-          0,
-          cta
-        )}px)`;
-        ctaRef.current.style.pointerEvents = cta > 0.9 ? "auto" : "none";
+      if (finaleRef.current) {
+        finaleRef.current.style.opacity = String(
+          easeIO(seg(p, PHASES.finale[0], PHASES.finale[1]))
+        );
+        finaleRef.current.style.pointerEvents = p > 0.96 ? "auto" : "none";
       }
 
       // act rail
       const act = actForProgress(p);
-      actRefs.current.forEach((el, i) => {
-        if (el) el.classList.toggle(styles.on, i + 1 === act);
-      });
-
-      // scroll cue fades out as the search takes over
-      if (cueRef.current) {
-        cueRef.current.style.opacity = String(
-          1 - easeIO(seg(p, PHASES.cueOut[0], PHASES.cueOut[1]))
-        );
-      }
-    };
-
-    const autoType = (done: () => void) => {
-      let i = 0;
-      typeIntervalRef.current = window.setInterval(() => {
-        if (!txRef.current) return;
-        txRef.current.textContent = ASK.slice(0, ++i);
-        if (i >= ASK.length) {
-          window.clearInterval(typeIntervalRef.current);
-          typedRef.current = true;
-          if (caretRef.current) caretRef.current.style.display = "none";
-          done();
-        }
-      }, 34);
+      actRefs.current.forEach((a, i) => a?.classList.toggle(styles.on, i === act));
     };
 
     gsap.registerPlugin(ScrollTrigger);
-    applyDOM(0);
+    apply(0);
 
     const lenis = new Lenis();
     lenis.on("scroll", ScrollTrigger.update);
-    const raf = (time: number) => lenis.raf(time * 1000);
-    gsap.ticker.add(raf);
+    const lenisRaf = (time: number) => lenis.raf(time * 1000);
+    gsap.ticker.add(lenisRaf);
     gsap.ticker.lagSmoothing(0);
 
-    // scrubbed master timeline: a single progress value drives everything.
+    // scrubbed master timeline: a single progress value drives everything, both
+    // scroll directions. Lenis + scrub give the smoothed "lerp" feel per spec.
     const driver = { v: 0 };
     const tl = gsap.timeline({
       scrollTrigger: {
@@ -309,177 +483,273 @@ export default function HeroFilm() {
       ease: "none",
       duration: 1,
       onUpdate: () => {
-        // map the whole scroll onto Acts 1+2 (0 -> ACT2_END)
-        let filmP = driver.v * ACT2_END;
-        // the film cannot advance past the ask until it has typed itself
-        if (!typedRef.current) filmP = Math.min(filmP, 0.05);
-        progressRef.current = filmP;
-        applyDOM(filmP);
+        progressRef.current = driver.v;
       },
     });
 
-    typeTimerRef.current = window.setTimeout(() => {
-      autoType(() => {
-        ScrollTrigger.update();
-        applyDOM(progressRef.current);
-      });
-    }, 700);
+    // a rAF loop applies each frame so the match origin tracks the rotating globe
+    let rafId = 0;
+    const tick = () => {
+      apply(progressRef.current);
+      rafId = requestAnimationFrame(tick);
+    };
+    rafId = requestAnimationFrame(tick);
 
     ScrollTrigger.refresh();
 
+    // capture refs for cleanup (stable for this component's lifetime)
+    const confettiTimersAtCleanup = confettiTimers.current;
+    const stageAtCleanup = stageRef.current;
+
     return () => {
-      window.clearTimeout(typeTimerRef.current);
-      window.clearInterval(typeIntervalRef.current);
-      gsap.ticker.remove(raf);
+      window.clearTimeout(typeTimer);
+      window.clearInterval(typeIv);
+      lineTimers.forEach((t) => window.clearTimeout(t));
+      confettiTimersAtCleanup.forEach((t) => window.clearTimeout(t));
+      stageAtCleanup
+        ?.querySelectorAll(`.${styles.confetti}`)
+        .forEach((n) => n.remove());
+      cancelAnimationFrame(rafId);
+      gsap.ticker.remove(lenisRaf);
       tl.scrollTrigger?.kill();
       tl.kill();
       lenis.destroy();
     };
   }, []);
 
+  const person = (
+    <svg viewBox="0 0 24 24">
+      <circle cx="12" cy="8.2" r="4.2" />
+      <path d="M3.5 21c1.6-4.4 5-6.4 8.5-6.4s6.9 2 8.5 6.4z" />
+    </svg>
+  );
+
   return (
     <section
       ref={trackRef}
       className={`${styles.track}${reduced ? ` ${styles.reduced}` : ""}`}
       style={{ height: reduced ? "auto" : `${TRACK_VH}vh` }}
-      aria-label="Get an expert: the search that travels"
+      aria-label="Get an expert: you hit a wall, the world's best joins, delivered"
     >
       <div className={styles.stage} ref={stageRef}>
-        <Globe
-          className={styles.globe}
-          progressRef={progressRef}
-          mobile={mobile}
-          reduced={reduced}
-        />
-
         <div className={styles.head} ref={headRef}>
           <h1 className={styles.h1}>
             {"Build like the world's best are "}
-            <em>beside you</em>.
+            <em>beside you.</em>
           </h1>
-          <div className={styles.sub}>
-            {
-              'Ask for something impossibly specific. The right human says "on it."'
-            }
-          </div>
+          <p className={styles.sub}>
+            {'Ask for something impossibly specific. The right human says "on it."'}
+          </p>
         </div>
 
-        <div className={styles.probe} ref={probeRef}>
-          <span className={styles.ping} />
-          <span className={`${styles.ping} ${styles.p2}`} />
-          <div className={styles.tx} ref={txRef}>
-            <span className={styles.ph}>Ask for anything…</span>
-          </div>
-          <span className={styles.caret} ref={caretRef} />
-          <div className={styles.go}>↑</div>
-        </div>
-
-        <div className={styles.searchline} ref={searchlineRef} />
-
-        <div className={styles.match} ref={matchRef}>
-          <span className={styles.morb} />
-          <div>
-            <div className={styles.matchTitle}>Motion graphic designer</div>
-            <div className={styles.matchCred}>
-              <b>100+ launch videos</b> · since 2016
+        {/* the session duo */}
+        <div className={styles.duo} ref={duoRef}>
+          <div className={`${styles.pane} ${styles.session}`} ref={sessionRef}>
+            <div className={styles.bar}>
+              <span className={styles.dots}>
+                <i />
+                <i />
+                <i />
+              </span>
+              <b>Claude Code</b>
+              <span className={styles.tag}>your session</span>
             </div>
-          </div>
-        </div>
-
-        {/* Act 3: the real product splitscreen rises; the match lands in the chat */}
-        <div className={styles.product} ref={productRef}>
-          <div className={styles.browserbar}>
-            <div className={styles.dots}>
-              <i />
-              <i />
-              <i />
-            </div>
-            <div className={styles.urlpill}>Claude Code · ~/launch</div>
-            <span className={styles.barpad} />
-          </div>
-          <div className={styles.split}>
-            {/* left: the app pane, where the agent keeps working */}
-            <div className={styles.appPane}>
-              <div className={styles.uRow}>
-                <span className={styles.uBubble}>
-                  Get an expert to build the launch video
-                </span>
+            <div className={styles.body} ref={streamRef}>
+              <div className={styles.line} data-line>
+                <span className={styles.p}>you</span> · finish the launch page and
+                the launch video
               </div>
-              <div className={styles.tRow}>
-                <span className={styles.tDot}>⏺</span>
-                <span className={styles.tTx}>storyboard.md · rough-cut.mp4</span>
+              <div className={styles.line} data-line>
+                building launch page · hero, pricing, waitlist ✓
               </div>
-              <div className={styles.agentLine} ref={agentLineRef}>
-                <span className={styles.aDot}>✳</span>
-                <span className={styles.aTx}>
-                  Video&apos;s in. Dropping it into your hero now.
-                </span>
+              <div className={styles.line} data-line>
+                script + storyboard done · basic motion cut rendered
               </div>
-              <div className={styles.shareRow}>
-                <span className={styles.shareLabel}>sharing</span>
-                <span className={styles.shareItems}>goal · attempts · errors</span>
+              <div className={`${styles.line} ${styles.wall}`} data-line>
+                {
+                  "Script and storyboard are done, and I've made a basic motion cut. For a launch this important, you'll want a professional video."
+                }
               </div>
             </div>
-            {/* right: the consumer chat, where the expert answers */}
-            <div className={styles.chatPane}>
-              <div className={styles.chatHead}>
-                <span className={styles.chatMark}>
-                  get an <em>expert</em>
-                </span>
-                <span className={styles.chatConn}>
-                  <i />
-                  CONNECTED
-                </span>
+            <div className={styles.composer} ref={composerRef}>
+              <span className={styles.composerTx} ref={composerTxRef} />
+              <span className={styles.caret} ref={caretRef} />
+              <span className={styles.go}>↑</span>
+            </div>
+          </div>
+
+          <div className={`${styles.pane} ${styles.chat}`} ref={chatRef}>
+            <div className={styles.bar}>
+              <span className={styles.dots}>
+                <i />
+                <i />
+                <i />
+              </span>
+              <b>Expert chat</b>
+              <span className={styles.tag}>joins your session</span>
+            </div>
+            <div className={styles.body}>
+              <div className={styles.expertSlot} ref={slotRef}>
+                expert joins here
               </div>
-              <div className={styles.chatSlot}>
-                <div className={styles.resident} ref={residentRef}>
-                  <span className={styles.morb} />
+              <div className={styles.resident} ref={residentRef}>
+                <span className={styles.ava} />
+                <div>
+                  <b>Motion graphic designer</b>
+                  <span>100+ launch videos · since 2016</span>
+                </div>
+              </div>
+              <div className={`${styles.msg} ${styles.you}`} ref={ctxMsgRef}>
+                <span className={styles.who}>shared from your session</span>
+                Your full context · script, storyboard, motion cut v1
+              </div>
+              <div className={`${styles.msg} ${styles.them}`} ref={replyRef}>
+                <span className={styles.who}>expert</span>
+                <span ref={replyTxRef} />
+              </div>
+              <div className={`${styles.msg} ${styles.them}`} ref={deliverRef}>
+                <span className={styles.who}>expert</span>
+                <div className={styles.video}>
+                  <span className={styles.play}>▶</span>
                   <div>
-                    <div className={styles.matchTitle}>Motion graphic designer</div>
-                    <div className={styles.matchCred}>
-                      <b>100+ launch videos</b> · since 2016
-                    </div>
+                    <b>launch-video-final.mp4</b>
+                    <span>68 MB · two aspect ratios, captions baked in</span>
                   </div>
                 </div>
-                <div className={styles.reply} ref={replyRef}>
-                  I know what you&apos;re looking for. On it.
-                </div>
-                <div className={styles.deliver} ref={deliverRef}>
-                  ✓ Delivered · launch video in the session
-                </div>
+              </div>
+              <div className={styles.chip} ref={chipRef}>
+                Delivered in 40 minutes
               </div>
             </div>
           </div>
         </div>
 
-        {/* context chips arcing from the app pane to the chat side */}
-        {["goal", "attempts", "errors"].map((label, i) => (
-          <span
-            key={label}
-            className={styles.chip}
-            ref={(el) => {
-              chipRefs.current[i] = el;
-            }}
-          >
-            {label}
-          </span>
-        ))}
+        {/* search theatre */}
+        <div className={styles.probe} ref={probeRef}>
+          <span className={styles.tx}>Get an expert to build the launch video</span>
+          <span className={styles.go}>↑</span>
+        </div>
+        <div className={styles.tether} ref={tetherRef} />
+        <div className={styles.searchline} ref={searchlineRef}>
+          searching <b>4,183 experts</b> across <b>61 countries</b>…
+        </div>
+        <div className={styles.theatre} ref={theatreRef}>
+          <div className={styles.sweep} />
+          <Globe
+            className={styles.globe}
+            progressRef={progressRef}
+            matchDotRef={matchDotRef}
+            mobile={mobile}
+            reduced={reduced}
+          />
+        </div>
+        <div className={styles.counter} ref={counterRef}>
+          <b ref={countRef}>0</b> profiles scanned · craft, track record,
+          availability
+        </div>
 
-        {/* Act 4: the whisper and the closing CTAs */}
+        <div
+          className={styles.scanCard}
+          ref={(el) => {
+            scanRefs.current[0] = el;
+          }}
+          style={{ left: "12%" }}
+        >
+          <b>Film editor</b>
+          <span>Seoul · 9 yrs</span>
+          <div className={styles.verdict}>passed over · wrong craft</div>
+        </div>
+        <div
+          className={styles.scanCard}
+          ref={(el) => {
+            scanRefs.current[1] = el;
+          }}
+          style={{ right: "15%" }}
+        >
+          <b>3D generalist</b>
+          <span>Berlin · 7 yrs</span>
+          <div className={styles.verdict}>passed over · booked</div>
+        </div>
+        <div
+          className={styles.scanCard}
+          ref={(el) => {
+            scanRefs.current[2] = el;
+          }}
+          style={{ left: "10%" }}
+        >
+          <b>Brand animator</b>
+          <span>São Paulo · 11 yrs</span>
+          <div className={styles.verdict}>close · fewer launches</div>
+        </div>
+        <div
+          className={`${styles.scanCard} ${styles.hold}`}
+          ref={(el) => {
+            scanRefs.current[3] = el;
+          }}
+          style={{ right: "17%" }}
+        >
+          <b>Motion graphic designer</b>
+          <span>Barcelona · since 2016</span>
+          <div className={styles.verdict}>100+ launch videos · available now</div>
+        </div>
+
+        {FACES.map((f, i) => (
+          <div
+            key={i}
+            className={`${styles.face} ${styles[f.c]}`}
+            ref={(el) => {
+              faceRefs.current[i] = el;
+            }}
+            style={{ left: f.l, top: f.t }}
+          >
+            {person}
+          </div>
+        ))}
+        <div className={styles.flash} ref={flashRef} />
+
+        <div className={styles.match} ref={matchRef}>
+          <span className={styles.ava} />
+          <div className={styles.matchInfo} ref={matchInfoRef}>
+            <b>Motion graphic designer</b>
+            <span>100+ launch videos · since 2016</span>
+          </div>
+        </div>
+
+        <div className={styles.payload} ref={payloadRef}>
+          <span className={styles.who}>shared from your session</span>
+          Your full context · script, storyboard, motion cut v1
+        </div>
+
         <div className={styles.whisper} ref={whisperRef}>
           You never left your session.
         </div>
-        <div className={styles.cta} ref={ctaRef}>
-          <a className={styles.ctaPrimary} href="#waitlist">
-            Get an expert
-          </a>
-          <a className={styles.ctaGhost} href="#demo">
-            See how it works
-          </a>
+        <div className={styles.whisperSub} ref={whisperSubRef}>
+          Keep building your most ambitious ideas.
+        </div>
+        <div className={styles.finale} ref={finaleRef}>
+          <div className={styles.steps}>
+            <span className={styles.step}>
+              <i>01</i> you hit a wall
+            </span>
+            <span className={styles.step}>
+              <i>02</i> the world&apos;s best joins
+            </span>
+            <span className={styles.step}>
+              <i>03</i> delivered
+            </span>
+          </div>
+          <div className={styles.ctas}>
+            <a className={`${styles.btn} ${styles.btnPrimary}`} href="#waitlist">
+              Join the waitlist
+            </a>
+            <a className={`${styles.btn} ${styles.btnGhost}`} href="#install">
+              Install in 30 seconds
+            </a>
+          </div>
         </div>
 
-        <div className={styles.acts}>
-          {["01 the ask", "02 the search", "03 the match", "04 delivered"].map(
+        <div className={styles.rail}>
+          {["01 THE WALL", "02 THE SEARCH", "03 THE MATCH", "04 DELIVERED"].map(
             (label, i) => (
               <span
                 key={label}
@@ -494,9 +764,8 @@ export default function HeroFilm() {
             )
           )}
         </div>
-
-        <div className={styles.scrollcue} ref={cueRef}>
-          Scroll<span>↓</span>
+        <div className={styles.cue} ref={cueRef}>
+          scroll
         </div>
       </div>
     </section>
