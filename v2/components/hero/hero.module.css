@@ -307,6 +307,310 @@
   z-index: 2;
 }
 
+/* ---------- Act 3: the product splitscreen that rises ---------- */
+.product {
+  position: absolute;
+  z-index: 10;
+  left: 50%;
+  top: 50%;
+  width: min(1000px, 94%);
+  opacity: 0;
+  border-radius: 20px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-2);
+  overflow: hidden;
+  will-change: transform, opacity;
+  box-shadow: var(--shadow-raised),
+    0 44px 96px -44px color-mix(in srgb, var(--color-ink) 32%, transparent);
+}
+.browserbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 44px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--color-border);
+}
+.dots {
+  display: flex;
+  gap: 6px;
+}
+.dots i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-ink) 14%, transparent);
+}
+.urlpill {
+  flex: 1;
+  max-width: 320px;
+  margin: 0 auto;
+  height: 24px;
+  border-radius: 12px;
+  background: var(--color-raised);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-muted);
+}
+.barpad {
+  width: 42px;
+  flex: none;
+}
+.split {
+  display: grid;
+  grid-template-columns: 1fr minmax(232px, 320px);
+  height: clamp(280px, 38vh, 400px);
+}
+.appPane {
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--color-paper-lit);
+  overflow: hidden;
+}
+.uRow {
+  display: flex;
+  justify-content: flex-end;
+}
+.uBubble {
+  max-width: 82%;
+  background: var(--color-raised);
+  border: 1px solid var(--color-border);
+  color: var(--color-ink);
+  padding: 8px 13px;
+  border-radius: 14px 14px 4px 14px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.tRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: 4px;
+}
+.tDot {
+  font-size: 9px;
+  color: var(--color-sage);
+}
+.tTx {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-ink-2);
+}
+.agentLine {
+  display: flex;
+  gap: 9px;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+.aDot {
+  flex: none;
+  font-size: 12px;
+  color: color-mix(in srgb, var(--color-ink) 55%, transparent);
+  line-height: 1.6;
+}
+.aTx {
+  font-size: 13px;
+  line-height: 1.55;
+  color: color-mix(in srgb, var(--color-ink) 85%, transparent);
+}
+.shareRow {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding-top: 10px;
+  border-top: 1px solid color-mix(in srgb, var(--color-ink) 8%, transparent);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+.shareLabel {
+  color: var(--color-forest);
+  font-weight: 600;
+}
+.shareItems {
+  color: var(--color-muted);
+}
+.chatPane {
+  border-left: 1px solid var(--color-border);
+  background: var(--color-paper);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.chatHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 15px;
+  border-bottom: 1px solid var(--color-border);
+}
+.chatMark {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--color-ink);
+}
+.chatMark em {
+  font-style: normal;
+  color: var(--color-forest);
+}
+.chatConn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.05em;
+  color: var(--color-muted);
+}
+.chatConn i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-forest);
+}
+.chatSlot {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 15px;
+}
+/* the match card, resolved inside the chat slot */
+.resident {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  opacity: 0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-sage);
+  border-radius: 14px;
+  padding: 10px 14px 10px 10px;
+  will-change: transform, opacity, box-shadow;
+  box-shadow: 0 18px 40px -18px color-mix(in srgb, var(--color-forest) 35%, transparent);
+}
+.reply {
+  align-self: flex-start;
+  max-width: 90%;
+  opacity: 0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-ink);
+  padding: 9px 13px;
+  border-radius: 14px 14px 14px 4px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  will-change: transform, opacity;
+}
+.deliver {
+  align-self: center;
+  margin-top: auto;
+  opacity: 0;
+  background: var(--color-sage-soft);
+  border: 1px solid var(--color-sage);
+  color: var(--color-forest);
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  will-change: transform, opacity;
+}
+
+/* ---------- context chips arcing across the splitscreen ---------- */
+.chip {
+  position: absolute;
+  z-index: 13;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.03em;
+  color: var(--color-forest);
+  background: var(--color-sage-soft);
+  border: 1px solid var(--color-sage);
+  border-radius: var(--radius-pill);
+  padding: 3px 10px;
+  white-space: nowrap;
+  pointer-events: none;
+  will-change: left, top, opacity;
+}
+
+/* ---------- Act 4: whisper + closing CTAs ---------- */
+.whisper {
+  position: absolute;
+  z-index: 14;
+  left: 50%;
+  bottom: 108px;
+  opacity: 0;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: clamp(16px, 2vw, 20px);
+  color: var(--color-ink-2);
+  white-space: nowrap;
+  will-change: transform, opacity;
+}
+.cta {
+  position: absolute;
+  z-index: 14;
+  left: 50%;
+  bottom: 40px;
+  opacity: 0;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  will-change: transform, opacity;
+}
+.ctaPrimary {
+  background: var(--color-forest);
+  color: var(--color-cream);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  padding: 12px 26px;
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+  box-shadow: 0 12px 24px -10px color-mix(in srgb, var(--color-forest) 50%, transparent);
+}
+.ctaGhost {
+  color: var(--color-forest);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  padding: 10.5px 22px;
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+  border: 1.5px solid color-mix(in srgb, var(--color-forest) 40%, transparent);
+}
+
+@media (max-width: 760px) {
+  .split {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+  .chatPane {
+    border-left: none;
+    border-top: 1px solid var(--color-border);
+  }
+  .chatSlot {
+    min-height: 190px;
+  }
+  .chip {
+    display: none;
+  }
+  .whisper {
+    bottom: 94px;
+    font-size: 15px;
+  }
+}
+
 /* ---------- reduced motion: a static, legible poster ---------- */
 .reduced .stage {
   position: relative;
@@ -334,8 +638,41 @@
 }
 .reduced .scrollcue,
 .reduced .searchline,
-.reduced .acts {
+.reduced .acts,
+.reduced .chip {
   display: none;
+}
+/* the finished frame: the product panel and its landed state, stacked static */
+.reduced .product {
+  position: static;
+  transform: none;
+  opacity: 1;
+  width: min(1000px, 100%);
+}
+.reduced .agentLine,
+.reduced .resident,
+.reduced .reply,
+.reduced .deliver {
+  opacity: 1;
+  transform: none;
+}
+.reduced .resident {
+  box-shadow: 0 0 0 4px var(--color-sage-soft),
+    0 18px 40px -18px color-mix(in srgb, var(--color-forest) 35%, transparent);
+}
+.reduced .whisper {
+  position: static;
+  transform: none;
+  opacity: 1;
+  white-space: normal;
+  text-align: center;
+}
+.reduced .cta {
+  position: static;
+  transform: none;
+  opacity: 1;
+  pointer-events: auto;
+  justify-content: center;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -16,7 +16,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import { useMemo, useRef, type RefObject } from "react";
 import * as THREE from "three";
-import { CITIES, clamp, easeIO, lerp, seg } from "./film";
+import { CITIES, PHASES, clamp, easeIO, lerp, seg } from "./film";
 import { readGlobePalette } from "./tokens";
 
 const CAM_Z = 6.2;
@@ -152,24 +152,25 @@ function GlobeScene({ progressRef, mobile, reduced, staticProgress }: SceneProps
     const p = reduced ? staticProgress : progressRef.current;
     const t = state.clock.elapsedTime;
 
-    // globe fades in over Act 1->2, holds through Act 2's finish
+    // globe fades in over Act 1->2, then clears as the product panel rises (Act 3)
     const alpha =
-      easeIO(seg(p, 0.1, 0.2)) * (1 - easeIO(seg(p, 0.72, 0.9)));
+      easeIO(seg(p, PHASES.globeIn[0], PHASES.globeIn[1])) *
+      (1 - easeIO(seg(p, PHASES.globeOut[0], PHASES.globeOut[1])));
 
     group.rotation.y = (reduced ? 0.6 : t * 0.025) + p * 2.6;
     if (pointsMat.current) pointsMat.current.uniforms.uAlpha.value = alpha;
 
     // where the probe sits, mapped from screen % to a world Y the arc reaches
-    const flyEase = easeIO(seg(p, 0.06, 0.22));
+    const flyEase = easeIO(seg(p, PHASES.probeFly[0], PHASES.probeFly[1]));
     anchor.set(0, lerp(0.2, 1.3, flyEase), 0.8);
 
     // which city is the search touching
-    const scan = seg(p, 0.18, 0.52);
+    const scan = seg(p, PHASES.scan[0], PHASES.scan[1]);
     const activeIdx = Math.min(
       CITIES.length - 1,
       Math.floor(scan * CITIES.length)
     );
-    const matchHolds = p > 0.52;
+    const matchHolds = p > PHASES.matchResolve[0];
 
     // update every marker's look + visibility (cull the back hemisphere)
     for (let i = 0; i < cities.length; i++) {

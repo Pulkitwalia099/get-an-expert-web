@@ -45,6 +45,16 @@ export default function HeroFilm() {
   const cueRef = useRef<HTMLDivElement>(null);
   const actRefs = useRef<(HTMLSpanElement | null)[]>([]);
 
+  // Act 3+4 layers
+  const productRef = useRef<HTMLDivElement>(null);
+  const residentRef = useRef<HTMLDivElement>(null);
+  const chipRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const replyRef = useRef<HTMLDivElement>(null);
+  const agentLineRef = useRef<HTMLDivElement>(null);
+  const deliverRef = useRef<HTMLDivElement>(null);
+  const whisperRef = useRef<HTMLDivElement>(null);
+  const ctaRef = useRef<HTMLDivElement>(null);
+
   const progressRef = useRef(0);
   const typedRef = useRef(false);
   const typeTimerRef = useRef<number>(0);
@@ -99,7 +109,7 @@ export default function HeroFilm() {
         10 *
         easeIO(seg(p, PHASES.probeSway[0], PHASES.probeSway[1])) *
         (1 - easeIO(seg(p, PHASES.probeSwaySettle[0], PHASES.probeSwaySettle[1])));
-      const fade = easeIO(seg(p, PHASES.globeOut[0], PHASES.globeOut[1]));
+      const fade = easeIO(seg(p, PHASES.probeOut[0], PHASES.probeOut[1]));
       if (probeRef.current) {
         probeRef.current.style.width = `${probeW}px`;
         probeRef.current.style.top = `${probeTop}%`;
@@ -134,17 +144,116 @@ export default function HeroFilm() {
         }
       }
 
-      // the match card resolves under the probe (Act 3 flies it into the chat)
+      // ---------- Act 2 finish -> Act 3: the match flies into the session ----------
+      // The match card resolves under the probe, then flies to the chat slot of
+      // the product panel and dissolves as the resident card takes over (a FLIP
+      // handoff: fixed start/end tuned by eye, not a pixel-locked rect measure).
       const ms = easeIO(seg(p, PHASES.matchResolve[0], PHASES.matchResolve[1]));
+      const fly = easeIO(seg(p, PHASES.matchFly[0], PHASES.matchFly[1]));
+      const flyOut = easeIO(seg(p, PHASES.matchFlyOut[0], PHASES.matchFlyOut[1]));
       if (matchRef.current) {
-        matchRef.current.style.opacity = String(ms);
-        matchRef.current.style.left = "50%";
-        matchRef.current.style.top = `calc(${probeTop}% + 92px)`;
-        matchRef.current.style.transform = `translateX(-50%) translateY(${lerp(
-          30,
+        const curL = lerp(50, 69, fly); // % across the stage: center -> chat side
+        const curTop = lerp(probeTop + 10, 40, fly) - Math.sin(fly * Math.PI) * 7;
+        matchRef.current.style.left = `${curL}%`;
+        matchRef.current.style.top = `${curTop}%`;
+        matchRef.current.style.transform = `translate(-50%, -50%) translateY(${lerp(
+          28,
           0,
           ms
-        )}px) scale(${lerp(0.94, 1, ms)})`;
+        )}px) scale(${lerp(0.94, lerp(1, 0.82, fly), ms)})`;
+        matchRef.current.style.opacity = String(ms * (1 - flyOut));
+      }
+
+      // the real product splitscreen rises into view
+      const rise = easeIO(seg(p, PHASES.productRise[0], PHASES.productRise[1]));
+      if (productRef.current) {
+        productRef.current.style.opacity = rise > 0.01 ? "1" : "0";
+        productRef.current.style.transform = `translate(-50%, calc(-50% + ${lerp(
+          64,
+          0,
+          rise
+        )}vh)) scale(${lerp(0.96, 1, rise)})`;
+      }
+
+      // the match resolves inside the chat slot with a receiving glow
+      const land = easeIO(seg(p, PHASES.matchLand[0], PHASES.matchLand[1]));
+      if (residentRef.current) {
+        residentRef.current.style.opacity = String(land);
+        residentRef.current.style.transform = `translateY(${lerp(10, 0, land)}px) scale(${lerp(
+          0.94,
+          1,
+          land
+        )})`;
+        const glow = Math.sin(land * Math.PI); // peaks mid-landing, eases off
+        residentRef.current.style.boxShadow = `0 0 0 ${lerp(
+          0,
+          5,
+          glow
+        )}px color-mix(in srgb, var(--color-sage) ${lerp(
+          0,
+          42,
+          glow
+        )}%, transparent), 0 18px 40px -18px color-mix(in srgb, var(--color-forest) 35%, transparent)`;
+      }
+
+      // context chips arc from the app pane to the chat side (staggered)
+      chipRefs.current.forEach((el, i) => {
+        if (!el) return;
+        const cp = easeIO(seg(p, PHASES.chips[0] + i * 0.11, PHASES.chips[1]));
+        const x = lerp(31, 66, cp);
+        const y = lerp(58, 44, cp) - Math.sin(cp * Math.PI) * 11;
+        el.style.left = `${x}%`;
+        el.style.top = `${y}%`;
+        el.style.opacity = String(rise > 0.4 ? Math.sin(cp * Math.PI) : 0);
+      });
+
+      // expert reply: immediate, "On it."
+      const rep = easeIO(seg(p, PHASES.reply[0], PHASES.reply[1]));
+      if (replyRef.current) {
+        replyRef.current.style.opacity = String(rep);
+        replyRef.current.style.transform = `translateY(${lerp(10, 0, rep)}px)`;
+      }
+
+      // ---------- Act 4: delivered ----------
+      // the agent continues in the app pane
+      const agentEase = easeIO(seg(p, PHASES.agentOn[0], PHASES.agentOn[1]));
+      if (agentLineRef.current) {
+        agentLineRef.current.style.opacity = String(agentEase);
+        agentLineRef.current.style.transform = `translateY(${lerp(8, 0, agentEase)}px)`;
+      }
+
+      // delivery lands in the session
+      const del = easeIO(seg(p, PHASES.deliver[0], PHASES.deliver[1]));
+      if (deliverRef.current) {
+        deliverRef.current.style.opacity = String(del);
+        deliverRef.current.style.transform = `translateY(${lerp(
+          10,
+          0,
+          del
+        )}px) scale(${lerp(0.9, 1, del)})`;
+      }
+
+      // whisper line
+      const whisp = easeIO(seg(p, PHASES.whisper[0], PHASES.whisper[1]));
+      if (whisperRef.current) {
+        whisperRef.current.style.opacity = String(whisp);
+        whisperRef.current.style.transform = `translateX(-50%) translateY(${lerp(
+          8,
+          0,
+          whisp
+        )}px)`;
+      }
+
+      // closing CTAs rise
+      const cta = easeIO(seg(p, PHASES.ctas[0], PHASES.ctas[1]));
+      if (ctaRef.current) {
+        ctaRef.current.style.opacity = String(cta);
+        ctaRef.current.style.transform = `translateX(-50%) translateY(${lerp(
+          14,
+          0,
+          cta
+        )}px)`;
+        ctaRef.current.style.pointerEvents = cta > 0.9 ? "auto" : "none";
       }
 
       // act rail
@@ -275,6 +384,98 @@ export default function HeroFilm() {
               <b>100+ launch videos</b> · since 2016
             </div>
           </div>
+        </div>
+
+        {/* Act 3: the real product splitscreen rises; the match lands in the chat */}
+        <div className={styles.product} ref={productRef}>
+          <div className={styles.browserbar}>
+            <div className={styles.dots}>
+              <i />
+              <i />
+              <i />
+            </div>
+            <div className={styles.urlpill}>Claude Code · ~/launch</div>
+            <span className={styles.barpad} />
+          </div>
+          <div className={styles.split}>
+            {/* left: the app pane, where the agent keeps working */}
+            <div className={styles.appPane}>
+              <div className={styles.uRow}>
+                <span className={styles.uBubble}>
+                  Get an expert to build the launch video
+                </span>
+              </div>
+              <div className={styles.tRow}>
+                <span className={styles.tDot}>⏺</span>
+                <span className={styles.tTx}>storyboard.md · rough-cut.mp4</span>
+              </div>
+              <div className={styles.agentLine} ref={agentLineRef}>
+                <span className={styles.aDot}>✳</span>
+                <span className={styles.aTx}>
+                  Video&apos;s in. Dropping it into your hero now.
+                </span>
+              </div>
+              <div className={styles.shareRow}>
+                <span className={styles.shareLabel}>sharing</span>
+                <span className={styles.shareItems}>goal · attempts · errors</span>
+              </div>
+            </div>
+            {/* right: the consumer chat, where the expert answers */}
+            <div className={styles.chatPane}>
+              <div className={styles.chatHead}>
+                <span className={styles.chatMark}>
+                  get an <em>expert</em>
+                </span>
+                <span className={styles.chatConn}>
+                  <i />
+                  CONNECTED
+                </span>
+              </div>
+              <div className={styles.chatSlot}>
+                <div className={styles.resident} ref={residentRef}>
+                  <span className={styles.morb} />
+                  <div>
+                    <div className={styles.matchTitle}>Motion graphic designer</div>
+                    <div className={styles.matchCred}>
+                      <b>100+ launch videos</b> · since 2016
+                    </div>
+                  </div>
+                </div>
+                <div className={styles.reply} ref={replyRef}>
+                  I know what you&apos;re looking for. On it.
+                </div>
+                <div className={styles.deliver} ref={deliverRef}>
+                  ✓ Delivered · launch video in the session
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* context chips arcing from the app pane to the chat side */}
+        {["goal", "attempts", "errors"].map((label, i) => (
+          <span
+            key={label}
+            className={styles.chip}
+            ref={(el) => {
+              chipRefs.current[i] = el;
+            }}
+          >
+            {label}
+          </span>
+        ))}
+
+        {/* Act 4: the whisper and the closing CTAs */}
+        <div className={styles.whisper} ref={whisperRef}>
+          You never left your session.
+        </div>
+        <div className={styles.cta} ref={ctaRef}>
+          <a className={styles.ctaPrimary} href="#waitlist">
+            Get an expert
+          </a>
+          <a className={styles.ctaGhost} href="#demo">
+            See how it works
+          </a>
         </div>
 
         <div className={styles.acts}>

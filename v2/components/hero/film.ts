@@ -5,10 +5,10 @@
  * four-act film). Both the DOM timeline (HeroFilm) and the R3F globe (Globe)
  * read from here so the search bar and the globe stay in lockstep.
  *
- * This branch (Day 3) builds Acts 1 and 2 only. ACT2_END is the film-progress
- * value where Act 2 resolves (the match card holds). We map the whole scrubbed
- * scroll range onto 0 -> ACT2_END so Acts 1+2 fill the pin with no dead tail.
- * Day 4 raises ACT2_END to 1 and TRACK_VH toward ~560 to turn on Acts 3+4.
+ * ACT2_END is the film-progress value the bottom of the scroll maps to. Day 3
+ * held it at 0.7 so only Acts 1+2 filled the pin. Day 4 opens the full film:
+ * ACT2_END -> 1 maps the whole scrubbed range across all four acts, and
+ * TRACK_VH grows so the later acts have room to breathe.
  */
 
 export const ASK = "Get an expert to build the launch video";
@@ -24,29 +24,43 @@ export const CITIES = [
   "seoul",
 ];
 
-/* Film progress the top of the scroll maps to. The match resolves at 0.52-0.6,
-   so mapping to 0.7 leaves a short hold tail (scroll ~0.86-1.0) where the
-   resolved match sits full-screen for a beat before the pin releases.
-   Day 4: set to 1 so the scroll reaches Acts 3+4. */
-export const ACT2_END = 0.7;
+/* Film progress the bottom of the scroll maps to. 1 = the full four-act film
+   plays across the whole pin (Act 4 delivered sits at the very end). */
+export const ACT2_END = 1;
 
-/* Sticky-stage pin length, in vh. Sized so Acts 1+2 breathe without a dead
-   tail. Day 4: raise toward 560 as the later acts are added. */
-export const TRACK_VH = 420;
+/* Sticky-stage pin length, in vh. Sized so all four acts breathe: Acts 1+2
+   fill the first ~55% of scroll, Acts 3+4 the rest. */
+export const TRACK_VH = 560;
 
-/* Phase boundaries in film-progress space (from the prototype's apply(p)). */
+/* Phase boundaries in film-progress space. Acts 1+2 (from the prototype's
+   apply(p)) resolve by ~0.6; Acts 3+4 play out from there to 1. */
 export const PHASES = {
-  headOut: [0.04, 0.18] as const,
-  probeFly: [0.06, 0.22] as const,
-  probeSway: [0.2, 0.32] as const,
-  probeSwaySettle: [0.5, 0.6] as const,
-  searchingClass: [0.14, 0.52] as const,
+  // Act 1: the ask
+  headOut: [0.04, 0.16] as const,
+  probeFly: [0.06, 0.2] as const,
+  probeSway: [0.18, 0.3] as const,
+  probeSwaySettle: [0.46, 0.56] as const,
+  searchingClass: [0.14, 0.5] as const,
+  cueOut: [0.4, 0.52] as const,
+  // Act 2: the search
   globeIn: [0.1, 0.2] as const,
-  globeOut: [0.72, 0.9] as const, // pushed past ACT2_END: the globe stays up through Act 2's finish
-  scan: [0.18, 0.52] as const,
-  searchlineOn: [0.13, 0.6] as const,
-  matchResolve: [0.52, 0.6] as const,
-  cueOut: [0.42, 0.55] as const,
+  globeOut: [0.6, 0.74] as const, // globe clears as the product panel rises
+  scan: [0.18, 0.5] as const,
+  searchlineOn: [0.13, 0.58] as const,
+  matchResolve: [0.5, 0.58] as const,
+  // Act 3: the match lands in the session
+  productRise: [0.58, 0.78] as const, // the real product splitscreen rises up
+  probeOut: [0.58, 0.7] as const, // the flying probe clears once the match resolves
+  matchFly: [0.64, 0.82] as const, // match card flies from the globe stage to the chat slot
+  matchFlyOut: [0.8, 0.87] as const, // the flying card dissolves as the resident card takes over
+  matchLand: [0.78, 0.86] as const, // resident card glows in inside the chat slot
+  chips: [0.72, 0.88] as const, // context chips arc from the app pane to the chat side
+  reply: [0.83, 0.9] as const, // expert reply: "I know what you're looking for. On it."
+  // Act 4: delivered
+  agentOn: [0.87, 0.93] as const, // the agent continues in the app pane
+  deliver: [0.88, 0.95] as const, // delivery lands in the session
+  whisper: [0.91, 0.97] as const, // "You never left your session."
+  ctas: [0.93, 1] as const, // closing CTAs rise
 };
 
 export const clamp = (v: number, a: number, b: number) =>
@@ -64,4 +78,4 @@ export const easeIO = (t: number) =>
 
 /* which act rail dot is lit for a given film progress */
 export const actForProgress = (p: number) =>
-  p < 0.1 ? 1 : p < 0.52 ? 2 : p < 0.87 ? 3 : 4;
+  p < 0.1 ? 1 : p < 0.5 ? 2 : p < 0.87 ? 3 : 4;
