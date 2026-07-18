@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+/* midsesh design tokens: single source of truth for the v2 palette.
+   Green is people. Bronze is activity within approved access. Cream is the room. */
+@theme {
+  --color-paper: #FAF7F0;
+  --color-surface: #FFFFFF;
+  --color-raised: #F4F1E9;
+  --color-ink: #1C1A16;
+  --color-ink-2: #4B4841;
+  --color-muted: #8A8578;
+  --color-faint: #B8B2A4;
+  --color-border: #E8DFC9;
+  --color-border-2: #D6CBB0;
+  --color-forest: #2F4A38;
+  --color-forest-deep: #263D2E;
+  --color-sage: #8FB89B;
+  --color-sage-soft: #EDF3EE;
+  --color-bronze: #8C7136;
+  --color-bronze-ink: #7D6530;
+  --color-bronze-soft: #F6F1E4;
+  --color-rust: #A04A3C;
+
+  --font-serif: var(--font-cormorant), Georgia, serif;
+  --font-sans: var(--font-hanken), -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, Menlo, "SF Mono", monospace;
+
+  --radius-card: 14px;
+  --radius-pill: 999px;
+
+  --shadow-soft: 0 1px 3px rgba(28, 26, 22, 0.06), 0 1px 2px rgba(28, 26, 22, 0.04);
+  --shadow-raised: 0 2px 8px rgba(28, 26, 22, 0.08), 0 1px 2px rgba(28, 26, 22, 0.05);
+
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-arrive: cubic-bezier(0.21, 0.61, 0.35, 1);
+}
+
+html {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  scroll-behavior: auto; /* Lenis owns scrolling */
+}
+
+body {
+  min-height: 100vh;
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--color-sage-soft);
+  color: var(--color-forest);
+}
