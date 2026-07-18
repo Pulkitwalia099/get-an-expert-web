@@ -14,7 +14,14 @@ Hero choreography prototype (THE spec for the film): https://claude.ai/code/arti
       Merged as PR #4 into v2-next (9fa46b6). Build green, boot-smoked, parity screenshots vs live site.
       Notes: scroll reveal is per-section (not per-cell stagger); Book-a-demo uses Cal.com iframe embed
       (not the Cal SDK loader); next.config.ts pins turbopack root.
-- [ ] Day 3 (branch `v2-hero`, worktree `~/Programs/gae-v2-hero`): hero film Acts 1+2 in `v2/`.
+- [x] Day 3 (branch `v2-hero`, worktree `~/Programs/gae-v2-hero`): hero film Acts 1+2 in `v2/`.
+      Merged as PR #5 into v2-next (d3a4cd1), combined with the port in app/page.tsx.
+      Spec source: the choreography prototype artifact (fetched directly). Acts 3+4 turn on via
+      ACT2_END -> 1 and TRACK_VH -> ~560 in components/hero/film.ts. Known approximations: WebGL
+      arc anchor tracks probe vertically (not pixel-locked); globe framing tuned by eye (Day 5);
+      bloom uses HDR-pushed sage (x2.4). Reveal.tsx now renders via createElement (types fix).
+      PARITY GAP found in smoke test: ported Experts roster predates PR #1, missing the
+      Inigo Fernandez card that is live on midsesh.com. Fix scheduled in Day 4.
 - [ ] Day 4 (on `v2-next` after merging both): hero Acts 3+4, weave generated assets.
 - [ ] Day 5 (on `v2-next`): cinematography polish, mobile, perf, QA, Gate 1 preview to Pulkit.
 
