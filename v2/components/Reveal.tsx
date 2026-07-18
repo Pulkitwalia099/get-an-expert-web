@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useRef, type ElementType, type ReactNode } from "react";
+import {
+  createElement,
+  useEffect,
+  useRef,
+  type ElementType,
+  type ReactNode,
+} from "react";
 
 /* Scroll-reveal wrapper. Mirrors the original setupReveal: elements start
    translated down and faded out, then settle in on first intersection
@@ -50,15 +56,17 @@ export default function Reveal({
     return () => io.disconnect();
   }, []);
 
-  return (
-    <Tag
-      ref={ref}
-      id={id}
-      data-reveal=""
-      className={className}
-      style={{ transitionDelay: delay ? `${delay}ms` : undefined, ...style }}
-    >
-      {children}
-    </Tag>
+  /* createElement instead of <Tag>: a JSX tag typed as ElementType collapses
+     its props union to `never` under current @types/react. */
+  return createElement(
+    Tag,
+    {
+      ref,
+      id,
+      "data-reveal": "",
+      className,
+      style: { transitionDelay: delay ? `${delay}ms` : undefined, ...style },
+    },
+    children,
   );
 }

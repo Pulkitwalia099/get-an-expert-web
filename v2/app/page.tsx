@@ -1,6 +1,6 @@
 import Reveal from "@/components/Reveal";
 import SiteHeader from "@/components/SiteHeader";
-import Hero from "@/components/Hero";
+import HeroFilm from "@/components/hero/HeroFilm";
 import Demo from "@/components/Demo";
 import Moments from "@/components/Moments";
 import Experts from "@/components/Experts";
@@ -9,9 +9,9 @@ import Install from "@/components/Install";
 import Waitlist from "@/components/Waitlist";
 import SiteFooter from "@/components/SiteFooter";
 
-/* Day 2 port: the live static marketing site rebuilt as React sections at 1:1
-   visual parity. Hero is a faithful static port that the Day 3 hero-film track
-   replaces. Reveal wrappers reproduce the original scroll-in entrance. */
+/* Day 2 port + Day 3 hero film merged: the ported sections at 1:1 visual parity,
+   with the static hero replaced by the scroll film (Acts 1+2; Acts 3+4 land on
+   Day 4). Reveal wrappers reproduce the original scroll-in entrance. */
 export default function Home() {
   return (
     <div
@@ -25,7 +25,7 @@ export default function Home() {
     >
       <SiteHeader />
       <main>
-        <Hero />
+        <HeroFilm />
         <Reveal>
           <Demo />
         </Reveal>
