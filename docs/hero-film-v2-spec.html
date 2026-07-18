@@ -1,5 +1,26 @@
 <meta charset="utf-8">
 <title>midsesh hero film v2 · The Wall · prototype</title>
+<!--
+  ============================================================
+  BEATS LEGEND  (keep in sync with the P{} constants in <script>)
+  B1  THE WALL    0.00 - 0.12   session lines stream, ask auto-types, headline holds
+  B2  DETACH      0.12 - 0.28   composer freezes at its live rect while the session
+                                recedes behind it (0.12-0.20), then the probe rises to
+                                search position and shrinks slightly (0.20-0.28)
+  B3  THE SEARCH  0.22 - 0.52   globe theatre, scan cards, candidate faces; room grades
+                                from day cream toward dusk ink (see applyGrade)
+  B4  THE MATCH   0.52 - 0.58   one profile resolves center, flash ring
+  B5  THE RETURN  0.56 - 0.68   room returns to day; session returns, chat docks; probe
+                                travels down-left home while the match card travels right
+                                (diverging, non-crossing paths)
+  B6  PAYLOAD     0.70 - 0.76   full context flies horizontally from the left (session
+                                text area) into the chat, lands as the sent message
+  B7  REPLY       0.76 - 0.81   expert types "I know what you're looking for. On it."
+  B8  THE WAIT    0.81 - 0.90   "one hour later" clock beat; chat dims slightly
+  B9  DELIVER     0.90 - 0.935  video lands + confetti burst
+  B10 FINALE      0.935 - 1.00  whisper, three steps, CTAs
+  ============================================================
+-->
 <style>
   :root {
     --paper: #f6f2e8;
@@ -17,12 +38,21 @@
     --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
     --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+    /* --- dusk grade vars (interpolated by applyGrade; day defaults here) --- */
+    --search-ink: #57503f;      /* searchline text */
+    --search-strong: #23201a;   /* searchline emphasis */
+    --search-faint: #948b74;    /* counter text */
+    --forest-lit: #2f6b4a;      /* globe match arcs, glows brighter at night */
+    --bronze-lit: #a9743b;      /* globe active-city dots + counter emphasis */
+    --dot-front: rgba(35,32,26,.45);  /* globe dome dots, front */
+    --dot-back: rgba(35,32,26,.12);   /* globe dome dots, back */
   }
   * { box-sizing: border-box; }
   html { background: var(--paper); overflow-x: clip; }
   body { margin: 0; color: var(--ink); font-family: var(--sans); }
 
-  .track { position: relative; height: 760vh; }
+  .track { position: relative; height: 840vh; }
   .stage { position: sticky; top: 0; height: 100vh; overflow: hidden; }
 
   /* faint grain + vignette so the room has texture */
@@ -136,13 +166,13 @@
     animation: sweep 3s linear infinite; }
   @keyframes sweep { to { transform: rotate(360deg); } }
   .searchline { position: absolute; left: 50%; top: 31%; transform: translateX(-50%);
-    font-family: var(--mono); font-size: 12px; color: var(--ink-2); z-index: 23; opacity: 0;
+    font-family: var(--mono); font-size: 12px; color: var(--search-ink); z-index: 23; opacity: 0;
     white-space: nowrap; }
-  .searchline b { color: var(--ink); }
+  .searchline b { color: var(--search-strong); }
   .counter { position: absolute; left: 50%; top: 86%; transform: translateX(-50%);
-    font-family: var(--mono); font-size: 11px; letter-spacing: .08em; color: var(--faint);
+    font-family: var(--mono); font-size: 11px; letter-spacing: .08em; color: var(--search-faint);
     z-index: 23; opacity: 0; }
-  .counter b { color: var(--bronze); font-variant-numeric: tabular-nums; }
+  .counter b { color: var(--bronze-lit); font-variant-numeric: tabular-nums; }
 
   .scan-card { position: absolute; top: 40%; width: 205px; background: var(--paper-2);
     border: 1px solid var(--line-2); border-radius: 11px; padding: 10px 12px; z-index: 21;
@@ -170,6 +200,27 @@
     padding: 9px 13px; font-size: 12px; max-width: 230px; box-shadow: var(--shadow); }
   .payload .who { font-family: var(--mono); font-size: 9.5px; letter-spacing: .08em;
     text-transform: uppercase; color: var(--forest); display: block; margin-bottom: 3px; }
+
+  /* ---------- B8 the wait ("one hour later") ---------- */
+  .wait { position: absolute; left: 50%; top: 15%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 15px; z-index: 31;
+    opacity: 0; text-align: center; will-change: opacity, transform; }
+  .clock { position: relative; width: 64px; height: 64px; }
+  .clock .dial { position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--forest);
+    background: #fff; box-shadow: inset 0 0 0 1px var(--forest-soft), var(--shadow); }
+  .clock .sweep2 { position: absolute; inset: 5px; border-radius: 50%; pointer-events: none;
+    background: conic-gradient(from -12deg, rgba(47,107,74,.32), transparent 78deg);
+    animation: sweep 2.4s linear infinite; }
+  .clock .hand2 { position: absolute; left: 50%; top: 15px; width: 2.2px; height: 17px;
+    margin-left: -1.1px; background: var(--forest); border-radius: 2px;
+    transform-origin: bottom center; transform: rotate(42deg); }
+  .clock .pin2 { position: absolute; left: 50%; top: 50%; width: 5px; height: 5px; border-radius: 50%;
+    background: var(--forest); transform: translate(-50%, -50%); }
+  .clock .ring { position: absolute; inset: -8px; border-radius: 50%; border: 2px solid var(--forest);
+    opacity: 0; animation: ring-pulse 2.4s ease-out infinite; }
+  @keyframes ring-pulse { 0% { transform: scale(.66); opacity: .5; } 72% { opacity: 0; }
+    100% { transform: scale(1.28); opacity: 0; } }
+  .wlabel { font-family: var(--mono); font-size: 12px; letter-spacing: .14em; color: var(--ink-2); }
 
   /* ---------- finale ---------- */
   .whisper { position: absolute; left: 50%; top: 24%; transform: translateX(-50%);
@@ -228,7 +279,7 @@
   @media (prefers-reduced-motion: reduce) {
     .track { height: auto; }
     .stage { position: relative; height: auto; min-height: 100vh; padding: 40px 0 80px; }
-    .cue, .probe, .theatre, .searchline, .counter, .scan-card, .match, .payload, .tether { display: none !important; }
+    .cue, .probe, .theatre, .searchline, .counter, .scan-card, .match, .payload, .tether, .wait { display: none !important; }
     .head { position: relative; left: auto; top: auto; transform: none; margin: 40px auto 30px; }
     .duo { position: relative; left: auto; top: auto; transform: none; margin: 0 auto; }
     .whisper, .whisper-sub, .finale { position: relative; left: auto; top: auto; transform: none; opacity: 1 !important; margin: 40px auto 0; text-align: center; }
@@ -271,7 +322,7 @@
           <div class="msg them" id="deliver"><span class="who">expert</span>
             <div class="video"><span class="play">▶</span><div><b>launch-video-final.mp4</b><span>68 MB · two aspect ratios, captions baked in</span></div></div>
           </div>
-          <div class="chip" id="chip">Delivered in 40 minutes</div>
+          <div class="chip" id="chip">Delivered in one hour</div>
         </div>
       </div>
     </div>
@@ -305,6 +356,12 @@
     <div class="match" id="match"><span class="ava"></span><div class="info" id="matchInfo"><b>Motion graphic designer</b><span>100+ launch videos · since 2016</span></div></div>
 
     <div class="payload" id="payload"><span class="who">shared from your session</span>Your full context · script, storyboard, motion cut v1</div>
+
+    <!-- B8 the wait -->
+    <div class="wait" id="wait">
+      <div class="clock"><span class="dial"></span><span class="sweep2"></span><span class="hand2"></span><span class="pin2"></span><span class="ring"></span></div>
+      <span class="wlabel">one hour later</span>
+    </div>
 
     <div class="whisper" id="whisper">You never left your session.</div>
     <div class="whisper-sub" id="whisperSub">Keep building your most ambitious ideas.</div>
@@ -343,6 +400,36 @@
   const ease = (t) => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
   const lerp = (a, b, t) => a + (b - a) * t;
   const easeBack = (t) => 1 + 2.70158 * Math.pow(t - 1, 3) + 1.70158 * Math.pow(t - 1, 2);
+
+  /* ---- dusk grade: day cream -> night ink during the search, back to day at B5 ----
+     Isolated here + in applyGrade(); strip both to remove the experiment entirely. */
+  let gradeLevel = 0; // 0 = day, 1 = full dusk (read by drawGlobe)
+  const hexRgb = (h) => [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)];
+  const mix = (a, b, t) => { const A = hexRgb(a), B = hexRgb(b);
+    return `rgb(${Math.round(lerp(A[0],B[0],t))},${Math.round(lerp(A[1],B[1],t))},${Math.round(lerp(A[2],B[2],t))})`; };
+  const GRADE = {
+    bg:        ["#f6f2e8", "#1d1a14"],  // room background
+    searchInk: ["#57503f", "#cfc6b0"],  // searchline text
+    searchStr: ["#23201a", "#f4eede"],  // searchline emphasis
+    searchFnt: ["#948b74", "#b3a988"],  // counter text
+    forestLit: ["#2f6b4a", "#54a97b"],  // globe green arcs (glow at night)
+    bronzeLit: ["#a9743b", "#d59a56"],  // globe active-city dots
+  };
+  function applyGrade(p) {
+    // night rises as the theatre opens, returns to day as the session comes back (B5)
+    gradeLevel = clamp(ease(seg(p, .15, .30)) - ease(seg(p, .54, .64)), 0, 1);
+    const g = gradeLevel, rs = document.documentElement.style;
+    document.documentElement.style.backgroundColor = mix(...GRADE.bg, g);
+    rs.setProperty("--search-ink",   mix(...GRADE.searchInk, g));
+    rs.setProperty("--search-strong",mix(...GRADE.searchStr, g));
+    rs.setProperty("--search-faint", mix(...GRADE.searchFnt, g));
+    rs.setProperty("--forest-lit",   mix(...GRADE.forestLit, g));
+    rs.setProperty("--bronze-lit",   mix(...GRADE.bronzeLit, g));
+    // dome dots lighten so they stay legible against the ink
+    const dr = Math.round(lerp(35,240,g)), dg = Math.round(lerp(32,235,g)), db = Math.round(lerp(26,222,g));
+    rs.setProperty("--dot-front", `rgba(${dr},${dg},${db},${lerp(.45,.55,g)})`);
+    rs.setProperty("--dot-back",  `rgba(${dr},${dg},${db},${lerp(.12,.18,g)})`);
+  }
 
   /* ---- time-based intro: agent lines stream on load ---- */
   const lines = [...document.querySelectorAll(".line")];
@@ -405,30 +492,30 @@
       const isMatch = matched && ci === 0; // Barcelona holds
       let size = front ? 2.6 : 1.4, col;
       if (isMatch) {
-        col = css("--forest"); size = 7;
+        col = css("--forest-lit"); size = 7;
         const rb = cv.getBoundingClientRect();
         window.__matchDot = [(rb.left + x / 1040 * rb.width) / innerWidth * 100,
                             (rb.top + y / 1040 * rb.height) / innerHeight * 100];
       }
-      else if (isActive) { col = css("--bronze"); size = 6; }
-      else if (isCity && front) { col = css("--bronze"); size = 4; }
-      else col = front ? "rgba(35,32,26,.45)" : "rgba(35,32,26,.12)";
+      else if (isActive) { col = css("--bronze-lit"); size = 6; }
+      else if (isCity && front) { col = css("--bronze-lit"); size = 4; }
+      else col = front ? css("--dot-front") : css("--dot-back");
       cx.beginPath(); cx.arc(x, y, size, 0, 7); cx.fillStyle = col; cx.fill();
       if ((isActive || isMatch) && front !== false) {
-        // ping ring
-        const t = (Date.now() / 900) % 1;
+        // ping ring (glows brighter on the dusk grade via g)
+        const t = (Date.now() / 900) % 1, glow = 0.5 + gradeLevel * 0.35;
         cx.beginPath(); cx.arc(x, y, 10 + t * 26, 0, 7);
-        cx.strokeStyle = isMatch ? "rgba(47,107,74," + (0.5 - t * 0.5) + ")" : "rgba(169,116,59," + (0.5 - t * 0.5) + ")";
+        cx.strokeStyle = isMatch ? "rgba(90,190,140," + (glow - t * glow) + ")" : "rgba(200,150,90," + (glow - t * glow) + ")";
         cx.lineWidth = 2.5; cx.stroke();
         // arc up to the probe
         const topX = CX, topY = -140;
         cx.beginPath(); cx.moveTo(x, y);
         cx.quadraticCurveTo((x + topX) / 2 + (x < CX ? -80 : 80), (y + topY) / 2 - 60, topX, topY + 160);
-        cx.strokeStyle = isMatch ? "rgba(47,107,74,.65)" : "rgba(169,116,59,.4)";
-        cx.lineWidth = isMatch ? 3 : 1.75; cx.stroke();
+        cx.strokeStyle = isMatch ? css("--forest-lit") : css("--bronze-lit");
+        cx.lineWidth = isMatch ? 3 + gradeLevel * 1.2 : 1.75; cx.stroke();
         // city label
         cx.font = "600 26px ui-monospace, Menlo, monospace";
-        cx.fillStyle = isMatch ? css("--forest") : css("--bronze");
+        cx.fillStyle = isMatch ? css("--forest-lit") : css("--bronze-lit");
         cx.fillText(CITIES[ci], x + 16, y - 14);
       }
     });
@@ -436,28 +523,32 @@
 
   /* ---- choreography ---- */
   const P = {
-    headOut: [.05, .13],
-    duoRecede: [.12, .22],
-    probeIn: [.13, .19],
-    theatre: [.17, .55],
-    scanCards: [.24, .50],
-    matchResolve: [.52, .58],
-    duoReturn: [.56, .66],
-    chatDock: [.60, .68],
-    matchFly: [.66, .74],
-    payload: [.75, .82],
-    reply: [.80, .84],
-    deliver: [.85, .90],
-    dim: [.90, .95],
-    whisper: [.91, .96],
-    finale: [.94, 1],
+    headOut:      [.05, .12],
+    duoRecede:    [.12, .20],   // B2: session recedes, probe frozen at composer's live rect
+    probeRise:    [.20, .28],   // B2: probe rises to search position + shrinks slightly
+    theatre:      [.22, .55],
+    scanCards:    [.26, .52],
+    matchResolve: [.52, .58],   // B4
+    duoReturn:    [.56, .66],   // B5: room + session return to day
+    chatDock:     [.60, .68],
+    matchFly:     [.58, .68],   // B5: match card travels right into the chat (leaves center first)
+    probeHome:    [.60, .68],   // B5: probe travels down-left home (staggered, non-crossing)
+    payload:      [.70, .76],   // B6: context flies in from the left
+    reply:        [.76, .81],   // B7
+    wait:         [.81, .90],   // B8: one hour later
+    deliver:      [.90, .935],  // B9
+    whisper:      [.935, .965], // B10
+    finale:       [.955, 1],    // B10
   };
 
   const acts = [...document.querySelectorAll(".act")];
   const scanCards = [$("sc0"), $("sc1"), $("sc2"), $("sc3")];
   const faces = [...document.querySelectorAll(".face")];
+  let frozenComposer = null; // composer's resting rect, captured before B2 recede
 
   function apply(p) {
+    applyGrade(p); // dusk grade (day -> night search -> day)
+
     // headline
     const ho = ease(seg(p, ...P.headOut));
     $("head").style.opacity = 1 - ho;
@@ -472,18 +563,33 @@
     duo.style.filter = `blur(${rec * 2.5}px) saturate(${1 - rec * .3})`;
     duo.style.zIndex = rec > .45 ? 4 : 10;
 
-    // composer detaches to search, then visibly flies home into the session
-    const pi = ease(seg(p, ...P.probeIn));
-    const pr = ease(seg(p, .56, .66));
-    $("composer").style.opacity = Math.min(1 - pi + pr, 1);
+    // B2 detach: the probe freezes at the composer's resting rect while the session recedes
+    // behind it, then rises to the search position. B5: it travels down-left home, following
+    // the live composer (which has shifted left as the chat docks).
+    if (p < P.duoRecede[0]) {                 // capture rest position before recede moves it
+      const r0 = $("composer").getBoundingClientRect();
+      if (r0.height) frozenComposer = { x: (r0.left + r0.width / 2) / innerWidth * 100,
+                                        y: (r0.top + r0.height / 2) / innerHeight * 100 };
+    }
+    const froze = frozenComposer || { x: 50, y: 66 };
+    const liveR = $("composer").getBoundingClientRect();
+    const liveX = liveR.width  ? (liveR.left + liveR.width / 2) / innerWidth * 100  : froze.x;
+    const liveY = liveR.height ? (liveR.top + liveR.height / 2) / innerHeight * 100 : froze.y;
+
+    const rise = ease(seg(p, ...P.probeRise));   // 0 = frozen at composer, 1 = at search
+    const home = ease(seg(p, ...P.probeHome));   // 0 = at search, 1 = back home
     const probe = $("probe");
-    const compR = $("composer").getBoundingClientRect();
-    const homeT = compR.height ? (compR.top + compR.height / 2) / innerHeight * 100 : 66;
-    probe.style.opacity = Math.min(pi, 1 - seg(p, .645, .672));
-    probe.style.top = `${lerp(lerp(34, 17, pi), homeT, pr)}%`;
-    probe.style.transform = `translateX(-50%) scale(${1 - pr * .22})`;
+    const detach = seg(p, .12, .17);             // composer hands the pill off to the probe
+    const reattach = seg(p, .63, .68);           // composer restored as the probe lands home
+    $("composer").style.opacity = clamp(1 - detach + reattach, 0, 1);
+    // appears as the recede starts, holds pinned through search, fades as it lands home
+    probe.style.opacity = clamp(seg(p, .12, .135) - seg(p, .665, .69), 0, 1);
+    // froze (rest, pinned during recede) -> search (50,17) -> live composer (down-left)
+    probe.style.top  = `${lerp(lerp(froze.y, 17, rise), liveY, home)}%`;
+    probe.style.left = `${lerp(lerp(froze.x, 50, rise), liveX, home)}%`;
+    probe.style.transform = `translateX(-50%) scale(${lerp(lerp(1, .9, rise), 1, home)})`;
     const teth = $("tether");
-    teth.style.opacity = pi - ease(seg(p, .5, .58));
+    teth.style.opacity = clamp(rise - ease(seg(p, .5, .58)) - home, 0, 1);
     teth.style.top = "24%"; teth.style.height = "18vh";
 
     // theatre
@@ -525,7 +631,7 @@
     const fly = ease(seg(p, ...P.matchFly));
     const match = $("match");
     const dot = window.__matchDot || [58, 62];
-    match.style.opacity = (mrRaw > 0 ? Math.min(1, mrRaw * 3.5) : 0) - ease(seg(p, .72, .75));
+    match.style.opacity = (mrRaw > 0 ? Math.min(1, mrRaw * 3.5) : 0) - ease(seg(p, .705, .73));
     match.style.left = `${lerp(lerp(dot[0], 50, mr), 71, fly)}%`;
     match.style.top = `${lerp(lerp(dot[1], 44, mr), 42, fly)}%`;
     match.style.transform = `translate(-50%,-50%) scale(${lerp(lerp(.25, 1, pop), .72, fly)})`;
@@ -548,43 +654,53 @@
     chat.style.opacity = dock;
     chat.style.marginLeft = `${dock * 14}px`;
     const slot = $("slot");
-    slot.style.opacity = dock * (1 - seg(p, .72, .74));
+    slot.style.opacity = dock * (1 - seg(p, .70, .725));
     slot.classList.toggle("glow", fly > .3 && fly < 1);
-    if (p > .73) { slot.style.display = "none"; $("resident").classList.add("on"); }
+    if (p > .725) { slot.style.display = "none"; $("resident").classList.add("on"); }
     else { slot.style.display = "grid"; $("resident").classList.remove("on"); }
 
-    // context payload travels session -> chat
+    // B6 context payload flies in horizontally from the left (session text) into the chat
     const pay = seg(p, ...P.payload);
     const payload = $("payload");
-    payload.style.opacity = pay > 0 && pay < 1 ? Math.min(1, pay * 4) * (1 - seg(pay, .85, 1)) : 0;
-    payload.style.left = `${lerp(36, 64, ease(pay))}%`;
-    payload.style.top = `${lerp(60, 42, ease(pay)) - Math.sin(pay * Math.PI) * 6}%`;
+    payload.style.opacity = pay > 0 && pay < 1 ? Math.min(1, pay * 4) * (1 - seg(pay, .82, 1)) : 0;
+    payload.style.left = `${lerp(30, 64, ease(pay))}%`;
+    payload.style.top = "46%";
     $("ctxMsg").style.opacity = pay >= 1 || p > P.payload[1] ? 1 : 0;
     $("ctxMsg").style.transform = "none";
 
-    // reply + delivery
+    // B7 reply
     if (p > P.reply[0]) typeReply();
     $("reply").style.opacity = ease(seg(p, ...P.reply));
     $("reply").style.transform = `translateY(${(1 - ease(seg(p, ...P.reply))) * 8}px)`;
-    if (p > P.deliver[0] + .015) burst();
-    if (p < .8) burstArmed = true;
+
+    // B8 the wait: "one hour later" clock; the chat dims slightly so delivery has weight
+    const waitIn = ease(seg(p, .81, .845));
+    const waitOut = ease(seg(p, .885, .915));
+    const waitVis = clamp(waitIn - waitOut, 0, 1);
+    $("wait").style.opacity = waitVis;
+    $("wait").style.transform = `translateX(-50%) translateY(${(1 - waitIn) * 8}px)`;
+    $("chat").style.opacity = dock * (1 - waitVis * .24);
+
+    // B9 delivery + confetti
+    if (p > P.deliver[0] + .008) burst();
+    if (p < .80) burstArmed = true;
     $("deliver").style.opacity = ease(seg(p, ...P.deliver));
     $("deliver").style.transform = `translateY(${(1 - ease(seg(p, ...P.deliver))) * 8}px)`;
-    $("chip").style.opacity = ease(seg(p, .88, .91));
+    $("chip").style.opacity = ease(seg(p, .925, .95));
     $("chip").style.transform = "none";
 
-    // finale
-    const dim = ease(seg(p, ...P.dim));
-    duo.style.opacity = Math.min(parseFloat(duo.style.opacity), 1 - dim * .92);
-    $("whisper").style.opacity = ease(seg(p, ...P.whisper)) * (1 - ease(seg(p, .985, 1)) * 0);
-    const ws = ease(seg(p, .93, .97));
+    // B10 finale
+    const finFade = ease(seg(p, .93, .975));
+    duo.style.opacity = Math.min(parseFloat(duo.style.opacity), 1 - finFade * .92);
+    $("whisper").style.opacity = ease(seg(p, ...P.whisper));
+    const ws = ease(seg(p, .95, .98));
     $("whisperSub").style.opacity = ws;
     $("whisperSub").style.transform = `translateX(-50%) translateY(${(1 - ws) * 10}px)`;
     $("finale").style.opacity = ease(seg(p, ...P.finale));
-    $("finale").style.pointerEvents = p > .96 ? "auto" : "none";
+    $("finale").style.pointerEvents = p > .97 ? "auto" : "none";
 
     // act rail
-    const act = p < .17 ? 0 : p < .52 ? 1 : p < .85 ? 2 : 3;
+    const act = p < .20 ? 0 : p < .52 ? 1 : p < .90 ? 2 : 3;
     acts.forEach((a, i) => a.classList.toggle("on", i === act));
   }
 
