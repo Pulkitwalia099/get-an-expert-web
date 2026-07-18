@@ -10,7 +10,10 @@ Hero choreography prototype (THE spec for the film): https://claude.ai/code/arti
       Deps installed: gsap, lenis, three, @react-three/fiber, @react-three/drei, @react-three/postprocessing, framer-motion.
       Deployed to SEPARATE Vercel project `get-an-expert-v2` (Vercel-auth protected; live midsesh.com project untouched).
       2 moderate npm audit vulns noted, revisit Day 5, do not force-fix.
-- [ ] Day 2 (branch `v2-port`, worktree `~/Programs/gae-v2-port`): port all current sections from root `index.html` to components in `v2/`.
+- [x] Day 2 (branch `v2-port`, worktree `~/Programs/gae-v2-port`): port all current sections from root `index.html` to components in `v2/`.
+      Merged as PR #4 into v2-next (9fa46b6). Build green, boot-smoked, parity screenshots vs live site.
+      Notes: scroll reveal is per-section (not per-cell stagger); Book-a-demo uses Cal.com iframe embed
+      (not the Cal SDK loader); next.config.ts pins turbopack root.
 - [ ] Day 3 (branch `v2-hero`, worktree `~/Programs/gae-v2-hero`): hero film Acts 1+2 in `v2/`.
 - [ ] Day 4 (on `v2-next` after merging both): hero Acts 3+4, weave generated assets.
 - [ ] Day 5 (on `v2-next`): cinematography polish, mobile, perf, QA, Gate 1 preview to Pulkit.
