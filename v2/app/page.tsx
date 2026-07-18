@@ -12,7 +12,10 @@ import SiteFooter from "@/components/SiteFooter";
 
 /* Day 2 port + Day 3 hero film merged: the ported sections at 1:1 visual parity,
    with the static hero replaced by the scroll film (Acts 1+2; Acts 3+4 land on
-   Day 4). Reveal wrappers reproduce the original scroll-in entrance. */
+   Day 4). Reveal wrappers reproduce the original scroll-in entrance.
+   NOTE: no overflow-x on this wrapper. overflow-x:hidden makes it a
+   non-scrolling scroll container and silently kills the film's sticky stage;
+   horizontal clipping lives on html as overflow-x:clip (globals.css). */
 export default function Home() {
   return (
     <div
@@ -21,7 +24,6 @@ export default function Home() {
         background: "var(--color-paper)",
         color: "var(--color-ink)",
         fontFamily: "var(--font-sans)",
-        overflowX: "hidden",
       }}
     >
       <SiteHeader />

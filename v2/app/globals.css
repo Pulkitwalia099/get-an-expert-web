@@ -42,6 +42,9 @@ html {
   background: var(--color-paper);
   color: var(--color-ink);
   scroll-behavior: auto; /* Lenis owns scrolling */
+  /* clip, never hidden: overflow-x hidden on a wrapper creates a scroll
+     container and breaks the hero film's position:sticky stage */
+  overflow-x: clip;
 }
 
 body {
