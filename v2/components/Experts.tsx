@@ -54,6 +54,19 @@ const roster: Expert[] = [
     fixes: "14 fixes delivered",
   },
   {
+    name: "Iñigo Fernández",
+    role: "AI Transformation Consultant, Ex-McKinsey Consultant / Harvard MBA",
+    linkedin: "https://www.linkedin.com/in/inigofernandezguerraabdala/",
+    avatar: "/assets/inigo.jpg",
+    companies: [
+      { name: "McKinsey & Company", logo: "/assets/mck.jpg" },
+      { name: "Harvard Business School", logo: "/assets/hbs.jpg" },
+    ],
+    tag: "AI, RAG & agents",
+    rating: "4.8",
+    fixes: "6 fixes delivered",
+  },
+  {
     name: "Hardik Acharya",
     role: "Senior security operations analyst",
     linkedin: "https://www.linkedin.com/in/acharyahardik/",
