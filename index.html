@@ -122,7 +122,7 @@ a:focus-visible,button:focus-visible,summary:focus-visible,[tabindex]:focus-visi
       <span style="display:inline-block;font-size:16px;line-height:1;animation:scrollCue 2s ease-in-out infinite;">↓</span>
     </a>
   </div><div id="demo" style="padding:clamp(52px,5.6vw,84px) clamp(24px,3.3vw,48px) 0;display:flex;flex-direction:column;align-items:center;">
-    <h2 id="demo-anchor" style="margin:0 0 clamp(28px,3vw,40px);scroll-margin-top:22px;scroll-snap-align:start;font-family:'Cormorant Garamond',serif;font-weight:600;font-size:clamp(34px,3.2vw,46px);line-height:1.2;text-align:center;max-width:720px;text-wrap:balance;">Mid-session support, without leaving your terminal.</h2>
+    <h2 id="demo-anchor" style="margin:0 0 clamp(28px,3vw,40px);scroll-margin-top:22px;scroll-snap-align:start;font-family:'Cormorant Garamond',serif;font-weight:600;font-size:clamp(34px,3.2vw,46px);line-height:1.2;text-align:center;max-width:720px;text-wrap:balance;">Mid-session support, right where you build.</h2>
     <div data-demo-card style="position:relative;margin-top:0;width:min(1120px,100%);background:#FFFFFF;border:1px solid rgba(28,26,22,0.12);border-radius:20px;overflow:hidden;box-shadow:0 2px 6px rgba(28,26,22,0.06),0 12px 32px -8px rgba(28,26,22,0.12),0 48px 96px -32px rgba(28,26,22,0.22);">
       <div data-demo-statusbar style="display:none;align-items:center;justify-content:space-between;height:46px;padding:0 20px;border-bottom:1px solid rgba(28,26,22,0.08);">
         <div style="font-size:12px;font-weight:600;letter-spacing:0.02em;width:52px;">9:41</div>
@@ -131,47 +131,73 @@ a:focus-visible,button:focus-visible,summary:focus-visible,[tabindex]:focus-visi
       </div>
       <div data-demo-browserbar style="display:flex;align-items:center;gap:16px;height:48px;padding:0 18px;border-bottom:1px solid rgba(28,26,22,0.08);">
         <div style="display:flex;gap:7px;"><span style="width:10px;height:10px;border-radius:50%;background:rgba(28,26,22,0.14);"></span><span style="width:10px;height:10px;border-radius:50%;background:rgba(28,26,22,0.14);"></span><span style="width:10px;height:10px;border-radius:50%;background:rgba(28,26,22,0.14);"></span></div>
-        <div style="flex:1;display:flex;justify-content:center;"><div style="width:min(400px,80%);height:28px;border-radius:14px;background:#F4F1E9;display:flex;align-items:center;justify-content:center;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:rgba(28,26,22,0.45);">~/checkout-app · claude code</div></div>
+        <div style="flex:1;display:flex;justify-content:center;"><div style="width:min(400px,80%);height:28px;border-radius:14px;background:#F4F1E9;display:flex;align-items:center;justify-content:center;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:rgba(28,26,22,0.45);">Claude Code · ~/checkout-app</div></div>
         <div style="width:44px;"></div>
       </div>
-      <div style="height:clamp(360px,min(36vw,100svh - 445px),500px);background:#1C1A16;position:relative;overflow:hidden;">
-        <div data-demo-grid style="position:absolute;inset:0;display:grid;grid-template-columns:1fr minmax(250px,340px);">
-          <div data-demo-term style="background:#1C1A16;display:flex;flex-direction:column;overflow:hidden;">
-            <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding:18px 20px;overflow:hidden;font-family:ui-monospace,Menlo,monospace;">
+      <div style="height:clamp(360px,min(36vw,100svh - 445px),500px);background:#FDFCF9;position:relative;overflow:hidden;">
+        <div data-demo-grid style="position:absolute;inset:0;display:grid;grid-template-columns:1fr minmax(280px,360px);">
+          <div data-demo-term style="background:#FDFCF9;display:flex;flex-direction:column;overflow:hidden;">
+            <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding:16px 20px 10px;overflow:hidden;">
               <sc-for list="{{ termLines }}" as="t" hint-placeholder-count="0">
                 <div style="{{ t.rowStyle }}"><span style="{{ t.prefixStyle }}">{{ t.prefix }}</span><span style="{{ t.textStyle }}">{{ t.text }}</span></div>
               </sc-for>
               <sc-if value="{{ showOffer }}" hint-placeholder-val="{{ false }}">
-                <div style="margin-top:14px;border:1px solid rgba(143,184,155,0.45);border-radius:10px;background:rgba(250,247,240,0.05);padding:14px 16px;animation:demoIn 0.5s cubic-bezier(0.34,1.4,0.5,1) both;">
-                  <div style="display:flex;align-items:center;gap:7px;font-size:11px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#8FB89B;"><span style="font-size:13px;">🙋</span><span>get an expert</span></div>
-                  <div style="margin-top:8px;font-size:13px;line-height:1.55;color:#F1EDE2;">An expert could take this from here. Bring one in?</div>
-                  <div style="margin-top:5px;font-size:11.5px;line-height:1.55;color:rgba(241,237,226,0.55);">You approve exactly what's shared: your goal, attempts, and errors. Never your code, never your secrets.</div>
-                  <div style="margin-top:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                <div style="margin-top:13px;border:1px solid #8FB89B;border-radius:12px;background:#EDF3EE;padding:13px 15px;animation:demoIn 0.5s cubic-bezier(0.34,1.4,0.5,1) both;">
+                  <div style="display:flex;align-items:center;gap:7px;font-size:10.5px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#2F4A38;"><span style="font-size:13px;">🙋</span><span>get an expert</span></div>
+                  <div style="margin-top:7px;font-size:13px;line-height:1.55;color:#1C1A16;">On it. First, approve exactly what's shared:</div>
+                  <div style="margin-top:4px;font-size:11.5px;line-height:1.55;color:rgba(28,26,22,0.62);">Your goal, attempts, and errors. Never your code, never your secrets.</div>
+                  <div style="margin-top:11px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
                     <div style="{{ offerYesStyle }}">Bring in an expert<sc-if value="{{ isPressing }}" hint-placeholder-val="{{ false }}"><div style="{{ tapRingStyle }}"></div><div style="{{ cursorStyle }}"></div></sc-if></div>
-                    <div style="font-size:12px;color:rgba(241,237,226,0.5);padding:8px 10px;cursor:pointer;">Not now</div>
+                    <div style="font-size:12px;color:rgba(28,26,22,0.5);padding:8px 10px;cursor:pointer;">Not now</div>
                   </div>
                 </div>
               </sc-if>
+              <sc-if value="{{ isConnected }}" hint-placeholder-val="{{ false }}">
+                <div style="align-self:center;display:inline-flex;align-items:center;gap:6px;background:#EDF3EE;border:1px solid #8FB89B;border-radius:999px;padding:5px 13px;font-size:11px;font-weight:600;color:#2F4A38;margin-top:12px;animation:demoIn 0.5s cubic-bezier(0.34,1.4,0.5,1) both;">✓ Context sent · secrets redacted</div>
+              </sc-if>
             </div>
-            <div style="flex:none;display:flex;align-items:center;gap:9px;padding:12px 20px 16px;font-family:ui-monospace,Menlo,monospace;font-size:13px;border-top:1px solid rgba(250,247,240,0.08);"><span style="color:#8FB89B;">❯</span><span style="width:8px;height:15px;background:rgba(241,237,226,0.6);animation:scrollCue 1.1s steps(2) infinite;"></span></div>
+            <div style="flex:none;display:flex;align-items:center;gap:9px;padding:10px 16px 13px;border-top:1px solid rgba(28,26,22,0.08);"><div style="flex:1;border:1px solid rgba(28,26,22,0.12);border-radius:10px;padding:8px 14px;background:#FFFFFF;font-size:12.5px;color:rgba(28,26,22,0.35);">Reply to Claude…</div></div>
           </div>
-          <div data-demo-expert style="background:#FBFAF7;border-left:1px solid rgba(28,26,22,0.08);display:flex;flex-direction:column;overflow:hidden;">
+          <div data-demo-expert style="background:#FAF7F0;border-left:1px solid rgba(28,26,22,0.08);display:flex;flex-direction:column;overflow:hidden;">
             <div data-demo-handle style="display:none;justify-content:center;padding:10px 0 0;"><span style="width:36px;height:4px;border-radius:2px;background:rgba(28,26,22,0.18);"></span></div>
-            <div data-demo-chatlabel style="padding:13px 18px;border-bottom:1px solid rgba(28,26,22,0.06);font-size:11px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:rgba(28,26,22,0.4);">Expert thread</div>
-            <sc-if value="{{ notConnected }}" hint-placeholder-val="{{ true }}">
-              <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:24px;text-align:center;">
-                <div style="font-size:22px;opacity:0.5;">🙋</div>
-                <div style="font-size:12.5px;line-height:1.6;color:rgba(28,26,22,0.45);max-width:200px;">No expert connected.<br>Nothing is shared until you say yes.</div>
+            <div data-demo-chatlabel style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid #E8DFC9;">
+              <span style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:16px;color:#1C1A16;">get an <span style="color:#2F4A38;">expert</span></span>
+              <span style="display:inline-flex;align-items:center;gap:6px;font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:0.05em;color:rgba(28,26,22,0.5);"><span style="width:7px;height:7px;border-radius:50%;background:#2F4A38;"></span>CONNECTED</span>
+            </div>
+            <sc-if value="{{ showCard }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:none;padding:8px 16px;font-size:11px;line-height:1.5;background:#EDF3EE;color:#2F4A38;border-bottom:1px solid #E8DFC9;">Senjal joined. They see only what you approved.</div>
+            </sc-if>
+            <sc-if value="{{ showCard }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:none;border-bottom:1px solid #E8DFC9;">
+                <div style="font-family:ui-monospace,Menlo,monospace;font-size:8.5px;letter-spacing:0.16em;text-transform:uppercase;color:rgba(28,26,22,0.45);padding:8px 16px 0;">Your expert</div>
+                <div style="display:flex;gap:11px;padding:7px 16px 10px;align-items:flex-start;animation:demoIn 0.7s cubic-bezier(0.21,0.61,0.35,1) both;">
+                  <img src="assets/senjal.jpg" alt="Senjal Pandharpatte" style="width:44px;height:44px;border-radius:50%;object-fit:cover;border:1px solid #E8DFC9;box-shadow:0 0 0 3px #EDF3EE;">
+                  <div style="flex:1;min-width:0;">
+                    <div style="display:flex;align-items:center;gap:7px;"><span style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;line-height:1.15;color:#1C1A16;">Senjal Pandharpatte</span><span style="margin-left:auto;font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:#2F4A38;">★ 4.8</span></div>
+                    <div style="font-size:11.5px;color:rgba(28,26,22,0.65);">Senior UX designer</div>
+                    <div style="display:flex;align-items:center;gap:5px;margin-top:3px;font-size:10px;color:rgba(28,26,22,0.65);"><img src="assets/lightbox.jpg" alt="" style="width:12px;height:12px;border-radius:3px;object-fit:cover;"><span>LightBox</span><span style="color:#D6CBB0;">·</span><img src="assets/rit.jpg" alt="" style="width:12px;height:12px;border-radius:3px;object-fit:cover;"><span>RIT</span><span style="color:#D6CBB0;">·</span><span>14 fixes</span></div>
+                  </div>
+                </div>
               </div>
             </sc-if>
-            <sc-if value="{{ isConnected }}" hint-placeholder-val="{{ false }}">
-              <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding:16px;overflow:hidden;">
-                <div style="align-self:center;display:flex;align-items:center;gap:6px;background:rgba(47,74,56,0.08);border-radius:999px;padding:6px 14px;font-size:11px;font-weight:600;color:#2F4A38;animation:demoIn 0.5s cubic-bezier(0.34,1.4,0.5,1) both;"><span>✓</span><span>Context sent · secrets redacted</span></div>
-                <sc-for list="{{ expertMsgs }}" as="m" hint-placeholder-count="0">
-                  <div style="{{ m.rowStyle }}"><div style="{{ m.colStyle }}"><div style="{{ m.labelStyle }}">{{ m.label }}</div><div style="{{ m.bubbleStyle }}">{{ m.text }}</div></div></div>
-                </sc-for>
-              </div>
+            <sc-if value="{{ showMini }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:none;display:flex;align-items:center;gap:8px;padding:8px 16px;border-bottom:1px solid #E8DFC9;font-size:11px;color:rgba(28,26,22,0.7);animation:demoIn 0.4s ease both;"><img src="assets/senjal.jpg" alt="" style="width:22px;height:22px;border-radius:50%;object-fit:cover;border:1px solid #E8DFC9;"><span><b>Senjal Pandharpatte</b> is working, with only the access you approved</span></div>
             </sc-if>
+            <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:8px;padding:12px 14px;overflow:hidden;">
+              <sc-if value="{{ notConnected }}" hint-placeholder-val="{{ true }}">
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:24px;text-align:center;">
+                  <div style="font-size:22px;opacity:0.5;">🙋</div>
+                  <div style="font-size:12px;line-height:1.6;color:rgba(28,26,22,0.45);max-width:200px;">No expert connected.<br>Nothing is shared until you say yes.</div>
+                </div>
+              </sc-if>
+              <sc-for list="{{ expertMsgs }}" as="m" hint-placeholder-count="0">
+                <div style="{{ m.rowStyle }}"><div style="{{ m.colStyle }}"><div style="{{ m.labelStyle }}">{{ m.label }}</div><div style="{{ m.bubbleStyle }}">{{ m.text }}</div></div></div>
+              </sc-for>
+            </div>
+            <div style="{{ chatComposerStyle }}">
+              <div style="flex:1;border:1px solid #D6CBB0;border-radius:999px;padding:7px 14px;font-size:11.5px;color:rgba(28,26,22,0.4);background:#FAF7F0;">Message your expert</div>
+              <div style="border-radius:999px;background:#2F4A38;color:#FAF7F0;font-size:11.5px;font-weight:600;padding:7px 14px;">Send</div>
+            </div>
           </div>
         </div>
       </div>
@@ -187,9 +213,9 @@ a:focus-visible,button:focus-visible,summary:focus-visible,[tabindex]:focus-visi
 
   <div style="padding:clamp(32px,3.4vw,48px) clamp(24px,3.3vw,48px) 0;max-width:1216px;margin:0 auto;box-sizing:border-box;">
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:44px 48px;">
-      <div data-step-card="1" role="button" tabindex="0" aria-label="Jump to step 1: The offer" style="position:relative;padding-top:22px;cursor:pointer;"><div style="position:absolute;top:0;left:0;width:100%;height:2px;background:rgba(28,26,22,0.12);"><div data-step-bar style="width:100%;height:100%;background:#2F4A38;transform:scaleX(0);transform-origin:left center;"></div></div><div style="display:flex;gap:10px;align-items:baseline;"><span data-accent="text" style="font-family:'Cormorant Garamond',serif;font-size:16px;letter-spacing:0.08em;color:#2F4A38;">01</span><span data-step-tag style="font-size:11px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:rgba(28,26,22,0.45);transition:color 0.5s ease;">The offer</span></div><div style="margin-top:12px;font-family:'Cormorant Garamond',serif;font-weight:500;font-size:25px;line-height:1.32;text-wrap:pretty;">Your agent spots the moments an expert would move you faster.</div></div>
-      <div data-step-card="2" role="button" tabindex="0" aria-label="Jump to step 2: You say yes" style="position:relative;padding-top:22px;cursor:pointer;"><div style="position:absolute;top:0;left:0;width:100%;height:2px;background:rgba(28,26,22,0.12);"><div data-step-bar style="width:100%;height:100%;background:#2F4A38;transform:scaleX(0);transform-origin:left center;"></div></div><div style="display:flex;gap:10px;align-items:baseline;"><span data-accent="text" style="font-family:'Cormorant Garamond',serif;font-size:16px;letter-spacing:0.08em;color:#2F4A38;">02</span><span data-step-tag style="font-size:11px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:rgba(28,26,22,0.45);transition:color 0.5s ease;">You say yes</span></div><div style="margin-top:12px;font-family:'Cormorant Garamond',serif;font-weight:500;font-size:25px;line-height:1.32;text-wrap:pretty;">You see exactly what's shared. Nothing leaves without your OK.</div></div>
-      <div data-step-card="3" role="button" tabindex="0" aria-label="Jump to step 3: Delivered" style="position:relative;padding-top:22px;cursor:pointer;"><div style="position:absolute;top:0;left:0;width:100%;height:2px;background:rgba(28,26,22,0.12);"><div data-step-bar style="width:100%;height:100%;background:#2F4A38;transform:scaleX(0);transform-origin:left center;"></div></div><div style="display:flex;gap:10px;align-items:baseline;"><span data-accent="text" style="font-family:'Cormorant Garamond',serif;font-size:16px;letter-spacing:0.08em;color:#2F4A38;">03</span><span data-step-tag style="font-size:11px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:rgba(28,26,22,0.45);transition:color 0.5s ease;">Delivered</span></div><div style="margin-top:12px;font-family:'Cormorant Garamond',serif;font-weight:500;font-size:25px;line-height:1.32;text-wrap:pretty;">A real expert joins mid-session and hands it back better.</div></div>
+      <div data-step-card="1" role="button" tabindex="0" aria-label="Jump to step 1: Stuck" style="position:relative;padding-top:22px;cursor:pointer;"><div style="position:absolute;top:0;left:0;width:100%;height:2px;background:rgba(28,26,22,0.12);"><div data-step-bar style="width:100%;height:100%;background:#2F4A38;transform:scaleX(0);transform-origin:left center;"></div></div><div style="display:flex;gap:10px;align-items:baseline;"><span data-accent="text" style="font-family:'Cormorant Garamond',serif;font-size:16px;letter-spacing:0.08em;color:#2F4A38;">01</span><span data-step-tag style="font-size:11px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:rgba(28,26,22,0.45);transition:color 0.5s ease;">Stuck</span></div><div style="margin-top:12px;font-family:'Cormorant Garamond',serif;font-weight:500;font-size:25px;line-height:1.32;text-wrap:pretty;">Your agent hits a wall and offers a way out.</div></div>
+      <div data-step-card="2" role="button" tabindex="0" aria-label="Jump to step 2: Expert joins" style="position:relative;padding-top:22px;cursor:pointer;"><div style="position:absolute;top:0;left:0;width:100%;height:2px;background:rgba(28,26,22,0.12);"><div data-step-bar style="width:100%;height:100%;background:#2F4A38;transform:scaleX(0);transform-origin:left center;"></div></div><div style="display:flex;gap:10px;align-items:baseline;"><span data-accent="text" style="font-family:'Cormorant Garamond',serif;font-size:16px;letter-spacing:0.08em;color:#2F4A38;">02</span><span data-step-tag style="font-size:11px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:rgba(28,26,22,0.45);transition:color 0.5s ease;">Expert joins</span></div><div style="margin-top:12px;font-family:'Cormorant Garamond',serif;font-weight:500;font-size:25px;line-height:1.32;text-wrap:pretty;">A real person picks it up. Face, name, track record.</div></div>
+      <div data-step-card="3" role="button" tabindex="0" aria-label="Jump to step 3: Fixed live" style="position:relative;padding-top:22px;cursor:pointer;"><div style="position:absolute;top:0;left:0;width:100%;height:2px;background:rgba(28,26,22,0.12);"><div data-step-bar style="width:100%;height:100%;background:#2F4A38;transform:scaleX(0);transform-origin:left center;"></div></div><div style="display:flex;gap:10px;align-items:baseline;"><span data-accent="text" style="font-family:'Cormorant Garamond',serif;font-size:16px;letter-spacing:0.08em;color:#2F4A38;">03</span><span data-step-tag style="font-size:11px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:rgba(28,26,22,0.45);transition:color 0.5s ease;">Fixed live</span></div><div style="margin-top:12px;font-family:'Cormorant Garamond',serif;font-weight:500;font-size:25px;line-height:1.32;text-wrap:pretty;">Watch the work happen, then get it handed back.</div></div>
     </div>
     <p style="margin:clamp(40px,4.5vw,60px) auto 0;text-align:center;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(19px,1.8vw,23px);color:rgba(28,26,22,0.85);">You pay only when you’re satisfied.</p>
   </div>
@@ -284,7 +310,7 @@ a:focus-visible,button:focus-visible,summary:focus-visible,[tabindex]:focus-visi
     <div style="width:min(680px,100%);border-bottom:1px solid rgba(28,26,22,0.1);">
       <details data-faq style="border-top:1px solid rgba(28,26,22,0.1);">
         <summary style="padding:22px 0;font-family:'Cormorant Garamond',serif;font-weight:500;font-size:clamp(19px,1.65vw,22px);line-height:1.35;"><span>What exactly gets sent?</span><span data-faq-plus>+</span></summary>
-        <p style="margin:0 0 22px;font-size:15.5px;line-height:1.7;color:rgba(28,26,22,0.75);max-width:600px;text-wrap:pretty;">With your OK: your stated goal, what was already tried, any errors you hit, a short summary of the session, and your tech stack. Never your source files, never your full transcript, never your keys or secrets: those are redacted on your machine before anything leaves it. You see the exact payload before it goes, every single time.</p>
+        <p style="margin:0 0 22px;font-size:15.5px;line-height:1.7;color:rgba(28,26,22,0.75);max-width:600px;text-wrap:pretty;">With your OK: your stated goal, what was already tried, any errors you hit, a short summary of the session, and your tech stack. Never your source files, never your full transcript, never your keys or secrets: those are stripped out before anything is shared. You see the exact payload before it goes, every single time.</p>
       </details>
       <details data-faq style="border-top:1px solid rgba(28,26,22,0.1);">
         <summary style="padding:22px 0;font-family:'Cormorant Garamond',serif;font-weight:500;font-size:clamp(19px,1.65vw,22px);line-height:1.35;"><span>Who does the work?</span><span data-faq-plus>+</span></summary>
@@ -424,7 +450,7 @@ class Component extends DCLogic {
     const rail = document.querySelector('[data-demo-rail]');
     if (!rail) return;
     const play = rail.querySelector('[data-demo-play]');
-    const labels = ['The offer', 'You say yes', 'Delivered'];
+    const labels = ['Stuck', 'Expert joins', 'Fixed live'];
     Array.from(rail.children).filter((c) => c !== play).forEach((cell, i) => {
       if (cell.getAttribute('role') !== 'button') cell.setAttribute('role', 'button');
       if (cell.getAttribute('tabindex') !== '0') cell.setAttribute('tabindex', '0');
@@ -437,32 +463,34 @@ class Component extends DCLogic {
     if (play) play.style.display = visible ? 'flex' : 'none';
   }
   demoScript() {
-    // Shared line/message definitions for the terminal story.
+    // Shared line/message definitions. Left: Claude Code app. Right: consumer chat.
     return {
-      u1: { kind: 'user', text: "fix the checkout webhook, orders aren't saving" },
-      a1: { kind: 'agent', text: "Found the issue in the handler. Fixed. Running tests…" },
-      e1: { kind: 'err', text: "FAIL checkout.test.ts · order not persisted" },
-      a2: { kind: 'agent', text: "Apologies. The real cause was the async session. Truly fixed now." },
-      e2: { kind: 'err', text: "FAIL checkout.test.ts · order not persisted (attempt 3)" },
-      u2: { kind: 'user', text: "await the transaction commit before responding, then re-run" },
-      a3: { kind: 'agent', text: "Refactored the handler. Running tests…" },
-      ok1: { kind: 'ok', text: "PASS checkout.test.ts · 8/8" },
-      a4: { kind: 'agent', text: "All green. Deployed." },
-      x1: { kind: 'eng', text: "Rohit here. I can see where it stalled: the webhook replies before the write commits." },
-      x2: { kind: 'eng', text: "Watching along while you keep working. Tell your agent to await the transaction, then re-run." },
-      x3: { kind: 'eng', text: "There it is. I'll stay in this thread if anything else snags." },
-      xu: { kind: 'user', text: "It works. Thank you 🎉" }
+      u1: { kind: 'user', text: "The landing page is done. Can you make a demo video for the launch?" },
+      t1: { kind: 'tool', text: "Drafted storyboard.md" },
+      t2: { kind: 'tool', text: "Rendered rough-cut.mp4 · basic motion" },
+      a1: { kind: 'agent', text: "Script and storyboard are done, and I've made a basic motion cut. For a launch this important, you'll want a professional video." },
+      u2: { kind: 'user', text: "Get me an expert to build a professional one." },
+      ok1: { kind: 'ok', text: "Received demo-launch.mp4 · 45s" },
+      a2: { kind: 'agent', text: "Video's in. Adding it to the landing page hero now." },
+      x1: { kind: 'eng', text: "Hi, picked this up. Just went through what you're building. Love the checkout flow. Recording now." },
+      c1: { kind: 'act', text: "Opened localhost:3000 in browser" },
+      c2: { kind: 'act', text: "Recorded walkthrough · 3 takes" },
+      c3: { kind: 'act', text: "Edited demo-launch.mp4 · captions + brand colors" },
+      x2: { kind: 'eng', text: "Done. 45-second cut. Link below." },
+      xu: { kind: 'mine', text: "Looks amazing. Thank you!" },
+      done: { kind: 'done', text: "✓ Delivered · demo video in 40 min" },
+      rate: { kind: 'rate', text: "Rate Senjal ★★★★★ · pay only if you're satisfied" }
     };
   }
   sceneState(n) {
     // State at each scene BOUNDARY (the boundary event itself is excluded by
     // the t > offset filter, so snapshots MUST include what that event does).
     const L = this.demoScript();
-    const base = [L.u1, L.a1, L.e1, L.a2, L.e2];
+    const base = [L.u1, L.t1, L.t2, L.a1, L.u2];
     const scenes = {
       1: { termLines: [L.u1], offer: false, pressed: false, connected: false, expertMsgs: [], solved: false, demoStep: 1 },
       2: { termLines: base, offer: false, pressed: true, connected: true, expertMsgs: [], solved: false, demoStep: 2 },
-      3: { termLines: base.concat([L.u2, L.a3, L.ok1]), offer: false, pressed: true, connected: true, expertMsgs: [L.x1, L.x2], solved: true, demoStep: 3 }
+      3: { termLines: base, offer: false, pressed: true, connected: true, expertMsgs: [L.x1, L.c1], solved: true, demoStep: 3 }
     };
     return scenes[n] || null;
   }
@@ -496,8 +524,8 @@ class Component extends DCLogic {
     if (handle) handle.style.display = narrow ? 'flex' : 'none';
     if (chatlabel) chatlabel.style.display = narrow ? 'none' : 'block';
     if (grid) {
-      grid.style.gridTemplateColumns = narrow ? '1fr' : '1fr minmax(250px,340px)';
-      grid.style.gridTemplateRows = narrow ? 'minmax(0,1fr) 250px' : '';
+      grid.style.gridTemplateColumns = narrow ? '1fr' : '1fr minmax(280px,360px)';
+      grid.style.gridTemplateRows = narrow ? 'minmax(0,1fr) 300px' : '';
       if (grid.parentElement) grid.parentElement.style.height = narrow ? '640px' : 'clamp(360px,min(36vw,100svh - 445px),500px)';
     }
     if (term) term.style.minHeight = '0';
@@ -527,9 +555,9 @@ class Component extends DCLogic {
   renderStill() {
     const L = this.demoScript();
     this.setState({
-      termLines: [L.u1, L.a1, L.e1, L.e2, L.u2, L.a3, L.ok1, L.a4],
+      termLines: [L.u1, L.t1, L.t2, L.a1, L.u2, L.ok1, L.a2],
       offer: false, pressed: false, connected: true,
-      expertMsgs: [L.x1, L.x2, L.x3, L.xu],
+      expertMsgs: [L.x1, L.c1, L.c2, L.c3, L.x2, L.xu, L.done, L.rate],
       solved: true, demoStep: 0
     });
   }
@@ -551,7 +579,7 @@ class Component extends DCLogic {
     this._demoPaused = false;
     this._demoRunning = true;
     this.fadeDemoGrid(1);
-    const boundaries = { 1: 600, 2: 13200, 3: 24000 };
+    const boundaries = { 1: 600, 2: 12200, 3: 17500 };
     const offset = fromScene ? (boundaries[fromScene] || 0) : 0;
     if (fromScene) {
       const st = this.sceneState(fromScene);
@@ -562,28 +590,28 @@ class Component extends DCLogic {
     const expert = (msg) => this.setState((s) => ({ expertMsgs: s.expertMsgs.concat([msg]) }));
     const steps = [
       [600, () => { this.setState({ demoStep: 1 }); term(L.u1); }],
-      [2600, () => term(L.a1)],
-      [4800, () => term(L.e1)],
-      [6600, () => term(L.a2)],
-      [9000, () => term(L.e2)],
-      // The MCP notices the loop and offers a hand — consent before anything moves.
-      [10600, () => this.setState({ offer: true })],
-      [12600, () => this.setState({ pressed: true })],
-      [13200, () => this.setState({ offer: false, connected: true, demoStep: 2 })],
-      [14800, () => expert(L.x1)],
-      [17600, () => expert(L.x2)],
-      // The user relays the expert's direction to their agent; the expert watches along.
-      [20200, () => term(L.u2)],
-      [22000, () => term(L.a3)],
-      [24000, () => { this.setState({ solved: true, demoStep: 3 }); term(L.ok1); }],
-      [25800, () => term(L.a4)],
-      [27600, () => expert(L.x3)],
-      [29600, () => expert(L.xu)],
+      [2600, () => term(L.t1)],
+      [4400, () => term(L.t2)],
+      [6200, () => term(L.a1)],
+      // The user asks for an expert; the MCP answers with a consent card first.
+      [8400, () => term(L.u2)],
+      [9800, () => this.setState({ offer: true })],
+      [11600, () => this.setState({ pressed: true })],
+      [12200, () => this.setState({ offer: false, connected: true, demoStep: 2 })],
+      [13600, () => expert(L.x1)],
+      // The expert works within approved access; each action shows live in the chat.
+      [17500, () => { this.setState({ solved: true, demoStep: 3 }); expert(L.c1); }],
+      [19300, () => expert(L.c2)],
+      [21100, () => expert(L.c3)],
+      [23000, () => { expert(L.x2); term(L.ok1); }],
+      [24800, () => term(L.a2)],
+      [26400, () => expert(L.xu)],
+      [28000, () => { expert(L.done); expert(L.rate); }],
       // Smooth loop boundary: hold the resolved state, cross-fade out, reset
       // while invisible, and fade back in — no flicker.
-      [33200, () => this.fadeDemoGrid(0)],
-      [33750, () => this.setState({ termLines: [], offer: false, pressed: false, connected: false, expertMsgs: [], solved: false, demoStep: 0 })],
-      [33850, () => { this.fadeDemoGrid(1); this.startDemo(); }]
+      [31800, () => this.fadeDemoGrid(0)],
+      [32350, () => this.setState({ termLines: [], offer: false, pressed: false, connected: false, expertMsgs: [], solved: false, demoStep: 0 })],
+      [32450, () => { this.fadeDemoGrid(1); this.startDemo(); }]
     ];
     this._demoTimers = steps.filter(([t]) => t > offset).map(([t, fn]) => setTimeout(fn, t - offset));
   }
@@ -597,7 +625,7 @@ class Component extends DCLogic {
     const accent = this.props.accent ?? '#2F4A38';
     const cur = step;
     const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const fillMs = { 1: 12600, 2: 10800, 3: 9200 }; // autoplay scene durations
+    const fillMs = { 1: 11600, 2: 5300, 3: 14300 }; // autoplay scene durations
     document.querySelectorAll('[data-step-card]').forEach((el) => {
       if (this._revealEnabled && !el.dataset.rvDone) return;
       const n = Number(el.dataset.stepCard);
@@ -729,46 +757,90 @@ class Component extends DCLogic {
   renderVals() {
     const accent = this.props.accent ?? '#2F4A38';
     const ease = 'cubic-bezier(0.22, 1, 0.36, 1)';
-    // Terminal lines: mono, prefix glyph per kind, tuned for the dark pane.
-    const termPalette = {
-      user: { prefix: '❯', prefixColor: '#8FB89B', color: '#F1EDE2' },
-      agent: { prefix: '⏺', prefixColor: 'rgba(241,237,226,0.4)', color: 'rgba(241,237,226,0.72)' },
-      err: { prefix: '✗', prefixColor: '#D98A79', color: '#D98A79' },
-      ok: { prefix: '✓', prefixColor: '#8FB89B', color: '#9CC5A5' }
+    // App conversation lines: per-kind styling for the light Claude Code pane.
+    const mono = 'ui-monospace,Menlo,monospace';
+    const rowIn = 'demoRowIn 0.5s cubic-bezier(0.22,1,0.36,1) both';
+    const bubIn = 'demoIn 0.46s cubic-bezier(0.34,1.4,0.5,1) both';
+    const toolRow = { display: 'flex', flex: 'none', gap: '8px', alignItems: 'center', overflow: 'hidden', minHeight: '0', paddingTop: '6px', paddingLeft: '21px', animation: rowIn };
+    const termKinds = {
+      user: {
+        prefix: '',
+        row: { display: 'flex', flex: 'none', justifyContent: 'flex-end', overflow: 'hidden', minHeight: '0', paddingTop: '10px', animation: rowIn },
+        prefixStyle: { display: 'none' },
+        text: { maxWidth: '82%', background: '#F4F1E9', border: '1px solid #E8DFC9', color: '#1C1A16', padding: '8px 13px', borderRadius: '14px 14px 4px 14px', fontSize: '13px', lineHeight: '1.55', animation: bubIn }
+      },
+      agent: {
+        prefix: '✳',
+        row: { display: 'flex', flex: 'none', gap: '9px', overflow: 'hidden', minHeight: '0', paddingTop: '10px', animation: rowIn },
+        prefixStyle: { flex: 'none', fontSize: '12px', color: 'rgba(28,26,22,0.55)', lineHeight: '1.6' },
+        text: { maxWidth: '92%', fontSize: '13px', lineHeight: '1.6', color: 'rgba(28,26,22,0.85)', animation: bubIn }
+      },
+      tool: {
+        prefix: '⏺',
+        row: toolRow,
+        prefixStyle: { flex: 'none', fontSize: '9px', color: '#8FB89B' },
+        text: { fontFamily: mono, fontSize: '11px', color: 'rgba(28,26,22,0.6)', animation: bubIn }
+      },
+      toolfail: {
+        prefix: '⏺',
+        row: toolRow,
+        prefixStyle: { flex: 'none', fontSize: '9px', color: '#A04A3C' },
+        text: { fontFamily: mono, fontSize: '11px', color: '#A04A3C', animation: bubIn }
+      },
+      ok: {
+        prefix: '✓',
+        row: toolRow,
+        prefixStyle: { flex: 'none', fontSize: '10px', color: '#2F4A38' },
+        text: { fontFamily: mono, fontSize: '11px', color: '#2F4A38', animation: bubIn }
+      }
     };
     const termLines = this.state.termLines.map((t) => {
-      const p = termPalette[t.kind] || termPalette.agent;
-      return {
-        text: t.text,
-        prefix: p.prefix,
-        rowStyle: { display: 'flex', flex: 'none', gap: '10px', alignItems: 'baseline', overflow: 'hidden', minHeight: '0', paddingTop: '9px', animation: 'demoRowIn 0.5s cubic-bezier(0.22,1,0.36,1) both' },
-        prefixStyle: { flex: 'none', fontSize: '12px', color: p.prefixColor },
-        textStyle: { fontSize: '12.5px', lineHeight: '1.55', color: p.color, animation: 'demoIn 0.46s cubic-bezier(0.34,1.4,0.5,1) both' }
-      };
+      const k = termKinds[t.kind] || termKinds.agent;
+      return { text: t.text, prefix: k.prefix, rowStyle: k.row, prefixStyle: k.prefixStyle, textStyle: k.text };
     });
-    // Expert-thread bubbles: the light panel keeps the site's chat language.
-    const expertMsgs = this.state.expertMsgs.map((m) => ({
-      text: m.text,
-      label: m.kind === 'user' ? 'You' : 'Rohit · your expert',
-      rowStyle: { display: 'flex', flex: 'none', boxSizing: 'border-box', overflow: 'hidden', minHeight: '0', paddingTop: '10px', justifyContent: m.kind === 'user' ? 'flex-end' : 'flex-start', animation: 'demoRowIn 0.5s cubic-bezier(0.22,1,0.36,1) both' },
-      colStyle: { display: 'flex', flexDirection: 'column', gap: '4px', maxWidth: '92%', alignItems: m.kind === 'user' ? 'flex-end' : 'flex-start' },
-      labelStyle: {
-        fontSize: '9.5px', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase',
-        color: m.kind === 'user' ? 'rgba(28,26,22,0.38)' : accent,
-        padding: '0 4px'
-      },
-      bubbleStyle: {
-        maxWidth: '100%',
-        background: m.kind === 'user' ? '#1C1A16' : accent,
-        color: '#FAF7F0',
-        padding: '10px 14px',
-        borderRadius: m.kind === 'user' ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
-        fontSize: '13px',
-        lineHeight: '1.5',
-        animation: 'demoIn 0.46s cubic-bezier(0.34,1.4,0.5,1) both'
-      }
-    }));
-    const railDefs = [['01','The offer'],['02','You say yes'],['03','Delivered']];
+    // Consumer-chat items: paper bubbles for the expert, green for you,
+    // bronze pills for actions within approved access, then the delivered beat.
+    const baseRow = { display: 'flex', flex: 'none', boxSizing: 'border-box', overflow: 'hidden', minHeight: '0', paddingTop: '8px', animation: rowIn };
+    const hideLabel = { display: 'none' };
+    const chatKinds = {
+      eng: (m) => ({
+        text: m.text, label: 'SENJAL',
+        rowStyle: Object.assign({}, baseRow, { justifyContent: 'flex-start' }),
+        colStyle: { display: 'flex', flexDirection: 'column', gap: '3px', maxWidth: '86%', alignItems: 'flex-start' },
+        labelStyle: { fontFamily: mono, fontSize: '8.5px', letterSpacing: '0.06em', color: 'rgba(28,26,22,0.45)', padding: '0 4px' },
+        bubbleStyle: { maxWidth: '100%', background: '#FFFFFF', border: '1px solid #E8DFC9', color: '#1C1A16', padding: '8px 12px', borderRadius: '14px 14px 14px 4px', fontSize: '12.5px', lineHeight: '1.5', animation: bubIn }
+      }),
+      mine: (m) => ({
+        text: m.text, label: '',
+        rowStyle: Object.assign({}, baseRow, { justifyContent: 'flex-end' }),
+        colStyle: { display: 'flex', flexDirection: 'column', maxWidth: '86%', alignItems: 'flex-end' },
+        labelStyle: hideLabel,
+        bubbleStyle: { maxWidth: '100%', background: accent, color: '#FAF7F0', padding: '8px 12px', borderRadius: '14px 14px 4px 14px', fontSize: '12.5px', lineHeight: '1.5', animation: bubIn }
+      }),
+      act: (m) => ({
+        text: m.text, label: '',
+        rowStyle: Object.assign({}, baseRow, { justifyContent: 'stretch' }),
+        colStyle: { display: 'flex', flexDirection: 'column', width: '100%' },
+        labelStyle: hideLabel,
+        bubbleStyle: { background: '#F6F1E4', border: '1px solid rgba(140,113,54,0.3)', color: '#7D6530', padding: '4px 12px', borderRadius: '999px', fontFamily: mono, fontSize: '10px', lineHeight: '1.5', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', animation: bubIn }
+      }),
+      done: (m) => ({
+        text: m.text, label: '',
+        rowStyle: Object.assign({}, baseRow, { justifyContent: 'center' }),
+        colStyle: { display: 'flex', flexDirection: 'column', alignItems: 'center' },
+        labelStyle: hideLabel,
+        bubbleStyle: { background: '#EDF3EE', border: '1px solid #8FB89B', color: '#2F4A38', padding: '5px 14px', borderRadius: '999px', fontSize: '11.5px', fontWeight: 700, animation: bubIn }
+      }),
+      rate: (m) => ({
+        text: m.text, label: '',
+        rowStyle: Object.assign({}, baseRow, { justifyContent: 'center', paddingTop: '4px' }),
+        colStyle: { display: 'flex', flexDirection: 'column', alignItems: 'center' },
+        labelStyle: hideLabel,
+        bubbleStyle: { background: 'none', color: 'rgba(28,26,22,0.6)', fontSize: '10px', animation: bubIn }
+      })
+    };
+    const expertMsgs = this.state.expertMsgs.map((m) => (chatKinds[m.kind] || chatKinds.eng)(m));
+    const railDefs = [['01','Stuck'],['02','Expert joins'],['03','Fixed live']];
     const step = this.state.demoStep || 0;
     const railSteps = railDefs.map((d, i) => {
       const n = i + 1;
@@ -783,14 +855,23 @@ class Component extends DCLogic {
         underlineStyle: { position: 'absolute', left: 0, bottom: 0, height: '2px', width: '100%', background: accent, transform: on ? 'scaleX(1)' : 'scaleX(0)', transformOrigin: 'left center', opacity: active ? 1 : (past ? 0.4 : 0), transition: 'transform 0.6s cubic-bezier(0.22,1,0.36,1), opacity 0.5s ease' }
       };
     });
+    const connected = this.state.connected;
+    const solved = this.state.solved;
     return {
       termLines,
       expertMsgs,
       railSteps,
       showOffer: this.state.offer,
       isPressing: this.state.pressed && this.state.offer,
-      notConnected: !this.state.connected,
-      isConnected: this.state.connected,
+      notConnected: !connected,
+      isConnected: connected,
+      showCard: connected && !solved,
+      showMini: connected && solved,
+      chatComposerStyle: {
+        flex: 'none', display: 'flex', gap: '8px', padding: '9px 14px 12px',
+        borderTop: '1px solid #E8DFC9', background: '#FAF7F0',
+        opacity: connected ? 1 : 0.45, transition: 'opacity 0.4s ease'
+      },
       tapRingStyle: {
         position: 'absolute', left: '50%', top: '50%', width: '100%', height: '100%',
         borderRadius: '999px', border: '1.5px solid #8FB89B', pointerEvents: 'none',
