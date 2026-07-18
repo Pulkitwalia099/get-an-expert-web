@@ -22,7 +22,10 @@ Hero choreography prototype (THE spec for the film): https://claude.ai/code/arti
       bloom uses HDR-pushed sage (x2.4). Reveal.tsx now renders via createElement (types fix).
       PARITY GAP found in smoke test: ported Experts roster predates PR #1, missing the
       Inigo Fernandez card that is live on midsesh.com. Fix scheduled in Day 4.
-- [ ] Day 4 (on `v2-next` after merging both): hero Acts 3+4, weave generated assets.
+- [x] Day 4 (on `v2-next` after merging both): hero Acts 3+4, weave generated assets.
+      Commits f17cedf (Inigo roster parity fix), 52da091 (Acts 3+4), 5640424 (Delivered today strip).
+      No generated assets existed yet (v2/public/assets/v2/ absent), CSS fallbacks in place as designed.
+      Build green, boot-smoked: Inigo in roster, strip renders, Act 4 whisper present.
 - [ ] Day 5 (on `v2-next`): cinematography polish, mobile, perf, QA, Gate 1 preview to Pulkit.
 
 ## Branch flow
