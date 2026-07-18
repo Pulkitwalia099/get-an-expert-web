@@ -1,39 +1,51 @@
-/* Day 3: the hero placeholder is replaced by the real scroll film (Acts 1+2).
-   The remaining placeholders below stay until their sections land (Day 2 port,
-   Day 4 later acts + ticker). */
-
+import Reveal from "@/components/Reveal";
+import SiteHeader from "@/components/SiteHeader";
 import HeroFilm from "@/components/hero/HeroFilm";
+import Demo from "@/components/Demo";
+import Moments from "@/components/Moments";
+import Experts from "@/components/Experts";
+import Faq from "@/components/Faq";
+import Install from "@/components/Install";
+import Waitlist from "@/components/Waitlist";
+import SiteFooter from "@/components/SiteFooter";
 
-const sections = [
-  { id: "ticker", label: "Delivered today strip", day: "Day 4" },
-  { id: "demo", label: "Splitscreen live demo (1:1 port)", day: "Day 2" },
-  { id: "moments", label: "Moments worth delegating", day: "Day 2" },
-  { id: "experts", label: "The bench", day: "Day 2" },
-  { id: "install", label: "Install in 30 seconds", day: "Day 2" },
-  { id: "faq", label: "FAQ", day: "Day 2" },
-  { id: "waitlist", label: "Waitlist + footer", day: "Day 2" },
-];
-
+/* Day 2 port + Day 3 hero film merged: the ported sections at 1:1 visual parity,
+   with the static hero replaced by the scroll film (Acts 1+2; Acts 3+4 land on
+   Day 4). Reveal wrappers reproduce the original scroll-in entrance. */
 export default function Home() {
   return (
-    <main className="flex-1">
-      <HeroFilm />
-
-      <div className="mx-auto w-full max-w-5xl px-6 py-16">
-        <div className="flex flex-col gap-4">
-          {sections.map((s) => (
-            <div
-              key={s.id}
-              className="flex items-center justify-between rounded-card border-2 border-dashed border-border-2 bg-surface/60 px-6 py-8"
-            >
-              <span className="font-serif text-xl text-ink-2">{s.label}</span>
-              <span className="rounded-pill bg-sage-soft px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-forest">
-                {s.day}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </main>
+    <div
+      style={{
+        width: "100%",
+        background: "var(--color-paper)",
+        color: "var(--color-ink)",
+        fontFamily: "var(--font-sans)",
+        overflowX: "hidden",
+      }}
+    >
+      <SiteHeader />
+      <main>
+        <HeroFilm />
+        <Reveal>
+          <Demo />
+        </Reveal>
+        <Reveal>
+          <Moments />
+        </Reveal>
+        <Reveal>
+          <Experts />
+        </Reveal>
+        <Reveal>
+          <Faq />
+        </Reveal>
+        <Reveal>
+          <Install />
+        </Reveal>
+        <Reveal>
+          <Waitlist />
+        </Reveal>
+      </main>
+      <SiteFooter />
+    </div>
   );
 }
