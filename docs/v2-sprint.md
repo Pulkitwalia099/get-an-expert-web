@@ -17,7 +17,7 @@ Hero choreography prototype (THE spec for the film): https://claude.ai/code/arti
 
 ## Branch flow
 
-`v2-port` and `v2-hero` both branch from `v2-next` @ fd81313. Each track commits to its branch,
+`v2-port` and `v2-hero` both branch from `v2-next` @ a8c608f. Each track commits to its branch,
 pushes, and opens a PR into `v2-next` (NOT master). Day 4 starts after both PRs merge.
 Never push to master; master is the live static site.
 
