@@ -26,7 +26,18 @@ Hero choreography prototype (THE spec for the film): https://claude.ai/code/arti
       Commits f17cedf (Inigo roster parity fix), 52da091 (Acts 3+4), 5640424 (Delivered today strip).
       No generated assets existed yet (v2/public/assets/v2/ absent), CSS fallbacks in place as designed.
       Build green, boot-smoked: Inigo in roster, strip renders, Act 4 whisper present.
-- [ ] Day 5 (on `v2-next`): cinematography polish, mobile, perf, QA, Gate 1 preview to Pulkit.
+- [x] Day 5 (on `v2-next`): cinematography polish, mobile, perf, QA, Gate 1 preview to Pulkit.
+      QA verdict GO: build clean, hydration clean, install snippets + FAQ byte-exact vs live site,
+      waitlist endpoint correct, mobile 375/768 no overflow, three.js correctly lazy-chunked
+      (~320K gzip, not in initial load), npm audit 2 moderates accepted (fix would downgrade next).
+      CRITICAL FIX during QA (1276e88): page wrapper overflow-x:hidden silently killed the film's
+      sticky stage (merge-emergent; neither track could see it). Now html{overflow-x:clip}.
+      Sticky verified: stage pins top:0 across track at 1280 and 375, releases at track end.
+      Cinematography constants untouched (prototype-tuned; polish deferred to post-Gate-1 taste pass).
+      Known accepted: dead components/Hero.tsx (stale static hero, unbundled); raw rgba shadows in
+      Waitlist.tsx (exact-parity port); themeColor hex in layout.tsx (metadata cannot use CSS vars).
+      Gate 1 checklist for Pulkit on real hardware: globe+bloom in Act 2, full Acts 1-4 scrollthrough
+      both directions, reduced-motion poster, mobile feel. Preview: get-an-expert-v2-581mjtcyu.
 
 ## Branch flow
 
