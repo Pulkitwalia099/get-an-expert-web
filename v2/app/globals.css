@@ -23,6 +23,7 @@
   --color-cream: #F7F3E9;
   --color-paper-lit: #FDFCF9;
   --color-code: #F1EDE2;
+  --color-dusk: #1D1A14; /* warm deep ink for the hero film's dusk grade */
 
   --font-serif: var(--font-cormorant), Georgia, serif;
   --font-sans: var(--font-hanken), -apple-system, "Segoe UI", sans-serif;

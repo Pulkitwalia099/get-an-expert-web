@@ -31,33 +31,35 @@ export const CITIES = [
   "Lisbon",
 ];
 
-/* Sticky-stage pin length, in vh. The spec runs the four-act film across a
-   760vh track so every beat breathes. */
-export const TRACK_VH = 760;
+/* Sticky-stage pin length, in vh. Iteration 4 grows the track to 840vh to give
+   the new "THE WAIT" beat room to breathe. */
+export const TRACK_VH = 840;
 
 /* Kept for API stability: the whole scroll maps film progress 0 -> 1. */
 export const ACT2_END = 1;
 
-/* Phase boundaries in film-progress space, verbatim from the prototype's P map.
-   Windows named here are the reusable ones; a few one-off segs are inlined at
-   their call site in HeroFilm so the port stays faithful to the spec. */
+/* Phase boundaries in film-progress space, verbatim from iteration 4's P map.
+   The B-numbers below map to the BEATS LEGEND in the spec. Windows named here
+   are the reusable ones; a few one-off segs are inlined at their call site in
+   HeroFilm so the port stays faithful to the spec. */
 export const PHASES = {
-  headOut: [0.05, 0.13] as const,
-  duoRecede: [0.12, 0.22] as const,
-  probeIn: [0.13, 0.19] as const,
-  theatre: [0.17, 0.55] as const,
-  scanCards: [0.24, 0.5] as const,
+  headOut: [0.05, 0.12] as const, // B1
+  duoRecede: [0.12, 0.2] as const, // B2: session recedes, probe frozen at composer
+  probeRise: [0.2, 0.28] as const, // B2: probe rises to search position + shrinks
+  theatre: [0.22, 0.55] as const, // B3
+  scanCards: [0.26, 0.52] as const,
   scan: [0.26, 0.52] as const, // globe city-scan window (drives the active dot)
-  matchResolve: [0.52, 0.58] as const,
-  duoReturn: [0.56, 0.66] as const,
+  matchResolve: [0.52, 0.58] as const, // B4
+  duoReturn: [0.56, 0.66] as const, // B5: room + session return to day
   chatDock: [0.6, 0.68] as const,
-  matchFly: [0.66, 0.74] as const,
-  payload: [0.75, 0.82] as const,
-  reply: [0.8, 0.84] as const,
-  deliver: [0.85, 0.9] as const,
-  dim: [0.9, 0.95] as const,
-  whisper: [0.91, 0.96] as const,
-  finale: [0.94, 1] as const,
+  matchFly: [0.58, 0.68] as const, // B5: match card travels right into the chat
+  probeHome: [0.6, 0.68] as const, // B5: probe travels down-left home (non-crossing)
+  payload: [0.7, 0.76] as const, // B6: context flies in horizontally from the left
+  reply: [0.76, 0.81] as const, // B7
+  wait: [0.81, 0.9] as const, // B8: "one hour later"
+  deliver: [0.9, 0.935] as const, // B9
+  whisper: [0.935, 0.965] as const, // B10
+  finale: [0.955, 1] as const, // B10
 };
 
 /* the film-progress point at which the globe dot holds green (a hair before the
@@ -83,4 +85,4 @@ export const easeBack = (t: number) =>
 
 /* which act rail dot is lit (0-indexed) for a given film progress */
 export const actForProgress = (p: number) =>
-  p < 0.17 ? 0 : p < 0.52 ? 1 : p < 0.85 ? 2 : 3;
+  p < 0.2 ? 0 : p < 0.52 ? 1 : p < 0.9 ? 2 : 3;

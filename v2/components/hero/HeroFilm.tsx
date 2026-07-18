@@ -14,9 +14,14 @@
  *                   out from that dot's projected screen point, then the card
  *                   unfolds. The session returns from depth, the expert chat docks
  *                   to its right, and the probe flies home into the composer.
- *   04 DELIVERED  - the context payload travels session -> chat; the expert reply
- *                   types "On it."; the video attachment lands; confetti bursts;
- *                   the finale dims the panes and closes with the whisper + CTAs.
+ *   04 DELIVERED  - the context payload flies in from the left; the expert reply
+ *                   types "On it."; a "one hour later" wait beat holds; the video
+ *                   attachment lands; confetti bursts; the finale dims the panes
+ *                   and closes with the whisper + CTAs.
+ *
+ * An isolated, strippable dusk color grade darkens the room toward warm ink over
+ * the search and returns it to day as the session comes back (one --grade scalar
+ * driving a veil + graded searchline/counter + the globe's dome dots).
  *
  * A Lenis smooth-scroll drives a scrubbed GSAP ScrollTrigger, which advances a
  * single film-progress value. A rAF loop applies that value imperatively across
@@ -105,7 +110,8 @@ export default function HeroFilm() {
   const deliverRef = useRef<HTMLDivElement>(null);
   const chipRef = useRef<HTMLDivElement>(null);
 
-  // finale
+  // B8 the wait + finale
+  const waitRef = useRef<HTMLDivElement>(null);
   const whisperRef = useRef<HTMLDivElement>(null);
   const whisperSubRef = useRef<HTMLDivElement>(null);
   const finaleRef = useRef<HTMLDivElement>(null);
@@ -113,6 +119,8 @@ export default function HeroFilm() {
 
   // driver + one-shot state
   const progressRef = useRef(0);
+  const gradeRef = useRef(0); // dusk grade scalar shared with the globe
+  const frozenComposerRef = useRef<{ x: number; y: number } | null>(null);
   const typedRef = useRef(false);
   const replyStartedRef = useRef(false);
   const burstArmedRef = useRef(true);
@@ -229,6 +237,18 @@ export default function HeroFilm() {
     // apply one film-progress value across every DOM layer
     const apply = (p: number) => {
       const ih = window.innerHeight;
+      const iw = window.innerWidth;
+
+      // dusk grade (isolated experiment): day -> dusk over the search, back to day
+      // as the session returns. One scalar drives the veil + graded text (CSS) and
+      // the globe dome dots (via gradeRef). Strip these three lines to remove it.
+      const grade = clamp(
+        easeIO(seg(p, 0.15, 0.3)) - easeIO(seg(p, 0.54, 0.64)),
+        0,
+        1
+      );
+      gradeRef.current = grade;
+      stageRef.current?.style.setProperty("--grade", String(grade));
 
       // headline lifts away; scroll cue fades
       const ho = easeIO(seg(p, PHASES.headOut[0], PHASES.headOut[1]));
@@ -253,22 +273,55 @@ export default function HeroFilm() {
         duo.style.zIndex = rec > 0.45 ? "4" : "10";
       }
 
-      // composer detaches to the probe, then flies home into the session
-      const pi = easeIO(seg(p, PHASES.probeIn[0], PHASES.probeIn[1]));
-      const pr = easeIO(seg(p, 0.56, 0.66));
+      // B2 detach: the probe freezes at the composer's resting rect while the
+      // session recedes behind it (duoRecede), then rises to the search position
+      // (probeRise). B5: it travels down-left home, following the live composer
+      // (which has shifted left as the chat docks).
+      if (p < PHASES.duoRecede[0]) {
+        // capture the composer's rest position before the recede moves it
+        const r0 = composerRef.current?.getBoundingClientRect();
+        if (r0 && r0.height)
+          frozenComposerRef.current = {
+            x: ((r0.left + r0.width / 2) / iw) * 100,
+            y: ((r0.top + r0.height / 2) / ih) * 100,
+          };
+      }
+      const froze = frozenComposerRef.current || { x: 50, y: 66 };
+      const liveR = composerRef.current?.getBoundingClientRect();
+      const liveX =
+        liveR && liveR.width ? ((liveR.left + liveR.width / 2) / iw) * 100 : froze.x;
+      const liveY =
+        liveR && liveR.height
+          ? ((liveR.top + liveR.height / 2) / ih) * 100
+          : froze.y;
+
+      const rise = easeIO(seg(p, PHASES.probeRise[0], PHASES.probeRise[1]));
+      const home = easeIO(seg(p, PHASES.probeHome[0], PHASES.probeHome[1]));
+      const detach = seg(p, 0.12, 0.17); // composer hands the pill off to the probe
+      const reattach = seg(p, 0.63, 0.68); // composer restored as the probe lands home
       if (composerRef.current)
-        composerRef.current.style.opacity = String(Math.min(1 - pi + pr, 1));
-      const compR = composerRef.current?.getBoundingClientRect();
-      const homeT =
-        compR && compR.height ? ((compR.top + compR.height / 2) / ih) * 100 : 66;
+        composerRef.current.style.opacity = String(
+          clamp(1 - detach + reattach, 0, 1)
+        );
       const probe = probeRef.current;
       if (probe) {
-        probe.style.opacity = String(Math.min(pi, 1 - seg(p, 0.645, 0.672)));
-        probe.style.top = `${lerp(lerp(34, 17, pi), homeT, pr)}%`;
-        probe.style.transform = `translateX(-50%) scale(${1 - pr * 0.22})`;
+        // appears as the recede starts, holds pinned through search, fades home
+        probe.style.opacity = String(
+          clamp(seg(p, 0.12, 0.135) - seg(p, 0.665, 0.69), 0, 1)
+        );
+        // froze (pinned during recede) -> search (50, 17) -> live composer (down-left)
+        probe.style.top = `${lerp(lerp(froze.y, 17, rise), liveY, home)}%`;
+        probe.style.left = `${lerp(lerp(froze.x, 50, rise), liveX, home)}%`;
+        probe.style.transform = `translateX(-50%) scale(${lerp(
+          lerp(1, 0.9, rise),
+          1,
+          home
+        )})`;
       }
       if (tetherRef.current) {
-        tetherRef.current.style.opacity = String(pi - easeIO(seg(p, 0.5, 0.58)));
+        tetherRef.current.style.opacity = String(
+          clamp(rise - easeIO(seg(p, 0.5, 0.58)) - home, 0, 1)
+        );
         tetherRef.current.style.top = "24%";
         tetherRef.current.style.height = "18vh";
       }
@@ -332,7 +385,7 @@ export default function HeroFilm() {
       const dot = matchDotRef.current;
       if (matchRef.current) {
         matchRef.current.style.opacity = String(
-          (mrRaw > 0 ? Math.min(1, mrRaw * 3.5) : 0) - easeIO(seg(p, 0.72, 0.75))
+          (mrRaw > 0 ? Math.min(1, mrRaw * 3.5) : 0) - easeIO(seg(p, 0.705, 0.73))
         );
         matchRef.current.style.left = `${lerp(lerp(dot[0], 50, mr), 71, fly)}%`;
         matchRef.current.style.top = `${lerp(lerp(dot[1], 44, mr), 42, fly)}%`;
@@ -380,10 +433,10 @@ export default function HeroFilm() {
       }
       const slot = slotRef.current;
       if (slot) {
-        slot.style.opacity = String(dock * (1 - seg(p, 0.72, 0.74)));
+        slot.style.opacity = String(dock * (1 - seg(p, 0.7, 0.725)));
         slot.classList.toggle(styles.glow, fly > 0.3 && fly < 1);
       }
-      if (p > 0.73) {
+      if (p > 0.725) {
         if (slot) slot.style.display = "none";
         residentRef.current?.classList.add(styles.on);
       } else {
@@ -391,16 +444,15 @@ export default function HeroFilm() {
         residentRef.current?.classList.remove(styles.on);
       }
 
-      // context payload travels session -> chat, lands as a sent message
+      // B6 context payload flies in horizontally from the left (session text area)
+      // into the chat, lands as the sent message. No bottom arc: top is fixed.
       const pay = seg(p, PHASES.payload[0], PHASES.payload[1]);
       if (payloadRef.current) {
         payloadRef.current.style.opacity = String(
-          pay > 0 && pay < 1 ? Math.min(1, pay * 4) * (1 - seg(pay, 0.85, 1)) : 0
+          pay > 0 && pay < 1 ? Math.min(1, pay * 4) * (1 - seg(pay, 0.82, 1)) : 0
         );
-        payloadRef.current.style.left = `${lerp(36, 64, easeIO(pay))}%`;
-        payloadRef.current.style.top = `${
-          lerp(60, 42, easeIO(pay)) - Math.sin(pay * Math.PI) * 6
-        }%`;
+        payloadRef.current.style.left = `${lerp(30, 64, easeIO(pay))}%`;
+        payloadRef.current.style.top = "46%";
       }
       if (ctxMsgRef.current) {
         ctxMsgRef.current.style.opacity = String(
@@ -409,14 +461,29 @@ export default function HeroFilm() {
         ctxMsgRef.current.style.transform = "none";
       }
 
-      // expert reply, then delivery
+      // B7 expert reply
       if (p > PHASES.reply[0]) typeReply();
       const rep = easeIO(seg(p, PHASES.reply[0], PHASES.reply[1]));
       if (replyRef.current) {
         replyRef.current.style.opacity = String(rep);
         replyRef.current.style.transform = `translateY(${(1 - rep) * 8}px)`;
       }
-      if (p > PHASES.deliver[0] + 0.015) burst();
+
+      // B8 the wait: "one hour later" clock; the chat dims slightly so delivery
+      // lands with weight. chat opacity is finalized here (after the dock block).
+      const waitIn = easeIO(seg(p, 0.81, 0.845));
+      const waitOut = easeIO(seg(p, 0.885, 0.915));
+      const waitVis = clamp(waitIn - waitOut, 0, 1);
+      if (waitRef.current) {
+        waitRef.current.style.opacity = String(waitVis);
+        waitRef.current.style.transform = `translateX(-50%) translateY(${
+          (1 - waitIn) * 8
+        }px)`;
+      }
+      if (chat) chat.style.opacity = String(dock * (1 - waitVis * 0.24));
+
+      // B9 delivery + confetti
+      if (p > PHASES.deliver[0] + 0.008) burst();
       if (p < 0.8) burstArmedRef.current = true;
       const del = easeIO(seg(p, PHASES.deliver[0], PHASES.deliver[1]));
       if (deliverRef.current) {
@@ -424,21 +491,21 @@ export default function HeroFilm() {
         deliverRef.current.style.transform = `translateY(${(1 - del) * 8}px)`;
       }
       if (chipRef.current) {
-        chipRef.current.style.opacity = String(easeIO(seg(p, 0.88, 0.91)));
+        chipRef.current.style.opacity = String(easeIO(seg(p, 0.925, 0.95)));
         chipRef.current.style.transform = "none";
       }
 
-      // finale: dim the panes, whisper, sub-line, CTAs
-      const dim = easeIO(seg(p, PHASES.dim[0], PHASES.dim[1]));
+      // B10 finale: dim the panes, whisper, sub-line, CTAs
+      const finFade = easeIO(seg(p, 0.93, 0.975));
       if (duo)
         duo.style.opacity = String(
-          Math.min(parseFloat(duo.style.opacity || "1"), 1 - dim * 0.92)
+          Math.min(parseFloat(duo.style.opacity || "1"), 1 - finFade * 0.92)
         );
       if (whisperRef.current)
         whisperRef.current.style.opacity = String(
           easeIO(seg(p, PHASES.whisper[0], PHASES.whisper[1]))
         );
-      const wsub = easeIO(seg(p, 0.93, 0.97));
+      const wsub = easeIO(seg(p, 0.95, 0.98));
       if (whisperSubRef.current) {
         whisperSubRef.current.style.opacity = String(wsub);
         whisperSubRef.current.style.transform = `translateX(-50%) translateY(${
@@ -449,7 +516,7 @@ export default function HeroFilm() {
         finaleRef.current.style.opacity = String(
           easeIO(seg(p, PHASES.finale[0], PHASES.finale[1]))
         );
-        finaleRef.current.style.pointerEvents = p > 0.96 ? "auto" : "none";
+        finaleRef.current.style.pointerEvents = p > 0.97 ? "auto" : "none";
       }
 
       // act rail
@@ -532,6 +599,9 @@ export default function HeroFilm() {
       aria-label="Get an expert: you hit a wall, the world's best joins, delivered"
     >
       <div className={styles.stage} ref={stageRef}>
+        {/* dusk grade veil (isolated): darkens only the room backdrop */}
+        <div className={styles.duskVeil} />
+
         <div className={styles.head} ref={headRef}>
           <h1 className={styles.h1}>
             {"Build like the world's best are "}
@@ -618,7 +688,7 @@ export default function HeroFilm() {
                 </div>
               </div>
               <div className={styles.chip} ref={chipRef}>
-                Delivered in 40 minutes
+                Delivered in one hour
               </div>
             </div>
           </div>
@@ -639,6 +709,7 @@ export default function HeroFilm() {
             className={styles.globe}
             progressRef={progressRef}
             matchDotRef={matchDotRef}
+            gradeRef={gradeRef}
             mobile={mobile}
             reduced={reduced}
           />
@@ -718,6 +789,18 @@ export default function HeroFilm() {
         <div className={styles.payload} ref={payloadRef}>
           <span className={styles.who}>shared from your session</span>
           Your full context · script, storyboard, motion cut v1
+        </div>
+
+        {/* B8 the wait: "one hour later" */}
+        <div className={styles.wait} ref={waitRef}>
+          <div className={styles.clock}>
+            <span className={styles.dial} />
+            <span className={styles.sweep2} />
+            <span className={styles.hand2} />
+            <span className={styles.pin2} />
+            <span className={styles.ring} />
+          </div>
+          <span className={styles.wlabel}>one hour later</span>
         </div>
 
         <div className={styles.whisper} ref={whisperRef}>

@@ -86,6 +86,7 @@ const ARC_SEGMENTS = 24;
 type SceneProps = {
   progressRef: RefObject<number>;
   matchDotRef: RefObject<[number, number]>;
+  gradeRef: RefObject<number>;
   mobile: boolean;
   reduced: boolean;
   staticProgress: number;
@@ -94,6 +95,7 @@ type SceneProps = {
 function GlobeScene({
   progressRef,
   matchDotRef,
+  gradeRef,
   mobile,
   reduced,
   staticProgress,
@@ -155,6 +157,11 @@ function GlobeScene({
     () => palette.sage.clone().multiplyScalar(1.5),
     [palette]
   );
+  // dome dots grade from matte ink (day) to warm light (dusk) so they stay
+  // legible when the room darkens behind the globe. Isolated dusk experiment.
+  const domeDay = useMemo(() => palette.ink.clone(), [palette]);
+  const domeNight = useMemo(() => palette.paper.clone(), [palette]);
+  const domeScratch = useMemo(() => palette.ink.clone(), [palette]);
 
   useFrame((state) => {
     const group = groupRef.current;
@@ -166,10 +173,16 @@ function GlobeScene({
     const alpha = 1;
 
     group.rotation.y = (reduced ? 0.6 : t * 0.025) + p * 2.6;
-    if (pointsMat.current) pointsMat.current.uniforms.uAlpha.value = alpha;
+    if (pointsMat.current) {
+      pointsMat.current.uniforms.uAlpha.value = alpha;
+      // dusk grade: lighten the dome dots as the room darkens (day -> dusk)
+      const grade = reduced ? 0 : gradeRef.current;
+      domeScratch.copy(domeDay).lerp(domeNight, grade);
+      pointsMat.current.uniforms.uColor.value.copy(domeScratch);
+    }
 
     // where the probe sits, mapped to a world Y the arc reaches up toward
-    const flyEase = easeIO(seg(p, PHASES.probeIn[0], PHASES.probeIn[1]));
+    const flyEase = easeIO(seg(p, PHASES.probeRise[0], PHASES.probeRise[1]));
     anchor.set(0, lerp(0.2, R * 0.95, flyEase), 0.8);
 
     // which city is the search touching (spec globe window: 0.26 -> 0.52)
@@ -305,6 +318,7 @@ function GlobeScene({
 type GlobeProps = {
   progressRef: RefObject<number>;
   matchDotRef: RefObject<[number, number]>;
+  gradeRef: RefObject<number>;
   mobile: boolean;
   reduced: boolean;
   /** film progress to freeze on when reduced motion is on */
@@ -315,6 +329,7 @@ type GlobeProps = {
 export default function Globe({
   progressRef,
   matchDotRef,
+  gradeRef,
   mobile,
   reduced,
   staticProgress = 0.55,
@@ -333,6 +348,7 @@ export default function Globe({
       <GlobeScene
         progressRef={progressRef}
         matchDotRef={matchDotRef}
+        gradeRef={gradeRef}
         mobile={mobile}
         reduced={reduced}
         staticProgress={staticProgress}

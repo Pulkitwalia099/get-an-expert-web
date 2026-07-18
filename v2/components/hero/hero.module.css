@@ -425,6 +425,18 @@
   position: absolute;
   inset: 0;
 }
+/* dusk grade veil: darkens only the room backdrop (sits below the panes and the
+   globe theatre) as --grade rises. Isolated + strippable: remove this element,
+   the --grade set in HeroFilm, and the color-mix on searchline/counter. */
+.duskVeil {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: var(--color-dusk);
+  opacity: var(--grade, 0);
+  will-change: opacity;
+}
 .sweep {
   position: absolute;
   inset: 5%;
@@ -448,13 +460,22 @@
   transform: translateX(-50%);
   font-family: var(--font-mono);
   font-size: 12px;
-  color: var(--color-ink-2);
+  /* dusk grade: text lightens toward cream as the room darkens (--grade 0..1) */
+  color: color-mix(
+    in srgb,
+    var(--color-ink-2),
+    var(--color-cream) calc(var(--grade, 0) * 100%)
+  );
   z-index: 23;
   opacity: 0;
   white-space: nowrap;
 }
 .searchline b {
-  color: var(--color-ink);
+  color: color-mix(
+    in srgb,
+    var(--color-ink),
+    var(--color-cream) calc(var(--grade, 0) * 100%)
+  );
 }
 .counter {
   position: absolute;
@@ -464,13 +485,21 @@
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.08em;
-  color: var(--color-faint);
+  color: color-mix(
+    in srgb,
+    var(--color-faint),
+    var(--color-cream) calc(var(--grade, 0) * 100%)
+  );
   z-index: 23;
   opacity: 0;
   white-space: nowrap;
 }
 .counter b {
-  color: var(--color-bronze);
+  color: color-mix(
+    in srgb,
+    var(--color-bronze),
+    var(--color-cream) calc(var(--grade, 0) * 40%)
+  );
   font-variant-numeric: tabular-nums;
 }
 
@@ -556,8 +585,8 @@
 /* ---------- traveling context payload ---------- */
 .payload {
   position: absolute;
-  left: 38%;
-  top: 58%;
+  left: 30%;
+  top: 46%;
   z-index: 27;
   opacity: 0;
   background: var(--c-forest-soft);
@@ -571,6 +600,96 @@
 }
 .payload .who {
   color: var(--color-forest);
+}
+
+/* ---------- B8 the wait ("one hour later") ---------- */
+.wait {
+  position: absolute;
+  left: 50%;
+  top: 15%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  z-index: 31;
+  opacity: 0;
+  text-align: center;
+  will-change: opacity, transform;
+}
+.clock {
+  position: relative;
+  width: 64px;
+  height: 64px;
+}
+.dial {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid var(--color-forest);
+  background: var(--color-surface);
+  box-shadow: inset 0 0 0 1px var(--c-forest-soft), var(--c-pane-shadow);
+}
+.sweep2 {
+  position: absolute;
+  inset: 5px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: conic-gradient(
+    from -12deg,
+    color-mix(in srgb, var(--color-forest) 32%, transparent),
+    transparent 78deg
+  );
+  animation: sweep 2.4s linear infinite;
+}
+.hand2 {
+  position: absolute;
+  left: 50%;
+  top: 15px;
+  width: 2.2px;
+  height: 17px;
+  margin-left: -1.1px;
+  background: var(--color-forest);
+  border-radius: 2px;
+  transform-origin: bottom center;
+  transform: rotate(42deg);
+}
+.pin2 {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-forest);
+  transform: translate(-50%, -50%);
+}
+.ring {
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  border: 2px solid var(--color-forest);
+  opacity: 0;
+  animation: ringPulse 2.4s ease-out infinite;
+}
+@keyframes ringPulse {
+  0% {
+    transform: scale(0.66);
+    opacity: 0.5;
+  }
+  72% {
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.28);
+    opacity: 0;
+  }
+}
+.wlabel {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  color: var(--color-ink-2);
 }
 
 /* ---------- finale ---------- */
@@ -826,7 +945,9 @@
 .reduced .payload,
 .reduced .tether,
 .reduced .flash,
-.reduced .face {
+.reduced .face,
+.reduced .wait,
+.reduced .duskVeil {
   display: none !important;
 }
 .reduced .head {
