@@ -6,17 +6,23 @@
   B1  THE WALL    0.00 - 0.12   session lines stream, ask auto-types, headline holds
   B2  DETACH      0.12 - 0.28   composer freezes at its live rect while the session
                                 recedes behind it (0.12-0.20), then the probe rises to
-                                search position and shrinks slightly (0.20-0.28)
+                                search position and shrinks slightly (0.19-0.28, riding
+                                the recede tail so the handoff cross-fades)
   B3  THE SEARCH  0.22 - 0.52   globe theatre, scan cards, candidate faces; room grades
-                                from day cream toward dusk ink (see applyGrade)
-  B4  THE MATCH   0.52 - 0.58   one profile resolves center, flash ring
+                                from day cream toward dusk ink (see applyGrade); the
+                                rotation eases to a hold angle over 0.44-0.50 so the
+                                match dot is pinned in the dome's lower-right quadrant
+  B4  THE MATCH   0.52 - 0.58   one profile surfaces from the globe's lower-right,
+                                below the probe, and resolves center; flash ring
   B5  THE RETURN  0.56 - 0.68   room returns to day; session returns, chat docks; probe
                                 travels down-left home while the match card travels right
-                                (diverging, non-crossing paths)
+                                (from 0.57, riding the resolve tail; diverging,
+                                non-crossing paths; both settle with a soft overshoot)
   B6  PAYLOAD     0.70 - 0.76   full context flies horizontally from the left (session
                                 text area) into the chat, lands as the sent message
-  B7  REPLY       0.76 - 0.81   expert types "I know what you're looking for. On it."
-  B8  THE WAIT    0.81 - 0.90   "one hour later" clock beat; chat dims slightly
+  B7  REPLY       0.755 - 0.81  expert types "I know what you're looking for. On it."
+  B8  THE WAIT    0.81 - 0.90   "one hour later" clock overlays the chat pane itself;
+                                the chat dims beneath it, clock fades out by 0.915
   B9  DELIVER     0.90 - 0.935  video lands + confetti burst
   B10 FINALE      0.935 - 1.00  whisper, three steps, CTAs
   ============================================================
@@ -201,10 +207,13 @@
   .payload .who { font-family: var(--mono); font-size: 9.5px; letter-spacing: .08em;
     text-transform: uppercase; color: var(--forest); display: block; margin-bottom: 3px; }
 
-  /* ---------- B8 the wait ("one hour later") ---------- */
-  .wait { position: absolute; left: 50%; top: 15%; transform: translateX(-50%);
-    display: flex; flex-direction: column; align-items: center; gap: 15px; z-index: 31;
+  /* ---------- B8 the wait ("one hour later"): overlays the chat pane ---------- */
+  .wait { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 14px; z-index: 31;
     opacity: 0; text-align: center; will-change: opacity, transform; }
+  .wait::before { content: ""; position: absolute; inset: -34px -58px; z-index: -1;
+    border-radius: 22px; backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+    background: radial-gradient(66% 66% at 50% 50%, rgba(252,250,243,.97) 40%, rgba(252,250,243,0) 84%); }
   .clock { position: relative; width: 64px; height: 64px; }
   .clock .dial { position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--forest);
     background: #fff; box-shadow: inset 0 0 0 1px var(--forest-soft), var(--shadow); }
@@ -470,27 +479,56 @@
   const CITIES = ["Barcelona","Lagos","Tokyo","Berlin","São Paulo","Toronto","Seoul","Warsaw","Nairobi","Sydney","Austin","Lisbon"];
   const cityIdx = CITIES.map((_, i) => Math.floor((i + 0.5) * N / CITIES.length));
   const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
-  let rot = 0;
+  // the match surfaces from this dome point: below the equator (y about -0.35) so that,
+  // once the rotation eases to HOLD_A, it projects into the dome's lower-right quadrant
+  const MATCH_K = 742;
+  cityIdx[0] = MATCH_K; // Barcelona rides this point; the hold beat surfaces from it
+  const MATCH_PHI = Math.atan2(pts[MATCH_K][2], pts[MATCH_K][0]);
+  const HOLD_A = Math.PI / 4; // right of center + front face: 4-5 o'clock on the dome
+  let rot = 0, rotFrom = null, rotTo = null;
 
   function drawGlobe(p) {
     const scan = seg(p, .26, .52);
     const active = Math.min(CITIES.length - 1, Math.floor(scan * CITIES.length));
     const matched = p > .5;
     cx.clearRect(0, 0, 1040, 1040);
-    rot += 0.0035;
+    // as the match beat nears, ease the free spin to the hold angle and freeze there,
+    // so the match dot pops from the lower-right of the globe, below the probe
+    const holdT = ease(seg(p, .44, .50));
+    if (holdT <= 0) { rot += 0.0035; rotFrom = rotTo = null; }
+    else {
+      if (rotTo === null) {
+        rotFrom = rot;
+        let d = (HOLD_A - MATCH_PHI - rot) % (2 * Math.PI);
+        if (d > Math.PI) d -= 2 * Math.PI;
+        if (d <= -Math.PI) d += 2 * Math.PI;
+        rotTo = rot + d;
+      }
+      rot = lerp(rotFrom, rotTo, holdT);
+    }
+    // dome dot ink for this frame (same ramp as applyGrade's --dot-* vars)
+    const g = gradeLevel;
+    const dcr = Math.round(lerp(35, 240, g)), dcg = Math.round(lerp(32, 235, g)), dcb = Math.round(lerp(26, 222, g));
+    // limb glow: a faint ring at the silhouette so the dome reads as a sphere
+    const rimA = .10 + g * .14;
+    const rim = cx.createRadialGradient(CX, CY, R * .86, CX, CY, R * 1.05);
+    rim.addColorStop(0, `rgba(${dcr},${dcg},${dcb},0)`);
+    rim.addColorStop(.74, `rgba(${dcr},${dcg},${dcb},${rimA})`);
+    rim.addColorStop(1, `rgba(${dcr},${dcg},${dcb},0)`);
+    cx.beginPath(); cx.arc(CX, CY, R * 1.05, 0, 7); cx.fillStyle = rim; cx.fill();
     const proj = pts.map(([x, y, z]) => {
       const xr = x * Math.cos(rot) - z * Math.sin(rot);
       const zr = x * Math.sin(rot) + z * Math.cos(rot);
       return [CX + xr * R, CY + y * R * -1, zr];
     });
-    // dome dots, front brighter
+    // dome dots: continuous front-to-back falloff + depth size attenuation
     proj.forEach(([x, y, z], i) => {
-      const front = z > 0;
+      const dz = (z + 1) / 2; // 0 = far side, 1 = nearest
       const isCity = cityIdx.includes(i);
       const ci = cityIdx.indexOf(i);
       const isActive = ci === active && scan > 0 && !matched;
       const isMatch = matched && ci === 0; // Barcelona holds
-      let size = front ? 2.6 : 1.4, col;
+      let size = lerp(1.15, 2.9, dz), col;
       if (isMatch) {
         col = css("--forest-lit"); size = 7;
         const rb = cv.getBoundingClientRect();
@@ -498,10 +536,10 @@
                             (rb.top + y / 1040 * rb.height) / innerHeight * 100];
       }
       else if (isActive) { col = css("--bronze-lit"); size = 6; }
-      else if (isCity && front) { col = css("--bronze-lit"); size = 4; }
-      else col = front ? css("--dot-front") : css("--dot-back");
+      else if (isCity && z > 0) { col = css("--bronze-lit"); size = 4; }
+      else col = `rgba(${dcr},${dcg},${dcb},${Math.min(.62, lerp(.07, .55, Math.pow(dz, 1.7)) + g * .07).toFixed(3)})`;
       cx.beginPath(); cx.arc(x, y, size, 0, 7); cx.fillStyle = col; cx.fill();
-      if ((isActive || isMatch) && front !== false) {
+      if ((isActive || isMatch) && z > 0) {
         // ping ring (glows brighter on the dusk grade via g)
         const t = (Date.now() / 900) % 1, glow = 0.5 + gradeLevel * 0.35;
         cx.beginPath(); cx.arc(x, y, 10 + t * 26, 0, 7);
@@ -525,16 +563,18 @@
   const P = {
     headOut:      [.05, .12],
     duoRecede:    [.12, .20],   // B2: session recedes, probe frozen at composer's live rect
-    probeRise:    [.20, .28],   // B2: probe rises to search position + shrinks slightly
+    probeRise:    [.19, .28],   // B2: probe rises to search position + shrinks slightly
+                                //     (overlaps the recede tail so the handoff cross-fades)
     theatre:      [.22, .55],
     scanCards:    [.26, .52],
     matchResolve: [.52, .58],   // B4
     duoReturn:    [.56, .66],   // B5: room + session return to day
     chatDock:     [.60, .68],
-    matchFly:     [.58, .68],   // B5: match card travels right into the chat (leaves center first)
+    matchFly:     [.57, .68],   // B5: match card travels right into the chat, overlapping
+                                //     the resolve tail; settles with a soft overshoot
     probeHome:    [.60, .68],   // B5: probe travels down-left home (staggered, non-crossing)
     payload:      [.70, .76],   // B6: context flies in from the left
-    reply:        [.76, .81],   // B7
+    reply:        [.755, .81],  // B7: overlaps the payload landing so it cross-fades in
     wait:         [.81, .90],   // B8: one hour later
     deliver:      [.90, .935],  // B9
     whisper:      [.935, .965], // B10
@@ -576,8 +616,8 @@
     const liveX = liveR.width  ? (liveR.left + liveR.width / 2) / innerWidth * 100  : froze.x;
     const liveY = liveR.height ? (liveR.top + liveR.height / 2) / innerHeight * 100 : froze.y;
 
-    const rise = ease(seg(p, ...P.probeRise));   // 0 = frozen at composer, 1 = at search
-    const home = ease(seg(p, ...P.probeHome));   // 0 = at search, 1 = back home
+    const rise = ease(seg(p, ...P.probeRise));     // 0 = frozen at composer, 1 = at search
+    const home = easeBack(seg(p, ...P.probeHome)); // 0 = at search, 1 = back home (settles)
     const probe = $("probe");
     const detach = seg(p, .12, .17);             // composer hands the pill off to the probe
     const reattach = seg(p, .63, .68);           // composer restored as the probe lands home
@@ -628,9 +668,10 @@
     const headT = seg(mrRaw, 0, .5);
     const cardT = seg(mrRaw, .45, 1);
     const pop = headT > 0 ? easeBack(headT) : 0;
-    const fly = ease(seg(p, ...P.matchFly));
+    const flyRaw = seg(p, ...P.matchFly);
+    const fly = easeBack(flyRaw); // settles into the chat slot with a soft overshoot
     const match = $("match");
-    const dot = window.__matchDot || [58, 62];
+    const dot = window.__matchDot || [61, 66]; // fallback: globe's lower-right quadrant
     match.style.opacity = (mrRaw > 0 ? Math.min(1, mrRaw * 3.5) : 0) - ease(seg(p, .705, .73));
     match.style.left = `${lerp(lerp(dot[0], 50, mr), 71, fly)}%`;
     match.style.top = `${lerp(lerp(dot[1], 44, mr), 42, fly)}%`;
@@ -655,17 +696,20 @@
     chat.style.marginLeft = `${dock * 14}px`;
     const slot = $("slot");
     slot.style.opacity = dock * (1 - seg(p, .70, .725));
-    slot.classList.toggle("glow", fly > .3 && fly < 1);
-    if (p > .725) { slot.style.display = "none"; $("resident").classList.add("on"); }
+    slot.classList.toggle("glow", flyRaw > .3 && flyRaw < 1);
+    // slot fades out .70-.725 while the resident fades in .72-.75 (cross-fade, no snap)
+    if (p > .72) { slot.style.display = "none"; $("resident").classList.add("on"); }
     else { slot.style.display = "grid"; $("resident").classList.remove("on"); }
+    $("resident").style.opacity = ease(seg(p, .72, .75));
 
     // B6 context payload flies in horizontally from the left (session text) into the chat
     const pay = seg(p, ...P.payload);
     const payload = $("payload");
     payload.style.opacity = pay > 0 && pay < 1 ? Math.min(1, pay * 4) * (1 - seg(pay, .82, 1)) : 0;
-    payload.style.left = `${lerp(30, 64, ease(pay))}%`;
+    payload.style.left = `${lerp(30, 64, easeBack(pay))}%`; // lands with a soft settle
     payload.style.top = "46%";
-    $("ctxMsg").style.opacity = pay >= 1 || p > P.payload[1] ? 1 : 0;
+    // sent message cross-fades in under the payload's fade-out (no snap)
+    $("ctxMsg").style.opacity = ease(seg(p, .745, .765));
     $("ctxMsg").style.transform = "none";
 
     // B7 reply
@@ -673,13 +717,20 @@
     $("reply").style.opacity = ease(seg(p, ...P.reply));
     $("reply").style.transform = `translateY(${(1 - ease(seg(p, ...P.reply))) * 8}px)`;
 
-    // B8 the wait: "one hour later" clock; the chat dims slightly so delivery has weight
+    // B8 the wait: the clock overlays the chat pane itself (tracked via its live rect);
+    // the chat dims beneath it so delivery has weight
     const waitIn = ease(seg(p, .81, .845));
     const waitOut = ease(seg(p, .885, .915));
     const waitVis = clamp(waitIn - waitOut, 0, 1);
-    $("wait").style.opacity = waitVis;
-    $("wait").style.transform = `translateX(-50%) translateY(${(1 - waitIn) * 8}px)`;
-    $("chat").style.opacity = dock * (1 - waitVis * .24);
+    const wait = $("wait");
+    const wr = chat.getBoundingClientRect();
+    if (wr.width > 40) {
+      wait.style.left = `${(wr.left + wr.width / 2) / innerWidth * 100}%`;
+      wait.style.top = `${(wr.top + wr.height / 2) / innerHeight * 100}%`;
+    }
+    wait.style.opacity = waitVis;
+    wait.style.transform = `translate(-50%,-50%) translateY(${(1 - waitIn) * 8}px)`;
+    $("chat").style.opacity = dock * (1 - waitVis * .34);
 
     // B9 delivery + confetti
     if (p > P.deliver[0] + .008) burst();
