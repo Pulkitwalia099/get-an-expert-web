@@ -347,13 +347,14 @@ export default function HeroFilm() {
         easeIO(seg(p, 0.18, 0.24)) - easeIO(seg(p, 0.6, 0.66));
       if (theatreRef.current) {
         theatreRef.current.style.opacity = String(theatreOn);
-        // Chrome GPU-compositor workaround (guaranteed fallback to the pre-promotion
-        // of #match/#flash): while those layers churn over the WebGL canvas (.50-.64),
-        // a persistent static layer has still transiently dropped the canvas to black
-        // on some GPUs. A harmless alternating style write on the theatre each frame
-        // forces a recomposite so the canvas is never left black. Scoped to the window
-        // (z 8<->9 both sit above the veil and below the DOM overlays: no reorder);
-        // the inline z is cleared outside it so the CSS z-index (8) applies.
+        // CHROME COMPOSITOR WORKAROUND - remove when Chrome fixes WebGL re-layerization
+        // (crbug: compositor drops a WebGL canvas to black when a sibling promotes a new
+        // layer over it mid-scene). Empirically the ONLY thing that restores the dome is a
+        // runtime style invalidation on the theatre after the glitch. While the match/flash
+        // emergence plays over the canvas (.50-.64), alternate a harmless style write every
+        // frame to force a recomposite so the canvas is never left black. Scoped strictly to
+        // that p window (z 8<->9 both sit above the veil and below the DOM overlays: no
+        // reorder); the inline z is cleared outside it so the CSS z-index (8) applies.
         if (p >= 0.5 && p <= 0.64) {
           nudgeFrameRef.current ^= 1;
           theatreRef.current.style.zIndex = nudgeFrameRef.current ? "9" : "8";
@@ -485,7 +486,10 @@ export default function HeroFilm() {
       const pay = seg(p, PHASES.payload[0], PHASES.payload[1]);
       if (payloadRef.current) {
         payloadRef.current.style.opacity = String(
-          pay > 0 && pay < 1 ? Math.min(1, pay * 4) * (1 - seg(pay, 0.82, 1)) : 0
+          Math.max(
+            0.001, // never 0: keep the layer alive (pre-promotion)
+            pay > 0 && pay < 1 ? Math.min(1, pay * 4) * (1 - seg(pay, 0.82, 1)) : 0
+          )
         );
         payloadRef.current.style.left = `${lerp(30, 64, easeBack(pay))}%`; // soft settle
         payloadRef.current.style.top = "46%";
@@ -519,7 +523,7 @@ export default function HeroFilm() {
             ((wr.top + wr.height / 2) / ih) * 100
           }%`;
         }
-        waitRef.current.style.opacity = String(waitVis);
+        waitRef.current.style.opacity = String(Math.max(0.001, waitVis));
         waitRef.current.style.transform = `translate(-50%,-50%) translateY(${
           (1 - waitIn) * 8
         }px)`;
@@ -547,7 +551,7 @@ export default function HeroFilm() {
         );
       if (whisperRef.current)
         whisperRef.current.style.opacity = String(
-          easeIO(seg(p, PHASES.whisper[0], PHASES.whisper[1]))
+          Math.max(0.001, easeIO(seg(p, PHASES.whisper[0], PHASES.whisper[1])))
         );
       const wsub = easeIO(seg(p, 0.95, 0.98));
       if (whisperSubRef.current) {

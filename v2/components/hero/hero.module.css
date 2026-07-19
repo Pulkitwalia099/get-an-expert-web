@@ -612,7 +612,10 @@
   left: 30%;
   top: 46%;
   z-index: 27;
-  opacity: 0;
+  /* pre-promoted from load (see .match): opacity floor 0.001 in JS, never 0, so no
+     new layer is created over the theatre region mid-film */
+  opacity: 0.001;
+  transform: translateZ(0);
   background: var(--c-forest-soft);
   border: 1px solid color-mix(in srgb, var(--color-forest) 35%, transparent);
   border-radius: 12px;
@@ -631,13 +634,14 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%) translateZ(0);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 14px;
   z-index: 31;
-  opacity: 0;
+  /* pre-promoted from load (see .match): opacity floor 0.001 in JS, never 0 */
+  opacity: 0.001;
   text-align: center;
   will-change: opacity, transform, left, top;
 }
@@ -736,14 +740,16 @@
   position: absolute;
   left: 50%;
   top: 24%;
-  transform: translateX(-50%);
+  transform: translateX(-50%) translateZ(0);
   font-family: var(--font-serif);
   font-style: italic;
   font-size: clamp(24px, 3.4vw, 40px);
   color: var(--color-ink);
   z-index: 32;
-  opacity: 0;
+  /* pre-promoted from load (see .match): opacity floor 0.001 in JS, never 0 */
+  opacity: 0.001;
   white-space: nowrap;
+  will-change: transform, opacity;
 }
 .whisperSub {
   position: absolute;
