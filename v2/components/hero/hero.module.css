@@ -455,7 +455,9 @@
   pointer-events: none;
   background: var(--color-dusk);
   opacity: var(--grade, 0);
-  will-change: opacity;
+  /* NO will-change: opacity - it promoted the veil into the compositor layer war.
+     The grade curve now also drives its opacity to 0 before the emergence (.52), so
+     the veil is fully gone by then and cannot occlude the WebGL canvas. */
 }
 .sweep {
   position: absolute;

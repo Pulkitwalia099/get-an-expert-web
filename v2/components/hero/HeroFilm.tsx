@@ -123,7 +123,6 @@ export default function HeroFilm() {
   const progressRef = useRef(0);
   const gradeRef = useRef(0); // dusk grade scalar shared with the globe
   const frozenComposerRef = useRef<{ x: number; y: number } | null>(null);
-  const nudgeFrameRef = useRef(0); // parity for the compositor-recomposite nudge
   const typedRef = useRef(false);
   const replyStartedRef = useRef(false);
   const burstArmedRef = useRef(true);
@@ -242,11 +241,13 @@ export default function HeroFilm() {
       const ih = window.innerHeight;
       const iw = window.innerWidth;
 
-      // dusk grade (isolated experiment): day -> dusk over the search, back to day
-      // as the session returns. One scalar drives the veil + graded text (CSS) and
-      // the globe dome dots (via gradeRef). Strip these three lines to remove it.
+      // dusk grade (isolated experiment): day -> dusk over the search, and daylight
+      // returns exactly as "one profile holds" (matchResolve .52). The fall is retimed
+      // to .44-.52 so the dark veil is fully GONE before the emergence: the match head
+      // surfaces from a lit day-cream globe, never a dark veil that occludes the canvas.
+      // One scalar drives the veil + graded text (CSS) + the globe dome dots (gradeRef).
       const grade = clamp(
-        easeIO(seg(p, 0.15, 0.3)) - easeIO(seg(p, 0.54, 0.64)),
+        easeIO(seg(p, 0.15, 0.3)) - easeIO(seg(p, 0.44, 0.52)),
         0,
         1
       );
@@ -345,23 +346,7 @@ export default function HeroFilm() {
       // in-shader alpha is already ~0, so the sweep fades cleanly and nothing pops.
       const theatreOn =
         easeIO(seg(p, 0.18, 0.24)) - easeIO(seg(p, 0.6, 0.66));
-      if (theatreRef.current) {
-        theatreRef.current.style.opacity = String(theatreOn);
-        // CHROME COMPOSITOR WORKAROUND - remove when Chrome fixes WebGL re-layerization
-        // (crbug: compositor drops a WebGL canvas to black when a sibling promotes a new
-        // layer over it mid-scene). Empirically the ONLY thing that restores the dome is a
-        // runtime style invalidation on the theatre after the glitch. While the match/flash
-        // emergence plays over the canvas (.50-.64), alternate a harmless style write every
-        // frame to force a recomposite so the canvas is never left black. Scoped strictly to
-        // that p window (z 8<->9 both sit above the veil and below the DOM overlays: no
-        // reorder); the inline z is cleared outside it so the CSS z-index (8) applies.
-        if (p >= 0.5 && p <= 0.64) {
-          nudgeFrameRef.current ^= 1;
-          theatreRef.current.style.zIndex = nudgeFrameRef.current ? "9" : "8";
-        } else if (theatreRef.current.style.zIndex !== "") {
-          theatreRef.current.style.zIndex = "";
-        }
-      }
+      if (theatreRef.current) theatreRef.current.style.opacity = String(theatreOn);
       const scan = seg(p, 0.26, 0.52);
       if (countRef.current)
         countRef.current.textContent = Math.floor(
