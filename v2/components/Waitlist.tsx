@@ -46,13 +46,8 @@ export default function Waitlist() {
       return setError("That email doesn’t look right. Mind checking it?");
     if (!role) return setError("Pick what best describes you.");
 
-    const isLocal = /^(localhost|127\.|0\.0\.0\.0)/.test(location.hostname);
-    const endpoint = isLocal
-      ? "http://localhost:3000/api/waitlist"
-      : "https://ask-a-human.vercel.app/api/waitlist";
-
     setSubmitting(true);
-    fetch(endpoint, {
+    fetch("/api/waitlist", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: nm, email: em, role, company: companyRef.current?.value || "" }),
