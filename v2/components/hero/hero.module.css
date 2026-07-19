@@ -889,7 +889,9 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: color 0.4s;
+  /* label color is instant (no transition): a slow color fade would leave a
+     just-unlit item briefly showing its bright graded color during a scrub,
+     making two items look lit. The dot below still animates for the cue. */
 }
 .act i {
   width: 6px;
