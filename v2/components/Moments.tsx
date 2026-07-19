@@ -21,8 +21,9 @@ const moments = [
 
 export default function Moments() {
   return (
-    <div
+    <section
       id="moments"
+      aria-labelledby="moments-title"
       style={{
         marginTop: "clamp(72px,8vw,110px)",
         padding: "0 clamp(24px,3.3vw,48px)",
@@ -32,6 +33,7 @@ export default function Moments() {
       }}
     >
       <h2
+        id="moments-title"
         style={{
           margin: 0,
           fontFamily: "var(--font-serif)",
@@ -105,6 +107,6 @@ export default function Moments() {
       >
         Delegate like the best teams do.
       </p>
-    </div>
+    </section>
   );
 }

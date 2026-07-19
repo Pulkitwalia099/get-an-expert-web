@@ -29,7 +29,9 @@ const faqs: { q: string; a: string }[] = [
 
 export default function Faq() {
   return (
-    <div
+    <section
+      id="faq"
+      aria-labelledby="faq-title"
       style={{
         marginTop: "clamp(72px,8vw,110px)",
         padding: "0 clamp(24px,3.3vw,48px)",
@@ -39,6 +41,7 @@ export default function Faq() {
       }}
     >
       <h2
+        id="faq-title"
         style={{
           margin: "0 0 clamp(28px,3vw,44px)",
           fontFamily: "var(--font-serif)",
@@ -74,7 +77,7 @@ export default function Faq() {
               }}
             >
               <span>{f.q}</span>
-              <span data-faq-plus>+</span>
+              <span data-faq-plus aria-hidden="true">+</span>
             </summary>
             <p
               style={{
@@ -91,6 +94,6 @@ export default function Faq() {
           </details>
         ))}
       </div>
-    </div>
+    </section>
   );
 }

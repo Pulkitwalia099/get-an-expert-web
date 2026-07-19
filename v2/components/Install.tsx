@@ -76,8 +76,9 @@ function CodeBlock({
 
 export default function Install() {
   return (
-    <div
+    <section
       id="install"
+      aria-labelledby="install-title"
       style={{
         marginTop: "clamp(72px,8vw,110px)",
         padding: "0 clamp(24px,3.3vw,48px)",
@@ -85,7 +86,7 @@ export default function Install() {
         scrollMarginTop: "40px",
       }}
     >
-      <h2 style={{ margin: 0, fontFamily: "var(--font-serif)", fontWeight: 600, fontSize: "clamp(34px,3.2vw,46px)", lineHeight: 1.2, textAlign: "center", maxWidth: "720px", textWrap: "balance" }}>
+      <h2 id="install-title" style={{ margin: 0, fontFamily: "var(--font-serif)", fontWeight: 600, fontSize: "clamp(34px,3.2vw,46px)", lineHeight: 1.2, textAlign: "center", maxWidth: "720px", textWrap: "balance" }}>
         Install in 30 seconds.
       </h2>
       <p style={{ margin: "18px 0 0", fontSize: "16px", lineHeight: 1.65, color: ink(0.75), maxWidth: "520px", textAlign: "center", textWrap: "pretty" }}>
@@ -96,6 +97,6 @@ export default function Install() {
         <CodeBlock label="Claude Code" code={claudeCmd} ariaLabel="Copy the Claude Code install command" />
         <CodeBlock label="Codex" hint="~/.codex/config.toml" code={codexCmd} ariaLabel="Copy the Codex configuration" />
       </div>
-    </div>
+    </section>
   );
 }

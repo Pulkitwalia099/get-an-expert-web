@@ -362,8 +362,9 @@ export default function Demo() {
 
   return (
     <>
-      <div
+      <section
         id="demo"
+        aria-labelledby="demo-anchor"
         style={{
           padding: "clamp(52px,5.6vw,84px) clamp(24px,3.3vw,48px) 0",
           display: "flex", flexDirection: "column", alignItems: "center",
@@ -543,7 +544,7 @@ export default function Demo() {
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Steps rail (driven by demoStep). Clicking a card jumps to that scene. */}
       <div style={{ padding: "clamp(32px,3.4vw,48px) clamp(24px,3.3vw,48px) 0", maxWidth: "1216px", margin: "0 auto", boxSizing: "border-box" }}>

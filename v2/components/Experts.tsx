@@ -134,10 +134,14 @@ function ExpertCard({ e, duplicate }: { e: Expert; duplicate: boolean }) {
       </div>
       <div data-xm-bot>
         <span data-xm-tag>{e.tag}</span>
-        <div data-xm-rate>
-          <span data-xm-star>★</span>
+        <div
+          data-xm-rate
+          role="img"
+          aria-label={`Rated ${e.rating} out of 5, ${e.fixes}`}
+        >
+          <span data-xm-star aria-hidden="true">★</span>
           <b>{e.rating}</b>
-          <span>·</span>
+          <span aria-hidden="true">·</span>
           <span>{e.fixes}</span>
         </div>
       </div>
@@ -147,8 +151,9 @@ function ExpertCard({ e, duplicate }: { e: Expert; duplicate: boolean }) {
 
 export default function Experts() {
   return (
-    <div
+    <section
       id="experts"
+      aria-labelledby="experts-title"
       style={{
         marginTop: "clamp(72px,8vw,110px)",
         padding: "0 clamp(24px,3.3vw,48px)",
@@ -158,6 +163,7 @@ export default function Experts() {
       }}
     >
       <h2
+        id="experts-title"
         style={{
           margin: 0,
           fontFamily: "var(--font-serif)",
@@ -211,6 +217,6 @@ export default function Experts() {
       >
         Vetted, verified, and accountable to you.
       </p>
-    </div>
+    </section>
   );
 }

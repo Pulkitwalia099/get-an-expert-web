@@ -87,8 +87,9 @@ export default function Waitlist() {
   }, [booking]);
 
   return (
-    <div
+    <section
       id="waitlist"
+      aria-labelledby="waitlist-title"
       style={{
         marginTop: "clamp(88px,10.4vw,150px)",
         borderTop: `1px solid ${ink(0.1)}`,
@@ -96,7 +97,7 @@ export default function Waitlist() {
         display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center",
       }}
     >
-      <h2 style={{ margin: 0, fontFamily: "var(--font-serif)", fontWeight: 600, fontSize: "clamp(34px,3.2vw,46px)", lineHeight: 1.2, maxWidth: "720px", textWrap: "balance" }}>
+      <h2 id="waitlist-title" style={{ margin: 0, fontFamily: "var(--font-serif)", fontWeight: 600, fontSize: "clamp(34px,3.2vw,46px)", lineHeight: 1.2, maxWidth: "720px", textWrap: "balance" }}>
         Your ambition, uninterrupted.
       </h2>
       <p style={{ margin: "18px 0 0", fontSize: "16px", lineHeight: 1.65, color: ink(0.75), maxWidth: "520px", textWrap: "pretty" }}>
@@ -189,6 +190,6 @@ export default function Waitlist() {
           </div>
         </div>
       )}
-    </div>
+    </section>
   );
 }
