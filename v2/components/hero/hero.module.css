@@ -570,7 +570,11 @@
   position: absolute;
   left: 50%;
   top: 44%;
-  transform: translate(-50%, -50%);
+  /* translateZ(0) + will-change keep this on its own compositor layer from load,
+     so it does not PROMOTE a new layer over the WebGL globe at matchResolve (.52),
+     which is what churned the layer tree and blacked the dome on GPU. Paired with
+     an opacity floor of 0.001 in JS (never 0 / display:none) so the layer persists. */
+  transform: translate(-50%, -50%) translateZ(0);
   display: flex;
   align-items: center;
   gap: 12px;
@@ -579,7 +583,7 @@
   border-radius: 14px;
   padding: 13px 18px;
   z-index: 26;
-  opacity: 0;
+  opacity: 0.001;
   box-shadow: 0 0 0 6px var(--c-forest-soft), var(--c-pane-shadow);
   will-change: transform, top, left, opacity;
 }
@@ -875,8 +879,10 @@
   border-radius: 50%;
   z-index: 25;
   border: 2.5px solid var(--color-forest);
-  opacity: 0;
-  transform: translate(-50%, -50%);
+  /* pre-promoted from load (see .match): opacity floor 0.001 in JS, never 0 */
+  opacity: 0.001;
+  transform: translate(-50%, -50%) translateZ(0);
+  will-change: transform, opacity;
   pointer-events: none;
 }
 .confetti {

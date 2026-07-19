@@ -123,6 +123,7 @@ export default function HeroFilm() {
   const progressRef = useRef(0);
   const gradeRef = useRef(0); // dusk grade scalar shared with the globe
   const frozenComposerRef = useRef<{ x: number; y: number } | null>(null);
+  const nudgeFrameRef = useRef(0); // parity for the compositor-recomposite nudge
   const typedRef = useRef(false);
   const replyStartedRef = useRef(false);
   const burstArmedRef = useRef(true);
@@ -344,7 +345,22 @@ export default function HeroFilm() {
       // in-shader alpha is already ~0, so the sweep fades cleanly and nothing pops.
       const theatreOn =
         easeIO(seg(p, 0.18, 0.24)) - easeIO(seg(p, 0.6, 0.66));
-      if (theatreRef.current) theatreRef.current.style.opacity = String(theatreOn);
+      if (theatreRef.current) {
+        theatreRef.current.style.opacity = String(theatreOn);
+        // Chrome GPU-compositor workaround (guaranteed fallback to the pre-promotion
+        // of #match/#flash): while those layers churn over the WebGL canvas (.50-.64),
+        // a persistent static layer has still transiently dropped the canvas to black
+        // on some GPUs. A harmless alternating style write on the theatre each frame
+        // forces a recomposite so the canvas is never left black. Scoped to the window
+        // (z 8<->9 both sit above the veil and below the DOM overlays: no reorder);
+        // the inline z is cleared outside it so the CSS z-index (8) applies.
+        if (p >= 0.5 && p <= 0.64) {
+          nudgeFrameRef.current ^= 1;
+          theatreRef.current.style.zIndex = nudgeFrameRef.current ? "9" : "8";
+        } else if (theatreRef.current.style.zIndex !== "") {
+          theatreRef.current.style.zIndex = "";
+        }
+      }
       const scan = seg(p, 0.26, 0.52);
       if (countRef.current)
         countRef.current.textContent = Math.floor(
@@ -398,7 +414,11 @@ export default function HeroFilm() {
       const dot = matchDotRef.current;
       if (matchRef.current) {
         matchRef.current.style.opacity = String(
-          (mrRaw > 0 ? Math.min(1, mrRaw * 3.5) : 0) - easeIO(seg(p, 0.705, 0.73))
+          Math.max(
+            0.001, // never 0: keep the layer alive so it does not promote at .52
+            (mrRaw > 0 ? Math.min(1, mrRaw * 3.5) : 0) -
+              easeIO(seg(p, 0.705, 0.73))
+          )
         );
         matchRef.current.style.left = `${lerp(lerp(dot[0], 50, mr), 71, fly)}%`;
         matchRef.current.style.top = `${lerp(lerp(dot[1], 44, mr), 42, fly)}%`;
@@ -423,7 +443,7 @@ export default function HeroFilm() {
         flashRef.current.style.left = `${dot[0]}%`;
         flashRef.current.style.top = `${dot[1]}%`;
         flashRef.current.style.opacity = String(
-          Math.sin(Math.min(mrRaw * 2.2, 1) * Math.PI)
+          Math.max(0.001, Math.sin(Math.min(mrRaw * 2.2, 1) * Math.PI))
         );
         flashRef.current.style.transform = `translate(-50%,-50%) scale(${
           1 + mrRaw * 5
