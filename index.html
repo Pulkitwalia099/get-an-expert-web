@@ -949,7 +949,7 @@ class Component extends DCLogic {
 // Waitlist submit — plain JS, delegated on document so it survives re-renders.
 (function () {
   var LOCAL = /^(localhost|127\.|0\.0\.0\.0)/.test(location.hostname);
-  var ENDPOINT = LOCAL ? 'http://localhost:3000/api/waitlist' : 'https://ask-a-human.vercel.app/api/waitlist';
+  var ENDPOINT = LOCAL ? 'http://localhost:3000/api/waitlist' : 'https://get-an-expert-v2.vercel.app/api/waitlist';
   var openFold = function () {
     var fold = document.getElementById('wl-fold');
     if (!fold || fold.hasAttribute('data-open')) return;
