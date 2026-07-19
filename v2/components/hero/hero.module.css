@@ -602,20 +602,35 @@
   color: var(--color-forest);
 }
 
-/* ---------- B8 the wait ("one hour later") ---------- */
+/* ---------- B8 the wait ("one hour later"): overlays the chat pane ---------- */
 .wait {
   position: absolute;
   left: 50%;
-  top: 15%;
-  transform: translateX(-50%);
+  top: 50%;
+  transform: translate(-50%, -50%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 15px;
+  gap: 14px;
   z-index: 31;
   opacity: 0;
   text-align: center;
-  will-change: opacity, transform;
+  will-change: opacity, transform, left, top;
+}
+/* a soft cream veil behind the clock so it reads over the chat pane */
+.wait::before {
+  content: "";
+  position: absolute;
+  inset: -34px -58px;
+  z-index: -1;
+  border-radius: 22px;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  background: radial-gradient(
+    66% 66% at 50% 50%,
+    color-mix(in srgb, var(--color-paper-lit) 97%, transparent) 40%,
+    transparent 84%
+  );
 }
 .clock {
   position: relative;

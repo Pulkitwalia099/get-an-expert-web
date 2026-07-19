@@ -20,10 +20,21 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import { useMemo, useRef, type RefObject } from "react";
 import * as THREE from "three";
-import { CITIES, MATCH_HOLDS_AT, PHASES, easeIO, lerp, seg } from "./film";
+import {
+  CITIES,
+  HELD_LAT,
+  HOLD,
+  HOLD_TARGET_AZ,
+  MATCH_HOLDS_AT,
+  PHASES,
+  easeIO,
+  lerp,
+  seg,
+} from "./film";
 import { readGlobePalette } from "./tokens";
 
 const CAM_Z = 6.2;
+const SPIN = 0.21; // free-spin speed (rad/s), matches the prototype's 0.0035/frame
 
 /* evenly spread N points on a unit sphere, scaled to radius R */
 function fibonacci(n: number, R: number): Float32Array {
@@ -81,6 +92,31 @@ const POINT_FRAG = /* glsl */ `
   }
 `;
 
+/* fresnel limb glow: transparent except at the grazing silhouette, so the dome
+   reads as a sphere. Intensity rises with the dusk grade. */
+const RIM_VERT = /* glsl */ `
+  varying vec3 vN;
+  varying vec3 vView;
+  void main() {
+    vec4 mv = modelViewMatrix * vec4(position, 1.0);
+    vN = normalize(normalMatrix * normal);
+    vView = normalize(-mv.xyz);
+    gl_Position = projectionMatrix * mv;
+  }
+`;
+
+const RIM_FRAG = /* glsl */ `
+  uniform vec3 uColor;
+  uniform float uIntensity;
+  uniform float uPower;
+  varying vec3 vN;
+  varying vec3 vView;
+  void main() {
+    float f = pow(1.0 - abs(dot(normalize(vN), normalize(vView))), uPower);
+    gl_FragColor = vec4(uColor, f * uIntensity);
+  }
+`;
+
 const ARC_SEGMENTS = 24;
 
 type SceneProps = {
@@ -106,11 +142,28 @@ function GlobeScene({
   const N = mobile ? 480 : 850;
 
   const positions = useMemo(() => fibonacci(N, R), [N, R]);
-  const cities = useMemo(() => cityLocals(R), [R]);
+  const cities = useMemo(() => {
+    const c = cityLocals(R);
+    // the held city (index 0) sits lower on the front so, once the spin eases to
+    // the hold angle, it projects into the dome's lower-right quadrant (4-5 o'clock)
+    c[0] = new THREE.Vector3(Math.cos(HELD_LAT) * R, Math.sin(HELD_LAT) * R, 0);
+    return c;
+  }, [R]);
+  // rotation.y that brings the held city to the target front-right azimuth.
+  // three.js world azimuth = localAzimuth - rotation.y, so rot = phi0 - target.
+  const HOLD_ROT = useMemo(
+    () => Math.atan2(cities[0].z, cities[0].x) - HOLD_TARGET_AZ,
+    [cities]
+  );
 
   const groupRef = useRef<THREE.Group>(null);
   const pointsMat = useRef<THREE.ShaderMaterial>(null);
+  const rimMat = useRef<THREE.ShaderMaterial>(null);
   const cityRefs = useRef<(THREE.Mesh | null)[]>([]);
+  // rotation hold state: free spin, then ease to HOLD_ROT over the HOLD window
+  const rotRef = useRef(0);
+  const rotFromRef = useRef<number | null>(null);
+  const rotToRef = useRef<number | null>(null);
 
   const pointUniforms = useMemo(
     () => ({
@@ -122,6 +175,15 @@ function GlobeScene({
       uColor: { value: palette.ink.clone() },
     }),
     [gl, R, mobile, palette]
+  );
+
+  const rimUniforms = useMemo(
+    () => ({
+      uColor: { value: palette.paper.clone() },
+      uIntensity: { value: 0 },
+      uPower: { value: 2.6 },
+    }),
+    [palette]
   );
 
   /* one arc line, repointed each frame to the active / match city.
@@ -163,23 +225,49 @@ function GlobeScene({
   const domeNight = useMemo(() => palette.paper.clone(), [palette]);
   const domeScratch = useMemo(() => palette.ink.clone(), [palette]);
 
-  useFrame((state) => {
+  useFrame((_state, delta) => {
     const group = groupRef.current;
     if (!group) return;
     const p = reduced ? staticProgress : progressRef.current;
-    const t = state.clock.elapsedTime;
+    const grade = reduced ? 0 : gradeRef.current;
 
     // the theatre wrapper (DOM) owns the fade in/out; the dot field stays full.
     const alpha = 1;
 
-    group.rotation.y = (reduced ? 0.6 : t * 0.025) + p * 2.6;
+    // free spin (time-based), then ease to the hold angle over the HOLD window and
+    // freeze there, so the match dot pins in the dome's lower-right quadrant.
+    if (reduced) {
+      group.rotation.y = 0.6;
+    } else {
+      const holdT = easeIO(seg(p, HOLD[0], HOLD[1]));
+      if (holdT <= 0) {
+        rotRef.current += delta * SPIN;
+        rotFromRef.current = null;
+        rotToRef.current = null;
+      } else {
+        if (rotToRef.current === null) {
+          rotFromRef.current = rotRef.current;
+          let d = (HOLD_ROT - rotRef.current) % (2 * Math.PI);
+          if (d > Math.PI) d -= 2 * Math.PI;
+          if (d <= -Math.PI) d += 2 * Math.PI;
+          rotToRef.current = rotRef.current + d;
+        }
+        const from = rotFromRef.current ?? rotRef.current;
+        const to = rotToRef.current ?? rotRef.current;
+        rotRef.current = lerp(from, to, holdT);
+      }
+      group.rotation.y = rotRef.current;
+    }
+
     if (pointsMat.current) {
       pointsMat.current.uniforms.uAlpha.value = alpha;
       // dusk grade: lighten the dome dots as the room darkens (day -> dusk)
-      const grade = reduced ? 0 : gradeRef.current;
       domeScratch.copy(domeDay).lerp(domeNight, grade);
       pointsMat.current.uniforms.uColor.value.copy(domeScratch);
     }
+    // limb glow rises with the dusk grade so the dome reads as a sphere at night
+    if (rimMat.current)
+      rimMat.current.uniforms.uIntensity.value = 0.1 + grade * 0.14;
 
     // where the probe sits, mapped to a world Y the arc reaches up toward
     const flyEase = easeIO(seg(p, PHASES.probeRise[0], PHASES.probeRise[1]));
@@ -300,6 +388,24 @@ function GlobeScene({
             <meshBasicMaterial transparent color={palette.bronze} />
           </mesh>
         ))}
+        {/* fresnel limb glow so the dome reads as a sphere */}
+        <mesh>
+          <sphereGeometry args={[R * 1.02, 48, 48]} />
+          <shaderMaterial
+            ref={rimMat}
+            args={[
+              {
+                uniforms: rimUniforms,
+                vertexShader: RIM_VERT,
+                fragmentShader: RIM_FRAG,
+                transparent: true,
+                depthWrite: false,
+                depthTest: false,
+                blending: THREE.AdditiveBlending,
+              },
+            ]}
+          />
+        </mesh>
       </group>
       <primitive object={arc} />
       <EffectComposer>

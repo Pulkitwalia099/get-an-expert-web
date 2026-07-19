@@ -98,7 +98,9 @@ export default function HeroFilm() {
   // match card
   const matchRef = useRef<HTMLDivElement>(null);
   const matchInfoRef = useRef<HTMLDivElement>(null);
-  const matchDotRef = useRef<[number, number]>([58, 62]);
+  // fallback origin = the globe's lower-right quadrant (used until the WebGL globe
+  // projects the held dot's live screen position)
+  const matchDotRef = useRef<[number, number]>([61, 66]);
 
   // chat contents
   const slotRef = useRef<HTMLDivElement>(null);
@@ -298,7 +300,8 @@ export default function HeroFilm() {
           : froze.y;
 
       const rise = easeIO(seg(p, PHASES.probeRise[0], PHASES.probeRise[1]));
-      const home = easeIO(seg(p, PHASES.probeHome[0], PHASES.probeHome[1]));
+      // probe settles home with a soft overshoot (easeOutBack)
+      const home = easeBack(seg(p, PHASES.probeHome[0], PHASES.probeHome[1]));
       const detach = seg(p, 0.12, 0.17); // composer hands the pill off to the probe
       const reattach = seg(p, 0.63, 0.68); // composer restored as the probe lands home
       if (composerRef.current)
@@ -383,7 +386,8 @@ export default function HeroFilm() {
       const headT = seg(mrRaw, 0, 0.5);
       const cardT = seg(mrRaw, 0.45, 1);
       const pop = headT > 0 ? easeBack(headT) : 0;
-      const fly = easeIO(seg(p, PHASES.matchFly[0], PHASES.matchFly[1]));
+      const flyRaw = seg(p, PHASES.matchFly[0], PHASES.matchFly[1]);
+      const fly = easeBack(flyRaw); // settles into the chat slot with a soft overshoot
       const dot = matchDotRef.current;
       if (matchRef.current) {
         matchRef.current.style.opacity = String(
@@ -436,15 +440,18 @@ export default function HeroFilm() {
       const slot = slotRef.current;
       if (slot) {
         slot.style.opacity = String(dock * (1 - seg(p, 0.7, 0.725)));
-        slot.classList.toggle(styles.glow, fly > 0.3 && fly < 1);
+        slot.classList.toggle(styles.glow, flyRaw > 0.3 && flyRaw < 1);
       }
-      if (p > 0.725) {
+      // slot fades out .70-.725 while the resident cross-fades in .72-.75 (no snap)
+      if (p > 0.72) {
         if (slot) slot.style.display = "none";
         residentRef.current?.classList.add(styles.on);
       } else {
         if (slot) slot.style.display = "grid";
         residentRef.current?.classList.remove(styles.on);
       }
+      if (residentRef.current)
+        residentRef.current.style.opacity = String(easeIO(seg(p, 0.72, 0.75)));
 
       // B6 context payload flies in horizontally from the left (session text area)
       // into the chat, lands as the sent message. No bottom arc: top is fixed.
@@ -453,13 +460,12 @@ export default function HeroFilm() {
         payloadRef.current.style.opacity = String(
           pay > 0 && pay < 1 ? Math.min(1, pay * 4) * (1 - seg(pay, 0.82, 1)) : 0
         );
-        payloadRef.current.style.left = `${lerp(30, 64, easeIO(pay))}%`;
+        payloadRef.current.style.left = `${lerp(30, 64, easeBack(pay))}%`; // soft settle
         payloadRef.current.style.top = "46%";
       }
       if (ctxMsgRef.current) {
-        ctxMsgRef.current.style.opacity = String(
-          pay >= 1 || p > PHASES.payload[1] ? 1 : 0
-        );
+        // sent message cross-fades in under the payload's fade-out (no snap)
+        ctxMsgRef.current.style.opacity = String(easeIO(seg(p, 0.745, 0.765)));
         ctxMsgRef.current.style.transform = "none";
       }
 
@@ -471,18 +477,27 @@ export default function HeroFilm() {
         replyRef.current.style.transform = `translateY(${(1 - rep) * 8}px)`;
       }
 
-      // B8 the wait: "one hour later" clock; the chat dims slightly so delivery
-      // lands with weight. chat opacity is finalized here (after the dock block).
+      // B8 the wait: the "one hour later" clock overlays the chat pane itself
+      // (tracked via its live rect); the chat dims beneath it so delivery has weight.
       const waitIn = easeIO(seg(p, 0.81, 0.845));
       const waitOut = easeIO(seg(p, 0.885, 0.915));
       const waitVis = clamp(waitIn - waitOut, 0, 1);
       if (waitRef.current) {
+        const wr = chat?.getBoundingClientRect();
+        if (wr && wr.width > 40) {
+          waitRef.current.style.left = `${
+            ((wr.left + wr.width / 2) / iw) * 100
+          }%`;
+          waitRef.current.style.top = `${
+            ((wr.top + wr.height / 2) / ih) * 100
+          }%`;
+        }
         waitRef.current.style.opacity = String(waitVis);
-        waitRef.current.style.transform = `translateX(-50%) translateY(${
+        waitRef.current.style.transform = `translate(-50%,-50%) translateY(${
           (1 - waitIn) * 8
         }px)`;
       }
-      if (chat) chat.style.opacity = String(dock * (1 - waitVis * 0.24));
+      if (chat) chat.style.opacity = String(dock * (1 - waitVis * 0.34));
 
       // B9 delivery + confetti
       if (p > PHASES.deliver[0] + 0.008) burst();

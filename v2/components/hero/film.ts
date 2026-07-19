@@ -45,22 +45,30 @@ export const ACT2_END = 1;
 export const PHASES = {
   headOut: [0.05, 0.12] as const, // B1
   duoRecede: [0.12, 0.2] as const, // B2: session recedes, probe frozen at composer
-  probeRise: [0.2, 0.28] as const, // B2: probe rises to search position + shrinks
+  probeRise: [0.19, 0.28] as const, // B2: probe rises, overlapping the recede tail
   theatre: [0.22, 0.55] as const, // B3
   scanCards: [0.26, 0.52] as const,
   scan: [0.26, 0.52] as const, // globe city-scan window (drives the active dot)
   matchResolve: [0.52, 0.58] as const, // B4
   duoReturn: [0.56, 0.66] as const, // B5: room + session return to day
   chatDock: [0.6, 0.68] as const,
-  matchFly: [0.58, 0.68] as const, // B5: match card travels right into the chat
+  matchFly: [0.57, 0.68] as const, // B5: match card travels right, riding the resolve tail
   probeHome: [0.6, 0.68] as const, // B5: probe travels down-left home (non-crossing)
   payload: [0.7, 0.76] as const, // B6: context flies in horizontally from the left
-  reply: [0.76, 0.81] as const, // B7
-  wait: [0.81, 0.9] as const, // B8: "one hour later"
+  reply: [0.755, 0.81] as const, // B7: overlaps the payload landing (cross-fade)
+  wait: [0.81, 0.9] as const, // B8: "one hour later" clock over the chat pane
   deliver: [0.9, 0.935] as const, // B9
   whisper: [0.935, 0.965] as const, // B10
   finale: [0.955, 1] as const, // B10
 };
+
+/* B3->B4: the globe eases its free spin to a hold angle over this window so the
+   match dot pins in the dome's lower-right quadrant before the head pops. */
+export const HOLD: readonly [number, number] = [0.44, 0.5];
+/* target world azimuth for the held dot (front-right, ~4-5 o'clock on the dome) */
+export const HOLD_TARGET_AZ = Math.PI / 4;
+/* latitude (radians, below the equator) the held city sits at, so it reads lower */
+export const HELD_LAT = -0.42;
 
 /* the film-progress point at which the globe dot holds green (a hair before the
    DOM match card resolves, so the dot anticipates the card). */
