@@ -1049,5 +1049,80 @@ class Component extends DCLogic {
     });
   })();
 </script>
+<!-- Join as an Expert: self-contained widget. Posts cross-origin to the v2 API. -->
+<button id="gae-x-pill" type="button" aria-haspopup="dialog" data-cta style="position:fixed;top:clamp(16px,3vw,34px);right:clamp(14px,3.3vw,44px);z-index:900;display:inline-flex;align-items:center;gap:8px;background:#2F4A38;color:#FDFBF6;border:0;cursor:pointer;font-family:'Hanken Grotesk',system-ui,sans-serif;font-size:clamp(13px,1.15vw,14.5px);font-weight:600;letter-spacing:0.02em;padding:clamp(9px,1.1vw,12px) clamp(15px,1.6vw,22px);border-radius:999px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.14),0 1px 2px rgba(28,26,22,0.18),0 12px 24px -12px rgba(47,74,56,0.55);">
+  <span aria-hidden="true" style="width:6px;height:6px;border-radius:999px;background:#FDFBF6;opacity:0.85;"></span>Join as an Expert
+</button>
+<div id="gae-x-overlay" style="display:none;position:fixed;inset:0;z-index:1100;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;">
+  <div id="gae-x-backdrop" style="position:absolute;inset:0;background:rgba(28,26,22,0.55);cursor:pointer;"></div>
+  <div role="dialog" aria-modal="true" aria-label="Join the expert network" style="position:relative;width:min(560px,100%);max-height:94svh;overflow:auto;background:#FAF7F0;border-radius:16px;padding:clamp(26px,4vw,40px);box-shadow:0 24px 80px -24px rgba(28,26,22,0.5);">
+    <button id="gae-x-close" type="button" aria-label="Close" style="position:absolute;top:14px;right:14px;width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;background:transparent;color:rgba(28,26,22,0.55);border:0;cursor:pointer;font-size:18px;line-height:1;border-radius:999px;">✕</button>
+    <div id="gae-x-form-wrap">
+      <h2 style="margin:0 0 10px;font-family:'Cormorant Garamond',serif;font-weight:600;font-size:clamp(25px,3vw,32px);line-height:1.18;max-width:22ch;">Join the expert network</h2>
+      <p style="margin:0 0 24px;font-size:15.5px;line-height:1.6;color:rgba(28,26,22,0.75);">We bring in a small number of people we&rsquo;d trust with our own work. Tell us a little about you and we&rsquo;ll be in touch.</p>
+      <form id="gae-x-form" novalidate style="display:flex;flex-direction:column;gap:15px;text-align:left;">
+        <label style="display:flex;flex-direction:column;gap:6px;"><span style="font-size:13px;font-weight:600;color:rgba(28,26,22,0.62);">Name</span><input id="gae-x-name" type="text" autocomplete="name" style="box-sizing:border-box;width:100%;padding:13px 14px;font-size:15px;font-family:inherit;color:#1C1A16;background:#fff;border:1px solid rgba(28,26,22,0.25);border-radius:4px;"></label>
+        <label style="display:flex;flex-direction:column;gap:6px;"><span style="font-size:13px;font-weight:600;color:rgba(28,26,22,0.62);">Email</span><input id="gae-x-email" type="email" autocomplete="email" style="box-sizing:border-box;width:100%;padding:13px 14px;font-size:15px;font-family:inherit;color:#1C1A16;background:#fff;border:1px solid rgba(28,26,22,0.25);border-radius:4px;"></label>
+        <label style="display:flex;flex-direction:column;gap:6px;"><span style="font-size:13px;font-weight:600;color:rgba(28,26,22,0.62);">Area of expertise</span><input id="gae-x-expertise" type="text" placeholder="e.g. distributed systems, brand design, growth" style="box-sizing:border-box;width:100%;padding:13px 14px;font-size:15px;font-family:inherit;color:#1C1A16;background:#fff;border:1px solid rgba(28,26,22,0.25);border-radius:4px;"></label>
+        <label style="display:flex;flex-direction:column;gap:6px;"><span style="font-size:13px;font-weight:600;color:rgba(28,26,22,0.62);">Years of experience</span><select id="gae-x-years" style="box-sizing:border-box;width:100%;padding:13px 14px;font-size:15px;font-family:inherit;color:#1C1A16;background:#fff;border:1px solid rgba(28,26,22,0.25);border-radius:4px;"><option value="">Select one&hellip;</option><option value="0-2">0 to 2</option><option value="3-5">3 to 5</option><option value="6-10">6 to 10</option><option value="10+">10 or more</option></select></label>
+        <label style="display:flex;flex-direction:column;gap:6px;"><span style="font-size:13px;font-weight:600;color:rgba(28,26,22,0.62);">Links (LinkedIn, GitHub, or portfolio)</span><input id="gae-x-links" type="text" placeholder="https://" style="box-sizing:border-box;width:100%;padding:13px 14px;font-size:15px;font-family:inherit;color:#1C1A16;background:#fff;border:1px solid rgba(28,26,22,0.25);border-radius:4px;"></label>
+        <label style="display:flex;flex-direction:column;gap:6px;"><span style="font-size:13px;font-weight:600;color:rgba(28,26,22,0.62);">What would you want to work on?</span><textarea id="gae-x-focus" rows="3" style="box-sizing:border-box;width:100%;padding:13px 14px;font-size:15px;font-family:inherit;color:#1C1A16;background:#fff;border:1px solid rgba(28,26,22,0.25);border-radius:4px;resize:vertical;min-height:76px;"></textarea></label>
+        <input id="gae-x-company" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;">
+        <button id="gae-x-submit" type="submit" data-cta style="margin-top:4px;background:#2F4A38;color:#FDFBF6;border:0;cursor:pointer;font-size:16px;font-weight:500;letter-spacing:0.02em;font-family:inherit;padding:16px 32px;border-radius:999px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.14),0 1px 2px rgba(28,26,22,0.18),0 12px 24px -10px rgba(47,74,56,0.5);">Submit application</button>
+        <div id="gae-x-error" style="display:none;font-size:13.5px;line-height:1.5;color:#A6543A;"></div>
+        <div style="font-size:12.5px;line-height:1.55;color:rgba(28,26,22,0.62);">We read every application by hand. The network stays small on purpose.</div>
+      </form>
+    </div>
+    <div id="gae-x-done" style="display:none;padding:8px 0 4px;">
+      <div aria-hidden="true" style="font-size:34px;line-height:1;color:#2F4A38;margin-bottom:16px;">&#10003;</div>
+      <h2 style="margin:0 0 12px;font-family:'Cormorant Garamond',serif;font-weight:600;font-size:clamp(24px,3vw,30px);line-height:1.2;">Thank you.</h2>
+      <p style="margin:0 0 26px;font-size:16px;line-height:1.62;color:rgba(28,26,22,0.78);max-width:42ch;">We read every application personally and will be in touch. We keep the network small on purpose.</p>
+      <button id="gae-x-done-close" type="button" data-cta style="background:transparent;color:#2F4A38;cursor:pointer;font-size:15px;font-weight:500;letter-spacing:0.02em;font-family:inherit;padding:13px 30px;border:1.5px solid rgba(47,74,56,0.4);border-radius:999px;">Close</button>
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  var API = 'https://get-an-expert-v2.vercel.app/api/expert-apply';
+  var $ = function (id) { return document.getElementById(id); };
+  var pill = $('gae-x-pill'), overlay = $('gae-x-overlay'), form = $('gae-x-form');
+  var formWrap = $('gae-x-form-wrap'), done = $('gae-x-done'), err = $('gae-x-error'), submitBtn = $('gae-x-submit');
+  function open() {
+    err.style.display = 'none';
+    formWrap.style.display = '';
+    done.style.display = 'none';
+    submitBtn.disabled = false; submitBtn.textContent = 'Submit application';
+    overlay.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    setTimeout(function () { var n = $('gae-x-name'); if (n) n.focus({ preventScroll: true }); }, 80);
+  }
+  function close() {
+    overlay.style.display = 'none';
+    document.body.style.overflow = '';
+    if (pill) pill.focus();
+  }
+  pill.addEventListener('click', open);
+  $('gae-x-close').addEventListener('click', close);
+  $('gae-x-backdrop').addEventListener('click', close);
+  $('gae-x-done-close').addEventListener('click', close);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && overlay.style.display !== 'none') close(); });
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    err.style.display = 'none';
+    var name = $('gae-x-name').value.trim(), email = $('gae-x-email').value.trim(), expertise = $('gae-x-expertise').value.trim();
+    var years = $('gae-x-years').value, links = $('gae-x-links').value.trim(), focus = $('gae-x-focus').value.trim();
+    var company = $('gae-x-company').value;
+    function showErr(m) { err.textContent = m; err.style.display = 'block'; }
+    if (!name) { showErr('Please add your name.'); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showErr('That email doesn’t look right. Mind checking it?'); return; }
+    if (!expertise) { showErr('Tell us your area of expertise.'); return; }
+    submitBtn.disabled = true; var prev = submitBtn.textContent; submitBtn.textContent = 'Sending…';
+    fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: name, email: email, expertise: expertise, yearsExperience: years, links: links, focusNote: focus, company: company }) })
+      .then(function (res) { return res.json().catch(function () { return {}; }).then(function (data) { if (!res.ok || data.ok === false) throw new Error(data.error || 'failed'); }); })
+      .then(function () { formWrap.style.display = 'none'; done.style.display = 'block'; })
+      .catch(function () { showErr('Could not send your application right now. Please try again in a minute.'); submitBtn.disabled = false; submitBtn.textContent = prev; });
+  });
+})();
+</script>
 </body>
 </html>
