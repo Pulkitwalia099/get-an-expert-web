@@ -3,18 +3,47 @@ import { validateExpert, type ExpertInput } from "@/lib/validateSubmission";
 
 const FAIL = "Could not save your application right now. Please try again in a minute.";
 
+// The static midsesh.com site posts here cross-origin, so allow those origins.
+const ALLOWED_ORIGINS = new Set([
+  "https://midsesh.com",
+  "https://www.midsesh.com",
+]);
+
+function corsHeaders(origin: string | null): Record<string, string> {
+  if (origin && ALLOWED_ORIGINS.has(origin)) {
+    return {
+      "Access-Control-Allow-Origin": origin,
+      Vary: "Origin",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+    };
+  }
+  return {};
+}
+
+export async function OPTIONS(request: Request) {
+  return new Response(null, {
+    status: 204,
+    headers: corsHeaders(request.headers.get("origin")),
+  });
+}
+
 export async function POST(request: Request) {
+  const cors = corsHeaders(request.headers.get("origin"));
+
   let body: ExpertInput;
   try {
     body = (await request.json()) as ExpertInput;
   } catch {
-    return Response.json({ ok: false, error: "Invalid request." }, { status: 400 });
+    return Response.json({ ok: false, error: "Invalid request." }, { status: 400, headers: cors });
   }
 
   const result = validateExpert(body);
-  if (!result.ok) return Response.json({ ok: false, error: result.error }, { status: 400 });
+  if (!result.ok)
+    return Response.json({ ok: false, error: result.error }, { status: 400, headers: cors });
   // Honeypot: report success to the bot, insert nothing.
-  if (result.kind === "honeypot") return Response.json({ ok: true }, { status: 200 });
+  if (result.kind === "honeypot")
+    return Response.json({ ok: true }, { status: 200, headers: cors });
 
   try {
     const { error } = await getSupabaseAdmin()
@@ -22,12 +51,12 @@ export async function POST(request: Request) {
       .insert(result.row);
     if (error) {
       console.error("[expert-apply] insert failed:", error.message);
-      return Response.json({ ok: false, error: FAIL }, { status: 500 });
+      return Response.json({ ok: false, error: FAIL }, { status: 500, headers: cors });
     }
   } catch (e) {
     console.error("[expert-apply] unexpected error:", e);
-    return Response.json({ ok: false, error: FAIL }, { status: 500 });
+    return Response.json({ ok: false, error: FAIL }, { status: 500, headers: cors });
   }
 
-  return Response.json({ ok: true }, { status: 200 });
+  return Response.json({ ok: true }, { status: 200, headers: cors });
 }
