@@ -426,10 +426,17 @@
   z-index: 8;
   opacity: 0;
   will-change: opacity;
+  /* isolate the theatre (and its WebGL canvas) into one compositing group so the
+     canvas stays grouped at z-index 8, above the dusk veil (z 1). Without this the
+     canvas's GPU layer could escape this stacking context and fall behind the veil
+     once the match/flash layers mount at matchResolve, blacking the dome on GPU. */
+  isolation: isolate;
 }
 .globe {
   position: absolute;
   inset: 0;
+  /* explicit stacking above the veil inside the isolated theatre group */
+  z-index: 1;
 }
 /* dusk grade veil: darkens only the room backdrop (sits below the panes and the
    globe theatre) as --grade rises. Isolated + strippable: remove this element,
