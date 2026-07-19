@@ -123,6 +123,8 @@ export default function HeroFilm() {
   const progressRef = useRef(0);
   const gradeRef = useRef(0); // dusk grade scalar shared with the globe
   const frozenComposerRef = useRef<{ x: number; y: number } | null>(null);
+  const rafFrameRef = useRef(0); // monotonic per-frame counter (compositor nudge)
+  const globeElRef = useRef<HTMLElement | null>(null); // the R3F canvas container
   const typedRef = useRef(false);
   const replyStartedRef = useRef(false);
   const burstArmedRef = useRef(true);
@@ -240,6 +242,28 @@ export default function HeroFilm() {
     const apply = (p: number) => {
       const ih = window.innerHeight;
       const iw = window.innerWidth;
+      rafFrameRef.current++; // monotonic per-frame counter for the compositor nudge
+
+      // CHROME COMPOSITOR WORKAROUND - remove when Chrome fixes WebGL re-layerization.
+      // At matchResolve (~.52) #match/#flash re-layerize over the WebGL canvas and the
+      // compositor drops it to black. The ONLY reliable cure is a per-frame CHANGING
+      // transform on the canvas's OWN container (.globe) - a constant transform does not
+      // recomposite (why the static persistent layer failed), and it must target .globe,
+      // not the theatre parent. The monotonic frame counter keeps the value changing even
+      // if the user stops scrolling mid-emergence. Scoped strictly to [.50, .64].
+      if (!globeElRef.current && stageRef.current)
+        globeElRef.current = stageRef.current.querySelector<HTMLElement>(
+          `.${styles.globe}`
+        );
+      if (globeElRef.current) {
+        if (p >= 0.5 && p <= 0.64) {
+          globeElRef.current.style.transform = `translateZ(0) translate3d(0, ${
+            (rafFrameRef.current % 2) * 0.02
+          }px, 0)`;
+        } else if (globeElRef.current.style.transform !== "") {
+          globeElRef.current.style.transform = "";
+        }
+      }
 
       // dusk grade (isolated experiment): day -> dusk over the search, and daylight
       // returns exactly as "one profile holds" (matchResolve .52). The fall is retimed
