@@ -1,25 +1,8 @@
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { validateExpert, type ExpertInput } from "@/lib/validateSubmission";
+import { corsHeaders } from "@/lib/cors";
 
 const FAIL = "Could not save your application right now. Please try again in a minute.";
-
-// The static midsesh.com site posts here cross-origin, so allow those origins.
-const ALLOWED_ORIGINS = new Set([
-  "https://midsesh.com",
-  "https://www.midsesh.com",
-]);
-
-function corsHeaders(origin: string | null): Record<string, string> {
-  if (origin && ALLOWED_ORIGINS.has(origin)) {
-    return {
-      "Access-Control-Allow-Origin": origin,
-      Vary: "Origin",
-      "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-    };
-  }
-  return {};
-}
 
 export async function OPTIONS(request: Request) {
   return new Response(null, {
