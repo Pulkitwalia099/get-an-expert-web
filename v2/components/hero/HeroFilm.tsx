@@ -331,15 +331,20 @@ export default function HeroFilm() {
         tetherRef.current.style.height = "18vh";
       }
 
-      // the search theatre (globe wrapper + searchline + counter). Hold the dome
-      // near-full through the head pop (matchResolve .52-.58) and fade .56-.63, so
-      // the match surfaces from a visible globe instead of a void.
-      const th =
+      // searchline + counter are plain DOM: fade them with the search itself.
+      const searchFade =
         easeIO(seg(p, PHASES.theatre[0], PHASES.theatre[1])) -
         easeIO(seg(p, 0.56, 0.63));
-      if (theatreRef.current) theatreRef.current.style.opacity = String(th);
-      if (searchlineRef.current) searchlineRef.current.style.opacity = String(th);
-      if (counterRef.current) counterRef.current.style.opacity = String(th);
+      if (searchlineRef.current)
+        searchlineRef.current.style.opacity = String(searchFade);
+      if (counterRef.current) counterRef.current.style.opacity = String(searchFade);
+      // The theatre WRAPPER holds full opacity through the globe's visible life so
+      // the WebGL canvas is never composited at a fractional ancestor opacity (which
+      // drops the dome on some GPUs). Its short in/out fades sit where the globe's
+      // in-shader alpha is already ~0, so the sweep fades cleanly and nothing pops.
+      const theatreOn =
+        easeIO(seg(p, 0.18, 0.24)) - easeIO(seg(p, 0.6, 0.66));
+      if (theatreRef.current) theatreRef.current.style.opacity = String(theatreOn);
       const scan = seg(p, 0.26, 0.52);
       if (countRef.current)
         countRef.current.textContent = Math.floor(

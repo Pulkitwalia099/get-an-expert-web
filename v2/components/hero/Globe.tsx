@@ -231,8 +231,14 @@ function GlobeScene({
     const p = reduced ? staticProgress : progressRef.current;
     const grade = reduced ? 0 : gradeRef.current;
 
-    // the theatre wrapper (DOM) owns the fade in/out; the dot field stays full.
-    const alpha = 1;
+    // The globe's own visibility, driven IN-SHADER (not via the DOM wrapper's
+    // opacity). A WebGL canvas under a fractional-opacity ancestor drops to nothing
+    // on some GPUs while sibling DOM (the sweep) still composites, which zeroed the
+    // dome during the emergence. Fade in .20-.30, hold near-full through the head
+    // pop (~.56), fade out .56-.63 so the dome is present through the emergence.
+    const alpha = reduced
+      ? 1
+      : easeIO(seg(p, 0.2, 0.3)) * (1 - easeIO(seg(p, 0.56, 0.63)));
 
     // free spin (time-based), then ease to the hold angle over the HOLD window and
     // freeze there, so the match dot pins in the dome's lower-right quadrant.
@@ -265,9 +271,10 @@ function GlobeScene({
       domeScratch.copy(domeDay).lerp(domeNight, grade);
       pointsMat.current.uniforms.uColor.value.copy(domeScratch);
     }
-    // limb glow rises with the dusk grade so the dome reads as a sphere at night
+    // limb glow rises with the dusk grade so the dome reads as a sphere at night,
+    // and fades with the dome (alpha) so it does not linger after the globe clears
     if (rimMat.current)
-      rimMat.current.uniforms.uIntensity.value = 0.1 + grade * 0.14;
+      rimMat.current.uniforms.uIntensity.value = (0.1 + grade * 0.14) * alpha;
 
     // where the probe sits, mapped to a world Y the arc reaches up toward
     const flyEase = easeIO(seg(p, PHASES.probeRise[0], PHASES.probeRise[1]));
