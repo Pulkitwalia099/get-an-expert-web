@@ -453,9 +453,14 @@ export default function Globe({
       className={className}
       flat
       dpr={[1, mobile ? 1.5 : 2]}
-      gl={{ alpha: true, antialias: true }}
+      // preserveDrawingBuffer keeps the last rendered frame in the WebGL buffer, so
+      // if a render is ever skipped (e.g. the scene freezes at the rotation hold) the
+      // dome stays on screen instead of the buffer clearing to black on some GPUs.
+      gl={{ alpha: true, antialias: true, preserveDrawingBuffer: true }}
       camera={{ position: [0, 0, CAM_Z], fov: 42, near: 0.1, far: 100 }}
-      frameloop={reduced ? "demand" : "always"}
+      // render every frame (never render-on-demand) so a frozen globe keeps
+      // refreshing its buffer; the paired preserveDrawingBuffer is the belt-and-braces.
+      frameloop="always"
       style={{ pointerEvents: "none" }}
     >
       <GlobeScene
