@@ -35,6 +35,9 @@ import { readGlobePalette } from "./tokens";
 
 const CAM_Z = 6.2;
 const SPIN = 0.21; // free-spin speed (rad/s), matches the prototype's 0.0035/frame
+const SLOW = 0.04; // slow continuous drift (rad/s) applied through the hold + finale so
+// the globe NEVER freezes: a perpetually-moving scene always has a real frame to render,
+// so the WebGL buffer can never go stale/black on render-on-demand-stalling GPUs.
 
 /* evenly spread N points on a unit sphere, scaled to radius R */
 function fibonacci(n: number, R: number): Float32Array {
@@ -160,10 +163,12 @@ function GlobeScene({
   const pointsMat = useRef<THREE.ShaderMaterial>(null);
   const rimMat = useRef<THREE.ShaderMaterial>(null);
   const cityRefs = useRef<(THREE.Mesh | null)[]>([]);
-  // rotation hold state: free spin, then ease to HOLD_ROT over the HOLD window
+  // rotation state: free spin, then ease to HOLD_ROT over the HOLD window, then a slow
+  // continuous drift on top (never frozen). driftRef is the ever-growing slow offset.
   const rotRef = useRef(0);
   const rotFromRef = useRef<number | null>(null);
   const rotToRef = useRef<number | null>(null);
+  const driftRef = useRef(0);
 
   const pointUniforms = useMemo(
     () => ({
@@ -240,17 +245,22 @@ function GlobeScene({
       ? 1
       : easeIO(seg(p, 0.2, 0.3)) * (1 - easeIO(seg(p, 0.56, 0.63)));
 
-    // free spin (time-based), then ease to the hold angle over the HOLD window and
-    // freeze there, so the match dot pins in the dome's lower-right quadrant.
+    // free spin, then ease to the hold angle (dot -> lower-right), then a slow
+    // continuous drift ON TOP so the globe never freezes. The match dot is projected
+    // live every frame below, so the flash/head/arc follow the slowly drifting point.
     if (reduced) {
       group.rotation.y = 0.6;
     } else {
       const holdT = easeIO(seg(p, HOLD[0], HOLD[1]));
       if (holdT <= 0) {
+        // fast free spin before the hold; drift not yet accruing
         rotRef.current += delta * SPIN;
         rotFromRef.current = null;
         rotToRef.current = null;
+        driftRef.current = 0;
+        group.rotation.y = rotRef.current;
       } else {
+        // ease the base toward the hold angle so the dot settles lower-right...
         if (rotToRef.current === null) {
           rotFromRef.current = rotRef.current;
           let d = (HOLD_ROT - rotRef.current) % (2 * Math.PI);
@@ -261,8 +271,11 @@ function GlobeScene({
         const from = rotFromRef.current ?? rotRef.current;
         const to = rotToRef.current ?? rotRef.current;
         rotRef.current = lerp(from, to, holdT);
+        // ...but keep a slow nonzero drift on top (accrues every frame, even parked),
+        // so the applied rotation always changes and the scene is never static.
+        driftRef.current += delta * SLOW;
+        group.rotation.y = rotRef.current + driftRef.current;
       }
-      group.rotation.y = rotRef.current;
     }
 
     if (pointsMat.current) {
