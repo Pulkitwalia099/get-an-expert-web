@@ -437,6 +437,13 @@
   inset: 0;
   /* explicit stacking above the veil inside the isolated theatre group */
   z-index: 1;
+  /* Pin the WebGL canvas onto its own PERSISTENT GPU compositing layer. Without
+     this, when #match/#flash promote to layers at matchResolve (~.52) Chrome
+     rebuilds the layer tree and transiently drops the canvas to black; a stable
+     layer means the .52 layer churn never re-layerizes the canvas. (GPU-only;
+     headless never re-layerized so it never reproduced here.) */
+  transform: translateZ(0);
+  will-change: transform;
 }
 /* dusk grade veil: darkens only the room backdrop (sits below the panes and the
    globe theatre) as --grade rises. Isolated + strippable: remove this element,
