@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Hanken_Grotesk } from "next/font/google";
 import "./globals.css";
+import ExpertApply from "@/components/ExpertApply";
 
 const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
@@ -55,7 +56,10 @@ export default function RootLayout({
       lang="en"
       className={`${cormorant.variable} ${hanken.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <ExpertApply />
+        {children}
+      </body>
     </html>
   );
 }
