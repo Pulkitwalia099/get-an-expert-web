@@ -42,8 +42,14 @@
   inset: 0;
   z-index: 45;
   pointer-events: none;
-  opacity: 0.05;
-  mix-blend-mode: multiply;
+  /* NOTE: no mix-blend-mode here. `multiply` forces the compositor to blend this
+     grain against a backdrop that includes the WebGL globe canvas; the moment the
+     match card + flash (layer-promoted via will-change/transform) mount over the
+     canvas at matchResolve (~.52), Chrome's GPU compositor drops the canvas to
+     black inside that blend group (headless SwiftShader composites differently, so
+     it never showed here). A plain low-opacity overlay keeps the grain without
+     pulling the canvas into a blend group. */
+  opacity: 0.045;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/></filter><rect width='120' height='120' filter='url(%23n)' opacity='0.6'/></svg>");
 }
 
