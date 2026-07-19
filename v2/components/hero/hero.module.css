@@ -567,6 +567,19 @@
   font-weight: 700;
 }
 
+/* ---------- match emergence overlay (OUTSIDE the stage/canvas subtree) ---------- */
+/* A fixed, isolated overlay so #match/#flash never share the WebGL canvas's
+   compositing tree; their promotion at matchResolve then cannot drop the dome to
+   black on GPU. Fixed at the viewport, which the pinned stage also fills, so the
+   same left/top % land identically. */
+.matchOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  isolation: isolate;
+  pointer-events: none;
+}
+
 /* ---------- match card (center resolve, then flies to chat) ---------- */
 .match {
   position: absolute;
@@ -999,6 +1012,7 @@
 .reduced .counter,
 .reduced .scanCard,
 .reduced .match,
+.reduced .matchOverlay,
 .reduced .payload,
 .reduced .tether,
 .reduced .flash,

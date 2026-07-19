@@ -123,7 +123,6 @@ export default function HeroFilm() {
   const progressRef = useRef(0);
   const gradeRef = useRef(0); // dusk grade scalar shared with the globe
   const frozenComposerRef = useRef<{ x: number; y: number } | null>(null);
-  const globeElRef = useRef<HTMLElement | null>(null); // the R3F canvas container
   const typedRef = useRef(false);
   const replyStartedRef = useRef(false);
   const burstArmedRef = useRef(true);
@@ -596,37 +595,6 @@ export default function HeroFilm() {
     };
     rafId = requestAnimationFrame(tick);
 
-    // CHROME COMPOSITOR WORKAROUND - remove when Chrome fixes WebGL re-layerization.
-    // At matchResolve (~.52) #match/#flash re-layerize over the WebGL canvas and the
-    // compositor drops it to black; the ONLY reliable cure is a per-frame CHANGING
-    // transform on the canvas's OWN container (.globe). This runs on its OWN rAF loop,
-    // independent of the scroll-driven apply(), so it keeps recompositing even when the
-    // user is PARKED mid-emergence (a hero can be paused mid-scroll). The value must
-    // differ frame to frame (a constant transform does not recomposite), so it alternates
-    // via a monotonic frame counter. Scoped to [.50, .64]; cleared outside.
-    let nudgeRaf = 0;
-    let nudgeFrame = 0;
-    const nudgeLoop = () => {
-      nudgeFrame++;
-      if (!globeElRef.current && stageRef.current)
-        globeElRef.current = stageRef.current.querySelector<HTMLElement>(
-          `.${styles.globe}`
-        );
-      const gp = progressRef.current;
-      const g = globeElRef.current;
-      if (g) {
-        if (gp >= 0.5 && gp <= 0.64) {
-          g.style.transform = `translateZ(0) translate3d(0, ${
-            (nudgeFrame % 2) * 0.02
-          }px, 0)`;
-        } else if (g.style.transform !== "") {
-          g.style.transform = "";
-        }
-      }
-      nudgeRaf = requestAnimationFrame(nudgeLoop);
-    };
-    nudgeRaf = requestAnimationFrame(nudgeLoop);
-
     ScrollTrigger.refresh();
 
     // capture refs for cleanup (stable for this component's lifetime)
@@ -642,7 +610,6 @@ export default function HeroFilm() {
         ?.querySelectorAll(`.${styles.confetti}`)
         .forEach((n) => n.remove());
       cancelAnimationFrame(rafId);
-      cancelAnimationFrame(nudgeRaf);
       gsap.ticker.remove(lenisRaf);
       tl.scrollTrigger?.kill();
       tl.kill();
@@ -842,15 +809,8 @@ export default function HeroFilm() {
             {person}
           </div>
         ))}
-        <div className={styles.flash} ref={flashRef} />
-
-        <div className={styles.match} ref={matchRef}>
-          <span className={styles.ava} />
-          <div className={styles.matchInfo} ref={matchInfoRef}>
-            <b>Motion graphic designer</b>
-            <span>100+ launch videos · since 2016</span>
-          </div>
-        </div>
+        {/* #match and #flash live in a fixed overlay OUTSIDE the stage (see below),
+           so their layer promotion cannot re-layerize the WebGL globe canvas. */}
 
         <div className={styles.payload} ref={payloadRef}>
           <span className={styles.who}>shared from your session</span>
@@ -915,6 +875,23 @@ export default function HeroFilm() {
         </div>
         <div className={styles.cue} ref={cueRef}>
           scroll
+        </div>
+      </div>
+
+      {/* The emergence layer lives OUTSIDE the stage, in its own fixed, isolated
+         overlay. #match/#flash promote at matchResolve, and keeping them out of the
+         WebGL canvas's compositing subtree stops that promotion from dropping the
+         dome to black on GPU. The stage is pinned at the viewport (top:0, 100vw x
+         100vh) throughout the film, so the same left/top % values land identically
+         here in viewport space. Positions are set imperatively in apply(). */}
+      <div className={styles.matchOverlay}>
+        <div className={styles.flash} ref={flashRef} />
+        <div className={styles.match} ref={matchRef}>
+          <span className={styles.ava} />
+          <div className={styles.matchInfo} ref={matchInfoRef}>
+            <b>Motion graphic designer</b>
+            <span>100+ launch videos · since 2016</span>
+          </div>
         </div>
       </div>
     </section>
