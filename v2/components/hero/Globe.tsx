@@ -408,13 +408,20 @@ function GlobeScene({
        During the scan it follows the active city, racking over the first third
        of each city's slot so the pull reads as a rack rather than a cut. Once
        the match holds it settles on the held dot and stays there. Purely a
-       function of progress, so a backwards scrub racks back the same way. */
+       function of progress, so a backwards scrub racks back the same way.
+
+       A city on the BACK hemisphere is culled and never drawn, so racking to it
+       would put the focal plane behind the dome and throw every visible dot out
+       of focus at once. Those fall back to the front surface, which is where the
+       viewer is looking anyway. Same z > 0.05 front test the arc uses. */
+    const FRONT_Z = R - CAM_Z;
     const viewZ = (mesh: THREE.Mesh | null | undefined) => {
-      if (!mesh) return -CAM_Z;
+      if (!mesh) return FRONT_Z;
       mesh.getWorldPosition(focusScratch);
+      if (focusScratch.z <= 0.05) return FRONT_Z;
       return focusScratch.applyMatrix4(camera.matrixWorldInverse).z;
     };
-    let focusZ = -CAM_Z; // sphere centre before the theatre opens
+    let focusZ = FRONT_Z; // the dome front, before the theatre opens
     if (matchHolds) {
       const t = easeIO(seg(p, MATCH_HOLDS_AT, PHASES.matchResolve[1]));
       focusZ = lerp(
