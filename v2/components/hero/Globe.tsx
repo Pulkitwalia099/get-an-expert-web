@@ -17,18 +17,9 @@
  * tracks the probe's vertical position, rather than the probe's exact DOM box. */
 
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import {
-  EffectComposer,
-  Bloom,
-  Noise,
-  Vignette,
-} from "@react-three/postprocessing";
-import {
-  BlendFunction,
-  type NoiseEffect,
-  type VignetteEffect,
-} from "postprocessing";
-import { useMemo, useRef, type RefObject } from "react";
+import { EffectComposer, Bloom } from "@react-three/postprocessing";
+import { BlendFunction, NoiseEffect, VignetteEffect } from "postprocessing";
+import { useEffect, useMemo, useRef, type RefObject } from "react";
 import * as THREE from "three";
 import {
   CITIES,
@@ -307,8 +298,33 @@ function GlobeScene({
   const tmp = useMemo(() => new THREE.Vector3(), []);
   const proj = useMemo(() => new THREE.Vector3(), []);
   const focusScratch = useMemo(() => new THREE.Vector3(), []);
-  const noiseRef = useRef<NoiseEffect>(null);
-  const vignetteRef = useRef<VignetteEffect>(null);
+
+  /* Grain and vignette are constructed here and mounted as primitives rather
+     than through the <Noise>/<Vignette> wrappers. Those wrappers memoize on
+     JSON.stringify(props), so handing one a ref throws "circular structure"
+     the moment the ref fills with the effect instance. Owning the instances
+     also means the per-frame updates below need no ref indirection. */
+  const noise = useMemo(
+    () =>
+      mobile
+        ? null
+        : new NoiseEffect({
+            premultiply: true,
+            blendFunction: BlendFunction.OVERLAY,
+          }),
+    [mobile]
+  );
+  const vignette = useMemo(
+    () => new VignetteEffect({ offset: 0.3, darkness: 0.42 }),
+    []
+  );
+  useEffect(
+    () => () => {
+      noise?.dispose();
+      vignette.dispose();
+    },
+    [noise, vignette]
+  );
   const matchColor = useMemo(
     () => palette.sage.clone().multiplyScalar(2.4),
     [palette]
@@ -452,10 +468,8 @@ function GlobeScene({
     /* Grain and vignette cooperate with the dusk grade rather than fight it:
        both ease off as the room darkens, since the grade is already removing
        light from the frame. */
-    if (noiseRef.current)
-      noiseRef.current.blendMode.opacity.value = lerp(0.32, 0.2, grade) * alpha;
-    if (vignetteRef.current)
-      vignetteRef.current.darkness = lerp(0.42, 0.26, grade);
+    if (noise) noise.blendMode.opacity.value = lerp(0.32, 0.2, grade) * alpha;
+    vignette.darkness = lerp(0.42, 0.26, grade);
 
     // update every marker's look + visibility (cull the back hemisphere)
     for (let i = 0; i < cities.length; i++) {
@@ -591,20 +605,16 @@ function GlobeScene({
           shading. Mobile drops the grain pass, the one buying the least here.
           The two branches exist because EffectComposer types its children
           strictly; BLOOM keeps the approved bloom identical across both. */}
-      {mobile ? (
+      {noise ? (
         <EffectComposer>
+          <primitive object={noise} />
           <Bloom {...BLOOM} />
-          <Vignette ref={vignetteRef} offset={0.3} darkness={0.42} />
+          <primitive object={vignette} />
         </EffectComposer>
       ) : (
         <EffectComposer>
-          <Noise
-            ref={noiseRef}
-            premultiply
-            blendFunction={BlendFunction.OVERLAY}
-          />
           <Bloom {...BLOOM} />
-          <Vignette ref={vignetteRef} offset={0.3} darkness={0.42} />
+          <primitive object={vignette} />
         </EffectComposer>
       )}
     </>
