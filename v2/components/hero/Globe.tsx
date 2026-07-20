@@ -68,6 +68,27 @@ const MAX_COC = 1.2;
    anyway. */
 const FRONT_BAND = 0.6;
 
+/* The vignette runs WITH the dusk grade, not against it. It can only touch
+   pixels the canvas drew, so what it darkens is dots, never the room. At dusk
+   the dots are light on a dark room and darkening the outer ones recedes them,
+   which is the "hold attention centre-frame" the plan asks for. At day the same
+   dots are ink on cream, so darkening them ADDS peripheral contrast: measured
+   on the limb with darkness forced to 1.0, dot contrast moves +8.3% at day
+   against -37.0% at dusk. So day gets nothing and the grade ramps it in.
+
+   VIGNETTE_DUSK is set against the shader's own transfer curve, which is
+   smoothstep(0.8, offset * 0.799, d * (darkness + offset)) over uv distance d
+   from centre. At 0.5 the dome is untouched (multiplier 1.000) inside d = 0.35,
+   dims 12% at the limb the dome actually reaches (d = 0.45), and only bites
+   hard out in the square canvas corners the dome never occupies. That is a
+   falloff you read as depth, not as a ring.
+
+   darkness 0 is a true no-op here, not merely a weak setting: it leaves
+   d * (0 + offset) below the falloff's inner edge for every d on the canvas,
+   so the day-graded majority of the film pays nothing at all. */
+const VIGNETTE_OFFSET = 0.3;
+const VIGNETTE_DUSK = 0.5;
+
 /* Directional motion smear. SHUTTER is the fraction of a frame interval a real
    camera exposes for: 0.5 is the classic 180-degree shutter. The pixel cap keeps
    a hard scrub from ballooning the sprites into fill-rate cost. */
@@ -326,7 +347,7 @@ function GlobeScene({
      moment the ref fills with the effect instance. Owning the instance also
      means the per-frame update below needs no ref indirection. */
   const vignette = useMemo(
-    () => new VignetteEffect({ offset: 0.3, darkness: 0.42 }),
+    () => new VignetteEffect({ offset: VIGNETTE_OFFSET, darkness: 0 }),
     []
   );
   useEffect(() => () => vignette.dispose(), [vignette]);
@@ -492,10 +513,8 @@ function GlobeScene({
       u.uRes.value.set(gl.domElement.width, gl.domElement.height);
     }
 
-    /* The vignette cooperates with the dusk grade rather than fighting it: it
-       eases off as the room darkens, since the grade is already removing light
-       from the frame. */
-    vignette.darkness = lerp(0.42, 0.26, grade);
+    // off through the day-graded frame, ramping in only as the room darkens
+    vignette.darkness = VIGNETTE_DUSK * grade;
 
     // update every marker's look + visibility (cull the back hemisphere)
     for (let i = 0; i < cities.length; i++) {
