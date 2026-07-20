@@ -50,7 +50,7 @@ const CAM_Z = 6.2;
    Mobile runs NEITHER lens effect: aperture and streak are both zero, which
    collapses the shader to the plain disc it drew before. Both spread the point
    sprites, and sprite spread is fill cost, which is the budget a phone has
-   least of. On the M4 this machine measures with, mobile's depth of field cost
+   least of. On the M4 measured on here, mobile's depth of field cost
    sits inside run-to-run noise, so the measurement cannot clear it on hardware
    several times slower. The rack focus is also close to illegible on a dome
    375px wide, so it was buying the least of anything added here. */
