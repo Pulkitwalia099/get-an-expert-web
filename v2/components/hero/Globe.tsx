@@ -144,10 +144,14 @@ const POINT_VERT = /* glsl */ `
     vec2 dPix = (clipB.xy / clipB.w - clip.xy / clip.w) * 0.5 * uRes;
     float streak = min(length(dPix), uMaxStreak);
 
-    float size = disc + streak;
+    // The sprite must hold the disc AND its soft edge, or the falloff is clipped
+    // at the sprite bounds and the bokeh reads as a rounded square. Keeping
+    // vRad + vSoft <= 0.5 needs size >= disc * (1 + 0.6 * cocNorm).
+    float cocNorm = coc / max(uMaxCoc, 0.001);
+    float size = disc * (1.0 + 0.6 * cocNorm) + streak;
     gl_PointSize = size;
     vRad = 0.42 * disc / size;
-    vSoft = (0.08 + 0.30 * coc / max(uMaxCoc, 0.001)) * disc / size;
+    vSoft = (0.08 + 0.30 * cocNorm) * disc / size;
     vStreak = (dPix / max(length(dPix), 1e-4)) * (streak * 0.5 / size);
     vDim = 1.0 / (1.0 + (size / base - 1.0) * 1.2);
   }
