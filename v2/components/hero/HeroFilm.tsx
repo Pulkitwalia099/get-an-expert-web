@@ -34,6 +34,8 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
+import SoundToggle from "./SoundToggle";
+import { filmAudio } from "./audio";
 import {
   ASK,
   PHASES,
@@ -314,6 +316,9 @@ export default function HeroFilm() {
 
     // apply one film-progress value across every DOM layer
     const apply = (p: number) => {
+      // the sound layer edge-triggers its own cues off film progress; it is
+      // muted by default and does its scheduling off the render path
+      filmAudio.update(p);
       const ih = window.innerHeight;
       const iw = window.innerWidth;
 
@@ -1011,6 +1016,14 @@ export default function HeroFilm() {
           </div>
         </div>
       </div>
+
+      {/* A DIRECT child of the track, deliberately outside .stage and outside the
+         duo/overlay subtrees. The toggle is position: fixed, and any ancestor
+         carrying a per-frame transform would become its containing block and
+         drag it around with the film. Nothing in the film occupies the bottom
+         right corner (.rail is vertically centred, .cue is bottom centre), so it
+         sits clear at every width. */}
+      <SoundToggle />
     </section>
   );
 }
