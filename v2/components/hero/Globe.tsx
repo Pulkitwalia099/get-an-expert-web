@@ -18,7 +18,7 @@
 
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
-import { BlendFunction, NoiseEffect, VignetteEffect } from "postprocessing";
+import { VignetteEffect } from "postprocessing";
 import { useEffect, useMemo, useRef, type RefObject } from "react";
 import * as THREE from "three";
 import {
@@ -54,15 +54,13 @@ const CAM_Z = 6.2;
    sits inside run-to-run noise, so the measurement cannot clear it on hardware
    several times slower. The rack focus is also close to illegible on a dome
    375px wide, so it was buying the least of anything added here. */
-const APERTURE = 0.5;
-const MAX_COC = 1.6;
+const APERTURE = 0.38;
+const MAX_COC = 1.2;
 
-/* Directional motion smear. Velocity is the ANALYTIC derivative of the globe's
-   rotation with respect to film progress, so it is a pure function of progress:
-   scrubbing backwards reproduces the same smear at the same point in the film.
-   SMEAR_GAIN converts radians-per-unit-progress into radians smeared into one
-   frame; the pixel cap keeps a fast beat from ballooning the sprites. */
-const SMEAR_GAIN = 0.0009;
+/* Directional motion smear. SHUTTER is the fraction of a frame interval a real
+   camera exposes for: 0.5 is the classic 180-degree shutter. The pixel cap keeps
+   a hard scrub from ballooning the sprites into fill-rate cost. */
+const SHUTTER = 0.5;
 const MAX_STREAK_PX = 12;
 
 /* The approved bloom, verbatim. Task 4 adds passes around it and never retunes it. */
@@ -151,7 +149,7 @@ const POINT_VERT = /* glsl */ `
     vRad = 0.42 * disc / size;
     vSoft = (0.08 + 0.30 * coc / max(uMaxCoc, 0.001)) * disc / size;
     vStreak = (dPix / max(length(dPix), 1e-4)) * (streak * 0.5 / size);
-    vDim = 1.0 / (1.0 + (size / base - 1.0) * 1.6);
+    vDim = 1.0 / (1.0 + (size / base - 1.0) * 1.2);
   }
 `;
 
@@ -249,6 +247,8 @@ function GlobeScene({
   const rotRef = useRef(0);
   const rotFromRef = useRef<number | null>(null);
   const rotToRef = useRef<number | null>(null);
+  // last applied rotation, for the one-frame motion smear delta (not an accumulator)
+  const prevRotRef = useRef<number | null>(null);
   const driftRef = useRef(0);
 
   const pointUniforms = useMemo(
@@ -305,32 +305,16 @@ function GlobeScene({
   const proj = useMemo(() => new THREE.Vector3(), []);
   const focusScratch = useMemo(() => new THREE.Vector3(), []);
 
-  /* Grain and vignette are constructed here and mounted as primitives rather
-     than through the <Noise>/<Vignette> wrappers. Those wrappers memoize on
-     JSON.stringify(props), so handing one a ref throws "circular structure"
-     the moment the ref fills with the effect instance. Owning the instances
-     also means the per-frame updates below need no ref indirection. */
-  const noise = useMemo(
-    () =>
-      mobile
-        ? null
-        : new NoiseEffect({
-            premultiply: true,
-            blendFunction: BlendFunction.OVERLAY,
-          }),
-    [mobile]
-  );
+  /* The vignette is constructed here and mounted as a primitive rather than
+     through the <Vignette> wrapper. That wrapper memoizes on
+     JSON.stringify(props), so handing it a ref throws "circular structure" the
+     moment the ref fills with the effect instance. Owning the instance also
+     means the per-frame update below needs no ref indirection. */
   const vignette = useMemo(
     () => new VignetteEffect({ offset: 0.3, darkness: 0.42 }),
     []
   );
-  useEffect(
-    () => () => {
-      noise?.dispose();
-      vignette.dispose();
-    },
-    [noise, vignette]
-  );
+  useEffect(() => () => vignette.dispose(), [vignette]);
   const matchColor = useMemo(
     () => palette.sage.clone().multiplyScalar(2.4),
     [palette]
@@ -443,22 +427,25 @@ function GlobeScene({
       );
     }
 
-    /* ---- motion smear velocity: the ANALYTIC derivative of rotation.y with
-       respect to film progress. rotation.y = lerp(from, to, easeIO(s)) over the
-       HOLD window, and easeIO'(s) is 4s below the midpoint, 4(1-s) above it.
-       No frame deltas and no accumulator, so the smear is identical scrubbing
-       in either direction. It is nonzero only while the globe is actually
-       swinging to its hold angle, which is the one fast globe beat; every slow
-       beat leaves it at zero and pays nothing. */
-    let rotVel = 0;
-    if (!reduced && !mobile && rotToRef.current !== null) {
-      const s = seg(p, HOLD[0], HOLD[1]);
-      if (s > 0 && s < 1) {
-        const dEase = s < 0.5 ? 4 * s : 4 * (1 - s);
-        const span = rotToRef.current - (rotFromRef.current ?? 0);
-        rotVel = ((span * dEase) / (HOLD[1] - HOLD[0])) * SMEAR_GAIN;
-      }
-    }
+    /* ---- motion smear velocity: how far the globe actually turned this frame,
+       times a 180-degree shutter, which is the fraction of a frame interval a
+       real camera exposes for.
+
+       This is the frame-to-frame form rather than the analytic derivative with
+       respect to progress, and it needs no direction-change reset: the streak is
+       a capsule centred on the dot, so reversing the sign draws the identical
+       shape. It holds one previous scalar and accumulates nothing, and the smear
+       never feeds back into position, so scrubbing backwards retraces exactly.
+
+       The analytic form was tried first and rejected: it reports the rotation per
+       unit progress, which stays large when the film is PARKED inside the hold
+       window, leaving the dome permanently smeared while nothing moves on screen.
+       Velocity per frame is zero when parked, which is the whole point. It also
+       picks up the free spin and the drift for free. */
+    const dRot =
+      prevRotRef.current === null ? 0 : group.rotation.y - prevRotRef.current;
+    prevRotRef.current = group.rotation.y;
+    const rotVel = mobile || reduced ? 0 : dRot * SHUTTER;
 
     if (pointsMat.current) {
       const u = pointsMat.current.uniforms;
@@ -471,10 +458,9 @@ function GlobeScene({
       u.uRes.value.set(gl.domElement.width, gl.domElement.height);
     }
 
-    /* Grain and vignette cooperate with the dusk grade rather than fight it:
-       both ease off as the room darkens, since the grade is already removing
-       light from the frame. */
-    if (noise) noise.blendMode.opacity.value = lerp(0.32, 0.2, grade) * alpha;
+    /* The vignette cooperates with the dusk grade rather than fighting it: it
+       eases off as the room darkens, since the grade is already removing light
+       from the frame. */
     vignette.darkness = lerp(0.42, 0.26, grade);
 
     // update every marker's look + visibility (cull the back hemisphere)
@@ -604,25 +590,20 @@ function GlobeScene({
         </mesh>
       </group>
       <primitive object={arc} />
-      {/* Grain runs BEFORE bloom so bloom blooms over it, the way grain sits
-          under halation on real film. At this opacity it stays well below
-          bloom's 0.5 luminance threshold, so bloom's character is untouched.
-          The vignette runs last, so it reads as the lens rather than as scene
-          shading. Mobile drops the grain pass, the one buying the least here.
-          The two branches exist because EffectComposer types its children
-          strictly; BLOOM keeps the approved bloom identical across both. */}
-      {noise ? (
-        <EffectComposer>
-          <primitive object={noise} />
-          <Bloom {...BLOOM} />
-          <primitive object={vignette} />
-        </EffectComposer>
-      ) : (
-        <EffectComposer>
-          <Bloom {...BLOOM} />
-          <primitive object={vignette} />
-        </EffectComposer>
-      )}
+      {/* The vignette runs after bloom, so it reads as the lens rather than as
+          scene shading. It darkens the dot field toward the frame edge, which
+          is most of what the canvas draws, so it holds attention centre-frame.
+
+          There is deliberately NO grain pass here. The canvas is alpha:true and
+          covers only the theatre, so a composer noise pass can only touch pixels
+          the globe already drew: at full strength it lands on the dots and
+          nowhere else, and contributes nothing between them. It was measured,
+          seen to buy nothing, and removed rather than left costing a full
+          EffectPass. Stage-wide grain stays in hero.module.css. */}
+      <EffectComposer>
+        <Bloom {...BLOOM} />
+        <primitive object={vignette} />
+      </EffectComposer>
     </>
   );
 }
