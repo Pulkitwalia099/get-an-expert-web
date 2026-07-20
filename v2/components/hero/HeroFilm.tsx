@@ -75,6 +75,7 @@ export default function HeroFilm() {
 
   // the session duo
   const duoRef = useRef<HTMLDivElement>(null);
+  const duoBlurRef = useRef<HTMLDivElement>(null);
   const sessionRef = useRef<HTMLDivElement>(null);
   const chatRef = useRef<HTMLDivElement>(null);
   const streamRef = useRef<HTMLDivElement>(null);
@@ -97,7 +98,9 @@ export default function HeroFilm() {
 
   // match card
   const matchRef = useRef<HTMLDivElement>(null);
+  const matchInnerRef = useRef<HTMLDivElement>(null);
   const matchInfoRef = useRef<HTMLDivElement>(null);
+  const matchInfoInnerRef = useRef<HTMLDivElement>(null);
   // fallback origin = the globe's lower-right quadrant (used until the WebGL globe
   // projects the held dot's live screen position)
   const matchDotRef = useRef<[number, number]>([61, 66]);
@@ -236,6 +239,53 @@ export default function HeroFilm() {
       }
     };
 
+    /* Memoized style writes. Setting a property to the value it already holds
+       still costs a style invalidation, and most elements hold one value for most
+       of the film, so every write in apply() goes through this cache. */
+    const styleCache = new WeakMap<HTMLElement, Record<string, string>>();
+    const set = (el: HTMLElement | null, prop: string, val: string) => {
+      if (!el) return;
+      let rec = styleCache.get(el);
+      if (!rec) {
+        rec = {};
+        styleCache.set(el, rec);
+      }
+      if (rec[prop] === val) return;
+      rec[prop] = val;
+      el.style.setProperty(prop, val);
+    };
+    const px = (n: number) => `${Math.round(n * 100) / 100}px`;
+    const num = (n: number) => String(Math.round(n * 10000) / 10000);
+    /* signed term for calc(): calc(-50% + 12px) / calc(-50% - 12px) */
+    const addPx = (n: number) => (n < 0 ? `- ${px(-n)}` : `+ ${px(n)}`);
+    const op = (el: HTMLElement | null, v: number) => set(el, "opacity", num(v));
+    const tf = (el: HTMLElement | null, v: string) => set(el, "transform", v);
+
+    /* The match card's FLIP rects. The card is laid out ONCE at its resting size;
+       its pill start state is that same rect minus the box deltas the film used to
+       animate (padding 5px -> 13px/18px, .matchInfo max-width 0 -> 240px,
+       margin-left 0 -> 2px). Per frame we interpolate a single transform between
+       the two rects and counter-scale the inner content so nothing distorts. */
+    const MATCH_PAD_X_DELTA = 26; // 2 * (18 - 5)
+    const MATCH_PAD_Y_DELTA = 16; // 2 * (13 - 5)
+    const MATCH_INFO_MAX = 240;
+    const MATCH_INFO_ML = 2;
+    const geo = { w: 1, h: 1, infoW: 1, baseW: 1 };
+    const measure = () => {
+      const m = matchRef.current;
+      const inner = matchInfoInnerRef.current;
+      if (!m || !inner) return;
+      // offsetWidth/Height are layout box dims, unaffected by the live transform
+      geo.w = m.offsetWidth || 1;
+      geo.h = m.offsetHeight || 1;
+      geo.infoW = inner.offsetWidth || 1;
+      geo.baseW = geo.w - MATCH_PAD_X_DELTA - MATCH_INFO_ML - geo.infoW;
+    };
+
+    // last position of the chat pane the wait beat parked over (see the read phase)
+    const waitPos = { x: -1, y: -1 };
+    let lastSearchline = "";
+
     // apply one film-progress value across every DOM layer
     const apply = (p: number) => {
       const ih = window.innerHeight;
@@ -246,120 +296,137 @@ export default function HeroFilm() {
       // to .44-.52 so the dark veil is fully GONE before the emergence: the match head
       // surfaces from a lit day-cream globe, never a dark veil that occludes the canvas.
       // One scalar drives the veil + graded text (CSS) + the globe dome dots (gradeRef).
+      /* ---- 1. scalars. Pure math, no DOM touched. ---- */
       const grade = clamp(
         easeIO(seg(p, 0.15, 0.3)) - easeIO(seg(p, 0.44, 0.52)),
         0,
         1
       );
-      gradeRef.current = grade;
-      stageRef.current?.style.setProperty("--grade", String(grade));
-
-      // headline lifts away; scroll cue fades
       const ho = easeIO(seg(p, PHASES.headOut[0], PHASES.headOut[1]));
-      if (headRef.current) {
-        headRef.current.style.opacity = String(1 - ho);
-        headRef.current.style.transform = `translateX(-50%) translateY(${-ho * 70}px)`;
-      }
-      if (cueRef.current)
-        cueRef.current.style.opacity = String(1 - easeIO(seg(p, 0.03, 0.09)));
-
-      // the duo recedes in depth, then returns
       const rec =
         easeIO(seg(p, PHASES.duoRecede[0], PHASES.duoRecede[1])) -
         easeIO(seg(p, PHASES.duoReturn[0], PHASES.duoReturn[1]));
-      const duo = duoRef.current;
-      if (duo) {
-        duo.style.transform = `translate(-50%,-50%) translateY(${-rec * 5}vh) scale(${
-          1 - rec * 0.52
-        })`;
-        // dusk: sink the receded pane further so it does not read as a muddy
-        // slab over the globe; it returns to normal as the day grade returns.
-        duo.style.opacity = String((1 - rec * 0.82) * (1 - grade * 0.6));
-        duo.style.filter = `blur(${rec * 2.5}px) saturate(${1 - rec * 0.3})`;
-        duo.style.zIndex = rec > 0.45 ? "4" : "10";
-      }
-
-      // B2 detach: the probe freezes at the composer's resting rect while the
-      // session recedes behind it (duoRecede), then rises to the search position
-      // (probeRise). B5: it travels down-left home, following the live composer
-      // (which has shifted left as the chat docks).
-      if (p < PHASES.duoRecede[0]) {
-        // capture the composer's rest position before the recede moves it
-        const r0 = composerRef.current?.getBoundingClientRect();
-        if (r0 && r0.height)
-          frozenComposerRef.current = {
-            x: ((r0.left + r0.width / 2) / iw) * 100,
-            y: ((r0.top + r0.height / 2) / ih) * 100,
-          };
-      }
-      const froze = frozenComposerRef.current || { x: 50, y: 66 };
-      const liveR = composerRef.current?.getBoundingClientRect();
-      const liveX =
-        liveR && liveR.width ? ((liveR.left + liveR.width / 2) / iw) * 100 : froze.x;
-      const liveY =
-        liveR && liveR.height
-          ? ((liveR.top + liveR.height / 2) / ih) * 100
-          : froze.y;
-
       const rise = easeIO(seg(p, PHASES.probeRise[0], PHASES.probeRise[1]));
       // probe settles home with a soft overshoot (easeOutBack)
       const home = easeBack(seg(p, PHASES.probeHome[0], PHASES.probeHome[1]));
       const detach = seg(p, 0.12, 0.17); // composer hands the pill off to the probe
       const reattach = seg(p, 0.63, 0.68); // composer restored as the probe lands home
-      if (composerRef.current)
-        composerRef.current.style.opacity = String(
-          clamp(1 - detach + reattach, 0, 1)
-        );
-      const probe = probeRef.current;
-      if (probe) {
-        // appears as the recede starts, holds pinned through search, fades home
-        probe.style.opacity = String(
-          clamp(seg(p, 0.12, 0.135) - seg(p, 0.665, 0.69), 0, 1)
-        );
-        // froze (pinned during recede) -> search (50, 17) -> live composer (down-left)
-        probe.style.top = `${lerp(lerp(froze.y, 17, rise), liveY, home)}%`;
-        probe.style.left = `${lerp(lerp(froze.x, 50, rise), liveX, home)}%`;
-        probe.style.transform = `translateX(-50%) scale(${lerp(
-          lerp(1, 0.9, rise),
-          1,
-          home
-        )})`;
-      }
-      if (tetherRef.current) {
-        tetherRef.current.style.opacity = String(
-          clamp(rise - easeIO(seg(p, 0.5, 0.58)) - home, 0, 1)
-        );
-        tetherRef.current.style.top = "24%";
-        tetherRef.current.style.height = "18vh";
-      }
-
-      // searchline + counter are plain DOM: fade them with the search itself.
       const searchFade =
         easeIO(seg(p, PHASES.theatre[0], PHASES.theatre[1])) -
         easeIO(seg(p, 0.56, 0.63));
-      if (searchlineRef.current)
-        searchlineRef.current.style.opacity = String(searchFade);
-      if (counterRef.current) counterRef.current.style.opacity = String(searchFade);
       // The theatre WRAPPER holds full opacity through the globe's visible life so
       // the WebGL canvas is never composited at a fractional ancestor opacity (which
       // drops the dome on some GPUs). Its short in/out fades sit where the globe's
       // in-shader alpha is already ~0, so the sweep fades cleanly and nothing pops.
-      const theatreOn =
-        easeIO(seg(p, 0.18, 0.24)) - easeIO(seg(p, 0.6, 0.66));
-      if (theatreRef.current) theatreRef.current.style.opacity = String(theatreOn);
+      const theatreOn = easeIO(seg(p, 0.18, 0.24)) - easeIO(seg(p, 0.6, 0.66));
       const scan = seg(p, 0.26, 0.52);
-      if (countRef.current)
-        countRef.current.textContent = Math.floor(
-          lerp(0, 4183, scan)
-        ).toLocaleString();
-      if (searchlineRef.current) {
-        if (p < 0.26)
-          searchlineRef.current.innerHTML =
-            "searching <b>4,183 experts</b> across <b>61 countries</b>…";
-        else if (p < 0.5)
-          searchlineRef.current.innerHTML =
-            "matching on <b>craft</b>, <b>track record</b>, <b>availability</b>…";
-        else searchlineRef.current.innerHTML = "<b>one profile holds.</b>";
+      const mrRaw = seg(p, PHASES.matchResolve[0], PHASES.matchResolve[1]);
+      const mr = easeIO(mrRaw);
+      const headT = seg(mrRaw, 0, 0.5);
+      const cardT = seg(mrRaw, 0.45, 1);
+      const pop = headT > 0 ? easeBack(headT) : 0;
+      const flyRaw = seg(p, PHASES.matchFly[0], PHASES.matchFly[1]);
+      const fly = easeBack(flyRaw); // settles into the chat slot with a soft overshoot
+      const dock = easeIO(seg(p, PHASES.chatDock[0], PHASES.chatDock[1]));
+      const pay = seg(p, PHASES.payload[0], PHASES.payload[1]);
+      const rep = easeIO(seg(p, PHASES.reply[0], PHASES.reply[1]));
+      const waitIn = easeIO(seg(p, 0.81, 0.845));
+      const waitOut = easeIO(seg(p, 0.885, 0.915));
+      const waitVis = clamp(waitIn - waitOut, 0, 1);
+      const del = easeIO(seg(p, PHASES.deliver[0], PHASES.deliver[1]));
+      const finFade = easeIO(seg(p, 0.93, 0.975));
+      const wsub = easeIO(seg(p, 0.95, 0.98));
+
+      /* ---- 2. reads. Every layout read in the frame happens here, before the
+         first write, so no read can force a synchronous layout mid-frame. The
+         values are one frame old; at scrub 0.6 that is not perceptible. ---- */
+      const composerR = composerRef.current?.getBoundingClientRect();
+      const chatR =
+        waitIn > 0 ? chatRef.current?.getBoundingClientRect() : undefined;
+      const sessionH =
+        dock > 0 && dock < 1 ? sessionRef.current?.offsetHeight ?? 0 : 0;
+
+      /* ---- 3. writes. transform, opacity and custom properties only. ---- */
+      gradeRef.current = grade;
+      set(stageRef.current, "--grade", num(grade));
+
+      // headline lifts away; scroll cue fades
+      op(headRef.current, 1 - ho);
+      tf(headRef.current, `translate3d(-50%, ${px(-ho * 70)}, 0)`);
+      op(cueRef.current, 1 - easeIO(seg(p, 0.03, 0.09)));
+
+      // the duo recedes in depth, then returns. The depth blur is a cross-fade to
+      // a statically blurred copy (.duoBlur) rather than a per-frame filter, and
+      // the stacking order is fixed in CSS rather than flipped mid-film.
+      const duo = duoRef.current;
+      tf(
+        duo,
+        `translate3d(-50%, calc(-50% ${addPx(-rec * 0.05 * ih)}), 0) scale(${num(
+          1 - rec * 0.52
+        )})`
+      );
+      // dusk: sink the receded pane further so it does not read as a muddy
+      // slab over the globe; it returns to normal as the day grade returns.
+      // B10 finale dims it the rest of the way (one write, not two).
+      op(
+        duo,
+        Math.min((1 - rec * 0.82) * (1 - grade * 0.6), 1 - finFade * 0.92)
+      );
+      op(duoBlurRef.current, rec);
+
+      // B2 detach: the probe freezes at the composer's resting rect while the
+      // session recedes behind it (duoRecede), then rises to the search position
+      // (probeRise). B5: it travels down-left home, following the live composer
+      // (which has shifted left as the chat docks).
+      if (p < PHASES.duoRecede[0] && composerR && composerR.height) {
+        // capture the composer's rest position before the recede moves it
+        frozenComposerRef.current = {
+          x: ((composerR.left + composerR.width / 2) / iw) * 100,
+          y: ((composerR.top + composerR.height / 2) / ih) * 100,
+        };
+      }
+      const froze = frozenComposerRef.current || { x: 50, y: 66 };
+      const liveX =
+        composerR && composerR.width
+          ? ((composerR.left + composerR.width / 2) / iw) * 100
+          : froze.x;
+      const liveY =
+        composerR && composerR.height
+          ? ((composerR.top + composerR.height / 2) / ih) * 100
+          : froze.y;
+
+      op(composerRef.current, clamp(1 - detach + reattach, 0, 1));
+      // appears as the recede starts, holds pinned through search, fades home
+      op(probeRef.current, clamp(seg(p, 0.12, 0.135) - seg(p, 0.665, 0.69), 0, 1));
+      // froze (pinned during recede) -> search (50, 17) -> live composer (down-left).
+      // The CSS anchor is left 50% / top 20%; we only translate away from it.
+      const probeX = lerp(lerp(froze.x, 50, rise), liveX, home);
+      const probeY = lerp(lerp(froze.y, 17, rise), liveY, home);
+      tf(
+        probeRef.current,
+        `translate3d(calc(-50% ${addPx((probeX / 100) * iw - iw * 0.5)}), ${px(
+          (probeY / 100) * ih - ih * 0.2
+        )}, 0) scale(${num(lerp(lerp(1, 0.9, rise), 1, home))})`
+      );
+      // the tether's top/height are constants; they live in CSS now
+      op(tetherRef.current, clamp(rise - easeIO(seg(p, 0.5, 0.58)) - home, 0, 1));
+
+      // searchline + counter are plain DOM: fade them with the search itself.
+      op(searchlineRef.current, searchFade);
+      op(counterRef.current, searchFade);
+      op(theatreRef.current, theatreOn);
+      const count = Math.floor(lerp(0, 4183, scan)).toLocaleString();
+      if (countRef.current && countRef.current.textContent !== count)
+        countRef.current.textContent = count;
+      const line =
+        p < 0.26
+          ? "searching <b>4,183 experts</b> across <b>61 countries</b>…"
+          : p < 0.5
+          ? "matching on <b>craft</b>, <b>track record</b>, <b>availability</b>…"
+          : "<b>one profile holds.</b>";
+      if (searchlineRef.current && line !== lastSearchline) {
+        lastSearchline = line;
+        searchlineRef.current.innerHTML = line;
       }
 
       // scan cards flicker through their verdicts
@@ -373,8 +440,8 @@ export default function HeroFilm() {
           seg(p, s, s + span * 0.35) -
           (i < 3 ? seg(p, s + span * 0.8, s + span) : seg(p, 0.56, 0.6));
         const v = clamp(vis, 0, 1);
-        c.style.opacity = String(v);
-        c.style.transform = `translateY(${(1 - v) * 14}px)`;
+        op(c, v);
+        tf(c, `translate3d(0, ${px((1 - v) * 14)}, 0)`);
       });
 
       // candidate faces flicker around the globe during the scan
@@ -385,172 +452,154 @@ export default function HeroFilm() {
         const loc = seg(scn, st, st + 0.16);
         let vis = Math.sin(Math.min(loc, 1) * Math.PI);
         vis *= 1 - seg(p, 0.5, 0.545);
-        f.style.opacity = String(vis * 0.95);
-        f.style.transform = `translate(-50%,-50%) scale(${0.4 + vis * 0.7})`;
+        op(f, vis * 0.95);
+        tf(f, `translate3d(-50%, -50%, 0) scale(${num(0.4 + vis * 0.7)})`);
       });
 
-      // the match: head pops from the projected dot, then the card unfolds
-      const mrRaw = seg(p, PHASES.matchResolve[0], PHASES.matchResolve[1]);
-      const mr = easeIO(mrRaw);
-      const headT = seg(mrRaw, 0, 0.5);
-      const cardT = seg(mrRaw, 0.45, 1);
-      const pop = headT > 0 ? easeBack(headT) : 0;
-      const flyRaw = seg(p, PHASES.matchFly[0], PHASES.matchFly[1]);
-      const fly = easeBack(flyRaw); // settles into the chat slot with a soft overshoot
+      // the match: head pops from the projected dot, then the card unfolds.
+      // matchStartX/Y is the FLIP's start point and the ONLY place the origin
+      // enters; Task 2 swaps these two lines for pixels projected out of the globe.
       const dot = matchDotRef.current;
-      if (matchRef.current) {
-        matchRef.current.style.opacity = String(
+      const matchStartX = (dot[0] / 100) * iw;
+      const matchStartY = (dot[1] / 100) * ih;
+
+      // the card's live rect, interpolated between the pill start and the rest rect
+      const infoVis = Math.min(MATCH_INFO_MAX * cardT, geo.infoW);
+      const cardW =
+        geo.baseW + (MATCH_PAD_X_DELTA + MATCH_INFO_ML) * cardT + infoVis;
+      const cardH = geo.h - MATCH_PAD_Y_DELTA * (1 - cardT);
+      const kx = cardW / geo.w;
+      const ky = cardH / geo.h;
+      const mScale = lerp(lerp(0.25, 1, pop), 0.72, fly);
+      const mcx = lerp(lerp(matchStartX, iw * 0.5, mr), iw * 0.71, fly);
+      const mcy = lerp(lerp(matchStartY, ih * 0.44, mr), ih * 0.42, fly);
+      const m = matchRef.current;
+      if (m) {
+        op(
+          m,
           Math.max(
             0.001, // never 0: keep the layer alive so it does not promote at .52
             (mrRaw > 0 ? Math.min(1, mrRaw * 3.5) : 0) -
               easeIO(seg(p, 0.705, 0.73))
           )
         );
-        matchRef.current.style.left = `${lerp(lerp(dot[0], 50, mr), 71, fly)}%`;
-        matchRef.current.style.top = `${lerp(lerp(dot[1], 44, mr), 42, fly)}%`;
-        matchRef.current.style.transform = `translate(-50%,-50%) scale(${lerp(
-          lerp(0.25, 1, pop),
-          0.72,
-          fly
-        )})`;
-        matchRef.current.style.borderRadius = `${lerp(40, 14, cardT)}px`;
-        matchRef.current.style.padding = `${lerp(5, 13, cardT)}px ${lerp(
-          5,
-          18,
-          cardT
-        )}px`;
-      }
-      if (matchInfoRef.current) {
-        matchInfoRef.current.style.maxWidth = `${cardT * 240}px`;
-        matchInfoRef.current.style.opacity = String(cardT);
-        matchInfoRef.current.style.marginLeft = `${cardT * 2}px`;
-      }
-      if (flashRef.current) {
-        flashRef.current.style.left = `${dot[0]}%`;
-        flashRef.current.style.top = `${dot[1]}%`;
-        flashRef.current.style.opacity = String(
-          Math.max(0.001, Math.sin(Math.min(mrRaw * 2.2, 1) * Math.PI))
+        // transform-origin is the card's left edge / vertical centre, so the
+        // rendered centre lands exactly where left/top used to put it
+        tf(
+          m,
+          `translate3d(${px(mcx - (geo.w * kx * mScale) / 2)}, ${px(
+            mcy - geo.h / 2
+          )}, 0) scale(${num(mScale * kx)}, ${num(mScale * ky)})`
         );
-        flashRef.current.style.transform = `translate(-50%,-50%) scale(${
-          1 + mrRaw * 5
-        })`;
+        // border-radius rides two custom properties (a paint-only write) and is
+        // pre-divided by the FLIP scale so the rendered corner stays circular
+        const r = Math.min(lerp(40, 14, cardT), cardW / 2, cardH / 2);
+        set(m, "--match-rx", px(r / kx));
+        set(m, "--match-ry", px(r / ky));
       }
+      // counter-scale the card's contents so type and the avatar never distort
+      tf(matchInnerRef.current, `scale(${num(1 / kx)}, ${num(1 / ky)})`);
+      // the info reveal: scaleX + counter-scale reproduces the old max-width clip
+      const infoF = Math.max(infoVis / geo.infoW, 0.02);
+      op(matchInfoRef.current, cardT);
+      tf(matchInfoRef.current, `scaleX(${num(infoF)})`);
+      tf(matchInfoInnerRef.current, `scaleX(${num(1 / infoF)})`);
 
-      // the expert chat pane docks to the right of the returning session
-      const dock = easeIO(seg(p, PHASES.chatDock[0], PHASES.chatDock[1]));
+      op(
+        flashRef.current,
+        Math.max(0.001, Math.sin(Math.min(mrRaw * 2.2, 1) * Math.PI))
+      );
+      tf(
+        flashRef.current,
+        `translate3d(calc(-50% ${addPx(matchStartX)}), calc(-50% ${addPx(
+          matchStartY
+        )}), 0) scale(${num(1 + mrRaw * 5)})`
+      );
+
+      // The expert chat pane docks to the right of the returning session. This is
+      // the one animation still on layout: docking narrows the session pane and
+      // reflows its text, which no transform reproduces. The writes are memoized,
+      // so they only fire while `dock` is actually moving (a ~8% window of the
+      // film), and they sit after every read, so they never force a layout.
       const chat = chatRef.current;
       if (chat) {
-        chat.style.height =
-          dock >= 1
-            ? "auto"
-            : dock > 0
-            ? `${sessionRef.current?.offsetHeight ?? 0}px`
-            : "0";
-        chat.style.width = `${dock * 330}px`;
-        chat.style.opacity = String(dock);
-        chat.style.marginLeft = `${dock * 14}px`;
+        set(
+          chat,
+          "height",
+          dock >= 1 ? "auto" : dock > 0 ? px(sessionH) : "0"
+        );
+        set(chat, "width", px(dock * 330));
+        set(chat, "margin-left", px(dock * 14));
+        op(chat, dock * (1 - waitVis * 0.34));
       }
       const slot = slotRef.current;
       if (slot) {
-        slot.style.opacity = String(dock * (1 - seg(p, 0.7, 0.725)));
+        // slot fades out .70-.725 while the resident cross-fades in .72-.75.
+        // Both stay in the layout; only opacity moves (the resident is an overlay).
+        op(slot, dock * (1 - seg(p, 0.7, 0.725)));
         slot.classList.toggle(styles.glow, flyRaw > 0.3 && flyRaw < 1);
       }
-      // slot fades out .70-.725 while the resident cross-fades in .72-.75 (no snap)
-      if (p > 0.72) {
-        if (slot) slot.style.display = "none";
-        residentRef.current?.classList.add(styles.on);
-      } else {
-        if (slot) slot.style.display = "grid";
-        residentRef.current?.classList.remove(styles.on);
-      }
-      if (residentRef.current)
-        residentRef.current.style.opacity = String(easeIO(seg(p, 0.72, 0.75)));
+      op(residentRef.current, easeIO(seg(p, 0.72, 0.75)));
 
       // B6 context payload flies in horizontally from the left (session text area)
       // into the chat, lands as the sent message. No bottom arc: top is fixed.
-      const pay = seg(p, PHASES.payload[0], PHASES.payload[1]);
-      if (payloadRef.current) {
-        payloadRef.current.style.opacity = String(
-          Math.max(
-            0.001, // never 0: keep the layer alive (pre-promotion)
-            pay > 0 && pay < 1 ? Math.min(1, pay * 4) * (1 - seg(pay, 0.82, 1)) : 0
-          )
-        );
-        payloadRef.current.style.left = `${lerp(30, 64, easeBack(pay))}%`; // soft settle
-        payloadRef.current.style.top = "46%";
-      }
-      if (ctxMsgRef.current) {
-        // sent message cross-fades in under the payload's fade-out (no snap)
-        ctxMsgRef.current.style.opacity = String(easeIO(seg(p, 0.745, 0.765)));
-        ctxMsgRef.current.style.transform = "none";
-      }
+      op(
+        payloadRef.current,
+        Math.max(
+          0.001, // never 0: keep the layer alive (pre-promotion)
+          pay > 0 && pay < 1 ? Math.min(1, pay * 4) * (1 - seg(pay, 0.82, 1)) : 0
+        )
+      );
+      tf(
+        payloadRef.current,
+        // CSS anchors it at left 30%; the soft settle only translates from there
+        `translate3d(${px(((lerp(30, 64, easeBack(pay)) - 30) / 100) * iw)}, 0, 0)`
+      );
+      // sent message cross-fades in under the payload's fade-out (no snap)
+      op(ctxMsgRef.current, easeIO(seg(p, 0.745, 0.765)));
+      tf(ctxMsgRef.current, "translate3d(0, 0, 0)");
 
       // B7 expert reply
       if (p > PHASES.reply[0]) typeReply();
-      const rep = easeIO(seg(p, PHASES.reply[0], PHASES.reply[1]));
-      if (replyRef.current) {
-        replyRef.current.style.opacity = String(rep);
-        replyRef.current.style.transform = `translateY(${(1 - rep) * 8}px)`;
-      }
+      op(replyRef.current, rep);
+      tf(replyRef.current, `translate3d(0, ${px((1 - rep) * 8)}, 0)`);
 
       // B8 the wait: the "one hour later" clock overlays the chat pane itself
       // (tracked via its live rect); the chat dims beneath it so delivery has weight.
-      const waitIn = easeIO(seg(p, 0.81, 0.845));
-      const waitOut = easeIO(seg(p, 0.885, 0.915));
-      const waitVis = clamp(waitIn - waitOut, 0, 1);
-      if (waitRef.current) {
-        const wr = chat?.getBoundingClientRect();
-        if (wr && wr.width > 40) {
-          waitRef.current.style.left = `${
-            ((wr.left + wr.width / 2) / iw) * 100
-          }%`;
-          waitRef.current.style.top = `${
-            ((wr.top + wr.height / 2) / ih) * 100
-          }%`;
-        }
-        waitRef.current.style.opacity = String(Math.max(0.001, waitVis));
-        waitRef.current.style.transform = `translate(-50%,-50%) translateY(${
-          (1 - waitIn) * 8
-        }px)`;
+      if (chatR && chatR.width > 40) {
+        waitPos.x = chatR.left + chatR.width / 2;
+        waitPos.y = chatR.top + chatR.height / 2;
       }
-      if (chat) chat.style.opacity = String(dock * (1 - waitVis * 0.34));
+      op(waitRef.current, Math.max(0.001, waitVis));
+      tf(
+        waitRef.current,
+        `translate3d(calc(-50% ${addPx(
+          waitPos.x >= 0 ? waitPos.x - iw * 0.5 : 0
+        )}), calc(-50% ${addPx(
+          (waitPos.y >= 0 ? waitPos.y - ih * 0.5 : 0) + (1 - waitIn) * 8
+        )}), 0)`
+      );
 
       // B9 delivery + confetti
       if (p > PHASES.deliver[0] + 0.008) burst();
       if (p < 0.8) burstArmedRef.current = true;
-      const del = easeIO(seg(p, PHASES.deliver[0], PHASES.deliver[1]));
-      if (deliverRef.current) {
-        deliverRef.current.style.opacity = String(del);
-        deliverRef.current.style.transform = `translateY(${(1 - del) * 8}px)`;
-      }
-      if (chipRef.current) {
-        chipRef.current.style.opacity = String(easeIO(seg(p, 0.925, 0.95)));
-        chipRef.current.style.transform = "none";
-      }
+      op(deliverRef.current, del);
+      tf(deliverRef.current, `translate3d(0, ${px((1 - del) * 8)}, 0)`);
+      op(chipRef.current, easeIO(seg(p, 0.925, 0.95)));
+      tf(chipRef.current, "translate3d(0, 0, 0)");
 
-      // B10 finale: dim the panes, whisper, sub-line, CTAs
-      const finFade = easeIO(seg(p, 0.93, 0.975));
-      if (duo)
-        duo.style.opacity = String(
-          Math.min(parseFloat(duo.style.opacity || "1"), 1 - finFade * 0.92)
-        );
-      if (whisperRef.current)
-        whisperRef.current.style.opacity = String(
-          Math.max(0.001, easeIO(seg(p, PHASES.whisper[0], PHASES.whisper[1])))
-        );
-      const wsub = easeIO(seg(p, 0.95, 0.98));
-      if (whisperSubRef.current) {
-        whisperSubRef.current.style.opacity = String(wsub);
-        whisperSubRef.current.style.transform = `translateX(-50%) translateY(${
-          (1 - wsub) * 10
-        }px)`;
-      }
-      if (finaleRef.current) {
-        finaleRef.current.style.opacity = String(
-          easeIO(seg(p, PHASES.finale[0], PHASES.finale[1]))
-        );
-        finaleRef.current.style.pointerEvents = p > 0.97 ? "auto" : "none";
-      }
+      // B10 finale: whisper, sub-line, CTAs (the duo's dim is folded in above)
+      op(
+        whisperRef.current,
+        Math.max(0.001, easeIO(seg(p, PHASES.whisper[0], PHASES.whisper[1])))
+      );
+      op(whisperSubRef.current, wsub);
+      tf(whisperSubRef.current, `translate3d(-50%, ${px((1 - wsub) * 10)}, 0)`);
+      op(
+        finaleRef.current,
+        easeIO(seg(p, PHASES.finale[0], PHASES.finale[1]))
+      );
+      set(finaleRef.current, "pointer-events", p > 0.97 ? "auto" : "none");
 
       // act rail
       const act = actForProgress(p);
@@ -558,7 +607,19 @@ export default function HeroFilm() {
     };
 
     gsap.registerPlugin(ScrollTrigger);
+    // the FLIP needs the card's resting rect before the first frame, and again
+    // whenever the viewport or the loaded font changes it
+    measure();
     apply(0);
+    const onResize = () => {
+      measure();
+      apply(progressRef.current);
+    };
+    window.addEventListener("resize", onResize);
+    document.fonts?.ready.then(() => {
+      measure();
+      apply(progressRef.current);
+    });
 
     const lenis = new Lenis();
     lenis.on("scroll", ScrollTrigger.update);
@@ -602,6 +663,7 @@ export default function HeroFilm() {
     const stageAtCleanup = stageRef.current;
 
     return () => {
+      window.removeEventListener("resize", onResize);
       window.clearTimeout(typeTimer);
       window.clearInterval(typeIv);
       lineTimers.forEach((t) => window.clearTimeout(t));
@@ -725,6 +787,11 @@ export default function HeroFilm() {
               </div>
             </div>
           </div>
+
+          {/* the depth blur: a statically blurred copy of the duo stacked over the
+             sharp one, cross-faded by opacity. A static filter rasterizes once,
+             where the old per-frame blur() re-rastered the panes every frame. */}
+          <div className={styles.duoBlur} ref={duoBlurRef} aria-hidden="true" />
         </div>
 
         {/* search theatre */}
@@ -886,11 +953,18 @@ export default function HeroFilm() {
          here in viewport space. Positions are set imperatively in apply(). */}
       <div className={styles.matchOverlay}>
         <div className={styles.flash} ref={flashRef} />
+        {/* The card is laid out once at its resting size. .matchInner counter-scales
+           the FLIP so the avatar and type never distort; .matchInfo's scaleX (with
+           its own counter-scaled inner) reproduces the old max-width reveal. */}
         <div className={styles.match} ref={matchRef}>
-          <span className={styles.ava} />
-          <div className={styles.matchInfo} ref={matchInfoRef}>
-            <b>Motion graphic designer</b>
-            <span>100+ launch videos · since 2016</span>
+          <div className={styles.matchInner} ref={matchInnerRef}>
+            <span className={styles.ava} />
+            <div className={styles.matchInfo} ref={matchInfoRef}>
+              <div className={styles.matchInfoInner} ref={matchInfoInnerRef}>
+                <b>Motion graphic designer</b>
+                <span>100+ launch videos · since 2016</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>

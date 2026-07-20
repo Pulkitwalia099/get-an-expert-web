@@ -93,8 +93,27 @@
   align-items: flex-start;
   gap: 0;
   width: min(1060px, 94vw);
-  z-index: 10;
+  /* Fixed for the whole film. This used to flip 10 -> 4 at recede > .45 so the
+     receded pane dropped behind the globe theatre (z 8); the flip rebuilt the
+     layer tree mid-film, right next to the WebGL canvas. The theatre only carries
+     opacity while the duo is receded, so one stable order below it is enough. */
+  z-index: 4;
+  /* also the backdrop root for .duoBlur, so the blur samples the panes and
+     nothing behind them */
+  isolation: isolate;
   will-change: transform, opacity;
+}
+/* the receded pane's depth blur: a static blur cross-faded in by opacity alone,
+   replacing a per-frame filter: blur() that re-rastered the panes every frame */
+.duoBlur {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border-radius: 14px;
+  pointer-events: none;
+  opacity: 0;
+  backdrop-filter: blur(2.5px) saturate(0.7);
+  -webkit-backdrop-filter: blur(2.5px) saturate(0.7);
 }
 .pane {
   background: var(--c-paper2);
@@ -240,6 +259,9 @@
 
 /* chat contents */
 .chat .body {
+  /* containing block for .resident, which overlays the slot rather than
+     replacing it, so neither element's display toggles mid-film */
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -287,23 +309,31 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
   opacity: 0;
+  /* it stays in the layout for the whole film now; opacity alone drives it */
+  pointer-events: none;
 }
 .expertSlot.glow {
   border-color: var(--color-forest);
   box-shadow: 0 0 0 5px var(--c-forest-soft);
   color: var(--color-forest);
 }
+/* the resident expert cross-fades in OVER the slot (same position, .chat .body's
+   padding box) instead of swapping display with it, so the chat's column never
+   reflows mid-film */
 .resident {
-  display: none;
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  top: 16px;
+  display: flex;
   align-items: center;
   gap: 10px;
   border: 1px solid color-mix(in srgb, var(--color-forest) 30%, transparent);
   background: var(--color-surface);
   border-radius: 12px;
   padding: 10px 12px;
-}
-.resident.on {
-  display: flex;
+  opacity: 0;
+  pointer-events: none;
 }
 .ava {
   width: 34px;
@@ -386,7 +416,7 @@
   box-shadow: 0 0 0 7px var(--c-forest-soft), var(--c-pane-shadow);
   z-index: 22;
   opacity: 0;
-  will-change: transform, top, opacity;
+  will-change: transform, opacity;
 }
 .probe .tx {
   font-size: 14px;
@@ -397,6 +427,9 @@
 .tether {
   position: absolute;
   left: 50%;
+  /* constants: they used to be re-written every frame from JS */
+  top: 24%;
+  height: 18vh;
   width: 0;
   border-left: 1.5px dashed color-mix(in srgb, var(--color-forest) 40%, transparent);
   z-index: 5;
@@ -583,24 +616,37 @@
 /* ---------- match card (center resolve, then flies to chat) ---------- */
 .match {
   position: absolute;
-  left: 50%;
-  top: 44%;
-  /* translateZ(0) + will-change keep this on its own compositor layer from load,
-     so it does not PROMOTE a new layer over the WebGL globe at matchResolve (.52),
-     which is what churned the layer tree and blacked the dome on GPU. Paired with
-     an opacity floor of 0.001 in JS (never 0 / display:none) so the layer persists. */
-  transform: translate(-50%, -50%) translateZ(0);
+  /* The card is anchored at the overlay's origin and moved ONLY by transform; the
+     FLIP scales it about its left edge / vertical centre, so JS places the rendered
+     centre exactly where left/top used to. translateZ(0) + will-change keep this on
+     its own compositor layer from load, so it does not PROMOTE a new layer over the
+     WebGL globe at matchResolve (.52), which is what churned the layer tree and
+     blacked the dome on GPU. Paired with an opacity floor of 0.001 in JS (never 0 /
+     display:none) so the layer persists. */
+  left: 0;
+  top: 0;
+  transform-origin: 0 50%;
+  transform: translate3d(0, 0, 0);
   display: flex;
   align-items: center;
-  gap: 12px;
   background: var(--color-surface);
   border: 1.5px solid var(--color-forest);
-  border-radius: 14px;
+  /* elliptical radius: JS pre-divides each axis by that axis's FLIP scale, so the
+     rendered corner stays circular however far the card is squashed. A custom
+     property write is paint-only, where border-radius on style was not allowed. */
+  border-radius: var(--match-rx, 14px) / var(--match-ry, 14px);
   padding: 13px 18px;
   z-index: 26;
   opacity: 0.001;
   box-shadow: 0 0 0 6px var(--c-forest-soft), var(--c-pane-shadow);
-  will-change: transform, top, left, opacity;
+  will-change: transform, opacity;
+}
+/* counter-scales the FLIP so the avatar and type keep their intended size */
+.matchInner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transform-origin: 0 50%;
 }
 .match .ava {
   width: 46px;
@@ -609,6 +655,14 @@
 .matchInfo {
   overflow: hidden;
   white-space: nowrap;
+  margin-left: 2px;
+  /* scaleX here + the inverse on .matchInfoInner reproduces, exactly, the
+     max-width clip this used to animate */
+  transform-origin: 0 50%;
+}
+.matchInfoInner {
+  white-space: nowrap;
+  transform-origin: 0 50%;
 }
 .match b {
   font-family: var(--font-serif);
@@ -638,7 +692,7 @@
   font-size: 12px;
   max-width: 230px;
   box-shadow: var(--c-pane-shadow);
-  will-change: transform, top, left, opacity;
+  will-change: transform, opacity;
 }
 .payload .who {
   color: var(--color-forest);
@@ -658,7 +712,7 @@
   /* pre-promoted from load (see .match): opacity floor 0.001 in JS, never 0 */
   opacity: 0.001;
   text-align: center;
-  will-change: opacity, transform, left, top;
+  will-change: transform, opacity;
 }
 /* a soft cream veil behind the clock so it reads over the chat pane */
 .wait::before {
@@ -777,6 +831,7 @@
   z-index: 32;
   opacity: 0;
   white-space: nowrap;
+  will-change: transform, opacity;
 }
 .finale {
   position: absolute;
@@ -895,6 +950,9 @@
 }
 .flash {
   position: absolute;
+  /* anchored at the overlay origin; the projected dot is applied as a translate */
+  left: 0;
+  top: 0;
   width: 14px;
   height: 14px;
   border-radius: 50%;
@@ -1018,6 +1076,7 @@
 .reduced .flash,
 .reduced .face,
 .reduced .wait,
+.reduced .duoBlur,
 .reduced .duskVeil {
   display: none !important;
 }
@@ -1059,8 +1118,11 @@
   margin-left: 14px !important;
   height: auto !important;
 }
+/* the poster has no film to overlay: put the resident back in the flow, lit */
 .reduced .resident {
+  position: static;
   display: flex;
+  opacity: 1 !important;
 }
 .reduced .caret {
   animation: none;
