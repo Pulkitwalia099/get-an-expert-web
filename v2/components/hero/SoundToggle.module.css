@@ -1,0 +1,50 @@
+/* SoundToggle.module.css - all colors route through @theme tokens
+   (app/globals.css). No raw hex. */
+
+.toggle {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 70; /* above .matchOverlay (60), the highest z-index in hero.module.css */
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+  color: var(--color-ink-2);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(6px);
+
+  cursor: pointer;
+  transition: color 0.2s var(--ease-out-soft), border-color 0.2s var(--ease-out-soft),
+    transform 0.2s var(--ease-out-soft);
+}
+
+.toggle:hover {
+  color: var(--color-forest);
+  border-color: var(--color-border-2);
+  transform: translateY(-1px);
+}
+
+.toggle:focus-visible {
+  outline: 2px solid var(--color-forest);
+  outline-offset: 2px;
+}
+
+.toggle:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 760px) {
+  .toggle {
+    right: 14px;
+    bottom: 14px;
+    width: 36px;
+    height: 36px;
+  }
+}
