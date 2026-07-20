@@ -17,7 +17,17 @@
  * tracks the probe's vertical position, rather than the probe's exact DOM box. */
 
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { EffectComposer, Bloom } from "@react-three/postprocessing";
+import {
+  EffectComposer,
+  Bloom,
+  Noise,
+  Vignette,
+} from "@react-three/postprocessing";
+import {
+  BlendFunction,
+  type NoiseEffect,
+  type VignetteEffect,
+} from "postprocessing";
 import { useMemo, useRef, type RefObject } from "react";
 import * as THREE from "three";
 import {
@@ -34,6 +44,38 @@ import {
 import { readGlobePalette } from "./tokens";
 
 const CAM_Z = 6.2;
+
+/* --- render pipeline (Task 4) ---------------------------------------------
+ * The dome is a point cloud drawn with depthWrite:false / depthTest:false, so
+ * the depth buffer is empty apart from the 12 city spheres. A postprocessing
+ * DepthOfField pass reads that buffer and would therefore blur the entire dome
+ * uniformly, which is why depth of field is done IN THE POINT SHADER instead:
+ * each dot spreads into a bokeh disc as it leaves the focal plane, which is
+ * literally what a lens does to a point light. It costs no extra pass. */
+
+/* circle of confusion gain per world-unit of defocus, and its ceiling in
+   multiples of the in-focus sprite. Mobile stops down (less spread = less fill). */
+const APERTURE = 0.5;
+const APERTURE_MOBILE = 0.3;
+const MAX_COC = 1.6;
+const MAX_COC_MOBILE = 0.9;
+
+/* Directional motion smear. Velocity is the ANALYTIC derivative of the globe's
+   rotation with respect to film progress, so it is a pure function of progress:
+   scrubbing backwards reproduces the same smear at the same point in the film.
+   SMEAR_GAIN converts radians-per-unit-progress into radians smeared into one
+   frame; the pixel cap keeps a fast beat from ballooning the sprites. */
+const SMEAR_GAIN = 0.0009;
+const MAX_STREAK_PX = 12;
+
+/* The approved bloom, verbatim. Task 4 adds passes around it and never retunes it. */
+const BLOOM = {
+  intensity: 0.75,
+  luminanceThreshold: 0.5,
+  luminanceSmoothing: 0.25,
+  mipmapBlur: true,
+  radius: 0.5,
+} as const;
 const SPIN = 0.21; // free-spin speed (rad/s), matches the prototype's 0.0035/frame
 const SLOW = 0.04; // slow continuous drift (rad/s) applied through the hold + finale so
 // the globe NEVER freezes: a perpetually-moving scene always has a real frame to render,
@@ -66,19 +108,53 @@ function cityLocals(R: number): THREE.Vector3[] {
   });
 }
 
+/* The dot field carries both lens effects itself. With uAperture and uRotVel at
+   zero every varying collapses to its old constant (vRad .42, vSoft .08, vDim 1,
+   vStreak 0) and the fragment shader reduces exactly to the previous
+   smoothstep(0.5, 0.34, d) disc, so an unfocused, unmoving frame is unchanged. */
 const POINT_VERT = /* glsl */ `
   uniform float uAlpha;
   uniform float uSize;
   uniform float uDpr;
   uniform float uZFront;
   uniform float uZBack;
+  uniform float uFocusZ;    // view-space z of the focal plane
+  uniform float uAperture;  // circle-of-confusion gain per unit of defocus
+  uniform float uMaxCoc;    // CoC ceiling, in multiples of the base sprite
+  uniform float uRotVel;    // radians of globe rotation smeared into one frame
+  uniform float uMaxStreak; // streak ceiling, device pixels
+  uniform vec2  uRes;       // drawing buffer size, device pixels
   varying float vFade;
+  varying float vRad;       // disc radius, in sprite units
+  varying float vSoft;      // half-width of the disc edge, in sprite units
+  varying float vDim;       // energy conservation as the dot spreads
+  varying vec2  vStreak;    // half smear vector, in sprite units
   void main() {
     vec4 mv = modelViewMatrix * vec4(position, 1.0);
-    gl_Position = projectionMatrix * mv;
+    vec4 clip = projectionMatrix * mv;
+    gl_Position = clip;
     // front dots (nearer the camera) read brighter; back dots recede
     vFade = clamp(smoothstep(uZBack, uZFront, mv.z), 0.06, 1.0);
-    gl_PointSize = uSize * uDpr * (0.6 + vFade * 0.9);
+    float base = uSize * uDpr * (0.6 + vFade * 0.9);
+
+    // depth of field: distance from the focal plane spreads the dot into bokeh
+    float coc = clamp(abs(mv.z - uFocusZ) * uAperture, 0.0, uMaxCoc);
+    float disc = base * (1.0 + coc);
+
+    // motion smear: screen velocity under rotation about world Y, where
+    // d(position)/d(rotation) = cross(yAxis, worldPosition) = (z, 0, -x)
+    vec3 wp = (modelMatrix * vec4(position, 1.0)).xyz;
+    vec4 clipB = projectionMatrix * viewMatrix *
+      vec4(wp + vec3(wp.z, 0.0, -wp.x) * uRotVel, 1.0);
+    vec2 dPix = (clipB.xy / clipB.w - clip.xy / clip.w) * 0.5 * uRes;
+    float streak = min(length(dPix), uMaxStreak);
+
+    float size = disc + streak;
+    gl_PointSize = size;
+    vRad = 0.42 * disc / size;
+    vSoft = (0.08 + 0.30 * coc / max(uMaxCoc, 0.001)) * disc / size;
+    vStreak = (dPix / max(length(dPix), 1e-4)) * (streak * 0.5 / size);
+    vDim = 1.0 / (1.0 + (size / base - 1.0) * 1.6);
   }
 `;
 
@@ -86,12 +162,20 @@ const POINT_FRAG = /* glsl */ `
   uniform vec3 uColor;
   uniform float uAlpha;
   varying float vFade;
+  varying float vRad;
+  varying float vSoft;
+  varying float vDim;
+  varying vec2 vStreak;
   void main() {
     vec2 c = gl_PointCoord - 0.5;
-    float d = length(c);
-    float mask = smoothstep(0.5, 0.34, d);
+    // distance to the smear's spine: a capsule when moving, a disc when still
+    float h = length(vStreak);
+    vec2 dir = vStreak / max(h, 1e-4);
+    float t = clamp(dot(c, dir), -h, h);
+    float d = length(c - dir * t);
+    float mask = smoothstep(vRad + vSoft, vRad - vSoft, d);
     if (mask <= 0.001) discard;
-    gl_FragColor = vec4(uColor, vFade * uAlpha * mask * 0.9);
+    gl_FragColor = vec4(uColor, vFade * uAlpha * mask * 0.9 * vDim);
   }
 `;
 
@@ -178,6 +262,12 @@ function GlobeScene({
       uZFront: { value: R - CAM_Z },
       uZBack: { value: -R - CAM_Z },
       uColor: { value: palette.ink.clone() },
+      uFocusZ: { value: -CAM_Z },
+      uAperture: { value: 0 },
+      uMaxCoc: { value: mobile ? MAX_COC_MOBILE : MAX_COC },
+      uRotVel: { value: 0 },
+      uMaxStreak: { value: mobile ? 0 : MAX_STREAK_PX },
+      uRes: { value: new THREE.Vector2(1, 1) },
     }),
     [gl, R, mobile, palette]
   );
@@ -216,6 +306,9 @@ function GlobeScene({
   const control = useMemo(() => new THREE.Vector3(), []);
   const tmp = useMemo(() => new THREE.Vector3(), []);
   const proj = useMemo(() => new THREE.Vector3(), []);
+  const focusScratch = useMemo(() => new THREE.Vector3(), []);
+  const noiseRef = useRef<NoiseEffect>(null);
+  const vignetteRef = useRef<VignetteEffect>(null);
   const matchColor = useMemo(
     () => palette.sage.clone().multiplyScalar(2.4),
     [palette]
@@ -300,6 +393,69 @@ function GlobeScene({
       Math.floor(scan * CITIES.length)
     );
     const matchHolds = p > MATCH_HOLDS_AT;
+
+    /* ---- focal plane: focus racks onto whichever dot the film is about ----
+       During the scan it follows the active city, racking over the first third
+       of each city's slot so the pull reads as a rack rather than a cut. Once
+       the match holds it settles on the held dot and stays there. Purely a
+       function of progress, so a backwards scrub racks back the same way. */
+    const viewZ = (mesh: THREE.Mesh | null | undefined) => {
+      if (!mesh) return -CAM_Z;
+      mesh.getWorldPosition(focusScratch);
+      return focusScratch.applyMatrix4(camera.matrixWorldInverse).z;
+    };
+    let focusZ = -CAM_Z; // sphere centre before the theatre opens
+    if (matchHolds) {
+      const t = easeIO(seg(p, MATCH_HOLDS_AT, PHASES.matchResolve[1]));
+      focusZ = lerp(
+        viewZ(cityRefs.current[CITIES.length - 1]),
+        viewZ(cityRefs.current[0]),
+        t
+      );
+    } else if (scan > 0 && scan < 1) {
+      const rack = easeIO(seg(scan * CITIES.length - activeIdx, 0, 0.35));
+      focusZ = lerp(
+        viewZ(cityRefs.current[Math.max(0, activeIdx - 1)]),
+        viewZ(cityRefs.current[activeIdx]),
+        rack
+      );
+    }
+
+    /* ---- motion smear velocity: the ANALYTIC derivative of rotation.y with
+       respect to film progress. rotation.y = lerp(from, to, easeIO(s)) over the
+       HOLD window, and easeIO'(s) is 4s below the midpoint, 4(1-s) above it.
+       No frame deltas and no accumulator, so the smear is identical scrubbing
+       in either direction. It is nonzero only while the globe is actually
+       swinging to its hold angle, which is the one fast globe beat; every slow
+       beat leaves it at zero and pays nothing. */
+    let rotVel = 0;
+    if (!reduced && !mobile && rotToRef.current !== null) {
+      const s = seg(p, HOLD[0], HOLD[1]);
+      if (s > 0 && s < 1) {
+        const dEase = s < 0.5 ? 4 * s : 4 * (1 - s);
+        const span = rotToRef.current - (rotFromRef.current ?? 0);
+        rotVel = ((span * dEase) / (HOLD[1] - HOLD[0])) * SMEAR_GAIN;
+      }
+    }
+
+    if (pointsMat.current) {
+      const u = pointsMat.current.uniforms;
+      u.uFocusZ.value = focusZ;
+      // the lens opens as the theatre does, so the film's opening frames are sharp
+      u.uAperture.value =
+        (mobile ? APERTURE_MOBILE : APERTURE) *
+        easeIO(seg(p, PHASES.theatre[0], 0.3));
+      u.uRotVel.value = rotVel;
+      u.uRes.value.set(gl.domElement.width, gl.domElement.height);
+    }
+
+    /* Grain and vignette cooperate with the dusk grade rather than fight it:
+       both ease off as the room darkens, since the grade is already removing
+       light from the frame. */
+    if (noiseRef.current)
+      noiseRef.current.blendMode.opacity.value = lerp(0.32, 0.2, grade) * alpha;
+    if (vignetteRef.current)
+      vignetteRef.current.darkness = lerp(0.42, 0.26, grade);
 
     // update every marker's look + visibility (cull the back hemisphere)
     for (let i = 0; i < cities.length; i++) {
@@ -428,15 +584,29 @@ function GlobeScene({
         </mesh>
       </group>
       <primitive object={arc} />
-      <EffectComposer>
-        <Bloom
-          intensity={0.75}
-          luminanceThreshold={0.5}
-          luminanceSmoothing={0.25}
-          mipmapBlur
-          radius={0.5}
-        />
-      </EffectComposer>
+      {/* Grain runs BEFORE bloom so bloom blooms over it, the way grain sits
+          under halation on real film. At this opacity it stays well below
+          bloom's 0.5 luminance threshold, so bloom's character is untouched.
+          The vignette runs last, so it reads as the lens rather than as scene
+          shading. Mobile drops the grain pass, the one buying the least here.
+          The two branches exist because EffectComposer types its children
+          strictly; BLOOM keeps the approved bloom identical across both. */}
+      {mobile ? (
+        <EffectComposer>
+          <Bloom {...BLOOM} />
+          <Vignette ref={vignetteRef} offset={0.3} darkness={0.42} />
+        </EffectComposer>
+      ) : (
+        <EffectComposer>
+          <Noise
+            ref={noiseRef}
+            premultiply
+            blendFunction={BlendFunction.OVERLAY}
+          />
+          <Bloom {...BLOOM} />
+          <Vignette ref={vignetteRef} offset={0.3} darkness={0.42} />
+        </EffectComposer>
+      )}
     </>
   );
 }
