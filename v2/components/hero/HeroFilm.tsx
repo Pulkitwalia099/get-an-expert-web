@@ -197,45 +197,67 @@ export default function HeroFilm() {
       };
     }
 
-    // one satisfying delivery confetti burst, re-armed when scrolling back
-    const burst = () => {
-      if (!burstArmedRef.current) return;
-      burstArmedRef.current = false;
+    /* Confetti colours are static design tokens, so they are resolved once here,
+       at mount, rather than inside a frame. getComputedStyle forces a style
+       flush; doing it during the delivery beat put that flush on the one frame
+       of the film already doing the most work. */
+    const cssVar = (v: string) =>
+      getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+    const CONFETTI_COLORS = [
+      cssVar("--color-forest"),
+      cssVar("--color-bronze"),
+      cssVar("--color-sage"),
+      cssVar("--color-bronze-ink"),
+      cssVar("--color-ink"),
+    ];
+
+    /* One satisfying delivery confetti burst, re-armed when scrolling back.
+       The chat's rect arrives from the frame's batched read phase (the caller
+       passes it) rather than being read here: a getBoundingClientRect() after
+       the frame's style writes forces a synchronous layout, and this fires on
+       the delivery beat, which is meant to feel rewarding rather than dropped.
+       Every node is fully styled while still detached and the whole set lands in
+       one insertion, so 46 nodes cost one DOM mutation instead of 46. */
+    const burst = (cr?: DOMRect) => {
       const stage = stageRef.current;
-      const cr = chatRef.current?.getBoundingClientRect();
-      if (!stage || !cr) return;
-      const cssVar = (v: string) =>
-        getComputedStyle(document.documentElement).getPropertyValue(v).trim();
-      const colors = [
-        cssVar("--color-forest"),
-        cssVar("--color-bronze"),
-        cssVar("--color-sage"),
-        cssVar("--color-bronze-ink"),
-        cssVar("--color-ink"),
-      ];
+      if (!burstArmedRef.current || !stage || !cr) return;
+      burstArmedRef.current = false;
       const ox = ((cr.left + cr.width * 0.5) / window.innerWidth) * 100;
       const oy = Math.max(8, ((cr.top + 70) / window.innerHeight) * 100);
+      const frag = document.createDocumentFragment();
+      const nodes: HTMLElement[] = [];
+      const flights: string[] = [];
       for (let i = 0; i < 46; i++) {
         const e = document.createElement("i");
         e.className = styles.confetti;
         e.style.left = `${ox}%`;
         e.style.top = `${oy}%`;
-        e.style.background = colors[i % colors.length];
-        stage.appendChild(e);
+        e.style.background = CONFETTI_COLORS[i % CONFETTI_COLORS.length];
         e.style.width = `${6 + Math.random() * 7}px`;
         e.style.height = `${10 + Math.random() * 8}px`;
         const a = Math.random() * Math.PI * 2;
         const d = 80 + Math.random() * 230;
-        requestAnimationFrame(() =>
-          requestAnimationFrame(() => {
-            e.style.transform = `translate(${Math.cos(a) * d}px, ${
-              Math.sin(a) * d + 100
-            }px) rotate(${Math.random() * 540 - 270}deg)`;
-            e.style.opacity = "0";
-          })
+        flights.push(
+          `translate(${Math.cos(a) * d}px, ${
+            Math.sin(a) * d + 100
+          }px) rotate(${Math.random() * 540 - 270}deg)`
         );
-        confettiTimers.current.push(window.setTimeout(() => e.remove(), 1900));
+        frag.appendChild(e);
+        nodes.push(e);
       }
+      stage.appendChild(frag);
+      // let the start state commit, then hand every node to the compositor
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => {
+          nodes.forEach((e, i) => {
+            e.style.transform = flights[i];
+            e.style.opacity = "0";
+          });
+        })
+      );
+      confettiTimers.current.push(
+        window.setTimeout(() => nodes.forEach((e) => e.remove()), 1900)
+      );
     };
 
     /* Memoized style writes. Setting a property to the value it already holds
@@ -265,6 +287,11 @@ export default function HeroFilm() {
        animate (padding 5px -> 13px/18px, .matchInfo max-width 0 -> 240px,
        margin-left 0 -> 2px). Per frame we interpolate a single transform between
        the two rects and counter-scale the inner content so nothing distorts. */
+    /* the scan counter's ceiling, and the granularity it reports in (see the
+       write site for why it is quantized rather than continuous) */
+    const SCAN_TOTAL = 4183;
+    const SCAN_STEP = 100;
+
     const MATCH_PAD_X_DELTA = 26; // 2 * (18 - 5)
     const MATCH_PAD_Y_DELTA = 16; // 2 * (13 - 5)
     const MATCH_INFO_MAX = 240;
@@ -422,7 +449,19 @@ export default function HeroFilm() {
       op(searchlineRef.current, searchFade);
       op(counterRef.current, searchFade);
       op(theatreRef.current, theatreOn);
-      const count = Math.floor(lerp(0, 4183, scan)).toLocaleString();
+      /* The counter is a scanning readout, not a precise figure. A textContent
+         write dirties layout exactly as a width write does, and an unquantized
+         climb (0 -> 4,183 across a 26% window) changes the string on essentially
+         every frame of that window: the single largest source of residual layout
+         in the film. Quantizing to hundreds cuts that by roughly 5x and changes
+         nothing about what the beat says - the number still climbs live, it just
+         batches the way a real scanner reports. The window's end lands on the
+         exact figure so the readout still resolves to 4,183. */
+      const scanned =
+        scan >= 1
+          ? SCAN_TOTAL
+          : Math.floor((SCAN_TOTAL * scan) / SCAN_STEP) * SCAN_STEP;
+      const count = scanned.toLocaleString();
       if (countRef.current && countRef.current.textContent !== count)
         countRef.current.textContent = count;
       const line =
@@ -588,7 +627,9 @@ export default function HeroFilm() {
       );
 
       // B9 delivery + confetti
-      if (p > PHASES.deliver[0] + 0.008) burst();
+      // chatR comes from this frame's read phase (waitIn is 1 well before the
+      // delivery beat), so the burst never reads layout after a write
+      if (p > PHASES.deliver[0] + 0.008) burst(chatR);
       if (p < 0.8) burstArmedRef.current = true;
       op(deliverRef.current, del);
       tf(deliverRef.current, `translate3d(0, ${px((1 - del) * 8)}, 0)`);
