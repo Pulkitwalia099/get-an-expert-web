@@ -44,12 +44,18 @@ const CAM_Z = 6.2;
  * each dot spreads into a bokeh disc as it leaves the focal plane, which is
  * literally what a lens does to a point light. It costs no extra pass. */
 
-/* circle of confusion gain per world-unit of defocus, and its ceiling in
-   multiples of the in-focus sprite. Mobile stops down (less spread = less fill). */
+/* Circle of confusion gain per world-unit of defocus, and its ceiling in
+   multiples of the in-focus sprite.
+
+   Mobile runs NEITHER lens effect: aperture and streak are both zero, which
+   collapses the shader to the plain disc it drew before. Both spread the point
+   sprites, and sprite spread is fill cost, which is the budget a phone has
+   least of. On the M4 this machine measures with, mobile's depth of field cost
+   sits inside run-to-run noise, so the measurement cannot clear it on hardware
+   several times slower. The rack focus is also close to illegible on a dome
+   375px wide, so it was buying the least of anything added here. */
 const APERTURE = 0.5;
-const APERTURE_MOBILE = 0.3;
 const MAX_COC = 1.6;
-const MAX_COC_MOBILE = 0.9;
 
 /* Directional motion smear. Velocity is the ANALYTIC derivative of the globe's
    rotation with respect to film progress, so it is a pure function of progress:
@@ -255,7 +261,7 @@ function GlobeScene({
       uColor: { value: palette.ink.clone() },
       uFocusZ: { value: -CAM_Z },
       uAperture: { value: 0 },
-      uMaxCoc: { value: mobile ? MAX_COC_MOBILE : MAX_COC },
+      uMaxCoc: { value: MAX_COC },
       uRotVel: { value: 0 },
       uMaxStreak: { value: mobile ? 0 : MAX_STREAK_PX },
       uRes: { value: new THREE.Vector2(1, 1) },
@@ -458,9 +464,9 @@ function GlobeScene({
       const u = pointsMat.current.uniforms;
       u.uFocusZ.value = focusZ;
       // the lens opens as the theatre does, so the film's opening frames are sharp
-      u.uAperture.value =
-        (mobile ? APERTURE_MOBILE : APERTURE) *
-        easeIO(seg(p, PHASES.theatre[0], 0.3));
+      u.uAperture.value = mobile
+        ? 0
+        : APERTURE * easeIO(seg(p, PHASES.theatre[0], 0.3));
       u.uRotVel.value = rotVel;
       u.uRes.value.set(gl.domElement.width, gl.domElement.height);
     }
