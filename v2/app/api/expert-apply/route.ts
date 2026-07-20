@@ -1,6 +1,7 @@
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { validateExpert, type ExpertInput } from "@/lib/validateSubmission";
 import { corsHeaders } from "@/lib/cors";
+import { notifyExpert } from "@/lib/notify";
 
 const FAIL = "Could not save your application right now. Please try again in a minute.";
 
@@ -40,6 +41,8 @@ export async function POST(request: Request) {
     console.error("[expert-apply] unexpected error:", e);
     return Response.json({ ok: false, error: FAIL }, { status: 500, headers: cors });
   }
+
+  await notifyExpert(result.row); // best-effort; never throws
 
   return Response.json({ ok: true }, { status: 200, headers: cors });
 }
