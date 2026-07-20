@@ -75,7 +75,6 @@ export default function HeroFilm() {
 
   // the session duo
   const duoRef = useRef<HTMLDivElement>(null);
-  const duoBlurRef = useRef<HTMLDivElement>(null);
   const sessionRef = useRef<HTMLDivElement>(null);
   const chatRef = useRef<HTMLDivElement>(null);
   const streamRef = useRef<HTMLDivElement>(null);
@@ -355,9 +354,8 @@ export default function HeroFilm() {
       tf(headRef.current, `translate3d(-50%, ${px(-ho * 70)}, 0)`);
       op(cueRef.current, 1 - easeIO(seg(p, 0.03, 0.09)));
 
-      // the duo recedes in depth, then returns. The depth blur is a cross-fade to
-      // a statically blurred copy (.duoBlur) rather than a per-frame filter, and
-      // the stacking order is fixed in CSS rather than flipped mid-film.
+      // the duo recedes in depth, then returns. The stacking order is fixed in
+      // CSS rather than flipped mid-film.
       const duo = duoRef.current;
       tf(
         duo,
@@ -372,7 +370,16 @@ export default function HeroFilm() {
         duo,
         Math.min((1 - rec * 0.82) * (1 - grade * 0.6), 1 - finFade * 0.92)
       );
-      op(duoBlurRef.current, rec);
+      /* The depth blur stays a filter, but quantized to 0.2px / 0.05 steps and
+         pushed through the memo, so it re-rasterizes ~13 times across the recede
+         instead of on all ~900 frames. A stacked statically-blurred copy was the
+         first attempt: backdrop-filter produced no blur at all inside the duo's
+         compositing group, and a cloned copy desyncs once the chat starts docking
+         while rec is still falling. Quantizing keeps the look exact.
+         filter is paint-only, so this costs no layout either way. */
+      const blur = Math.round(rec * 2.5 * 5) / 5;
+      const sat = Math.round((1 - rec * 0.3) * 20) / 20;
+      set(duo, "filter", blur > 0 ? `blur(${blur}px) saturate(${sat})` : "none");
 
       // B2 detach: the probe freezes at the composer's resting rect while the
       // session recedes behind it (duoRecede), then rises to the search position
@@ -787,11 +794,6 @@ export default function HeroFilm() {
               </div>
             </div>
           </div>
-
-          {/* the depth blur: a statically blurred copy of the duo stacked over the
-             sharp one, cross-faded by opacity. A static filter rasterizes once,
-             where the old per-frame blur() re-rastered the panes every frame. */}
-          <div className={styles.duoBlur} ref={duoBlurRef} aria-hidden="true" />
         </div>
 
         {/* search theatre */}

@@ -98,22 +98,7 @@
      layer tree mid-film, right next to the WebGL canvas. The theatre only carries
      opacity while the duo is receded, so one stable order below it is enough. */
   z-index: 4;
-  /* also the backdrop root for .duoBlur, so the blur samples the panes and
-     nothing behind them */
-  isolation: isolate;
   will-change: transform, opacity;
-}
-/* the receded pane's depth blur: a static blur cross-faded in by opacity alone,
-   replacing a per-frame filter: blur() that re-rastered the panes every frame */
-.duoBlur {
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  border-radius: 14px;
-  pointer-events: none;
-  opacity: 0;
-  backdrop-filter: blur(2.5px) saturate(0.7);
-  -webkit-backdrop-filter: blur(2.5px) saturate(0.7);
 }
 .pane {
   background: var(--c-paper2);
@@ -300,7 +285,10 @@
 .expertSlot {
   border: 1.5px dashed var(--c-line2);
   border-radius: 12px;
-  min-height: 58px;
+  /* 62px, not 58: the slot now holds the column's height for the whole film
+     (the resident overlays it instead of replacing it), so it matches the
+     resident's height and the docked panes land exactly where they used to */
+  min-height: 62px;
   display: grid;
   place-items: center;
   color: var(--color-faint);
@@ -1076,7 +1064,6 @@
 .reduced .flash,
 .reduced .face,
 .reduced .wait,
-.reduced .duoBlur,
 .reduced .duskVeil {
   display: none !important;
 }
