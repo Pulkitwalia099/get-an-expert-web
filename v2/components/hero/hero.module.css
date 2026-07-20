@@ -297,8 +297,11 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
   opacity: 0;
-  /* it stays in the layout for the whole film now; opacity alone drives it */
+  /* it stays in the layout for the whole film; opacity and a scaleY drive it.
+     The scaleY is the slot acknowledging the match card landing on it, so it
+     animates transform now and gets the hint to match. */
   pointer-events: none;
+  will-change: transform, opacity;
 }
 .expertSlot.glow {
   border-color: var(--color-forest);
@@ -846,6 +849,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  /* the three steps stagger in rather than arriving as one block */
+  will-change: transform, opacity;
 }
 .step i {
   font-style: normal;
@@ -1095,6 +1100,7 @@
 .reduced .line,
 .reduced .msg,
 .reduced .chip,
+.reduced .step,
 .reduced .expertSlot {
   opacity: 1 !important;
   transform: none !important;

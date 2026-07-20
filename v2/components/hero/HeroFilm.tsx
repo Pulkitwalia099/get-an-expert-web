@@ -37,13 +37,23 @@ import { useEffect, useRef, useState } from "react";
 import SoundToggle from "./SoundToggle";
 import { filmAudio } from "./audio";
 import {
+  ARC,
   ASK,
+  FOLLOW,
   PHASES,
   TRACK_VH,
   actForProgress,
+  arcLift,
+  arcPoint,
   clamp,
+  easeAnticipate,
   easeBack,
+  easeDepart,
+  easeHeavy,
   easeIO,
+  easeSettle,
+  easeSettleSoft,
+  easeSnap,
   lerp,
   seg,
 } from "./film";
@@ -121,6 +131,7 @@ export default function HeroFilm() {
   const whisperRef = useRef<HTMLDivElement>(null);
   const whisperSubRef = useRef<HTMLDivElement>(null);
   const finaleRef = useRef<HTMLDivElement>(null);
+  const stepRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const actRefs = useRef<(HTMLSpanElement | null)[]>([]);
 
   // driver + one-shot state
@@ -294,6 +305,12 @@ export default function HeroFilm() {
     const SCAN_TOTAL = 4183;
     const SCAN_STEP = 100;
 
+    /* The window over which the expert slot acknowledges the match card landing
+       on it. Added ALONGSIDE the phase map, never replacing anything: it is
+       pinned to the existing end of PHASES.matchFly (0.68), which is when the
+       card arrives, and it changes no beat's timing. */
+    const SLOT_ACK: readonly [number, number] = [0.665, 0.745];
+
     const MATCH_PAD_X_DELTA = 26; // 2 * (18 - 5)
     const MATCH_PAD_Y_DELTA = 16; // 2 * (13 - 5)
     const MATCH_INFO_MAX = 240;
@@ -333,13 +350,17 @@ export default function HeroFilm() {
         0,
         1
       );
-      const ho = easeIO(seg(p, PHASES.headOut[0], PHASES.headOut[1]));
+      // the headline leaves frame, so it is still accelerating when it goes
+      const ho = easeDepart(seg(p, PHASES.headOut[0], PHASES.headOut[1]));
+      // the session panel is the largest object in the film: heavy both ways
       const rec =
-        easeIO(seg(p, PHASES.duoRecede[0], PHASES.duoRecede[1])) -
-        easeIO(seg(p, PHASES.duoReturn[0], PHASES.duoReturn[1]));
-      const rise = easeIO(seg(p, PHASES.probeRise[0], PHASES.probeRise[1]));
-      // probe settles home with a soft overshoot (easeOutBack)
-      const home = easeBack(seg(p, PHASES.probeHome[0], PHASES.probeHome[1]));
+        easeHeavy(seg(p, PHASES.duoRecede[0], PHASES.duoRecede[1])) -
+        easeHeavy(seg(p, PHASES.duoReturn[0], PHASES.duoReturn[1]));
+      // the probe LAUNCHES: it loads down into the session before it rises
+      const rise = easeAnticipate(seg(p, PHASES.probeRise[0], PHASES.probeRise[1]));
+      // ...and ARRIVES: it falls home and rocks once into the composer, ~3%
+      // past the mark, where the old easeBack threw it about 10% past.
+      const home = easeSettle(seg(p, PHASES.probeHome[0], PHASES.probeHome[1]));
       const detach = seg(p, 0.12, 0.17); // composer hands the pill off to the probe
       const reattach = seg(p, 0.63, 0.68); // composer restored as the probe lands home
       const searchFade =
@@ -355,16 +376,38 @@ export default function HeroFilm() {
       const mr = easeIO(mrRaw);
       const headT = seg(mrRaw, 0, 0.5);
       const cardT = seg(mrRaw, 0.45, 1);
+      /* Follow-through: the card's shell opens first and the name and credential
+         follow a beat behind, so the card assembles instead of printing whole.
+         FOLLOW is in film-progress; matchResolve is a 0.06-wide window, so it
+         converts to a 0.13 lag in this window's normalized space. Both parts
+         still finish together at mrRaw = 1, so the beat's end does not move. */
+      const infoLag =
+        FOLLOW / (PHASES.matchResolve[1] - PHASES.matchResolve[0]);
+      const infoT = easeSnap(seg(mrRaw, 0.45 + infoLag, 1));
       const pop = headT > 0 ? easeBack(headT) : 0;
       const flyRaw = seg(p, PHASES.matchFly[0], PHASES.matchFly[1]);
-      const fly = easeBack(flyRaw); // settles into the chat slot with a soft overshoot
-      const dock = easeIO(seg(p, PHASES.chatDock[0], PHASES.chatDock[1]));
+      /* The match's flight is one gesture with two halves: it launches, then it
+         docks. Crossfading anticipation into the settle gives the whole arc its
+         real shape - the card loads back toward the globe, travels, and rocks
+         once into the slot - instead of the single easeBack overshoot that made
+         a launch and a landing look like the same event. Both curves are 0 at 0
+         and 1 at 1, so the blend is too: the beat's endpoints do not move. */
+      const fly = lerp(
+        easeAnticipate(flyRaw),
+        easeSettle(flyRaw),
+        easeIO(flyRaw)
+      );
+      /* The chat pane is heavy, and this is the one curve that must NOT spring:
+         dock drives the pane's width, which reflows its text. Overshooting a
+         width would rewrap type and snap it back. */
+      const dock = easeHeavy(seg(p, PHASES.chatDock[0], PHASES.chatDock[1]));
       const pay = seg(p, PHASES.payload[0], PHASES.payload[1]);
-      const rep = easeIO(seg(p, PHASES.reply[0], PHASES.reply[1]));
+      const rep = easeSnap(seg(p, PHASES.reply[0], PHASES.reply[1]));
       const waitIn = easeIO(seg(p, 0.81, 0.845));
       const waitOut = easeIO(seg(p, 0.885, 0.915));
       const waitVis = clamp(waitIn - waitOut, 0, 1);
-      const del = easeIO(seg(p, PHASES.deliver[0], PHASES.deliver[1]));
+      // the delivery lands: a light arrival, allowed one visible rock
+      const del = easeSettleSoft(seg(p, PHASES.deliver[0], PHASES.deliver[1]));
       const finFade = easeIO(seg(p, 0.93, 0.975));
       const wsub = easeIO(seg(p, 0.95, 0.98));
 
@@ -439,12 +482,27 @@ export default function HeroFilm() {
       op(probeRef.current, clamp(seg(p, 0.12, 0.135) - seg(p, 0.665, 0.69), 0, 1));
       // froze (pinned during recede) -> search (50, 17) -> live composer (down-left).
       // The CSS anchor is left 50% / top 20%; we only translate away from it.
-      const probeX = lerp(lerp(froze.x, 50, rise), liveX, home);
-      const probeY = lerp(lerp(froze.y, 17, rise), liveY, home);
+      /* The rise leg still interpolates straight up (it is a lift, not a
+         throw). The fall home travels on an arc: the probe swings out to the
+         left of the chord and comes back in, which exaggerates the drift it
+         already has as the composer shifts left under the docking chat, and
+         turns a ruler-straight drop into a real descent. The chord's direction
+         is not fixed here - the destination tracks the live composer - so this
+         is the one path that needs the general perpendicular helper. */
+      const riseX = ((lerp(froze.x, 50, rise) / 100) * iw);
+      const riseY = ((lerp(froze.y, 17, rise) / 100) * ih);
+      const probePt = arcPoint(
+        riseX,
+        riseY,
+        (liveX / 100) * iw,
+        (liveY / 100) * ih,
+        home,
+        -iw * ARC.probeHome // negative bows left of the direction of travel
+      );
       tf(
         probeRef.current,
-        `translate3d(calc(-50% ${addPx((probeX / 100) * iw - iw * 0.5)}), ${px(
-          (probeY / 100) * ih - ih * 0.2
+        `translate3d(calc(-50% ${addPx(probePt.x - iw * 0.5)}), ${px(
+          probePt.y - ih * 0.2
         )}, 0) scale(${num(lerp(lerp(1, 0.9, rise), 1, home))})`
       );
       // the tether's top/height are constants; they live in CSS now
@@ -487,8 +545,10 @@ export default function HeroFilm() {
       scanRefs.current.forEach((c, i) => {
         if (!c) return;
         const s = csA + i * span;
+        // small light cards: they snap in, then fade out on a plain ramp (a
+        // snap-out would read as a yank rather than a dismissal)
         const vis =
-          seg(p, s, s + span * 0.35) -
+          easeSnap(seg(p, s, s + span * 0.35)) -
           (i < 3 ? seg(p, s + span * 0.8, s + span) : seg(p, 0.56, 0.6));
         const v = clamp(vis, 0, 1);
         op(c, v);
@@ -515,7 +575,7 @@ export default function HeroFilm() {
       const matchStartY = (dot[1] / 100) * ih;
 
       // the card's live rect, interpolated between the pill start and the rest rect
-      const infoVis = Math.min(MATCH_INFO_MAX * cardT, geo.infoW);
+      const infoVis = Math.min(MATCH_INFO_MAX * infoT, geo.infoW);
       const cardW =
         geo.baseW + (MATCH_PAD_X_DELTA + MATCH_INFO_ML) * cardT + infoVis;
       const cardH = geo.h - MATCH_PAD_Y_DELTA * (1 - cardT);
@@ -523,7 +583,14 @@ export default function HeroFilm() {
       const ky = cardH / geo.h;
       const mScale = lerp(lerp(0.25, 1, pop), 0.72, fly);
       const mcx = lerp(lerp(matchStartX, iw * 0.5, mr), iw * 0.71, fly);
-      const mcy = lerp(lerp(matchStartY, ih * 0.44, mr), ih * 0.42, fly);
+      /* The flight to the chat slot is a lob, not a slide. The chord is nearly
+         horizontal, so the perpendicular is vertical and the bow is one term on
+         y. It rides RAW progress, not the eased value, so the rise and fall stay
+         symmetric about the middle of the travel while the anticipation dip and
+         the settle overshoot do their work along the chord. */
+      const mcy =
+        lerp(lerp(matchStartY, ih * 0.44, mr), ih * 0.42, fly) -
+        ih * ARC.matchFly * arcLift(flyRaw);
       const m = matchRef.current;
       if (m) {
         op(
@@ -552,7 +619,7 @@ export default function HeroFilm() {
       tf(matchInnerRef.current, `scale(${num(1 / kx)}, ${num(1 / ky)})`);
       // the info reveal: scaleX + counter-scale reproduces the old max-width clip
       const infoF = Math.max(infoVis / geo.infoW, 0.02);
-      op(matchInfoRef.current, cardT);
+      op(matchInfoRef.current, infoT);
       tf(matchInfoRef.current, `scaleX(${num(infoF)})`);
       tf(matchInfoInnerRef.current, `scaleX(${num(1 / infoF)})`);
 
@@ -588,6 +655,19 @@ export default function HeroFilm() {
         // slot fades out .70-.725 while the resident cross-fades in .72-.75.
         // Both stay in the layout; only opacity moves (the resident is an overlay).
         op(slot, dock * (1 - seg(p, 0.7, 0.725)));
+        /* The receiving container acknowledges the arrival. The slot compresses
+           as the card lands on it and springs back out, which is what makes the
+           card feel like it has mass and the slot like it is made of something.
+           Compression is fast (snap) and recovery is a settle, so it reads as
+           impact-then-recover rather than a symmetric wobble. A transform only:
+           scaleY costs no layout and the slot's min-height still holds the
+           column, so the docked panes do not move. */
+        const ackT = seg(p, SLOT_ACK[0], SLOT_ACK[1]);
+        const squash =
+          ackT < 0.25
+            ? easeSnap(ackT / 0.25)
+            : 1 - easeSettle((ackT - 0.25) / 0.75);
+        tf(slot, `scaleY(${num(1 - 0.06 * squash)})`);
         slot.classList.toggle(styles.glow, flyRaw > 0.3 && flyRaw < 1);
       }
       op(residentRef.current, easeIO(seg(p, 0.72, 0.75)));
@@ -601,10 +681,17 @@ export default function HeroFilm() {
           pay > 0 && pay < 1 ? Math.min(1, pay * 4) * (1 - seg(pay, 0.82, 1)) : 0
         )
       );
+      /* The payload crosses to the chat on an arc and settles rather than
+         sliding flat and overshooting. The old comment here said "no bottom
+         arc: top is fixed" - that was a constraint of animating `left`/`top`,
+         and it no longer applies now that this is a transform: the lift is free
+         and costs no layout. CSS still anchors it at left 30%; both terms only
+         translate from there. */
       tf(
         payloadRef.current,
-        // CSS anchors it at left 30%; the soft settle only translates from there
-        `translate3d(${px(((lerp(30, 64, easeBack(pay)) - 30) / 100) * iw)}, 0, 0)`
+        `translate3d(${px(
+          ((lerp(30, 64, easeSettle(pay)) - 30) / 100) * iw
+        )}, ${px(-ih * ARC.payload * arcLift(pay))}, 0)`
       );
       // sent message cross-fades in under the payload's fade-out (no snap)
       op(ctxMsgRef.current, easeIO(seg(p, 0.745, 0.765)));
@@ -613,7 +700,7 @@ export default function HeroFilm() {
       // B7 expert reply
       if (p > PHASES.reply[0]) typeReply();
       op(replyRef.current, rep);
-      tf(replyRef.current, `translate3d(0, ${px((1 - rep) * 8)}, 0)`);
+      tf(replyRef.current, `translate3d(0, ${px((1 - rep) * 10)}, 0)`);
 
       // B8 the wait: the "one hour later" clock overlays the chat pane itself
       // (tracked via its live rect); the chat dims beneath it so delivery has weight.
@@ -636,10 +723,15 @@ export default function HeroFilm() {
       // delivery beat), so the burst never reads layout after a write
       if (p > PHASES.deliver[0] + 0.008) burst(chatR);
       if (p < 0.8) burstArmedRef.current = true;
+      /* The travel is 18px rather than the old 8 so the settle's rock is
+         actually legible; on 8px an 11% overshoot is under a pixel and the
+         spring may as well not be there. */
       op(deliverRef.current, del);
-      tf(deliverRef.current, `translate3d(0, ${px((1 - del) * 8)}, 0)`);
-      op(chipRef.current, easeIO(seg(p, 0.925, 0.95)));
-      tf(chipRef.current, "translate3d(0, 0, 0)");
+      tf(deliverRef.current, `translate3d(0, ${px((1 - del) * 18)}, 0)`);
+      // the chip is the lightest element in the film: it snaps
+      const chipT = easeSnap(seg(p, 0.925, 0.95));
+      op(chipRef.current, chipT);
+      tf(chipRef.current, `translate3d(0, ${px((1 - chipT) * 8)}, 0)`);
 
       // B10 finale: whisper, sub-line, CTAs (the duo's dim is folded in above)
       op(
@@ -648,10 +740,20 @@ export default function HeroFilm() {
       );
       op(whisperSubRef.current, wsub);
       tf(whisperSubRef.current, `translate3d(-50%, ${px((1 - wsub) * 10)}, 0)`);
-      op(
-        finaleRef.current,
-        easeIO(seg(p, PHASES.finale[0], PHASES.finale[1]))
-      );
+      /* The three steps used to arrive as one printed block. They now stagger,
+         so the closing line reads as 01 then 02 then 03 the way it is meant to
+         be read. The container's own fade is unchanged, and the last step still
+         completes inside the finale window, so the beat neither starts nor ends
+         anywhere new. */
+      const finT = seg(p, PHASES.finale[0], PHASES.finale[1]);
+      op(finaleRef.current, easeIO(finT));
+      const stepLag = FOLLOW / (PHASES.finale[1] - PHASES.finale[0]);
+      stepRefs.current.forEach((s, i) => {
+        if (!s) return;
+        const st = easeSnap(seg(finT, i * stepLag, i * stepLag + 0.5));
+        op(s, st);
+        tf(s, `translate3d(0, ${px((1 - st) * 12)}, 0)`);
+      });
       set(finaleRef.current, "pointer-events", p > 0.97 ? "auto" : "none");
 
       // act rail
@@ -952,15 +1054,27 @@ export default function HeroFilm() {
         </div>
         <div className={styles.finale} ref={finaleRef}>
           <div className={styles.steps}>
-            <span className={styles.step}>
-              <i>01</i> you hit a wall
-            </span>
-            <span className={styles.step}>
-              <i>02</i> the world&apos;s best joins
-            </span>
-            <span className={styles.step}>
-              <i>03</i> delivered
-            </span>
+            {[
+              <>
+                <i>01</i> you hit a wall
+              </>,
+              <>
+                <i>02</i> the world&apos;s best joins
+              </>,
+              <>
+                <i>03</i> delivered
+              </>,
+            ].map((label, i) => (
+              <span
+                key={i}
+                className={styles.step}
+                ref={(el) => {
+                  stepRefs.current[i] = el;
+                }}
+              >
+                {label}
+              </span>
+            ))}
           </div>
           <div className={styles.ctas}>
             <a className={`${styles.btn} ${styles.btnPrimary}`} href="#waitlist">
