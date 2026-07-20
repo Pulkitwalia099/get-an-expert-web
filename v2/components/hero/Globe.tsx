@@ -57,6 +57,17 @@ const CAM_Z = 6.2;
 const APERTURE = 0.38;
 const MAX_COC = 1.2;
 
+/* Width, in world units of z, of the band over which a rack target hands its
+   focal plane back to the dome front as it approaches the limb. Chosen by
+   measurement, not taste: parking the film across the scan window and free-
+   spinning the globe, the worst single-frame step in focusZ is 1.949 world
+   units with no band (62% of MAX_COC, a visible pop) against 0.034 at 0.6
+   (1.1%). Wider still keeps paying, 0.016 at 1.0, but 0.6 is already under the
+   noise and spends the least of the rack's authority: it only softens the outer
+   28% of the visible hemisphere's z range, where the dot is about to be culled
+   anyway. */
+const FRONT_BAND = 0.6;
+
 /* Directional motion smear. SHUTTER is the fraction of a frame interval a real
    camera exposes for: 0.5 is the classic 180-degree shutter. The pixel cap keeps
    a hard scrub from ballooning the sprites into fill-rate cost. */
@@ -413,13 +424,25 @@ function GlobeScene({
        A city on the BACK hemisphere is culled and never drawn, so racking to it
        would put the focal plane behind the dome and throw every visible dot out
        of focus at once. Those fall back to the front surface, which is where the
-       viewer is looking anyway. Same z > 0.05 front test the arc uses. */
+       viewer is looking anyway. Same z > 0.05 front test the arc uses.
+
+       That fallback EASES in across FRONT_BAND rather than switching at the
+       terminator. Switching at it stepped focusZ by 1.95 world units in a single
+       frame (0.74 of CoC, 62% of MAX_COC), and since the globe free-spins through
+       the whole scan, cities cross the terminator continuously and the dome's
+       blur snapped every time. The band is a pure function of the city's world z,
+       so it holds no state and reads the same scrubbing either direction. */
     const FRONT_Z = R - CAM_Z;
     const viewZ = (mesh: THREE.Mesh | null | undefined) => {
       if (!mesh) return FRONT_Z;
       mesh.getWorldPosition(focusScratch);
-      if (focusScratch.z <= 0.05) return FRONT_Z;
-      return focusScratch.applyMatrix4(camera.matrixWorldInverse).z;
+      const front = easeIO(seg(focusScratch.z, 0.05, 0.05 + FRONT_BAND));
+      if (front <= 0) return FRONT_Z;
+      return lerp(
+        FRONT_Z,
+        focusScratch.applyMatrix4(camera.matrixWorldInverse).z,
+        front
+      );
     };
     let focusZ = FRONT_Z; // the dome front, before the theatre opens
     if (matchHolds) {
