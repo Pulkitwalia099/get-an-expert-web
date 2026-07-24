@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test": "vitest run"
+    "test": "vitest run",
+    "eval": "vitest run --config evals/vitest.config.ts",
+    "sessions": "node scripts/pull-sessions.mjs"
   },
   "dependencies": {
     "next": "^16.2.11",
