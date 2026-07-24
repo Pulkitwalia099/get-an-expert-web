@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import type { ChatMessage } from '@/lib/types';
 import { askClaude, hasAnthropicKey } from '@/lib/anthropic';
 import { demoChatReply, demoDevChatReply } from '@/lib/demo';
 import { recordInsight } from '@/lib/insights';
@@ -13,14 +14,28 @@ import { schemaFor, systemFor } from '@/lib/prompts';
 
 // The question ceiling is the one rule the prompt could not hold on its own.
 // Against a visitor answering "not sure" and "dunno", the model kept rewording
-// the same ask and reached eight questions in testing. Counting turns here and
-// telling it plainly that this one is the last is deterministic in a way a
-// sentence in the prompt is not. Only the homepage intake has a ceiling.
-const MAX_INTAKE_QUESTIONS = 5;
+// the same ask and reached eight questions in testing. Counting turns here is
+// deterministic in a way a sentence in a prompt is not.
+//
+// The budget flexes with the visitor. Someone typing real sentences has earned
+// a deeper conversation; someone giving one-word answers is telling you the
+// intake is not working, and more questions will not fix that. Chip clicks are
+// short by design, so length alone cannot be the signal: the test is whether
+// they have written something of their own at least twice.
+const BASE_QUESTIONS = 4;
+const ENGAGED_QUESTIONS = 7;
+const SUBSTANTIVE_WORDS = 12;
 
-export function finalTurnNudge(flow: 'main' | 'dev', asked: number): string {
-  if (flow !== 'dev' || asked < MAX_INTAKE_QUESTIONS) return '';
-  return `\n\nYou have now used all ${MAX_INTAKE_QUESTIONS} of your questions. Do not ask another, in any wording. Either set done=true with the best brief you can build from what they have already said, or, if they have given you nothing to work with, reply with one short line naming the single detail you need and stop asking.`;
+export function questionBudget(messages: ChatMessage[]): number {
+  const substantive = messages.filter(
+    (m) => m.role === 'user' && m.content.trim().split(/\s+/).length >= SUBSTANTIVE_WORDS,
+  ).length;
+  return substantive >= 2 ? ENGAGED_QUESTIONS : BASE_QUESTIONS;
+}
+
+export function finalTurnNudge(flow: 'main' | 'dev', asked: number, budget: number): string {
+  if (flow !== 'dev' || asked < budget) return '';
+  return `\n\nYou have now used all ${budget} of your questions. Do not ask another, in any wording. Either set done=true with the best brief you can build from what they have already said, or, if they have given you nothing to work with, reply with one short line naming the single detail you need and stop asking.`;
 }
 
 async function handleChat(req: NextRequest): Promise<NextResponse> {
@@ -78,7 +93,7 @@ async function handleChat(req: NextRequest): Promise<NextResponse> {
         );
 
   try {
-    const system = systemFor(flow) + finalTurnNudge(flow, asked);
+    const system = systemFor(flow) + finalTurnNudge(flow, asked, questionBudget(messages));
     const raw = hasAnthropicKey()
       ? await askClaude({ system, messages, schema: schemaFor(flow), maxTokens: 1_200 })
       : flow === 'dev'

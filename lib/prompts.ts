@@ -129,25 +129,25 @@ export const DEV_CHAT_SCHEMA = {
     match_intro: {
       type: 'string',
       description:
-        'One sentence on the expert you have in mind, with what they have done and how many times. Empty until done is true',
+        'One sentence on the expert you have in mind, with what they have done and how many times. Only when done is true',
     },
     match_confidence: {
       type: 'string',
-      enum: ['', 'medium', 'high'],
-      description: 'How squarely this sits in a findable specialty. Empty until done is true',
+      enum: ['medium', 'high'],
+      description: 'How squarely this sits in a findable specialty. Only when done is true',
     },
   },
-  required: [
-    'reply',
-    'chips',
-    'done',
-    'brief',
-    'chip_mode',
-    'primary_path',
-    'expert_signup',
-    'match_intro',
-    'match_confidence',
-  ],
+  // match_intro and match_confidence are deliberately NOT required, and the
+  // confidence enum does not include an empty string.
+  //
+  // They were both required at first, which forced the model to emit empty
+  // strings for them on every mid-conversation turn. Measured against a
+  // preview, that produced repeated-syllable corruption in the free text
+  // fields ("two two", "accaccaccount") on 2 of 8 runs, against 0 of 8 for the
+  // expert search flow on the same deployment and model. Asking only for
+  // fields that mean something on this turn removed it. The sanitiser fills
+  // both in when they are absent, so nothing downstream has to care.
+  required: ['reply', 'chips', 'done', 'brief', 'chip_mode', 'primary_path', 'expert_signup'],
   additionalProperties: false,
 };
 
