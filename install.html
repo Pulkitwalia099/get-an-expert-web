@@ -20,6 +20,11 @@
 
 
 :root{
+  /* Stronger-than-default easing curves. The built-in ease/ease-out are
+     too weak to feel intentional; these give UI motion real punch.
+     ease-out for entrances (starts fast = feels responsive). */
+  --ease-out:cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out:cubic-bezier(0.77, 0, 0.175, 1);
   --bg:#FFFFFF; --surface:#F8FAFC; --sunk:#F1F5F9;
   --ink:#0F172A; --ink2:#334155; --muted:#64748B; --faint:#94A3B8;
   --line:#E2E8F0; --line2:#CBD5E1;
@@ -88,8 +93,14 @@ a{color:var(--accent)}
 .fork{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px}
 @media(max-width:720px){.fork{grid-template-columns:1fr}}
 .fc{position:relative;text-align:left;background:var(--surface);border:2px solid var(--line);border-radius:18px;
-  padding:24px;display:flex;flex-direction:column;gap:12px;transition:.18s}
-.fc:hover{border-color:var(--line2);transform:translateY(-3px);box-shadow:var(--sh-lg)}
+  padding:24px;display:flex;flex-direction:column;gap:12px;
+  transition:transform 200ms var(--ease-out),box-shadow 200ms var(--ease-out),border-color 200ms var(--ease-out),background-color 200ms var(--ease-out)}
+/* Hover-lift only where hover is real. On touch, a tap would otherwise stick the lifted state. */
+@media(hover:hover) and (pointer:fine){
+  .fc:hover{border-color:var(--line2);transform:translateY(-3px);box-shadow:var(--sh-lg)}
+}
+/* Press feedback: the card scales down so the tap feels heard. */
+.fc:active{transform:scale(0.985)}
 .fc[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-wash);box-shadow:var(--sh-lg)}
 .fc .ico{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;font-size:23px;
   background:var(--bg);border:1px solid var(--line)}
@@ -105,8 +116,10 @@ a{color:var(--accent)}
 #wiz{margin-top:clamp(32px,5vw,56px)}
 .plats{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;margin-bottom:20px}
 .pl{display:inline-flex;align-items:center;gap:9px;padding:9px 16px;border:1.5px solid var(--line);
-  border-radius:11px;background:var(--surface);font-size:14.5px;font-weight:500;transition:.15s}
-.pl:hover{border-color:var(--line2)}
+  border-radius:11px;background:var(--surface);font-size:14.5px;font-weight:500;
+  transition:transform 160ms var(--ease-out),border-color 160ms var(--ease-out),box-shadow 160ms var(--ease-out)}
+@media(hover:hover) and (pointer:fine){.pl:hover{border-color:var(--line2)}}
+.pl:active{transform:scale(0.96)}
 .pl[aria-selected="true"]{border-color:var(--pc,var(--accent));background:var(--bg);font-weight:600;
   box-shadow:0 0 0 3.5px color-mix(in srgb,var(--pc,var(--accent)) 16%,transparent)}
 .lg{width:22px;height:22px;border-radius:6px;display:grid;place-items:center;font-size:10.5px;font-weight:700;
@@ -115,23 +128,32 @@ a{color:var(--accent)}
 .chead{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:15px 20px;
   border-bottom:1px solid var(--line);background:var(--bg)}
 .dots{display:flex;gap:7px;align-items:center}
-.dt{width:9px;height:9px;border-radius:50%;background:var(--line2);transition:.2s;padding:0;flex:none}
+.dt{width:9px;height:9px;border-radius:50%;background:var(--line2);padding:0;flex:none;
+  transition:transform 200ms var(--ease-out),background-color 200ms var(--ease-out)}
 .dt[data-s="done"]{background:var(--ok)}
 .dt[data-s="now"]{background:var(--pc,var(--accent));transform:scale(1.45)}
 .cnt{font-size:12.5px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
 .cbody{padding:clamp(22px,3.4vw,34px);display:flex;flex-direction:column;gap:18px;min-height:320px}
 .lead{font-size:16.5px;color:var(--ink2);max-width:54ch;text-wrap:pretty}
-.stepwrap{animation:fade .26s ease both;display:flex;flex-direction:column;gap:18px}
-@keyframes fade{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
-@media(prefers-reduced-motion:reduce){.stepwrap{animation:none}.fc{transition:none}}
+/* Fires on every Next, so it stays crisp: strong ease-out, under 300ms. */
+.stepwrap{animation:fade 220ms var(--ease-out) both;display:flex;flex-direction:column;gap:18px}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* Reduced motion: keep the opacity fade for comprehension, drop all movement and press-scales. */
+@media(prefers-reduced-motion:reduce){
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .fc,.pl,.nb,.cb,.go,.dt{transition-property:border-color,background-color,box-shadow,color}
+  .fc:active,.pl:active,.nb:active,.cb:active,.go:active{transform:none}
+  .dt[data-s="now"]{transform:none}
+}
 .cnav{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 20px;
   border-top:1px solid var(--line);background:var(--bg)}
-.nb{padding:11px 24px;border-radius:11px;font-size:15px;font-weight:600;transition:.15s}
+.nb{padding:11px 24px;border-radius:11px;font-size:15px;font-weight:600;
+  transition:transform 140ms var(--ease-out),filter 140ms var(--ease-out),color 140ms var(--ease-out)}
 .nb.pri{background:var(--pc,var(--accent));color:#fff}
-.nb.pri:hover{filter:brightness(1.08)}
+@media(hover:hover) and (pointer:fine){.nb.pri:hover{filter:brightness(1.08)}.nb.sec:hover{color:var(--ink)}}
+.nb:active{transform:scale(0.97)}
 .nb.sec{color:var(--muted)}
-.nb.sec:hover{color:var(--ink)}
-.nb[disabled]{opacity:.32;cursor:default}
+.nb[disabled]{opacity:.32;cursor:default;transform:none}
 
 /* ---- PLAIN address field: the hire route never looks like a terminal ---- */
 .addr{display:flex;gap:10px;align-items:stretch;max-width:600px;flex-wrap:wrap}
@@ -139,8 +161,10 @@ a{color:var(--accent)}
   padding:16px 18px;font-size:17px;color:var(--ink);font-family:var(--ui);letter-spacing:-.01em;
   overflow-x:auto;white-space:nowrap}
 .addr .go{background:var(--pc,var(--accent));color:#fff;padding:0 28px;border-radius:12px;font-size:15px;
-  font-weight:600;white-space:nowrap;display:grid;place-items:center;min-height:56px}
-.addr .go:hover{filter:brightness(1.08)}
+  font-weight:600;white-space:nowrap;display:grid;place-items:center;min-height:56px;
+  transition:transform 140ms var(--ease-out),filter 140ms var(--ease-out),background-color 200ms var(--ease-out)}
+@media(hover:hover) and (pointer:fine){.addr .go:hover{filter:brightness(1.08)}}
+.addr .go:active{transform:scale(0.97)}
 .addr .go.ok{background:var(--ok)}
 
 /* ---- developer styling, machine route only ---- */
@@ -148,8 +172,10 @@ a{color:var(--accent)}
 .crow code{flex:1;min-width:0;background:var(--term);color:var(--term-ink);font-family:var(--mono);
   font-size:13.5px;padding:15px 17px;border-radius:11px;overflow-x:auto;white-space:pre;line-height:1.6}
 .cb{background:var(--pc,var(--accent));color:#fff;padding:0 24px;border-radius:11px;font-size:14px;
-  font-weight:600;white-space:nowrap;display:grid;place-items:center}
-.cb:hover{filter:brightness(1.08)}
+  font-weight:600;white-space:nowrap;display:grid;place-items:center;
+  transition:transform 140ms var(--ease-out),filter 140ms var(--ease-out),background-color 200ms var(--ease-out)}
+@media(hover:hover) and (pointer:fine){.cb:hover{filter:brightness(1.08)}}
+.cb:active{transform:scale(0.97)}
 .cb.ok{background:var(--ok)}
 .blk{border-radius:13px;overflow:hidden;background:var(--term);max-width:620px}
 .blk .bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 15px;
@@ -218,7 +244,7 @@ details.oth{margin-top:clamp(38px,6vw,62px);border:1px solid var(--line);border-
 details.oth summary{list-style:none;cursor:pointer;padding:19px 22px;display:flex;align-items:center;
   justify-content:space-between;gap:14px;font-size:16.5px;font-weight:600}
 details.oth summary::-webkit-details-marker{display:none}
-details.oth summary i{font-style:normal;font-size:20px;color:var(--muted);transition:transform .2s}
+details.oth summary i{font-style:normal;font-size:20px;color:var(--muted);transition:transform 200ms var(--ease-out)}
 details.oth[open] summary i{transform:rotate(45deg)}
 .othb{padding:0 22px 24px;display:flex;flex-direction:column;gap:15px}
 .othb p{font-size:14.5px;color:var(--muted)}
