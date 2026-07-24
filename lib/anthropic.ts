@@ -1,3 +1,4 @@
+import { anthropicKey } from '@/lib/env';
 import type { ChatMessage } from '@/lib/types';
 
 const API_URL = 'https://api.anthropic.com/v1/messages';
@@ -6,7 +7,7 @@ const TIMEOUT_MS = 75_000;
 const RETRYABLE_STATUS = new Set([408, 429, 500, 502, 503, 504, 529]);
 
 export function hasAnthropicKey(): boolean {
-  return Boolean(process.env.ANTHROPIC_API_KEY);
+  return Boolean(anthropicKey());
 }
 
 interface AskOptions {
@@ -48,7 +49,7 @@ async function callOnce<T>(opts: AskOptions): Promise<T> {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-api-key': process.env.ANTHROPIC_API_KEY ?? '',
+      'x-api-key': anthropicKey() ?? '',
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({

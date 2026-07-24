@@ -1,3 +1,4 @@
+import { serpapiKey } from '@/lib/env';
 import { scrubUntrusted } from '@/lib/sanitize';
 import type { Brief } from '@/lib/types';
 
@@ -108,7 +109,7 @@ export interface ProfileSearch {
 }
 
 export async function searchProfiles(brief: Brief): Promise<ProfileSearch> {
-  const key = process.env.SERPAPI_KEY;
+  const key = serpapiKey();
   if (!key) return { results: [], queriesRun: 0 };
 
   const primaryQueries = buildQueries(brief);

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { askClaude, hasAnthropicKey } from '@/lib/anthropic';
 import { demoExperts } from '@/lib/demo';
+import { serpapiKey } from '@/lib/env';
 import { finalizeExperts } from '@/lib/experts';
 import { recordInsight } from '@/lib/insights';
 import { withMetrics } from '@/lib/metrics';
@@ -113,7 +114,7 @@ async function handleSearch(req: NextRequest): Promise<NextResponse> {
   const used = (await bumpUsage(monthKey('serp'), 0)) ?? 0;
   const live =
     hasAnthropicKey() &&
-    Boolean(process.env.SERPAPI_KEY) &&
+    Boolean(serpapiKey()) &&
     verdict === 'ok' &&
     used < cap;
   if (!live) {
