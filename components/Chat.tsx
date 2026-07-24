@@ -4,39 +4,19 @@ import { FormEvent, useEffect, useRef, useState } from 'react';
 import { track } from '@/lib/analytics';
 import { trimHistory } from '@/lib/history';
 import { newSessionId } from '@/lib/session';
-import type { ApiRole, Brief, ChatReply, Expert, MatchConfidence, PrimaryPath } from '@/lib/types';
+import type { ApiRole, Brief, ChatReply, MatchConfidence, PrimaryPath } from '@/lib/types';
 import Composer from '@/components/Composer';
 import ExpertSignup from '@/components/ExpertSignup';
 import { FLOWS, type Flow } from '@/components/flows';
 import GetUnstuck from '@/components/GetUnstuck';
 import MatchStep from '@/components/MatchStep';
 import MultiChips from '@/components/MultiChips';
+import { PLACEHOLDERS, type Phase } from '@/components/phases';
 import Sonar from '@/components/Sonar';
 import Thread, { type Msg } from '@/components/Thread';
 import Titlebar from '@/components/Titlebar';
+import { useExpertSearch } from '@/components/useExpertSearch';
 import WelcomeScreen from '@/components/WelcomeScreen';
-
-type Phase = 'welcome' | 'chat' | 'searching' | 'matches' | 'refine' | 'email' | 'choice' | 'done';
-
-const MIN_SEARCH_MS = 4_200;
-
-const PLACEHOLDERS: Record<Phase, string> = {
-  welcome: "I'm looking for…",
-  chat: 'Reply…',
-  searching: 'One moment…',
-  matches: 'Not right? Tell me…',
-  refine: 'Describe who you need…',
-  email: 'you@company.com',
-  choice: 'Questions? Ask here…',
-  done: 'Anything else?',
-};
-
-function firstNames(names: string[]): string {
-  const f = names.map((n) => n.split(' ')[0]).filter(Boolean);
-  if (f.length === 0) return 'They';
-  if (f.length === 1) return f[0];
-  return `${f.slice(0, -1).join(', ')} and ${f[f.length - 1]}`;
-}
 
 export default function Chat({ flow = 'main' }: { flow?: Flow }) {
   const config = FLOWS[flow];
@@ -45,10 +25,6 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
   const [input, setInput] = useState('');
   const [typing, setTyping] = useState(false);
   const [brief, setBrief] = useState<Brief | null>(null);
-  const [experts, setExperts] = useState<Expert[]>([]);
-  const [preview, setPreview] = useState<Expert[]>([]);
-  const [selected, setSelected] = useState<string[]>([]);
-  const [customNeed, setCustomNeed] = useState<string | null>(null);
   // Chips the model marked as multi select, and the message they came with.
   const [multi, setMulti] = useState<{ turn: number; chips: string[] } | null>(null);
   const [signup, setSignup] = useState(false);
@@ -78,6 +54,16 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
     push({ role: 'ai', text });
   };
 
+  // The search and the intro request live in their own state machine. This
+  // component keeps the conversation and hands over once a brief is ready.
+  const search = useExpertSearch({
+    flow,
+    sessionId: sessionIdRef.current,
+    brief,
+    push,
+    setPhase,
+  });
+
   // One event per visit marking which page (flow) they opened. Pageviews are
   // captured separately by the provider; this adds the flow for segmentation.
   useEffect(() => {
@@ -86,7 +72,7 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: 1e7, behavior: 'smooth' });
-  }, [msgs, typing, phase, experts]);
+  }, [msgs, typing, phase, search.experts]);
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -127,67 +113,12 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
         setMatchIntro(data.match_intro);
         setMatchConfidence(data.match_confidence);
         setBrief(data.brief);
-        void runSearch(data.brief);
+        void search.runSearch(data.brief);
       }
     } catch {
       setTyping(false);
       push({ role: 'ai', text: 'Hit a snag.', retry: true });
     }
-  }
-
-  async function runSearch(b: Brief | null) {
-    setPhase('searching');
-    setSelected([]);
-    setCustomNeed(null);
-    setPreview([]);
-    if (config.ending === 'choice') {
-      // The dev flow matches privately, so the sonar moment is pure pacing:
-      // no marketplace search, straight to the install-or-email choice.
-      window.setTimeout(() => {
-        push({ role: 'ai', text: config.foundText });
-        track('choice_shown', { flow });
-        setPhase('choice');
-      }, MIN_SEARCH_MS);
-      return;
-    }
-    const started = Date.now();
-    let found: Expert[] = [];
-    try {
-      const res = await fetch('/api/search', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ brief: b, sessionId: sessionIdRef.current }),
-      });
-      if (res.ok) {
-        found = ((await res.json()) as { experts?: Expert[] }).experts ?? [];
-        setPreview(found.slice(0, 3));
-      }
-    } catch {
-      // fall through to the no-match path
-    }
-    const remaining = Math.max(0, MIN_SEARCH_MS - (Date.now() - started));
-    window.setTimeout(() => {
-      if (found.length === 0) {
-        push({
-          role: 'ai',
-          text: 'Nothing strong enough yet. Describe the profile you want and we’ll find them.',
-        });
-        setPhase('refine');
-      } else {
-        setExperts(found);
-        push({ role: 'ai', text: config.foundText });
-        track('matches_shown', { flow, result_count: found.length });
-        setPhase('matches');
-      }
-    }, remaining);
-  }
-
-  function toggleExpert(id: string) {
-    // Track outside the updater: a setState updater must stay pure, or React's
-    // StrictMode double-invoke would double-fire the event.
-    const turningOn = !selected.includes(id);
-    if (turningOn) track('experts_selected', { flow });
-    setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   }
 
   // "Something else": open the conversation without sending the chip text as
@@ -197,19 +128,10 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
     setPhase('chat');
   }
 
-  function requestIntros() {
-    if (selected.length === 0) return;
-    setExperts((prev) => prev.filter((e) => selected.includes(e.id)));
-    push({ role: 'ai', text: 'Great. Add your email and we’ll set up the intros.' });
-    track('email_shown', { flow, path: 'intros' });
-    setPhase('email');
-  }
-
   // Not happy with the matches: fold the request back into the chat so the
   // model can revise the brief and search again.
   function startRefine() {
-    setExperts([]);
-    setSelected([]);
+    search.clearMatches();
     say(
       'What should I change? For example a different budget, more senior, a location, or another specialty.',
     );
@@ -220,64 +142,10 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
   function startMore() {
     apiMsgs.current = [];
     setBrief(null);
-    setExperts([]);
-    setSelected([]);
-    setCustomNeed(null);
+    search.startOver();
     setMulti(null);
     push({ role: 'ai', text: 'Happy to. What other kind of expert are you looking for?' });
     setPhase('chat');
-  }
-
-  function submitCustom(text: string) {
-    push({ role: 'user', text });
-    setCustomNeed(text);
-    setExperts([]);
-    setSelected([]);
-    push({ role: 'ai', text: 'Got it. Add your email and we’ll take it from there.' });
-    track('email_shown', { flow, path: 'custom' });
-    setPhase('email');
-  }
-
-  async function submitIntro(name: string, email: string): Promise<boolean> {
-    const isCustom = customNeed !== null;
-    const chosen = experts.filter((e) => selected.includes(e.id));
-    const names = chosen.map((e) => e.name);
-    try {
-      const res = await fetch('/api/intros', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: isCustom ? 'custom' : 'intros',
-          name: name || undefined,
-          email,
-          selected: names,
-          need: customNeed ?? undefined,
-          brief,
-          sessionId: sessionIdRef.current,
-        }),
-      });
-      if (!res.ok) throw new Error(`intros ${res.status}`);
-      push({ role: 'user', text: name ? `${name} · ${email}` : email });
-      push({
-        role: 'ai',
-        text: isCustom
-          ? 'Got it. We’ll line up the right people and email you intros, usually within a day.'
-          : `Got it. We’ll reach out to ${firstNames(names)} with your requirements. Whoever can take it on will introduce themselves by email, usually within a day.`,
-        avatars: isCustom ? undefined : chosen.map((e) => ({ name: e.name, photo: e.photo })),
-      });
-      track('intro_submitted', {
-        flow,
-        kind: isCustom ? 'custom' : 'intros',
-        count: names.length,
-      });
-      setExperts([]);
-      setSelected([]);
-      setPhase('done');
-      return true;
-    } catch {
-      push({ role: 'ai', text: 'Hit a snag. Try that again.' });
-      return false;
-    }
   }
 
   function onSubmit(e: FormEvent) {
@@ -286,13 +154,12 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
     if (!text || busy) return;
     setInput('');
     if (phase === 'matches' || phase === 'refine' || phase === 'choice') {
-      submitCustom(text);
+      search.submitCustom(text);
     } else {
       void sendChat(text);
     }
   }
 
-  const introCount = customNeed !== null ? 0 : selected.length;
   const lastMsgId = msgs.length > 0 ? msgs[msgs.length - 1].id : 0;
   const answering = phase === 'chat' && !typing;
 
@@ -338,7 +205,7 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
                 )}
 
                 {phase === 'searching' && (
-                  <Sonar found={preview} status={config.searchingStatus} />
+                  <Sonar found={search.preview} status={config.searchingStatus} />
                 )}
 
                 {phase === 'choice' && (
@@ -364,13 +231,13 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
                 {(phase === 'matches' || phase === 'email' || phase === 'done') && (
                   <MatchStep
                     phase={phase}
-                    experts={experts}
-                    selected={selected}
-                    introCount={introCount}
-                    onToggle={toggleExpert}
-                    onRequest={requestIntros}
+                    experts={search.experts}
+                    selected={search.selected}
+                    introCount={search.introCount}
+                    onToggle={search.toggleExpert}
+                    onRequest={search.requestIntros}
                     onRefine={startRefine}
-                    onSubmit={submitIntro}
+                    onSubmit={search.submitIntro}
                     onMore={startMore}
                   />
                 )}
