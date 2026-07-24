@@ -11,6 +11,18 @@ import { durableLimit } from '@/lib/usage';
 import { parseFlow, parseMessages, parseSessionId, sanitizeReply } from '@/lib/validate';
 import { schemaFor, systemFor } from '@/lib/prompts';
 
+// The question ceiling is the one rule the prompt could not hold on its own.
+// Against a visitor answering "not sure" and "dunno", the model kept rewording
+// the same ask and reached eight questions in testing. Counting turns here and
+// telling it plainly that this one is the last is deterministic in a way a
+// sentence in the prompt is not. Only the homepage intake has a ceiling.
+const MAX_INTAKE_QUESTIONS = 5;
+
+export function finalTurnNudge(flow: 'main' | 'dev', asked: number): string {
+  if (flow !== 'dev' || asked < MAX_INTAKE_QUESTIONS) return '';
+  return `\n\nYou have now used all ${MAX_INTAKE_QUESTIONS} of your questions. Do not ask another, in any wording. Either set done=true with the best brief you can build from what they have already said, or, if they have given you nothing to work with, reply with one short line naming the single detail you need and stop asking.`;
+}
+
 async function handleChat(req: NextRequest): Promise<NextResponse> {
   if (!matchesOrigin(req.headers.get('origin'), req.headers.get('host'))) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
@@ -66,7 +78,7 @@ async function handleChat(req: NextRequest): Promise<NextResponse> {
         );
 
   try {
-    const system = systemFor(flow);
+    const system = systemFor(flow) + finalTurnNudge(flow, asked);
     const raw = hasAnthropicKey()
       ? await askClaude({ system, messages, schema: schemaFor(flow), maxTokens: 1_200 })
       : flow === 'dev'
