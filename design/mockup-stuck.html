@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>midsesh · /stuck mockup</title>
+<style>
+  /* Tokens and base styles are copied from mockup.html so the two flows
+     stay pixel-identical. Only the .term / .opt styles are new. */
+  :root {
+    --bg: #F6F3ED;
+    --ink: #211E1A;
+    --ink-2: #5F594E;
+    --ink-3: #8B8375;
+    --line: rgba(33, 30, 26, .08);
+    --glass: rgba(255, 255, 255, .55);
+    --glass-strong: rgba(255, 255, 255, .74);
+    --accent: #C4593C;
+    --accent-deep: #A8452C;
+    --accent-tint: rgba(196, 89, 60, .09);
+    --amber: #D98E28;
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --radius-window: 24px;
+    --radius-card: 16px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    letter-spacing: -0.004em;
+  }
+  ::selection { background: rgba(196, 89, 60, .22); }
+
+  .bg {
+    position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(52vw 44vh at 16% 8%,  rgba(255, 196, 156, .52), transparent 68%),
+      radial-gradient(46vw 42vh at 86% 12%, rgba(206, 190, 255, .46), transparent 70%),
+      radial-gradient(58vw 50vh at 50% 104%, rgba(168, 206, 255, .42), transparent 70%),
+      radial-gradient(30vw 26vh at 72% 62%, rgba(255, 226, 178, .35), transparent 70%);
+  }
+  .grain {
+    position: fixed; inset: 0; z-index: 0; opacity: .05; pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E");
+  }
+
+  .page {
+    position: relative; z-index: 1;
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 52px 16px 44px;
+  }
+
+  .window {
+    width: min(660px, 100%);
+    min-height: 500px;
+    display: flex; flex-direction: column;
+    border-radius: var(--radius-window);
+    background: var(--glass);
+    -webkit-backdrop-filter: blur(44px) saturate(170%);
+    backdrop-filter: blur(44px) saturate(170%);
+    border: 1px solid rgba(255, 255, 255, .62);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, .65),
+      0 30px 70px -24px rgba(45, 32, 22, .28),
+      0 8px 26px rgba(45, 32, 22, .07);
+    overflow: hidden;
+  }
+
+  .titlebar {
+    position: relative; flex: none;
+    height: 44px; display: flex; align-items: center; padding: 0 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  .lights { display: flex; gap: 8px; }
+  .lights i { width: 12px; height: 12px; border-radius: 50%; box-shadow: inset 0 0 0 .5px rgba(0,0,0,.12); }
+  .lights .r { background: #FF5F57; }
+  .lights .y { background: #FEBC2E; }
+  .lights .g { background: #28C840; }
+
+  .wordmark {
+    position: absolute; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 7px; white-space: nowrap;
+    font-size: 13.5px; font-weight: 600; color: var(--ink); letter-spacing: -0.012em;
+  }
+  .wordmark .worb {
+    width: 15px; height: 15px; border-radius: 50%;
+    background: linear-gradient(140deg, #E8A184, var(--accent));
+    color: #fff; font-size: 8px; line-height: 1;
+    display: grid; place-items: center;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.4), 0 2px 6px rgba(168, 69, 44, .3);
+  }
+  .wordmark .tag {
+    font-size: 10.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+    color: var(--accent-deep); background: var(--accent-tint);
+    border: 1px solid rgba(196, 89, 60, .22);
+    padding: 2px 7px; border-radius: 999px; margin-left: 2px;
+  }
+
+  .chat { flex: 1; display: flex; flex-direction: column; padding: 20px 20px 6px; overflow: hidden; }
+  .screen { display: none; flex: 1; flex-direction: column; min-height: 0; }
+  .screen.on { display: flex; }
+
+  .composer { flex: none; padding: 10px 16px 16px; }
+  .field {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 8px 8px 10px;
+    background: var(--glass-strong);
+    border: 1px solid rgba(33, 30, 26, .10);
+    border-radius: 24px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 8px 22px rgba(45, 32, 22, .06);
+  }
+  .icon-btn {
+    flex: none; width: 30px; height: 30px; border-radius: 50%;
+    border: none; background: rgba(33, 30, 26, .05); color: var(--ink-3);
+    display: grid; place-items: center; cursor: pointer;
+  }
+  .field input {
+    flex: 1; border: none; outline: none; background: transparent;
+    font: inherit; font-size: 14.5px; color: var(--ink); caret-color: var(--accent);
+  }
+  .field input::placeholder { color: var(--ink-3); }
+  .send {
+    flex: none; width: 32px; height: 32px; border-radius: 50%;
+    border: none; background: var(--accent); color: #fff;
+    display: grid; place-items: center; cursor: pointer;
+    box-shadow: 0 4px 10px rgba(168, 69, 44, .35);
+  }
+
+  .greet { margin: auto; text-align: center; padding: 10px 0 0; }
+  .greet .orb {
+    width: 40px; height: 40px; margin: 0 auto; border-radius: 50%;
+    background: linear-gradient(140deg, #E8A184, var(--accent));
+    color: #fff; font-size: 17px;
+    display: grid; place-items: center;
+    box-shadow: 0 10px 24px rgba(168, 69, 44, .3), inset 0 1px 0 rgba(255,255,255,.4);
+  }
+  .greet h2 {
+    margin-top: 15px;
+    font-size: 21px; font-weight: 600; letter-spacing: -0.017em;
+  }
+  .greet .sub {
+    margin-top: 7px; font-size: 13.5px; color: var(--ink-2); line-height: 1.5;
+  }
+
+  .chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; padding: 16px 8px 8px; }
+  .chip {
+    border: 1px solid rgba(33, 30, 26, .11);
+    background: rgba(255, 255, 255, .5);
+    color: var(--ink-2);
+    font: inherit; font-size: 13px; font-weight: 500;
+    padding: 7px 13px; border-radius: 999px; cursor: pointer;
+  }
+
+  .thread { display: flex; flex-direction: column; gap: 15px; }
+  .msg { display: flex; max-width: 84%; }
+  .msg.user { align-self: flex-end; }
+  .msg.user .bubble {
+    background: #262019; color: #F8F4EC;
+    padding: 9px 14px; border-radius: 18px; border-bottom-right-radius: 6px;
+    font-size: 14.5px; line-height: 1.5;
+    box-shadow: 0 6px 16px rgba(38, 32, 25, .18);
+  }
+  .msg.ai { gap: 10px; }
+  .ava {
+    flex: none; width: 24px; height: 24px; margin-top: 1px; border-radius: 50%;
+    background: linear-gradient(140deg, #E8A184, var(--accent));
+    color: #fff; font-size: 11px;
+    display: grid; place-items: center;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.4);
+  }
+  .msg.ai .body { min-width: 0; }
+  .msg.ai .text { font-size: 14.5px; line-height: 1.55; color: var(--ink); padding-top: 2px; }
+  .qchips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+  .qchip {
+    border: 1px solid rgba(196, 89, 60, .32);
+    background: rgba(196, 89, 60, .05);
+    color: var(--accent-deep);
+    font: inherit; font-size: 13px; font-weight: 500;
+    padding: 6px 12px; border-radius: 999px; cursor: pointer;
+  }
+
+  .search-panel {
+    margin-top: 16px;
+    background: rgba(255, 255, 255, .55);
+    border: 1px solid rgba(255, 255, 255, .7);
+    outline: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    padding: 10px 12px 14px;
+    box-shadow: 0 14px 34px rgba(45, 32, 22, .08);
+  }
+  .sonar { position: relative; height: 250px; overflow: hidden; border-radius: 10px; }
+  .rs { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); border: 1px solid rgba(33,30,26,.06); border-radius: 50%; }
+  .rs1 { width: 110px; height: 110px; }
+  .rs2 { width: 190px; height: 190px; }
+  .rs3 { width: 270px; height: 270px; }
+  .ring {
+    position: absolute; left: 50%; top: 50%;
+    width: 84px; height: 84px; border-radius: 50%;
+    border: 1.5px solid rgba(196, 89, 60, .35);
+    transform: translate(-50%,-50%) scale(2.2);
+    opacity: .3;
+  }
+  .ring.r2 { transform: translate(-50%,-50%) scale(3.2); opacity: .15; }
+  .sonar-orb {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(140deg, #E8A184, var(--accent));
+    color: #fff; font-size: 15px;
+    display: grid; place-items: center;
+    box-shadow: 0 8px 22px rgba(168, 69, 44, .42), inset 0 1px 0 rgba(255,255,255,.4);
+  }
+  .sdot {
+    position: absolute; width: 5px; height: 5px; border-radius: 50%;
+    background: rgba(196, 89, 60, .8); opacity: .6;
+  }
+  .sav {
+    position: absolute; width: 28px; height: 28px; border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255,255,255,.9);
+    box-shadow: 0 6px 16px rgba(45, 32, 22, .22);
+  }
+  .sstatus {
+    margin-top: 4px; text-align: center;
+    font-size: 12.5px; color: var(--ink-3);
+  }
+
+  /* ---------- New: the get-unstuck choice ---------- */
+  .opts { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+  .opt {
+    background: rgba(255, 255, 255, .68);
+    border: 1px solid rgba(255, 255, 255, .75);
+    outline: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    padding: 14px 15px;
+    box-shadow: 0 10px 26px rgba(45, 32, 22, .07);
+  }
+  .opt.primary { outline: 2px solid var(--accent); background: rgba(255, 255, 255, .82); }
+  .opt-top { display: flex; align-items: center; gap: 8px; }
+  .opt-title { font-size: 14.5px; font-weight: 600; letter-spacing: -0.01em; }
+  .opt-top .badge {
+    margin-left: auto;
+    font-size: 10px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+    color: #fff; background: var(--accent);
+    padding: 3px 8px; border-radius: 999px;
+  }
+  .opt-sub { margin-top: 5px; font-size: 13px; line-height: 1.5; color: var(--ink-2); }
+  .opt-sub b { color: var(--ink); font-weight: 600; }
+
+  .term {
+    margin-top: 10px;
+    display: flex; align-items: center; gap: 10px;
+    background: #262019; color: #F8F4EC;
+    border-radius: 12px; padding: 11px 12px 11px 14px;
+    box-shadow: 0 6px 16px rgba(38, 32, 25, .18);
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 13px;
+  }
+  .term .prompt { color: #8B8375; user-select: none; }
+  .term code { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .term code .pkg { color: #F0B27E; }
+  .copy {
+    flex: none; border: none; cursor: pointer; font: inherit;
+    font-size: 11.5px; font-weight: 600;
+    color: #F8F4EC; background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.16);
+    padding: 5px 11px; border-radius: 8px;
+  }
+  .term-note { margin-top: 8px; font-size: 12px; color: var(--ink-3); line-height: 1.5; }
+  .term-note .ok { color: #3E7D4E; font-weight: 600; }
+
+  .opt .mini-field {
+    margin-top: 10px;
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 5px 5px 12px;
+    background: var(--glass-strong);
+    border: 1px solid rgba(33, 30, 26, .10);
+    border-radius: 999px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.9);
+  }
+  .mini-field input {
+    flex: 1; border: none; outline: none; background: transparent;
+    font: inherit; font-size: 13.5px; color: var(--ink);
+  }
+  .mini-field input::placeholder { color: var(--ink-3); }
+  .mini-field .go {
+    flex: none; border: none; cursor: pointer; font: inherit;
+    font-size: 12.5px; font-weight: 600; padding: 7px 14px; border-radius: 999px;
+    background: rgba(33, 30, 26, .08); color: var(--ink);
+  }
+
+  .divider {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--ink-3); padding: 2px 4px;
+  }
+  .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: rgba(33, 30, 26, .1); }
+
+  /* ---------- Done state ---------- */
+  .live {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 600; color: #3E7D4E;
+    background: rgba(62, 125, 78, .1); border: 1px solid rgba(62, 125, 78, .25);
+    padding: 4px 10px; border-radius: 999px; margin-top: 8px;
+  }
+  .live i { width: 7px; height: 7px; border-radius: 50%; background: #3E7D4E; }
+
+  @media (max-width: 560px) {
+    .page { padding-top: 24px; }
+    .chat { padding: 16px 14px 4px; }
+    .msg { max-width: 92%; }
+  }
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="grain"></div>
+
+<main class="page">
+  <section class="window">
+    <div class="titlebar">
+      <div class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></div>
+      <div class="wordmark"><span class="worb">✳︎</span>midsesh<span class="tag">devs</span></div>
+    </div>
+
+    <div class="chat">
+
+      <!-- ============ 1 · Welcome ============ -->
+      <div class="screen s1" data-s="1">
+        <div class="greet">
+          <div class="orb">✳︎</div>
+          <h2>Stuck in Claude Code or Codex?</h2>
+          <div class="sub">Two questions, then a human who unsticks<br>AI coding sessions every day.</div>
+        </div>
+        <div class="chips">
+          <button class="chip">Agent is looping</button>
+          <button class="chip">Broke my repo</button>
+          <button class="chip">MCP won't connect</button>
+          <button class="chip">Burning tokens, no progress</button>
+        </div>
+      </div>
+
+      <!-- ============ 2 · Follow-up questions ============ -->
+      <div class="screen s2" data-s="2">
+        <div class="thread">
+          <div class="msg user"><div class="bubble">Claude Code keeps rewriting my auth middleware and the tests still fail.</div></div>
+          <div class="msg ai">
+            <div class="ava">✳︎</div>
+            <div class="body">
+              <div class="text">Classic fix-loop. Is it failing the same test each round, or a different one every time?</div>
+              <div class="qchips">
+                <button class="qchip">Same test</button>
+                <button class="qchip">Different ones</button>
+                <button class="qchip">Not sure</button>
+              </div>
+            </div>
+          </div>
+          <div class="msg user"><div class="bubble">Same test. Third hour on this.</div></div>
+          <div class="msg ai">
+            <div class="ava">✳︎</div>
+            <div class="body">
+              <div class="text">Need someone in your session right now, or is an intro later today fine?</div>
+              <div class="qchips">
+                <button class="qchip">Right now</button>
+                <button class="qchip">Later today</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 3 · Finding ============ -->
+      <div class="screen s3" data-s="3">
+        <div class="thread">
+          <div class="msg user"><div class="bubble">Right now.</div></div>
+        </div>
+        <div class="search-panel">
+          <div class="sonar">
+            <i class="rs rs1"></i><i class="rs rs2"></i><i class="rs rs3"></i>
+            <i class="ring r1"></i><i class="ring r2"></i>
+            <span class="sdot" style="left:22%; top:62%;"></span>
+            <span class="sdot" style="left:38%; top:20%;"></span>
+            <span class="sdot" style="left:64%; top:76%;"></span>
+            <span class="sdot" style="left:84%; top:34%;"></span>
+            <span class="sdot" style="left:12%; top:30%;"></span>
+            <img class="sav" src="avatars/a1.jpg" alt="" style="left:29%; top:36%;">
+            <img class="sav" src="avatars/a2.jpg" alt="" style="left:69%; top:26%;">
+            <img class="sav" src="avatars/a3.jpg" alt="" style="left:74%; top:62%;">
+            <div class="sonar-orb">✳︎</div>
+          </div>
+          <div class="sstatus">Finding an agent-debugging expert who's online now…</div>
+        </div>
+      </div>
+
+      <!-- ============ 4 · The choice ============ -->
+      <div class="screen s4" data-s="4">
+        <div class="thread">
+          <div class="msg ai">
+            <div class="ava">✳︎</div>
+            <div class="body">
+              <div class="text">Found one. An expert who has untangled this exact fix-loop is online now. Two ways to connect:</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="opts">
+          <div class="opt primary">
+            <div class="opt-top">
+              <span class="opt-title">Bring them into your session</span>
+              <span class="badge">Fastest</span>
+            </div>
+            <div class="opt-sub">One command adds the expert to <b>Claude Code, Codex, Cursor or Windsurf</b> as an MCP server. Scoped, consent-based access; you approve everything they touch.</div>
+            <div class="term">
+              <span class="prompt">$</span>
+              <code>npx <span class="pkg">get-an-expert-agent</span></code>
+              <button class="copy">Copy</button>
+            </div>
+            <div class="term-note">Run it in your project, then ask your agent to <span class="ok">"get an expert"</span>. They join in about 2 minutes.</div>
+          </div>
+
+          <div class="divider">or</div>
+
+          <div class="opt">
+            <div class="opt-top">
+              <span class="opt-title">Get an intro by email</span>
+            </div>
+            <div class="opt-sub">We send you the expert and an exact price. No install, replies within the hour.</div>
+            <div class="mini-field">
+              <input type="email" placeholder="you@company.com">
+              <button class="go">Send</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 5 · Done ============ -->
+      <div class="screen s5" data-s="5">
+        <div class="thread">
+          <div class="msg user"><div class="bubble">Ran it.</div></div>
+          <div class="msg ai">
+            <div class="ava">✳︎</div>
+            <div class="body">
+              <div class="text">Connected. Priya is joining your Claude Code session, she'll say hello in the terminal. You approve every file she touches.</div>
+              <div class="live"><i></i>Expert session live</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="composer">
+      <div class="field">
+        <button class="icon-btn" aria-label="Attach">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </button>
+        <input id="composer-input" type="text" placeholder="What's it stuck on?">
+        <button class="send" aria-label="Send">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 11.5v-9M3.2 6.2 7 2.4l3.8 3.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+  const PLACEHOLDERS = { 1: "What's it stuck on?", 2: 'Reply…', 3: 'One moment…', 4: 'Questions? Ask here…', 5: 'Anything else?' };
+
+  function setState(n) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.dataset.s === String(n)));
+    document.getElementById('composer-input').placeholder = PLACEHOLDERS[n];
+    document.body.dataset.state = n;
+  }
+  function stateFromHash() {
+    const n = parseInt(location.hash.replace('#', ''), 10);
+    return (n >= 1 && n <= 5) ? n : 1;
+  }
+  window.addEventListener('hashchange', () => setState(stateFromHash()));
+  window.addEventListener('keydown', (e) => {
+    const cur = parseInt(document.body.dataset.state, 10);
+    if (/^[1-5]$/.test(e.key)) location.hash = e.key;
+    if (e.key === 'ArrowRight' && cur < 5) location.hash = cur + 1;
+    if (e.key === 'ArrowLeft' && cur > 1) location.hash = cur - 1;
+  });
+  setState(stateFromHash());
+</script>
+</body>
+</html>
