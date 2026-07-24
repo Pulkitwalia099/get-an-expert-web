@@ -41,7 +41,8 @@ export default function Privacy() {
       <h2>Questions</h2>
       <p>
         Email us at{' '}
-        <a href="mailto:hello@midsesh.com">hello@midsesh.com</a> and we will sort it out.
+        <a href="mailto:midsesh.social@gmail.com">midsesh.social@gmail.com</a> and we will sort it
+        out.
       </p>
     </main>
   );
