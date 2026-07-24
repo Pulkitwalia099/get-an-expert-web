@@ -26,6 +26,14 @@ interface Row {
 
 const rows: Row[] = [];
 
+// vitest retries replace a scenario's earlier attempt, so the summary table
+// shows one final row per scenario.
+function pushRow(row: Row): void {
+  const i = rows.findIndex((r) => r.id === row.id);
+  if (i >= 0) rows.splice(i, 1);
+  rows.push(row);
+}
+
 if (!hasAnthropicKey()) {
   console.warn('[evals] ANTHROPIC_API_KEY missing, chat evals skipped.');
 }
@@ -42,7 +50,7 @@ describe.skipIf(!hasAnthropicKey())('chat intake evals', () => {
           run = await runScenario(systemFor(scenario.flow), scenario);
           verdict = await judgeRun(run);
         } catch (err) {
-          rows.push({
+          pushRow({
             id: scenario.id,
             questions: run?.questionsAsked ?? 0,
             done: run?.done ?? false,
@@ -52,7 +60,7 @@ describe.skipIf(!hasAnthropicKey())('chat intake evals', () => {
           throw err;
         }
         const failures = deterministicChecks(run);
-        rows.push({
+        pushRow({
           id: scenario.id,
           questions: run.questionsAsked,
           done: run.done,

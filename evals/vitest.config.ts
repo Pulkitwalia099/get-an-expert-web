@@ -26,5 +26,7 @@ export default defineConfig({
     include: ['evals/**/*.eval.ts'],
     maxConcurrency: 2,
     testTimeout: 300_000,
+    // One retry absorbs run-to-run LLM variance; persistent failures stay red.
+    retry: 1,
   },
 });

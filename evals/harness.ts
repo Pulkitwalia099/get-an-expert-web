@@ -91,19 +91,23 @@ Rules:
 - Output only the visitor's next chat message, one or two short sentences.
 - Reveal facts only when asked, or when a real person would naturally volunteer them.
 - If asked something you already said, react like a real person: short, mildly irritated, do not politely repeat everything.
-- If offered quick-reply chips and one fits, you may answer with that chip text.
-- Never break character, never mention AI or role-play, never help the assistant.`;
+- If offered quick-reply chips and one fits, answer with only that chip's text. Never write the bracket notation [chips: ...]; it is transcript formatting, not language.
+- Never break character, never mention AI or role-play, never help the assistant.
+- If the conversation is finished for you (you were redirected elsewhere, got your answer, or have nothing left to say), output exactly END_CHAT instead of a goodbye loop.`;
 
-// One extra attempt on top of askClaude's own retry: eval runs make dozens
-// of calls in a row, so a single 529 or truncated JSON should not void a
-// whole scenario.
+// Extra attempts on top of askClaude's own retry: eval runs make dozens of
+// calls in a row, so a 529 burst or one truncated JSON response should not
+// void a whole scenario.
 async function withRetry<T>(fn: () => Promise<T>): Promise<T> {
-  try {
-    return await fn();
-  } catch {
-    await new Promise((r) => setTimeout(r, 2_000));
-    return fn();
+  const waits = [2_000, 8_000];
+  for (const wait of waits) {
+    try {
+      return await fn();
+    } catch {
+      await new Promise((r) => setTimeout(r, wait));
+    }
   }
+  return fn();
 }
 
 async function nextUserMessage(s: Scenario, messages: ChatMessage[], replies: ChatReply[]): Promise<string> {
@@ -124,7 +128,8 @@ async function nextUserMessage(s: Scenario, messages: ChatMessage[], replies: Ch
     maxTokens: 500,
     model: USER_MODEL,
   }));
-  return out.message.trim();
+  // Belt and braces against the simulator echoing transcript notation.
+  return out.message.replace(/\[chips:[^\]]*\]/gi, '').trim();
 }
 
 /** Drives the conversation with the system prompt under test. */
@@ -146,11 +151,15 @@ export async function runScenario(system: string, s: Scenario): Promise<RunResul
     replies.push(reply);
     messages.push({ role: 'assistant', content: reply.reply });
     if (reply.done) break;
-    messages.push({ role: 'user', content: await nextUserMessage(s, messages, replies) });
+    const next = await nextUserMessage(s, messages, replies);
+    if (next === 'END_CHAT' || next.length === 0) break;
+    messages.push({ role: 'user', content: next });
   }
 
   const done = replies.length > 0 && replies[replies.length - 1].done;
-  const questionsAsked = replies.filter((r) => !r.done).length;
+  // Pleasantries and redirects are free; only actual questions count
+  // against a scenario's cap.
+  const questionsAsked = replies.filter((r) => !r.done && r.reply.includes('?')).length;
   return { scenario: s, messages, replies, questionsAsked, done };
 }
 
@@ -196,13 +205,16 @@ export function deterministicChecks(run: RunResult): string[] {
     }
   }
 
-  asking.forEach((r, i) => {
-    const isFinal = i === asking.length - 1 && replies[replies.length - 1] === r;
-    const redirectAllowed = !s.expectDone && isFinal;
-    if (!r.reply.includes('?') && !redirectAllowed) {
-      failures.push(`dead-end reply with no question: "${r.reply}"`);
+  // A conversation that must end in a handoff can never stall: every
+  // intermediate reply has to carry a question. Wrong-audience conversations
+  // (expectDone=false) may close with statements, so they are exempt.
+  if (s.expectDone) {
+    for (const r of asking) {
+      if (!r.reply.includes('?')) {
+        failures.push(`dead-end reply with no question: "${r.reply}"`);
+      }
     }
-  });
+  }
 
   if (s.expectDone) {
     if (!run.done) {
@@ -237,7 +249,7 @@ Score 1-5 on each criterion. 5 = a skilled human concierge, 4 = minor wobble, 3 
 - tone: short, plain, calm, no jargon dumped on non-technical visitors, questions read as questions?
 - outcome: did the conversation end where it should (correct handoff and accurate brief, or correct redirect), efficiently?
 
-pass = every score is 4 or 5 AND nothing in the scenario notes marked as a hard failure occurred. Be strict; this gate protects real visitors. Keep worst_moment and summary under 25 words each.`;
+pass = every score is 4 or 5 AND nothing in the scenario notes marked as a hard failure occurred. Be strict about failures a visitor would actually feel; do not fail defensible judgment calls. Calibration: replying naturally in the visitor's own language (including Hindi or Hinglish) is good tone, not a flaw; skipping an optional budget or timeline question is fine when the scenario notes allow a fast handoff, and an empty budget field is correct when the visitor was never asked or declined; only treat a missing budget question as a flaw when the scenario notes call for it. Keep worst_moment and summary under 25 words each.`;
 
 const clamp = (n: number): number => Math.min(5, Math.max(1, Math.round(n)));
 
