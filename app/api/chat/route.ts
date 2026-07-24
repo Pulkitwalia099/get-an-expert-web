@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { askClaude, hasAnthropicKey } from '@/lib/anthropic';
 import { demoChatReply, demoDevChatReply } from '@/lib/demo';
 import { recordInsight } from '@/lib/insights';
+import { redact } from '@/lib/redact';
 import { withMetrics } from '@/lib/metrics';
 import { clientId, rateLimit } from '@/lib/ratelimit';
 import { matchesOrigin } from '@/lib/sanitize';
@@ -151,7 +152,7 @@ async function handleChat(req: NextRequest): Promise<NextResponse> {
     }
     return NextResponse.json(reply);
   } catch (err) {
-    console.error('[midsesh:chat]', err);
+    console.error('[midsesh:chat]', redact(err));
     return NextResponse.json({ error: 'Chat failed' }, { status: 502 });
   }
 }

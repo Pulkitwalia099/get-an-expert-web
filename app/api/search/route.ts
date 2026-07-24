@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { askClaude, hasAnthropicKey } from '@/lib/anthropic';
 import { demoExperts } from '@/lib/demo';
 import { serpapiKey } from '@/lib/env';
+import { redact } from '@/lib/redact';
 import { finalizeExperts } from '@/lib/experts';
 import { recordInsight } from '@/lib/insights';
 import { withMetrics } from '@/lib/metrics';
@@ -155,7 +156,7 @@ async function handleSearch(req: NextRequest): Promise<NextResponse> {
     await persist(raw.length, false);
     return NextResponse.json({ experts });
   } catch (err) {
-    console.error('[midsesh:search]', err);
+    console.error('[midsesh:search]', redact(err));
     return NextResponse.json({ error: 'Search failed' }, { status: 502 });
   }
 }

@@ -1,3 +1,4 @@
+import { redact } from '@/lib/redact';
 import { NextRequest, NextResponse } from 'next/server';
 import { recordEvent } from '@/lib/supabase';
 
@@ -14,8 +15,8 @@ export function withMetrics(route: string, handler: Handler): Handler {
       await recordEvent(route, res.status, Date.now() - started);
       return res;
     } catch (err) {
-      console.error(`[midsesh:${route}] unhandled`, err);
-      await recordEvent(route, 500, Date.now() - started, err instanceof Error ? err.message : 'unknown');
+      console.error(`[midsesh:${route}] unhandled`, redact(err));
+      await recordEvent(route, 500, Date.now() - started, redact(err));
       return NextResponse.json({ error: 'Something went wrong' }, { status: 500 });
     }
   };
