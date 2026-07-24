@@ -15,6 +15,9 @@ interface AskOptions {
   messages: ChatMessage[];
   schema: Record<string, unknown>;
   maxTokens?: number;
+  /** Evals swap in cheaper models for the simulated user and the judge.
+   * Production callers omit this and always get MODEL. */
+  model?: string;
 }
 
 interface ContentBlock {
@@ -53,7 +56,7 @@ async function callOnce<T>(opts: AskOptions): Promise<T> {
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model: MODEL,
+      model: opts.model ?? MODEL,
       max_tokens: opts.maxTokens ?? 1_500,
       system: opts.system,
       messages: opts.messages,

@@ -75,7 +75,7 @@ export function sanitizeReply(input: unknown): ChatReply {
   const reply =
     typeof source.reply === 'string' && source.reply.trim().length > 0
       ? stripReplyTags(stripEmDashes(source.reply.slice(0, MAX_MESSAGE_CHARS)))
-      : 'Tell me a bit more.';
+      : 'Can you tell me a bit more?';
   const chips = Array.isArray(source.chips)
     ? source.chips
         .filter((c): c is string => typeof c === 'string' && c.trim().length > 0)
