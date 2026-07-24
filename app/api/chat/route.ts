@@ -9,7 +9,7 @@ import { matchesOrigin } from '@/lib/sanitize';
 import { recordMessages, recordSession } from '@/lib/supabase';
 import { durableLimit } from '@/lib/usage';
 import { parseFlow, parseMessages, parseSessionId, sanitizeReply } from '@/lib/validate';
-import { CHAT_SCHEMA, systemFor } from '@/lib/prompts';
+import { schemaFor, systemFor } from '@/lib/prompts';
 
 async function handleChat(req: NextRequest): Promise<NextResponse> {
   if (!matchesOrigin(req.headers.get('origin'), req.headers.get('host'))) {
@@ -68,7 +68,7 @@ async function handleChat(req: NextRequest): Promise<NextResponse> {
   try {
     const system = systemFor(flow);
     const raw = hasAnthropicKey()
-      ? await askClaude({ system, messages, schema: CHAT_SCHEMA, maxTokens: 1_200 })
+      ? await askClaude({ system, messages, schema: schemaFor(flow), maxTokens: 1_200 })
       : flow === 'dev'
         ? demoDevChatReply(messages)
         : demoChatReply(messages);
