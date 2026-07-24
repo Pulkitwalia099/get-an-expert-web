@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>midsesh · Mockup</title>
+<style>
+  /* ---------- Tokens ---------- */
+  :root {
+    --bg: #F6F3ED;
+    --ink: #211E1A;
+    --ink-2: #5F594E;
+    --ink-3: #8B8375;
+    --line: rgba(33, 30, 26, .08);
+    --glass: rgba(255, 255, 255, .55);
+    --glass-strong: rgba(255, 255, 255, .74);
+    --accent: #C4593C;
+    --accent-deep: #A8452C;
+    --accent-tint: rgba(196, 89, 60, .09);
+    --amber: #D98E28;
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --radius-window: 24px;
+    --radius-card: 16px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body { height: 100%; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    letter-spacing: -0.004em;
+  }
+
+  ::selection { background: rgba(196, 89, 60, .22); }
+
+  /* ---------- Background: soft aurora + grain ---------- */
+  .bg {
+    position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(52vw 44vh at 16% 8%,  rgba(255, 196, 156, .52), transparent 68%),
+      radial-gradient(46vw 42vh at 86% 12%, rgba(206, 190, 255, .46), transparent 70%),
+      radial-gradient(58vw 50vh at 50% 104%, rgba(168, 206, 255, .42), transparent 70%),
+      radial-gradient(30vw 26vh at 72% 62%, rgba(255, 226, 178, .35), transparent 70%);
+  }
+  .grain {
+    position: fixed; inset: 0; z-index: 0; opacity: .05; pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E");
+  }
+
+  /* ---------- Page frame ---------- */
+  .page {
+    position: relative; z-index: 1;
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 52px 16px 44px;
+  }
+
+  /* ---------- The Mac window ---------- */
+  .window {
+    width: min(660px, 100%);
+    min-height: 500px;
+    display: flex; flex-direction: column;
+    border-radius: var(--radius-window);
+    background: var(--glass);
+    -webkit-backdrop-filter: blur(44px) saturate(170%);
+    backdrop-filter: blur(44px) saturate(170%);
+    border: 1px solid rgba(255, 255, 255, .62);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, .65),
+      0 30px 70px -24px rgba(45, 32, 22, .28),
+      0 8px 26px rgba(45, 32, 22, .07);
+    overflow: hidden;
+  }
+
+  .titlebar {
+    position: relative; flex: none;
+    height: 44px; display: flex; align-items: center; padding: 0 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  .lights { display: flex; gap: 8px; }
+  .lights i { width: 12px; height: 12px; border-radius: 50%; box-shadow: inset 0 0 0 .5px rgba(0,0,0,.12); }
+  .lights .r { background: #FF5F57; }
+  .lights .y { background: #FEBC2E; }
+  .lights .g { background: #28C840; }
+
+  .wordmark {
+    position: absolute; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 7px; white-space: nowrap;
+    font-size: 13.5px; font-weight: 600; color: var(--ink); letter-spacing: -0.012em;
+  }
+  .wordmark .worb {
+    width: 15px; height: 15px; border-radius: 50%;
+    background: linear-gradient(140deg, #E8A184, var(--accent));
+    color: #fff; font-size: 8px; line-height: 1;
+    display: grid; place-items: center;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.4), 0 2px 6px rgba(168, 69, 44, .3);
+  }
+
+  .chat { flex: 1; display: flex; flex-direction: column; padding: 20px 20px 6px; overflow: hidden; }
+  .screen { display: none; flex: 1; flex-direction: column; min-height: 0; }
+  .screen.on { display: flex; }
+
+  /* ---------- Composer ---------- */
+  .composer { flex: none; padding: 10px 16px 16px; }
+  .field {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 8px 8px 10px;
+    background: var(--glass-strong);
+    border: 1px solid rgba(33, 30, 26, .10);
+    border-radius: 24px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 8px 22px rgba(45, 32, 22, .06);
+  }
+  .icon-btn {
+    flex: none; width: 30px; height: 30px; border-radius: 50%;
+    border: none; background: rgba(33, 30, 26, .05); color: var(--ink-3);
+    display: grid; place-items: center; cursor: pointer;
+    transition: transform 140ms var(--ease-out), background 140ms ease;
+  }
+  .field input {
+    flex: 1; border: none; outline: none; background: transparent;
+    font: inherit; font-size: 14.5px; color: var(--ink); caret-color: var(--accent);
+  }
+  .field input::placeholder { color: var(--ink-3); }
+  .send {
+    flex: none; width: 32px; height: 32px; border-radius: 50%;
+    border: none; background: var(--accent); color: #fff;
+    display: grid; place-items: center; cursor: pointer;
+    box-shadow: 0 4px 10px rgba(168, 69, 44, .35);
+    transition: transform 140ms var(--ease-out), background 140ms ease;
+  }
+  button:active { transform: scale(0.96); }
+
+  /* ---------- State 1 · welcome ---------- */
+  .greet { margin: auto; text-align: center; padding: 10px 0 0; }
+  .greet .orb {
+    width: 40px; height: 40px; margin: 0 auto; border-radius: 50%;
+    background: linear-gradient(140deg, #E8A184, var(--accent));
+    color: #fff; font-size: 17px;
+    display: grid; place-items: center;
+    box-shadow: 0 10px 24px rgba(168, 69, 44, .3), inset 0 1px 0 rgba(255,255,255,.4);
+  }
+  .greet h2 {
+    margin-top: 15px;
+    font-size: 21px; font-weight: 600; letter-spacing: -0.017em;
+  }
+
+  .chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; padding: 16px 8px 8px; }
+  .chip {
+    border: 1px solid rgba(33, 30, 26, .11);
+    background: rgba(255, 255, 255, .5);
+    color: var(--ink-2);
+    font: inherit; font-size: 13px; font-weight: 500;
+    padding: 7px 13px; border-radius: 999px; cursor: pointer;
+    transition: transform 160ms var(--ease-out), background 160ms ease, border-color 160ms ease, color 160ms ease;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .chip:hover { background: rgba(255,255,255,.85); border-color: rgba(33,30,26,.18); color: var(--ink); transform: translateY(-1px); }
+    .icon-btn:hover { background: rgba(33,30,26,.09); }
+    .send:hover { background: var(--accent-deep); }
+  }
+
+  /* ---------- Messages ---------- */
+  .thread { display: flex; flex-direction: column; gap: 15px; }
+  .msg { display: flex; max-width: 84%; }
+  .msg.user { align-self: flex-end; }
+  .msg.user .bubble {
+    background: #262019; color: #F8F4EC;
+    padding: 9px 14px; border-radius: 18px; border-bottom-right-radius: 6px;
+    font-size: 14.5px; line-height: 1.5;
+    box-shadow: 0 6px 16px rgba(38, 32, 25, .18);
+  }
+  .msg.ai { gap: 10px; }
+  .ava {
+    flex: none; width: 24px; height: 24px; margin-top: 1px; border-radius: 50%;
+    background: linear-gradient(140deg, #E8A184, var(--accent));
+    color: #fff; font-size: 11px;
+    display: grid; place-items: center;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.4);
+  }
+  .msg.ai .body { min-width: 0; }
+  .msg.ai .text { font-size: 14.5px; line-height: 1.55; color: var(--ink); padding-top: 2px; }
+  .qchips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+  .qchip {
+    border: 1px solid rgba(196, 89, 60, .32);
+    background: rgba(196, 89, 60, .05);
+    color: var(--accent-deep);
+    font: inherit; font-size: 13px; font-weight: 500;
+    padding: 6px 12px; border-radius: 999px; cursor: pointer;
+    transition: transform 160ms var(--ease-out), background 160ms ease;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .qchip:hover { background: rgba(196, 89, 60, .12); transform: translateY(-1px); }
+  }
+
+  /* ---------- State 3 · searching (sonar) ---------- */
+  .search-panel {
+    margin-top: 16px;
+    background: rgba(255, 255, 255, .55);
+    border: 1px solid rgba(255, 255, 255, .7);
+    outline: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    padding: 10px 12px 14px;
+    box-shadow: 0 14px 34px rgba(45, 32, 22, .08);
+  }
+  .sonar { position: relative; height: 250px; overflow: hidden; border-radius: 10px; }
+
+  .rs { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); border: 1px solid rgba(33,30,26,.06); border-radius: 50%; }
+  .rs1 { width: 110px; height: 110px; }
+  .rs2 { width: 190px; height: 190px; }
+  .rs3 { width: 270px; height: 270px; }
+
+  .ring {
+    position: absolute; left: 50%; top: 50%;
+    width: 84px; height: 84px; border-radius: 50%;
+    border: 1.5px solid rgba(196, 89, 60, .35);
+    transform: translate(-50%,-50%) scale(.3);
+    animation: ring 2.6s var(--ease-out) infinite;
+  }
+  .ring.r2 { animation-delay: .85s; }
+  .ring.r3 { animation-delay: 1.7s; }
+  @keyframes ring {
+    from { transform: translate(-50%,-50%) scale(.3); opacity: .85; }
+    to   { transform: translate(-50%,-50%) scale(4.2); opacity: 0; }
+  }
+
+  .sonar-orb {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(140deg, #E8A184, var(--accent));
+    color: #fff; font-size: 15px;
+    display: grid; place-items: center;
+    box-shadow: 0 8px 22px rgba(168, 69, 44, .42), inset 0 1px 0 rgba(255,255,255,.4);
+    animation: breath 2.6s ease-in-out infinite;
+  }
+  @keyframes breath {
+    0%, 100% { transform: translate(-50%,-50%) scale(1); }
+    50% { transform: translate(-50%,-50%) scale(1.07); }
+  }
+
+  .sdot {
+    position: absolute; width: 5px; height: 5px; border-radius: 50%;
+    background: rgba(196, 89, 60, .8);
+    animation: blip 2.2s ease-in-out infinite;
+  }
+  @keyframes blip {
+    0%, 100% { opacity: .15; transform: scale(1); }
+    50% { opacity: .9; transform: scale(1.5); }
+  }
+
+  .sav {
+    position: absolute; width: 28px; height: 28px; border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255,255,255,.9);
+    box-shadow: 0 6px 16px rgba(45, 32, 22, .22);
+    animation: bob 3.2s ease-in-out infinite;
+  }
+  @keyframes bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
+
+  .sstatus {
+    margin-top: 4px; text-align: center;
+    font-size: 12.5px; color: var(--ink-3);
+    transition: opacity 300ms ease;
+  }
+
+  /* ---------- State 4 · matches (multi-select) ---------- */
+  .cards { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+  .card {
+    background: rgba(255, 255, 255, .68);
+    border: 1px solid rgba(255, 255, 255, .75);
+    outline: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    padding: 13px 14px;
+    box-shadow: 0 10px 26px rgba(45, 32, 22, .07);
+    display: flex; gap: 12px;
+    cursor: pointer; user-select: none;
+    opacity: 0; transform: translateY(8px);
+    animation: rise 360ms var(--ease-out) forwards;
+    transition: transform 180ms var(--ease-out), box-shadow 180ms ease, outline-color 140ms ease, background 140ms ease;
+  }
+  .card:nth-child(2) { animation-delay: 60ms; }
+  .card:nth-child(3) { animation-delay: 120ms; }
+  @keyframes rise { to { opacity: 1; transform: translateY(0); } }
+  @media (hover: hover) and (pointer: fine) {
+    .card:hover { transform: translateY(-1px); box-shadow: 0 16px 34px rgba(45, 32, 22, .1); }
+  }
+  .card.selected {
+    outline: 2px solid var(--accent);
+    background: rgba(255, 255, 255, .82);
+  }
+
+  .av { flex: none; width: 50px; height: 50px; border-radius: 14px; object-fit: cover; box-shadow: inset 0 0 0 1px rgba(33,30,26,.06); }
+  .avi { display: grid; place-items: center; background: linear-gradient(140deg, #F0C2A2, #D08A66); color: #fff; font-size: 16px; font-weight: 600; }
+
+  .card .c-body { flex: 1; min-width: 0; }
+  .c-top { display: flex; align-items: center; gap: 8px; }
+  .c-name { font-size: 14.5px; font-weight: 600; letter-spacing: -0.01em; }
+  .c-loc { font-size: 12.5px; color: var(--ink-3); }
+  .c-top .right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+  .badge {
+    font-size: 10px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+    color: #fff; background: var(--accent);
+    padding: 3px 8px; border-radius: 999px;
+  }
+  .sel-ind {
+    flex: none; width: 20px; height: 20px; border-radius: 50%;
+    border: 1.5px solid rgba(33, 30, 26, .22);
+    display: grid; place-items: center; color: #fff;
+    transition: background 140ms ease, border-color 140ms ease;
+  }
+  .sel-ind svg { opacity: 0; transition: opacity 140ms ease; }
+  .card.selected .sel-ind { background: var(--accent); border-color: var(--accent); }
+  .card.selected .sel-ind svg { opacity: 1; }
+
+  .c-meta { margin-top: 3px; font-size: 12px; color: var(--ink-2); }
+  .c-meta .star { color: var(--amber); }
+  .c-why { margin-top: 6px; font-size: 13px; line-height: 1.5; color: var(--ink-2); }
+  .c-why b { color: var(--ink); font-weight: 600; }
+  .c-foot { margin-top: 9px; display: flex; align-items: center; }
+  .price {
+    font-size: 12px; font-weight: 600; color: var(--accent-deep);
+    background: var(--accent-tint); border: 1px solid rgba(196, 89, 60, .22);
+    padding: 3px 9px; border-radius: 8px;
+  }
+
+  .match-action { display: flex; justify-content: center; padding: 16px 0 8px; }
+  .cta {
+    border: none; cursor: pointer; font: inherit;
+    font-size: 13.5px; font-weight: 600; padding: 9px 20px; border-radius: 999px;
+    background: var(--accent); color: #fff;
+    box-shadow: 0 6px 16px rgba(168, 69, 44, .32);
+    transition: transform 140ms var(--ease-out), background 140ms ease, opacity 140ms ease;
+  }
+  .cta:disabled { opacity: .45; cursor: default; }
+  @media (hover: hover) and (pointer: fine) {
+    .cta:not(:disabled):hover { background: var(--accent-deep); }
+  }
+
+  body.shot .card { animation: none; opacity: 1; transform: none; }
+
+  /* ---------- Small screens ---------- */
+  @media (max-width: 560px) {
+    .page { padding-top: 24px; }
+    .chat { padding: 16px 14px 4px; }
+    .msg { max-width: 92%; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+    .card { opacity: 1; transform: none; }
+  }
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="grain"></div>
+
+<main class="page">
+  <section class="window">
+    <div class="titlebar">
+      <div class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></div>
+      <div class="wordmark"><span class="worb">✳︎</span>midsesh</div>
+    </div>
+
+    <div class="chat">
+
+      <!-- ============ 1 · Welcome ============ -->
+      <div class="screen s1" data-s="1">
+        <div class="greet">
+          <div class="orb">✳︎</div>
+          <h2>What kind of expert are you looking for?</h2>
+        </div>
+        <div class="chips">
+          <button class="chip">Compliance</button>
+          <button class="chip">Data</button>
+          <button class="chip">Fractional CFO</button>
+          <button class="chip">AI engineer</button>
+        </div>
+      </div>
+
+      <!-- ============ 2 · Follow-up questions ============ -->
+      <div class="screen s2" data-s="2">
+        <div class="thread">
+          <div class="msg user"><div class="bubble">Compliance expert for a fintech launching in the EU.</div></div>
+          <div class="msg ai">
+            <div class="ava">✳︎</div>
+            <div class="body">
+              <div class="text">Which market first?</div>
+              <div class="qchips">
+                <button class="qchip">Germany</button>
+                <button class="qchip">Netherlands</button>
+                <button class="qchip">France</button>
+                <button class="qchip">Not sure</button>
+              </div>
+            </div>
+          </div>
+          <div class="msg user"><div class="bubble">Germany.</div></div>
+          <div class="msg ai">
+            <div class="ava">✳︎</div>
+            <div class="body">
+              <div class="text">Own the BaFin application, or guide your team?</div>
+              <div class="qchips">
+                <button class="qchip">Own it</button>
+                <button class="qchip">Guide us</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 3 · Searching ============ -->
+      <div class="screen s3" data-s="3">
+        <div class="thread">
+          <div class="msg user"><div class="bubble">Own it. Around €10k.</div></div>
+        </div>
+        <div class="search-panel">
+          <div class="sonar">
+            <i class="rs rs1"></i><i class="rs rs2"></i><i class="rs rs3"></i>
+            <i class="ring r1"></i><i class="ring r2"></i><i class="ring r3"></i>
+            <span class="sdot" style="left:22%; top:62%;"></span>
+            <span class="sdot" style="left:38%; top:20%; animation-delay:.4s;"></span>
+            <span class="sdot" style="left:64%; top:76%; animation-delay:.9s;"></span>
+            <span class="sdot" style="left:84%; top:34%; animation-delay:1.3s;"></span>
+            <span class="sdot" style="left:12%; top:30%; animation-delay:1.7s;"></span>
+            <span class="sdot" style="left:55%; top:12%; animation-delay:.6s;"></span>
+            <img class="sav" src="avatars/a1.jpg" alt="" style="left:29%; top:36%;">
+            <img class="sav" src="avatars/a2.jpg" alt="" style="left:69%; top:26%; animation-delay:.7s;">
+            <img class="sav" src="avatars/a3.jpg" alt="" style="left:74%; top:62%; animation-delay:1.4s;">
+            <div class="sonar-orb">✳︎</div>
+          </div>
+          <div class="sstatus" id="sstatus">Scanning marketplaces…</div>
+        </div>
+      </div>
+
+      <!-- ============ 4 · Matches ============ -->
+      <div class="screen s4" data-s="4">
+        <div class="thread">
+          <div class="msg ai">
+            <div class="ava">✳︎</div>
+            <div class="body">
+              <div class="text">Three matches. Pick who you'd like to meet.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cards" id="cards">
+          <div class="card selected">
+            <img class="av" src="avatars/a1.jpg" data-init="AH" alt="Amira Hassan" onerror="avErr(this)">
+            <div class="c-body">
+              <div class="c-top">
+                <span class="c-name">Amira Hassan</span>
+                <span class="c-loc">🇩🇪 Berlin, DE</span>
+                <span class="right">
+                  <span class="badge">Top match</span>
+                  <span class="sel-ind"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M2 5.8 4.4 8 9 3.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                </span>
+              </div>
+              <div class="c-meta"><span class="star">★</span> 4.9 · 127 reviews</div>
+              <div class="c-why">Ran the full <b>PSD2 + BaFin application</b> for two Berlin payment startups; the latest got licensed in seven months. Her fixed-scope offer sits inside your €10k.</div>
+              <div class="c-foot"><span class="price">€9.5k fixed</span></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <img class="av" src="avatars/a2.jpg" data-init="JW" alt="Jonas Weber" onerror="avErr(this)">
+            <div class="c-body">
+              <div class="c-top">
+                <span class="c-name">Jonas Weber</span>
+                <span class="c-loc">🇩🇪 Munich, DE</span>
+                <span class="right">
+                  <span class="sel-ind"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M2 5.8 4.4 8 9 3.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                </span>
+              </div>
+              <div class="c-meta"><span class="star">★</span> 5.0 · 84 reviews</div>
+              <div class="c-why">Eight years at <b>BaFin</b> before going independent; now guides founding teams through licensing. The fit if you keep the application in-house and want a supervisor's eye on it.</div>
+              <div class="c-foot"><span class="price">€120/hr</span></div>
+            </div>
+          </div>
+
+          <div class="card selected">
+            <img class="av" src="avatars/a3.jpg" data-init="PN" alt="Priya Nair" onerror="avErr(this)">
+            <div class="c-body">
+              <div class="c-top">
+                <span class="c-name">Priya Nair</span>
+                <span class="c-loc">🇳🇱 Amsterdam, NL</span>
+                <span class="right">
+                  <span class="sel-ind"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M2 5.8 4.4 8 9 3.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                </span>
+              </div>
+              <div class="c-meta"><span class="star">★</span> 4.8 · 61 reviews</div>
+              <div class="c-why">Compliance lead for an <b>EMI that cleared BaFin passporting</b> in 2024. Strong on German-language filings; lands slightly over budget unless the scope stays tight.</div>
+              <div class="c-foot"><span class="price">€95/hr</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="match-action">
+          <button class="cta" id="introBtn">Request intros · 2</button>
+        </div>
+      </div>
+
+      <!-- ============ 5 · Email + done ============ -->
+      <div class="screen s5" data-s="5">
+        <div class="thread">
+          <div class="msg ai">
+            <div class="ava">✳︎</div>
+            <div class="body"><div class="text">Where should intros land?</div></div>
+          </div>
+          <div class="msg user"><div class="bubble">sam@acme.co</div></div>
+          <div class="msg ai">
+            <div class="ava">✳︎</div>
+            <div class="body"><div class="text">Done. Amira and Priya will reach out today.</div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="composer">
+      <div class="field">
+        <button class="icon-btn" aria-label="Attach">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </button>
+        <input id="composer-input" type="text" placeholder="I'm looking for…">
+        <button class="send" aria-label="Send">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 11.5v-9M3.2 6.2 7 2.4l3.8 3.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+  const PLACEHOLDERS = { 1: "I'm looking for…", 2: 'Reply…', 3: 'Reply…', 4: 'Not right? Tell me…', 5: 'Anything else?' };
+
+  function setState(n) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.dataset.s === String(n)));
+    document.getElementById('composer-input').placeholder = PLACEHOLDERS[n];
+    document.body.dataset.state = n;
+  }
+
+  function stateFromHash() {
+    const n = parseInt(location.hash.replace('#', ''), 10);
+    return (n >= 1 && n <= 5) ? n : 1;
+  }
+
+  window.addEventListener('hashchange', () => setState(stateFromHash()));
+
+  // Mockup navigation: keys 1-5 or arrow keys
+  window.addEventListener('keydown', (e) => {
+    const cur = parseInt(document.body.dataset.state, 10);
+    if (/^[1-5]$/.test(e.key)) location.hash = e.key;
+    if (e.key === 'ArrowRight' && cur < 5) location.hash = cur + 1;
+    if (e.key === 'ArrowLeft' && cur > 1) location.hash = cur - 1;
+  });
+
+  setState(stateFromHash());
+
+  // Search status line cycles through short phrases
+  const SSTATUS = ['Scanning marketplaces…', 'Checking availability…', 'Ranking matches…'];
+  let si = 0;
+  setInterval(() => {
+    const el = document.getElementById('sstatus');
+    el.style.opacity = 0;
+    setTimeout(() => { si = (si + 1) % SSTATUS.length; el.textContent = SSTATUS[si]; el.style.opacity = 1; }, 300);
+  }, 2000);
+
+  // Multi-select cards + live count on the intro button
+  const introBtn = document.getElementById('introBtn');
+  function syncIntroBtn() {
+    const n = document.querySelectorAll('#cards .card.selected').length;
+    introBtn.disabled = n === 0;
+    introBtn.textContent = n === 0 ? 'Select experts' : 'Request intros · ' + n;
+  }
+  document.querySelectorAll('#cards .card').forEach(c => {
+    c.addEventListener('click', () => { c.classList.toggle('selected'); syncIntroBtn(); });
+  });
+  introBtn.addEventListener('click', () => { if (!introBtn.disabled) location.hash = 5; });
+  syncIntroBtn();
+
+  // Avatar fallback: photo → gradient initials
+  function avErr(img) {
+    const d = document.createElement('div');
+    d.className = 'av avi';
+    d.textContent = img.dataset.init;
+    img.replaceWith(d);
+  }
+</script>
+</body>
+</html>

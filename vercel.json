@@ -1,9 +1,19 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "crons": [
+    {
+      "path": "/api/report",
+      "schedule": "0 6 * * *"
+    }
+  ],
   "rewrites": [
     {
       "source": "/mcp",
       "destination": "https://get-an-expert-chat-production.up.railway.app/mcp"
+    },
+    {
+      "source": "/classic",
+      "destination": "/classic/index.html"
     }
   ],
   "headers": [
