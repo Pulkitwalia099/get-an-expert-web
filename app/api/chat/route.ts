@@ -114,6 +114,9 @@ async function handleChat(req: NextRequest): Promise<NextResponse> {
   // throw, so the chain runs alongside the model call and is awaited last.
   const asked = messages.filter((m) => m.role === 'assistant').length;
   const newest = messages[messages.length - 1];
+  // Without an Anthropic key the chat serves scripted demo replies. Mark the
+  // session so real launch traffic and demo traffic never mix in analytics.
+  const demo = !hasAnthropicKey();
   const persisted =
     sessionId === null
       ? Promise.resolve()
@@ -123,7 +126,7 @@ async function handleChat(req: NextRequest): Promise<NextResponse> {
             userAgent: req.headers.get('user-agent'),
             referrer: req.headers.get('referer'),
           },
-          { flow },
+          { flow, demo },
         ).then(() =>
           newest.role === 'user'
             ? recordMessages(sessionId, [
