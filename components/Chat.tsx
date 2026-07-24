@@ -2,19 +2,23 @@
 
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import { track } from '@/lib/analytics';
-import type { ApiRole, Brief, ChatReply, Expert } from '@/lib/types';
+import { trimHistory } from '@/lib/history';
+import { newSessionId } from '@/lib/session';
+import type { ApiRole, Brief, ChatReply, Expert, MatchConfidence, PrimaryPath } from '@/lib/types';
 import Composer from '@/components/Composer';
-import ExpertCards from '@/components/ExpertCards';
+import ExpertSignup from '@/components/ExpertSignup';
 import { FLOWS, type Flow } from '@/components/flows';
 import GetUnstuck from '@/components/GetUnstuck';
-import IntroForm from '@/components/IntroForm';
+import MatchStep from '@/components/MatchStep';
+import MultiChips from '@/components/MultiChips';
 import Sonar from '@/components/Sonar';
 import Thread, { type Msg } from '@/components/Thread';
+import Titlebar from '@/components/Titlebar';
+import WelcomeScreen from '@/components/WelcomeScreen';
 
 type Phase = 'welcome' | 'chat' | 'searching' | 'matches' | 'refine' | 'email' | 'choice' | 'done';
 
 const MIN_SEARCH_MS = 4_200;
-const MAX_API_MESSAGES = 28;
 
 const PLACEHOLDERS: Record<Phase, string> = {
   welcome: "I'm looking for…",
@@ -26,20 +30,6 @@ const PLACEHOLDERS: Record<Phase, string> = {
   choice: 'Questions? Ask here…',
   done: 'Anything else?',
 };
-
-// Anonymous id linking one visit's rows in Supabase. No cookie, no storage:
-// a new page load is a new session on purpose.
-function newSessionId(): string {
-  try {
-    return crypto.randomUUID();
-  } catch {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-      const r = Math.floor(Math.random() * 16);
-      const v = c === 'x' ? r : (r % 4) + 8;
-      return v.toString(16);
-    });
-  }
-}
 
 function firstNames(names: string[]): string {
   const f = names.map((n) => n.split(' ')[0]).filter(Boolean);
@@ -59,6 +49,12 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
   const [preview, setPreview] = useState<Expert[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
   const [customNeed, setCustomNeed] = useState<string | null>(null);
+  // Chips the model marked as multi select, and the message they came with.
+  const [multi, setMulti] = useState<{ turn: number; chips: string[] } | null>(null);
+  const [signup, setSignup] = useState(false);
+  const [matchIntro, setMatchIntro] = useState('');
+  const [matchConfidence, setMatchConfidence] = useState<MatchConfidence>('');
+  const [primaryPath, setPrimaryPath] = useState<PrimaryPath>('session');
 
   const idRef = useRef(0);
   const sessionIdRef = useRef('');
@@ -67,8 +63,20 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const push = (m: Omit<Msg, 'id'>) =>
-    setMsgs((prev) => [...prev, { ...m, id: ++idRef.current }]);
+  // The id is taken here rather than inside the updater: an updater must stay
+  // pure, and callers need the id back to pin things to the message.
+  const push = (m: Omit<Msg, 'id'>): number => {
+    const id = ++idRef.current;
+    setMsgs((prev) => [...prev, { ...m, id }]);
+    return id;
+  };
+
+  // Anything the interface says on the model's behalf goes into the model's
+  // history too, or its next turn has no idea the question was asked.
+  const say = (text: string) => {
+    apiMsgs.current = trimHistory([...apiMsgs.current, { role: 'assistant', content: text }]);
+    push({ role: 'ai', text });
+  };
 
   // One event per visit marking which page (flow) they opened. Pageviews are
   // captured separately by the provider; this adds the flow for segmentation.
@@ -91,10 +99,7 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
       // First real turn of the visit: the top of the engagement funnel.
       if (apiMsgs.current.length === 0) track('first_message_sent', { flow });
       push({ role: 'user', text });
-      apiMsgs.current = [
-        ...apiMsgs.current,
-        { role: 'user' as const, content: text },
-      ].slice(-MAX_API_MESSAGES);
+      apiMsgs.current = trimHistory([...apiMsgs.current, { role: 'user', content: text }]);
       if (phase === 'welcome' || phase === 'done') setPhase('chat');
     }
     setTyping(true);
@@ -108,8 +113,19 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
       const data = (await res.json()) as ChatReply;
       apiMsgs.current.push({ role: 'assistant', content: data.reply });
       setTyping(false);
-      push({ role: 'ai', text: data.reply, chips: data.chips });
-      if (data.done) {
+      // Multi select chips are rendered by this component, so they are kept
+      // off the message; single select chips stay in the thread as before.
+      const pickMany = data.chip_mode === 'multi' && data.chips.length > 0;
+      const turn = push({ role: 'ai', text: data.reply, chips: pickMany ? undefined : data.chips });
+      // Pinned to this message, so the next turn never shows a stale set.
+      setMulti(pickMany ? { turn, chips: data.chips } : null);
+      setPrimaryPath(data.primary_path);
+      // A freelancer wanting work, not a client. They get the application
+      // form instead: no brief, no search.
+      setSignup(data.expert_signup);
+      if (data.done && !data.expert_signup) {
+        setMatchIntro(data.match_intro);
+        setMatchConfidence(data.match_confidence);
         setBrief(data.brief);
         void runSearch(data.brief);
       }
@@ -171,15 +187,13 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
     // StrictMode double-invoke would double-fire the event.
     const turningOn = !selected.includes(id);
     if (turningOn) track('experts_selected', { flow });
-    setSelected((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
+    setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   }
 
   // "Something else": open the conversation without sending the chip text as
   // the need.
   function pickElse() {
-    push({ role: 'ai', text: config.elseOpener });
+    say(config.elseOpener);
     setPhase('chat');
   }
 
@@ -192,17 +206,13 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
   }
 
   // Not happy with the matches: fold the request back into the chat so the
-  // model can revise the brief and search again. The question is added to the
-  // model's history so it knows what it asked.
+  // model can revise the brief and search again.
   function startRefine() {
-    const q =
-      'What should I change? For example a different budget, more senior, a location, or another specialty.';
-    apiMsgs.current = [...apiMsgs.current, { role: 'assistant' as const, content: q }].slice(
-      -MAX_API_MESSAGES,
-    );
     setExperts([]);
     setSelected([]);
-    push({ role: 'ai', text: q });
+    say(
+      'What should I change? For example a different budget, more senior, a location, or another specialty.',
+    );
     setPhase('chat');
   }
 
@@ -213,6 +223,7 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
     setExperts([]);
     setSelected([]);
     setCustomNeed(null);
+    setMulti(null);
     push({ role: 'ai', text: 'Happy to. What other kind of expert are you looking for?' });
     setPhase('chat');
   }
@@ -281,8 +292,9 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
     }
   }
 
-  const showCards = experts.length > 0 && (phase === 'matches' || phase === 'email');
   const introCount = customNeed !== null ? 0 : selected.length;
+  const lastMsgId = msgs.length > 0 ? msgs[msgs.length - 1].id : 0;
+  const answering = phase === 'chat' && !typing;
 
   return (
     <>
@@ -290,50 +302,40 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
       <div className="grain" />
       <main className="page">
         <section className="window">
-          <div className="titlebar">
-            <div className="lights">
-              <i className="r" />
-              <i className="y" />
-              <i className="g" />
-            </div>
-            <div className="wordmark">
-              <span className="worb">✳︎</span>midsesh
-              {config.tag && <span className="tag">{config.tag}</span>}
-            </div>
-            <a className="privacy-link" href="/privacy">
-              Privacy
-            </a>
-          </div>
+          <Titlebar tag={config.tag} />
 
           <div className="chat" ref={scrollRef}>
             {phase === 'welcome' ? (
-              <div className="s1">
-                <div className="greet">
-                  <div className="orb">✳︎</div>
-                  <h1>{config.headline}</h1>
-                  {config.sub && <div className="sub">{config.sub}</div>}
-                </div>
-                <div className="chips">
-                  {config.suggestions.map((s) => (
-                    <button key={s} className="chip" onClick={() => void sendChat(s)}>
-                      {s}
-                    </button>
-                  ))}
-                  {config.elseChip && (
-                    <button className="chip ghost" onClick={pickElse}>
-                      {config.elseChip}
-                    </button>
-                  )}
-                </div>
-              </div>
+              <WelcomeScreen config={config} onPick={(t) => void sendChat(t)} onElse={pickElse} />
             ) : (
               <div className="thread">
                 <Thread
                   msgs={msgs}
                   typing={typing}
-                  chipsActive={phase === 'chat' && !typing}
+                  chipsActive={answering}
                   onSend={(text, retry) => void sendChat(text, retry)}
                 />
+
+                {multi && multi.turn === lastMsgId && answering && (
+                  <MultiChips
+                    key={multi.turn}
+                    chips={multi.chips}
+                    onConfirm={(picks) => void sendChat(picks.join(', '))}
+                  />
+                )}
+
+                {signup && answering && (
+                  <ExpertSignup
+                    flow={flow}
+                    sessionId={sessionIdRef.current}
+                    onSent={(email) => {
+                      push({ role: 'user', text: email });
+                      setSignup(false);
+                      say('Got it, thanks. If there is a fit, we will email you.');
+                    }}
+                    onFailed={() => push({ role: 'ai', text: 'Hit a snag. Send that again.' })}
+                  />
+                )}
 
                 {phase === 'searching' && (
                   <Sonar found={preview} status={config.searchingStatus} />
@@ -344,6 +346,9 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
                     flow={flow}
                     brief={brief}
                     sessionId={sessionIdRef.current}
+                    matchIntro={matchIntro}
+                    matchConfidence={matchConfidence}
+                    primaryPath={primaryPath}
                     onEmailSent={(email) => {
                       push({ role: 'user', text: email });
                       push({
@@ -356,40 +361,18 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
                   />
                 )}
 
-                {showCards && (
-                  <ExpertCards
+                {(phase === 'matches' || phase === 'email' || phase === 'done') && (
+                  <MatchStep
+                    phase={phase}
                     experts={experts}
                     selected={selected}
-                    locked={phase !== 'matches'}
+                    introCount={introCount}
                     onToggle={toggleExpert}
+                    onRequest={requestIntros}
+                    onRefine={startRefine}
+                    onSubmit={submitIntro}
+                    onMore={startMore}
                   />
-                )}
-
-                {phase === 'matches' && (
-                  <div className="match-action">
-                    <button
-                      className="cta"
-                      disabled={selected.length === 0}
-                      onClick={requestIntros}
-                    >
-                      {selected.length === 0
-                        ? 'Select who to meet'
-                        : `Request ${selected.length} intro${selected.length === 1 ? '' : 's'}`}
-                    </button>
-                    <button className="linkbtn" onClick={startRefine}>
-                      Not the right matches? Change my search
-                    </button>
-                  </div>
-                )}
-
-                {phase === 'email' && <IntroForm count={introCount} onSubmit={submitIntro} />}
-
-                {phase === 'done' && (
-                  <div className="match-action">
-                    <button className="cta ghost-cta" onClick={startMore}>
-                      Get intros to other experts
-                    </button>
-                  </div>
                 )}
               </div>
             )}

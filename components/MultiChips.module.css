@@ -1,0 +1,54 @@
+/* Multi select chips. Styled here rather than in globals.css so the selected
+   state never has to out-specify the single select chip rules. */
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 11px;
+  margin-top: -6px;
+  /* Line up with the assistant bubble: 24px avatar plus its 10px gap. */
+  padding-left: 34px;
+  animation: chips-in 240ms var(--ease-out);
+}
+
+@keyframes chips-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.row { display: flex; flex-wrap: wrap; gap: 7px; }
+
+.chip {
+  border: 1px solid rgba(196, 89, 60, .32);
+  background: rgba(196, 89, 60, .05);
+  color: var(--accent-deep);
+  font-size: 13px; font-weight: 500;
+  padding: 6px 12px; border-radius: 999px; cursor: pointer;
+  transition: transform 160ms var(--ease-out), background 160ms ease,
+    border-color 160ms ease, color 160ms ease;
+}
+
+.on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(168, 69, 44, .26);
+}
+
+.confirm {
+  border: none; cursor: pointer;
+  font-size: 13px; font-weight: 600;
+  padding: 8px 18px; border-radius: 999px;
+  background: var(--accent); color: #fff;
+  box-shadow: 0 6px 16px rgba(168, 69, 44, .32);
+  transition: transform 140ms var(--ease-out), background 140ms ease, opacity 140ms ease;
+}
+
+.confirm:disabled { opacity: .45; cursor: default; box-shadow: none; }
+
+@media (hover: hover) and (pointer: fine) {
+  .chip:hover { background: rgba(196, 89, 60, .12); transform: translateY(-1px); }
+  .on:hover { background: var(--accent-deep); }
+  .confirm:not(:disabled):hover { background: var(--accent-deep); }
+}

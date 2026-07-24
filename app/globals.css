@@ -566,6 +566,14 @@ div.sav {
   background: rgba(33, 30, 26, .4); filter: blur(4px);
 }
 .teaser-intro { font-size: 12.5px; line-height: 1.45; color: var(--ink-2); }
+
+/* Confidence marker beside the blurred teaser. Deliberately quiet: it sits
+   next to a hidden face, so it reads as a note, never a claim. */
+.teaser-conf { color: var(--ink-3); font-weight: 500; white-space: nowrap; }
+
+/* The plain line under the secondary option when email leads, explaining who
+   the session route is actually faster for. */
+.opt-note { color: var(--ink-3); font-size: 12.5px; }
 .teaser-tag {
   flex: none; font-size: 10.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
   color: #3E7D4E; background: rgba(62, 125, 78, .12);
