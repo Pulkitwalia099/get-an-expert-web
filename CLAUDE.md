@@ -55,6 +55,21 @@ Never commit real keys. `.env.local` is gitignored.
 - Validate at every API boundary. `lib/validate.ts` holds the schemas.
 - Handle errors explicitly. The chat must never show a raw stack trace.
 
+## Chat behavior is eval-gated
+
+The chat is an LLM feature, so its failures are invisible to unit tests. The
+system prompts live in `lib/prompts.ts`, and `evals/` holds 14 simulated
+visitors with an LLM judge (see `evals/README.md`).
+
+- Touch `lib/prompts.ts`, the model, or `sanitizeReply`: run `npm run eval`
+  and get 14/14 before opening the PR.
+- After any deploy that touches env vars or keys: run
+  `EVAL_TARGET=https://midsesh.com npm run eval`. It fails if the live site
+  is serving the scripted demo replies again.
+- A visitor complaint about the chat starts with `npm run sessions` (last 10
+  Supabase transcripts), and ends with a new scenario in
+  `evals/scenarios.ts` that reproduces it.
+
 ## Working on this repo
 
 Run `npm install` then `npm run dev` (port 3000) or `npm test`.

@@ -10,3 +10,6 @@ next-env.d.ts
 .env.*.local
 .DS_Store
 npm-debug.log*
+
+# eval run reports
+evals/.last-run.json
