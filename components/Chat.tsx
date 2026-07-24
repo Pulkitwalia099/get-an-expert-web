@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, useEffect, useRef, useState } from 'react';
+import { track } from '@/lib/analytics';
 import type { ApiRole, Brief, ChatReply, Expert } from '@/lib/types';
 import Composer from '@/components/Composer';
 import ExpertCards from '@/components/ExpertCards';
@@ -69,6 +70,12 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
   const push = (m: Omit<Msg, 'id'>) =>
     setMsgs((prev) => [...prev, { ...m, id: ++idRef.current }]);
 
+  // One event per visit marking which page (flow) they opened. Pageviews are
+  // captured separately by the provider; this adds the flow for segmentation.
+  useEffect(() => {
+    track('chat_opened', { flow });
+  }, [flow]);
+
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: 1e7, behavior: 'smooth' });
   }, [msgs, typing, phase, experts]);
@@ -81,6 +88,8 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
 
   async function sendChat(text: string, retry = false) {
     if (!retry) {
+      // First real turn of the visit: the top of the engagement funnel.
+      if (apiMsgs.current.length === 0) track('first_message_sent', { flow });
       push({ role: 'user', text });
       apiMsgs.current = [
         ...apiMsgs.current,
@@ -120,6 +129,7 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
       // no marketplace search, straight to the install-or-email choice.
       window.setTimeout(() => {
         push({ role: 'ai', text: config.foundText });
+        track('choice_shown', { flow });
         setPhase('choice');
       }, MIN_SEARCH_MS);
       return;
@@ -150,12 +160,17 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
       } else {
         setExperts(found);
         push({ role: 'ai', text: config.foundText });
+        track('matches_shown', { flow, result_count: found.length });
         setPhase('matches');
       }
     }, remaining);
   }
 
   function toggleExpert(id: string) {
+    // Track outside the updater: a setState updater must stay pure, or React's
+    // StrictMode double-invoke would double-fire the event.
+    const turningOn = !selected.includes(id);
+    if (turningOn) track('experts_selected', { flow });
     setSelected((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
@@ -172,6 +187,7 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
     if (selected.length === 0) return;
     setExperts((prev) => prev.filter((e) => selected.includes(e.id)));
     push({ role: 'ai', text: 'Great. Add your email and we’ll set up the intros.' });
+    track('email_shown', { flow, path: 'intros' });
     setPhase('email');
   }
 
@@ -207,6 +223,7 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
     setExperts([]);
     setSelected([]);
     push({ role: 'ai', text: 'Got it. Add your email and we’ll take it from there.' });
+    track('email_shown', { flow, path: 'custom' });
     setPhase('email');
   }
 
@@ -236,6 +253,11 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
           ? 'Got it. We’ll line up the right people and email you intros, usually within a day.'
           : `Got it. We’ll reach out to ${firstNames(names)} with your requirements. Whoever can take it on will introduce themselves by email, usually within a day.`,
         avatars: isCustom ? undefined : chosen.map((e) => ({ name: e.name, photo: e.photo })),
+      });
+      track('intro_submitted', {
+        flow,
+        kind: isCustom ? 'custom' : 'intros',
+        count: names.length,
       });
       setExperts([]);
       setSelected([]);
@@ -278,6 +300,9 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
               <span className="worb">✳︎</span>midsesh
               {config.tag && <span className="tag">{config.tag}</span>}
             </div>
+            <a className="privacy-link" href="/privacy">
+              Privacy
+            </a>
           </div>
 
           <div className="chat" ref={scrollRef}>
