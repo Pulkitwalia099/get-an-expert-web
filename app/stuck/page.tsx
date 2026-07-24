@@ -1,12 +1,8 @@
-import type { Metadata } from 'next';
-import Chat from '@/components/Chat';
+import { redirect } from 'next/navigation';
 
-export const metadata: Metadata = {
-  title: 'midsesh · Stuck in Claude Code or Codex?',
-  description:
-    'Two questions, then a human expert joins your AI coding session or reaches you by email. For Claude Code, Codex, Cursor and Windsurf.',
-};
-
+// The stuck experience now lives at the site root. Keep this path working for
+// any existing links by sending it there. Temporary (307) on purpose, so it is
+// easy to reverse if /stuck ever becomes its own page again.
 export default function Stuck() {
-  return <Chat flow="dev" />;
+  redirect('/');
 }
