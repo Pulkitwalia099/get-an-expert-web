@@ -69,12 +69,17 @@ export function coerceBrief(input: unknown): Brief {
   };
 }
 
-// The assistant replies are always plain prose, so any angle-bracket
-// tag-like fragment is model noise, not content. Strip it before it can
-// reach the screen, then tidy the whitespace it leaves behind.
+// The assistant replies are always plain prose, so a tag-like fragment is
+// model noise, not content. Strip it before it can reach the screen, then
+// tidy the whitespace it leaves behind.
+//
+// The pattern requires a letter or a slash straight after the '<', so it only
+// matches things shaped like markup. Matching any '<...>' span ate real prose:
+// "latency < 200ms and errors > 1%" came out as "latency 1%", which is exactly
+// the sentence a visitor describing a slow app is likely to get back.
 function stripReplyTags(text: string): string {
   return text
-    .replace(/<[^>\n]{0,40}>/g, '')
+    .replace(/<\/?[a-zA-Z][^>\n]{0,40}>/g, '')
     .replace(/ {2,}/g, ' ')
     .trim();
 }
