@@ -151,7 +151,7 @@ export interface SessionMeta {
 export async function recordSession(
   id: string,
   meta: SessionMeta,
-  opts: { completed?: boolean; flow?: 'main' | 'dev' } = {},
+  opts: { completed?: boolean; flow?: 'main' | 'dev'; demo?: boolean } = {},
 ): Promise<void> {
   const row: Record<string, unknown> = {
     id,
@@ -161,6 +161,9 @@ export async function recordSession(
   };
   if (opts.completed) row.completed = true;
   if (opts.flow === 'dev') row.flow = 'dev';
+  // Only sent when true, so the column default (false) survives a lagging
+  // migration and never blocks a write.
+  if (opts.demo) row.demo = true;
   await write('sessions', row, { upsertOn: 'id' });
 }
 

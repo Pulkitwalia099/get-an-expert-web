@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { track } from '@/lib/analytics';
 import { FLOWS, INSTALL_TARGETS, type Flow } from '@/components/flows';
 import { isValidEmail } from '@/lib/email';
 import type { Brief } from '@/lib/types';
@@ -36,6 +37,7 @@ export default function GetUnstuck({
     }
     setCopied(true);
     window.setTimeout(() => setCopied(false), 2_000);
+    track('install_clicked', { flow, tool: target.key });
     // The conversion the npm package exists for.
     void fetch('/api/intros', {
       method: 'POST',
@@ -59,6 +61,7 @@ export default function GetUnstuck({
         body: JSON.stringify({ type: 'intros', flow, email: value, selected: [], brief, sessionId }),
       });
       if (!res.ok) throw new Error(`intros ${res.status}`);
+      track('dev_email_submitted', { flow });
       onEmailSent(value);
     } catch {
       onEmailFailed();

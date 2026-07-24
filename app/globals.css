@@ -82,6 +82,15 @@ button:active { transform: scale(0.96); }
   border-bottom: 1px solid var(--line);
 }
 .lights { display: flex; gap: 8px; }
+.privacy-link {
+  margin-left: auto; position: relative; z-index: 1;
+  font-size: 11px; font-weight: 500; letter-spacing: 0.01em;
+  color: var(--ink-3); text-decoration: none;
+  transition: color .2s var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .privacy-link:hover { color: var(--ink-2); }
+}
 .lights i { width: 12px; height: 12px; border-radius: 50%; box-shadow: inset 0 0 0 .5px rgba(0,0,0,.12); }
 .lights .r { background: #FF5F57; }
 .lights .y { background: #FEBC2E; }
@@ -631,4 +640,34 @@ div.sav {
 
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
+}
+
+/* ---------- Legal / privacy page ---------- */
+.legal {
+  position: relative; z-index: 1;
+  max-width: 640px; margin: 0 auto;
+  padding: clamp(48px, 8vw, 96px) 24px 96px;
+  color: var(--ink);
+}
+.legal-back {
+  display: inline-block; margin-bottom: 32px;
+  font-size: 13px; font-weight: 500; color: var(--ink-3); text-decoration: none;
+  transition: color .2s var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .legal-back:hover { color: var(--accent); }
+}
+.legal h1 {
+  font-size: clamp(28px, 5vw, 38px); font-weight: 650;
+  letter-spacing: -0.02em; margin-bottom: 14px;
+}
+.legal h2 {
+  font-size: 16px; font-weight: 650; letter-spacing: -0.01em;
+  margin: 34px 0 8px;
+}
+.legal .lead { font-size: 17px; color: var(--ink-2); line-height: 1.6; }
+.legal p { font-size: 15px; color: var(--ink-2); line-height: 1.65; }
+.legal a { color: var(--accent); text-decoration: none; }
+@media (hover: hover) and (pointer: fine) {
+  .legal a:hover { text-decoration: underline; }
 }

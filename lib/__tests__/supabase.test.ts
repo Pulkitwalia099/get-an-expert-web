@@ -85,6 +85,13 @@ describe('recordSession', () => {
     await recordSession(SESSION, { userAgent: null, referrer: null }, { flow: 'dev' });
     expect(JSON.parse(lastCall().init.body as string).flow).toBe('dev');
   });
+
+  it('sends the demo column only when the session ran in demo mode', async () => {
+    await recordSession(SESSION, { userAgent: null, referrer: null }, { demo: false });
+    expect(JSON.parse(lastCall().init.body as string)).not.toHaveProperty('demo');
+    await recordSession(SESSION, { userAgent: null, referrer: null }, { demo: true });
+    expect(JSON.parse(lastCall().init.body as string).demo).toBe(true);
+  });
 });
 
 describe('recordMessages', () => {
