@@ -94,7 +94,12 @@ export const FLOWS: Record<Flow, FlowConfig> = {
     // front door; a "devs" badge over a general intake reads as the wrong room.
     tag: null,
     headline: 'What are you working on?',
-    sub: 'A few questions, then a human who has done your kind of work before.',
+    // The sub-line has to answer "what is this" for someone who arrived from an
+    // ad on a phone and has never heard of midsesh. The previous line stopped at
+    // being matched, which is a middle step: it described what we do rather than
+    // what the visitor ends up with. The expert is the subject here, and "takes
+    // it off your plate" is the ending the old line was missing.
+    sub: 'Talk it through, then an expert who has done it many times before takes it off your plate.',
     // Sent verbatim as the visitor's opening message, so each one reads like
     // something they would say about their own project. The spread covers
     // improving, fixing, building, automating and speed.
