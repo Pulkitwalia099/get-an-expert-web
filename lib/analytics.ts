@@ -31,11 +31,19 @@ export function initAnalytics(): void {
 }
 
 export function capturePageview(url: string): void {
+  // Ensure init has run: React fires child effects before parent effects, so a
+  // page or component can call this before the provider's initAnalytics() has
+  // run. initAnalytics() is idempotent, so this just guarantees ordering.
+  initAnalytics();
   if (!ready) return;
   posthog.capture('$pageview', { $current_url: url });
 }
 
 export function track(event: string, props?: Record<string, unknown>): void {
+  // Same ordering guarantee as capturePageview: the first event of a visit
+  // (chat_opened) fires from a child effect before the provider mounts, so
+  // without this it would silently no-op and the funnel would lose its top step.
+  initAnalytics();
   if (!ready) return;
   try {
     posthog.capture(event, props);
