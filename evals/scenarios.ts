@@ -158,7 +158,12 @@ export const SCENARIOS: Scenario[] = [
     maxQuestions: 3,
     expectDone: true,
     brief: {
-      budget: /^$|rather not|undisclosed|not (stated|shared)/i,
+      // Asserted on intent rather than phrasing. The visitor refused, so the
+      // only thing that matters is that no budget figure was invented; the
+      // model phrases the refusal differently every run ("Not disclosed",
+      // "Declined to share"), and chasing those with a phrase list is a
+      // whack-a-mole that fails for the wrong reason.
+      budget: /^\D*$/,
       search_query: /cfo|finance/i,
     },
     judgeNotes:
@@ -191,7 +196,9 @@ export const SCENARIOS: Scenario[] = [
     style: 'Hinglish, informal, short sentences.',
     maxQuestions: 3,
     expectDone: true,
-    knownUpfront: [{ name: 'budget', pattern: /budget|kitna|price|paise/i }],
+    // Bare "kitna" means "how much" about anything, so it flagged "raw footage
+    // kitna hai" as a re-asked budget question. Matched on money words instead.
+    knownUpfront: [{ name: 'budget', pattern: /budget|price|paise|rupee|rupaye|₹/i }],
     brief: {
       budget: /20,?000|20k/i,
       search_query: /wedding|video editor/i,
@@ -242,7 +249,11 @@ export const SCENARIOS: Scenario[] = [
     expectReply: { primary_path: 'session' },
     brief: {
       engagement: /now/i,
-      domain: /claude|next|auth|middleware/i,
+      // Asserted on specifics, not domain. BRIEF_SCHEMA defines domain as the
+      // industry context and specifics as the concrete detail including stack,
+      // so "Web app development" in domain with Next.js and the middleware in
+      // specifics is the schema working, not a miss.
+      specifics: /claude|next|auth|middleware/i,
     },
     judgeNotes:
       'Tool, symptom and now-vs-later are all stated, so a detailed opening must send the questions deeper, not backwards. Legitimate ground: what they have already tried, what the middleware has to keep working, what the build error actually says. Re-asking which tool it is, what it is doing, or whether they want someone now is exactly the robotic behavior this page is being fixed for. This visitor is in a hurry, so two or three sharp questions then handoff beats using the whole budget.',
@@ -261,7 +272,9 @@ export const SCENARIOS: Scenario[] = [
     knownUpfront: [{ name: 'tool', pattern: /which tool|what tool/i }],
     expectReply: { primary_path: 'session' },
     brief: {
-      domain: /cursor|react/i,
+      // Same correction as dev-all-upfront: stack names belong in specifics,
+      // domain carries the industry context ("Frontend web development").
+      specifics: /cursor|react/i,
     },
     judgeNotes:
       'The tool is named and nothing else is, so the assistant has room to build a real picture: what it keeps doing, what the project is, what they have tried, now vs later. Each question must use the answer before it. Asking which tool they are using is a hard failure, and so is stacking questions on someone typing three words at a time.',
@@ -404,7 +417,10 @@ export const SCENARIOS: Scenario[] = [
     matchIntro: {
       must: /automat|workflow|n8n|stripe|airtable|sync|integrat|pipeline/i,
       mustNot:
-        /\$|\bdollars?\b|\beuros?\b|\bper hour\b|\bhourly\b|\brate\b|\bprice\b|\bfree\b|\d+\s?%/i,
+        // "rate" is negative-lookahead'd for "rate limit": this scenario is
+        // about an API rate limit, so naming the visitor's own problem was
+        // being scored as inventing a price.
+        /\$|\bdollars?\b|\beuros?\b|\bper hour\b|\bhourly\b|\brates?\b(?!\s*limit)|\bprice\b|\bfree\b|\d+\s?%/i,
     },
     judgeNotes:
       'This scenario exists for the last sentence the visitor reads. At handoff the match line must sound like it was written about this problem, naming the automation and what the person has done like it before, in the visitor\'s own register. A line that would fit any visitor is a failure. Any price, rate, percentage, or claim that the expert is free right now is a hard failure.',

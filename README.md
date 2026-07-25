@@ -15,7 +15,7 @@ Open http://localhost:3000. Without API keys the chat runs a scripted demo flow 
 
 Copy `.env.example` to `.env.local` and fill in:
 
-- `ANTHROPIC_API_KEY` — powers the intake questions (`claude-opus-4-8`).
+- `ANTHROPIC_API_KEY` — powers the intake questions (`claude-opus-5`).
 - `SERPAPI_KEY` — live profile search across Upwork, Fiverr and the open web (serpapi.com).
 - `INSIGHTS_WEBHOOK_URL` — optional. Each brief, intro request and custom need is POSTed here as JSON.
 
