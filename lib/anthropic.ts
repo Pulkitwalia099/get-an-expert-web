@@ -2,7 +2,7 @@ import { anthropicKey } from '@/lib/env';
 import type { ChatMessage } from '@/lib/types';
 
 const API_URL = 'https://api.anthropic.com/v1/messages';
-const MODEL = 'claude-opus-4-8';
+const MODEL = 'claude-opus-5';
 const TIMEOUT_MS = 75_000;
 const RETRYABLE_STATUS = new Set([408, 429, 500, 502, 503, 504, 529]);
 
@@ -60,6 +60,19 @@ async function callOnce<T>(opts: AskOptions): Promise<T> {
       max_tokens: opts.maxTokens ?? 1_500,
       system: opts.system,
       messages: opts.messages,
+      // Thinking is off deliberately, and this is the fix for the garbled
+      // replies visitors were seeing ("matmarketplace", "down down", private
+      // reasoning arriving in the chat). Every call here is constrained to a
+      // JSON schema, so the only channel the model has is the reply text. With
+      // thinking on it pushes reasoning through that channel and the text comes
+      // out mangled. Measured on the worst-affected conversation, 12 runs each:
+      // thinking on 2/12 corrupted, summarized 4/12, off 0/12.
+      //
+      // Opus 5 runs adaptive thinking when this field is absent, so omitting it
+      // is not the same as disabling it. Disabling is accepted only at effort
+      // 'high' or below; that is the default, so adding output_config.effort of
+      // 'xhigh' or 'max' here would start returning 400.
+      thinking: { type: 'disabled' },
       output_config: { format: { type: 'json_schema', schema: opts.schema } },
     }),
     signal: AbortSignal.timeout(TIMEOUT_MS),
