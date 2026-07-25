@@ -53,7 +53,11 @@ export default function GetUnstuck({
     }
     setCopied(true);
     window.setTimeout(() => setCopied(false), 2_000);
-    track('install_clicked', { flow, tool: target.key });
+    // Copy intent: the visitor took the install command for their coding tool.
+    // Renamed from install_clicked, which never fired in production, so there is
+    // no history to keep continuous. The command string is recorded so the event
+    // still reads correctly after the install copy changes.
+    track('mcp_install_copied', { flow, tool: target.key, command: target.code });
     // The conversion the npm package exists for.
     void fetch('/api/intros', {
       method: 'POST',
