@@ -206,10 +206,14 @@ export async function recordSearch(
 export interface LeadRecord {
   email: string;
   name: string | null;
-  kind: 'intros' | 'custom';
+  // 'expert' is a freelancer applying to join, not a client asking for
+  // help. Requires the migration widening the leads kind check constraint.
+  kind: 'intros' | 'custom' | 'expert';
   selected: string[];
   need: string | null;
-  brief: Brief;
+  // Null for a lead that never ran the client intake, such as an expert
+  // application. The column is nullable.
+  brief: Brief | null;
   consent: boolean;
   flow?: 'main' | 'dev';
 }

@@ -43,6 +43,9 @@ describe('sendEmail', () => {
   });
 
   it('skips quietly without an API key', async () => {
+    // Explicit: a developer with RESEND_API_KEY exported in their shell would
+    // otherwise take the real send path and fail this.
+    vi.stubEnv('RESEND_API_KEY', '');
     expect(await sendEmail({ to: 'o@x.co', subject: 's', text: 't' })).toBe(false);
     expect(fetchMock).not.toHaveBeenCalled();
   });

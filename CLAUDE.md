@@ -58,11 +58,13 @@ Never commit real keys. `.env.local` is gitignored.
 ## Chat behavior is eval-gated
 
 The chat is an LLM feature, so its failures are invisible to unit tests. The
-system prompts live in `lib/prompts.ts`, and `evals/` holds 14 simulated
+system prompts live in `lib/prompts.ts`, and `evals/` holds 19 simulated
 visitors with an LLM judge (see `evals/README.md`).
 
-- Touch `lib/prompts.ts`, the model, or `sanitizeReply`: run `npm run eval`
-  and get 14/14 before opening the PR.
+- Touch `lib/prompts.ts`, the model, `sanitizeReply`, or the question budget
+  in `app/api/chat/route.ts`: run `npm run eval` and get every scenario green
+  before opening the PR. The gate is a clean run, not a number, so adding a
+  scenario never leaves this line stale.
 - After any deploy that touches env vars or keys: run
   `EVAL_TARGET=https://midsesh.com npm run eval`. It fails if the live site
   is serving the scripted demo replies again.

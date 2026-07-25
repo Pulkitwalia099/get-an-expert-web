@@ -90,26 +90,32 @@ export const FLOWS: Record<Flow, FlowConfig> = {
     teaserIntro: null,
   },
   dev: {
-    tag: 'devs',
-    headline: 'Stuck in Claude Code or Codex?',
-    sub: 'Two questions, then a human who unsticks AI coding sessions every day.',
+    // No tag. This stopped being the page for one audience when it became the
+    // front door; a "devs" badge over a general intake reads as the wrong room.
+    tag: null,
+    headline: 'What are you working on?',
+    sub: 'A few questions, then a human who has done your kind of work before.',
+    // Sent verbatim as the visitor's opening message, so each one reads like
+    // something they would say about their own project. The spread covers
+    // improving, fixing, building, automating and speed.
     suggestions: [
-      'Agent is looping',
-      'Broke my repo',
-      "MCP won't connect",
-      'Burning tokens, no progress',
+      'Improve what I built',
+      'Fix what’s broken',
+      'Build something new',
+      'Automate a manual task',
+      'Make it faster',
     ],
-    elseChip: null,
-    elseOpener: '',
-    welcomePlaceholder: "What's it stuck on?",
+    elseChip: 'Something else',
+    elseOpener: 'Tell me what you need, in a sentence.',
+    welcomePlaceholder: 'I’m working on…',
     searchingStatus: [
-      'Finding someone who’s online now…',
-      'Checking who’s free…',
+      'Looking for the right person…',
+      'Checking who has done this…',
     ],
-    foundText:
-      'Found one. An expert who has fixed this exact kind of thing is online now. Two ways to connect:',
+    foundText: 'Found one. Two ways to connect:',
     ending: 'choice',
-    teaserIntro:
-      'Senior engineer who unsticks agent loops, MCP setups, and runaway sessions every day.',
+    // Fallback only. The model writes a per-visitor line when it has one, so
+    // this has to stay true for any need and never mention code.
+    teaserIntro: 'An expert who has done this kind of work before.',
   },
 };

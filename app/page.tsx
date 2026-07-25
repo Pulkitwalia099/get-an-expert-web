@@ -2,9 +2,9 @@ import type { Metadata } from 'next';
 import Chat from '@/components/Chat';
 
 export const metadata: Metadata = {
-  title: 'midsesh · Stuck in Claude Code or Codex?',
+  title: "midsesh · A human expert for what you're building",
   description:
-    'Two questions, then a human expert joins your AI coding session or reaches you by email. For Claude Code, Codex, Cursor and Windsurf.',
+    "Tell us what you're working on, then a human expert who has done it before joins your project or emails you. No subscription. You pay the expert.",
 };
 
 export default function Home() {

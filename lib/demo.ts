@@ -3,10 +3,22 @@ import type { Brief, ChatMessage, ChatReply, Expert } from '@/lib/types';
 // Scripted flow used when API keys are missing, so the site is fully
 // testable before ANTHROPIC_API_KEY / SERPAPI_KEY are configured.
 
+// The extra fields the dev flow returns. Demo replies are scripted, so they
+// take the safe defaults: single-select chips, session-first ending, and no
+// match line (there is no real match behind a demo reply).
+const DEMO_EXTRAS = {
+  chip_mode: 'single',
+  primary_path: 'session',
+  expert_signup: false,
+  match_intro: '',
+  match_confidence: '',
+} as const;
+
 export function demoChatReply(messages: ChatMessage[]): ChatReply {
   const userTurns = messages.filter((m) => m.role === 'user');
   if (userTurns.length <= 1) {
     return {
+      ...DEMO_EXTRAS,
       reply: 'What should they deliver, in a sentence?',
       chips: [],
       done: false,
@@ -15,6 +27,7 @@ export function demoChatReply(messages: ChatMessage[]): ChatReply {
   }
   if (userTurns.length === 2) {
     return {
+      ...DEMO_EXTRAS,
       reply: 'Budget and timeline?',
       chips: ['Under €5k', '€5–15k', 'Flexible'],
       done: false,
@@ -34,7 +47,7 @@ export function demoChatReply(messages: ChatMessage[]): ChatReply {
     timeline: '',
     search_query: userTurns[0].content.split(/\s+/).slice(0, 4).join(' '),
   };
-  return { reply: 'On it. Give me about 20 seconds.', chips: [], done: true, brief };
+  return { ...DEMO_EXTRAS, reply: 'On it. Give me about 20 seconds.', chips: [], done: true, brief };
 }
 
 // Same idea for /stuck: a believable two-question intake without API keys.
@@ -43,6 +56,7 @@ export function demoDevChatReply(messages: ChatMessage[]): ChatReply {
   const userTurns = messages.filter((m) => m.role === 'user');
   if (userTurns.length <= 1) {
     return {
+      ...DEMO_EXTRAS,
       reply: 'Which tool are you using, and what does it keep doing?',
       chips: ['Claude Code', 'Codex', 'Cursor', 'Windsurf'],
       done: false,
@@ -51,6 +65,7 @@ export function demoDevChatReply(messages: ChatMessage[]): ChatReply {
   }
   if (userTurns.length === 2) {
     return {
+      ...DEMO_EXTRAS,
       reply: 'Want someone in your session now, or an intro later today?',
       chips: ['Right now', 'Later today'],
       done: false,
@@ -67,6 +82,7 @@ export function demoDevChatReply(messages: ChatMessage[]): ChatReply {
     search_query: 'AI coding help',
   };
   return {
+    ...DEMO_EXTRAS,
     reply: 'On it. Finding someone who can jump in now.',
     chips: [],
     done: true,

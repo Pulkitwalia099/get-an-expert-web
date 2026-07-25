@@ -55,6 +55,31 @@ async function handleIntros(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Invalid email' }, { status: 400 });
   }
 
+  const need =
+    typeof body.need === 'string'
+      ? scrubUntrusted(body.need).slice(0, MAX_NEED_CHARS)
+      : undefined;
+
+  // A freelancer applying for work, not a client asking for help. Two
+  // fields and nothing else: no brief, no selected experts, and the
+  // session is not marked completed, because they never ran the client
+  // funnel. The lead write is fire and forget like every other one, so an
+  // applicant still sees a thank you even when the row does not land.
+  if (body.type === 'expert') {
+    await recordInsight('expert', { email, need, flow });
+    await recordLead(sessionId, {
+      email,
+      name: null,
+      kind: 'expert',
+      selected: [],
+      need: need ?? null,
+      brief: null,
+      consent: true,
+      flow,
+    });
+    return NextResponse.json({ ok: true });
+  }
+
   const kind = body.type === 'custom' ? 'custom' : 'intros';
   const selected = Array.isArray(body.selected)
     ? body.selected
@@ -62,10 +87,6 @@ async function handleIntros(req: NextRequest): Promise<NextResponse> {
         .map((s) => scrubUntrusted(s).slice(0, 80))
         .slice(0, MAX_SELECTED)
     : [];
-  const need =
-    typeof body.need === 'string'
-      ? scrubUntrusted(body.need).slice(0, MAX_NEED_CHARS)
-      : undefined;
   const name =
     typeof body.name === 'string' && body.name.trim()
       ? scrubUntrusted(body.name).trim().slice(0, 120)

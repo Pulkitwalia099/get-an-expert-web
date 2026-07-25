@@ -1,13 +1,25 @@
 import { stripEmDashes } from '@/lib/humanize';
 import { scrubUntrusted } from '@/lib/sanitize';
-import type { Brief, ChatMessage, ChatReply } from '@/lib/types';
+import type {
+  Brief,
+  ChatMessage,
+  ChatReply,
+  ChipMode,
+  MatchConfidence,
+  PrimaryPath,
+} from '@/lib/types';
 
 const MAX_MESSAGES = 30;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const MAX_MESSAGE_CHARS = 600;
-const MAX_CHIPS = 4;
+// Inbound and outbound caps are separate on purpose. A visitor pasting an
+// error log needs room, and silently dropping the tail of their message
+// defeats the whole point of the intake. Replies stay short regardless.
+const MAX_MESSAGE_CHARS = 2_000;
+const MAX_REPLY_CHARS = 600;
+const MAX_CHIPS = 5;
 const MAX_CHIP_CHARS = 40;
 const MAX_FIELD_CHARS = 300;
+const MAX_MATCH_INTRO_CHARS = 300;
 
 // Anonymous session ids are minted client-side, so accept nothing but a
 // UUID. Persistence is silently skipped when the id is missing or malformed.
@@ -57,12 +69,17 @@ export function coerceBrief(input: unknown): Brief {
   };
 }
 
-// The assistant replies are always plain prose, so any angle-bracket
-// tag-like fragment is model noise, not content. Strip it before it can
-// reach the screen, then tidy the whitespace it leaves behind.
+// The assistant replies are always plain prose, so a tag-like fragment is
+// model noise, not content. Strip it before it can reach the screen, then
+// tidy the whitespace it leaves behind.
+//
+// The pattern requires a letter or a slash straight after the '<', so it only
+// matches things shaped like markup. Matching any '<...>' span ate real prose:
+// "latency < 200ms and errors > 1%" came out as "latency 1%", which is exactly
+// the sentence a visitor describing a slow app is likely to get back.
 function stripReplyTags(text: string): string {
   return text
-    .replace(/<[^>\n]{0,40}>/g, '')
+    .replace(/<\/?[a-zA-Z][^>\n]{0,40}>/g, '')
     .replace(/ {2,}/g, ' ')
     .trim();
 }
@@ -74,7 +91,7 @@ export function sanitizeReply(input: unknown): ChatReply {
   >;
   const reply =
     typeof source.reply === 'string' && source.reply.trim().length > 0
-      ? stripReplyTags(stripEmDashes(source.reply.slice(0, MAX_MESSAGE_CHARS)))
+      ? stripReplyTags(stripEmDashes(source.reply.slice(0, MAX_REPLY_CHARS)))
       : 'Can you tell me a bit more?';
   const chips = Array.isArray(source.chips)
     ? source.chips
@@ -84,5 +101,33 @@ export function sanitizeReply(input: unknown): ChatReply {
     : [];
   const done = source.done === true;
   const brief = done ? coerceBrief(source.brief) : null;
-  return { reply, chips: done ? [] : chips, done, brief };
+
+  // Multi-select changes what a click does, so it has to be asked for
+  // explicitly. Anything unrecognised behaves like today's chips.
+  const chip_mode: ChipMode = source.chip_mode === 'multi' ? 'multi' : 'single';
+  // Most visitors here are building something, so 'session' is the safe
+  // default: it leads with the faster route and still shows email below.
+  const primary_path: PrimaryPath = source.primary_path === 'email' ? 'email' : 'session';
+  const expert_signup = source.expert_signup === true;
+  const match_intro =
+    done && typeof source.match_intro === 'string'
+      ? stripReplyTags(stripEmDashes(source.match_intro.slice(0, MAX_MATCH_INTRO_CHARS)))
+      : '';
+  const match_confidence: MatchConfidence = !done
+    ? ''
+    : source.match_confidence === 'medium'
+      ? 'medium'
+      : 'high';
+
+  return {
+    reply,
+    chips: done ? [] : chips,
+    done,
+    brief,
+    chip_mode,
+    primary_path,
+    expert_signup,
+    match_intro,
+    match_confidence,
+  };
 }

@@ -1,4 +1,4 @@
-export type InsightKind = 'brief' | 'search' | 'intros' | 'custom' | 'install';
+export type InsightKind = 'brief' | 'search' | 'intros' | 'custom' | 'install' | 'expert';
 
 const PRIVATE_HOST_PATTERNS = [
   /^localhost$/i,

@@ -1,5 +1,5 @@
 import { askClaude } from '@/lib/anthropic';
-import { CHAT_SCHEMA } from '@/lib/prompts';
+import { schemaFor } from '@/lib/prompts';
 import { sanitizeReply } from '@/lib/validate';
 import type { ChatMessage, ChatReply } from '@/lib/types';
 import type { Scenario } from './scenarios';
@@ -138,12 +138,18 @@ export async function runScenario(system: string, s: Scenario): Promise<RunResul
   const replies: ChatReply[] = [];
   const maxTurns = s.maxTurns ?? (s.expectDone ? 6 : 3);
 
+  // The dev flow asks for five extra reply fields, so the schema has to follow
+  // the flow. Running every scenario against CHAT_SCHEMA would leave
+  // primary_path, expert_signup and match_intro at their sanitiser defaults and
+  // quietly pass the assertions that exist to catch them.
+  const schema = schemaFor(s.flow);
+
   for (let turn = 0; turn < maxTurns; turn++) {
     const raw = await withRetry(() =>
       askClaude({
         system,
         messages,
-        schema: CHAT_SCHEMA,
+        schema,
         maxTokens: 1_200,
       }),
     );
@@ -185,6 +191,7 @@ export function deterministicChecks(run: RunResult): string[] {
   const { scenario: s, replies } = run;
   const failures: string[] = [];
   const asking = replies.filter((r) => !r.done);
+  const last = replies[replies.length - 1];
 
   if (run.questionsAsked > s.maxQuestions) {
     failures.push(
@@ -195,6 +202,22 @@ export function deterministicChecks(run: RunResult): string[] {
   for (const fact of s.knownUpfront ?? []) {
     const hit = asking.find((r) => fact.pattern.test(r.reply));
     if (hit) failures.push(`re-asked "${fact.name}" already given upfront: "${hit.reply}"`);
+  }
+
+  // Forbidden patterns cover the handoff too: jargon or a price in the last
+  // sentence a visitor reads counts exactly as much as in the first.
+  for (const rule of s.forbidden ?? []) {
+    const hit = replies.find((r) => rule.pattern.test(r.reply));
+    if (hit) failures.push(`${rule.name}: "${hit.reply}"`);
+  }
+
+  // The new reply fields decide which ending the visitor sees, so they are
+  // read off the turn that produced that ending.
+  for (const [field, want] of Object.entries(s.expectReply ?? {})) {
+    const got = last?.[field as keyof ChatReply];
+    if (got !== want) {
+      failures.push(`reply.${field} is ${JSON.stringify(got)}, scenario expects ${JSON.stringify(want)}`);
+    }
   }
 
   for (let i = 0; i < asking.length; i++) {
@@ -220,7 +243,7 @@ export function deterministicChecks(run: RunResult): string[] {
     if (!run.done) {
       failures.push(`never reached done=true within ${replies.length} turns`);
     } else {
-      const brief = replies[replies.length - 1].brief;
+      const brief = last.brief;
       if (!brief) {
         failures.push('done=true but brief is null');
       } else {
@@ -232,6 +255,21 @@ export function deterministicChecks(run: RunResult): string[] {
           }
         }
       }
+      if (s.matchIntro) {
+        const intro = last.match_intro;
+        if (intro.trim().length === 0) {
+          failures.push('done=true but match_intro is empty');
+        } else {
+          if (s.matchIntro.must && !s.matchIntro.must.test(intro)) {
+            failures.push(
+              `match_intro "${intro}" names no part of this visitor's problem (${s.matchIntro.must})`,
+            );
+          }
+          if (s.matchIntro.mustNot && s.matchIntro.mustNot.test(intro)) {
+            failures.push(`match_intro "${intro}" says something it must not (${s.matchIntro.mustNot})`);
+          }
+        }
+      }
     }
   } else if (run.done) {
     failures.push('handed off (done=true) but this visitor should not produce a brief');
@@ -240,22 +278,31 @@ export function deterministicChecks(run: RunResult): string[] {
   return failures;
 }
 
-const JUDGE_SYSTEM = `You grade one conversation between a website intake chatbot and a visitor, for midsesh, a service that matches people with vetted human experts. The 'main' flow scopes any hiring need in at most 3 questions. The 'dev' flow rescues people whose AI coding tool is stuck, in at most 2 questions. Good intake: every question is specific to what this visitor already said, nothing already answered is asked again, curveballs (pricing questions, wrong-page visitors, refusals, other languages, frustration) are handled in stride, and the visitor is never left without a next step.
+const JUDGE_SYSTEM = `You grade one conversation between a website intake chatbot and a visitor, for midsesh, a service that matches people with vetted human experts. The 'main' flow scopes any hiring need in at most 3 questions. The 'dev' flow is the homepage: it takes any need at all, most often someone improving or extending what they are building rather than someone stuck, aims for 3 to 5 questions and never more than 5, mirrors the visitor's own register, and turns every visitor into a brief and a matched person. Deflecting a 'dev' visitor elsewhere is always wrong. Good intake: every question is specific to what this visitor already said, nothing already answered is asked again, curveballs (pricing questions, wrong-page visitors, refusals, other languages, frustration) are handled in stride, and the visitor is never left without a next step.
 
 Score 1-5 on each criterion. 5 = a skilled human concierge, 4 = minor wobble, 3 = a real flaw a visitor would feel, 2 = clearly bad, 1 = broken.
 - relevance: were questions specific and pertinent to this visitor's words and situation?
 - no_repetition: was anything asked twice, or asked after the visitor already said it?
 - adaptivity: did it adjust to the curveball described in the scenario notes, skip what it already knew, and follow the visitor's language and register?
 - tone: short, plain, calm, no jargon dumped on non-technical visitors, questions read as questions?
-- outcome: did the conversation end where it should (correct handoff and accurate brief, or correct redirect), efficiently?
+- outcome: did the conversation end where it should (correct handoff, accurate brief, and a match line that reads as if written about this visitor), efficiently?
 
-pass = every score is 4 or 5 AND nothing in the scenario notes marked as a hard failure occurred. Be strict about failures a visitor would actually feel; do not fail defensible judgment calls. Calibration: replying naturally in the visitor's own language (including Hindi or Hinglish) is good tone, not a flaw; skipping an optional budget or timeline question is fine when the scenario notes allow a fast handoff, and an empty budget field is correct when the visitor was never asked or declined; only treat a missing budget question as a flaw when the scenario notes call for it. Keep worst_moment and summary under 25 words each.`;
+pass = every score is 4 or 5 AND nothing in the scenario notes marked as a hard failure occurred. Be strict about failures a visitor would actually feel; do not fail defensible judgment calls. Calibration: replying naturally in the visitor's own language (including Hindi or Hinglish) is good tone, not a flaw; on the 'dev' flow a fourth or fifth question is fine when it earns its place, and only counts against efficiency when the visitor is clearly in a hurry or has already covered everything; skipping an optional budget or timeline question is fine when the scenario notes allow a fast handoff, and an empty budget field is correct when the visitor was never asked or declined; only treat a missing budget question as a flaw when the scenario notes call for it. On the 'dev' flow you are also shown the routing and the match line: primary_path follows the work rather than the person ('session' for anything digital, 'email' for work off a screen), and the match line must sound written about this visitor and must never state a price, a rate, or that the expert is free right now. Keep worst_moment and summary under 25 words each.`;
 
 const clamp = (n: number): number => Math.min(5, Math.max(1, Math.round(n)));
 
 export async function judgeRun(run: RunResult): Promise<Verdict> {
   const s = run.scenario;
-  const brief = run.replies[run.replies.length - 1]?.brief;
+  const last = run.replies[run.replies.length - 1];
+  const brief = last?.brief;
+  // The match line and the routing never appear in the transcript, but they
+  // are what the visitor actually sees at the end, so the judge grades them.
+  const ending =
+    s.flow === 'dev' && last
+      ? `\nRouting: primary_path=${last.primary_path}, expert_signup=${last.expert_signup}` +
+        `\nMatch line shown to the visitor: ${last.match_intro || 'none'}` +
+        `\nMatch confidence: ${last.match_confidence || 'none'}`
+      : '';
   const v = await withRetry(() => askClaude<Verdict>({
     system: JUDGE_SYSTEM,
     messages: [
@@ -269,7 +316,7 @@ Scenario notes for you, the judge: ${s.judgeNotes}
 Transcript:
 ${renderTranscript(run.messages, run.replies)}
 
-Final brief: ${brief ? JSON.stringify(brief) : 'none'}`,
+Final brief: ${brief ? JSON.stringify(brief) : 'none'}${ending}`,
       },
     ],
     schema: VERDICT_SCHEMA,
