@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { isValidEmail } from '@/lib/email';
+import { NO_CAPTURE } from '@/lib/replay';
 
 // The main-flow email step. Collects an optional name and an email, states
 // plainly that intros come by email, and sets expectations before the
@@ -36,7 +37,7 @@ export default function IntroForm({
     <div className="intro-form">
       <div className="intro-fields">
         <input
-          className="intro-input"
+          className={`intro-input ${NO_CAPTURE}`}
           type="text"
           autoComplete="name"
           placeholder="Name (optional)"
@@ -46,6 +47,7 @@ export default function IntroForm({
         />
         <div className={`intro-email${invalid ? ' invalid' : ''}`}>
           <input
+            className={NO_CAPTURE}
             type="email"
             inputMode="email"
             autoComplete="email"
