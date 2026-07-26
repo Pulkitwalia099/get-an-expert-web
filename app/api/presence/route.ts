@@ -7,6 +7,7 @@ import { matchesOrigin } from '@/lib/sanitize';
 import { coerceBrief } from '@/lib/validate';
 
 const MAX_MESSAGE_CHARS = 600;
+const MAX_CONVERSATION_CHARS = 4_000;
 const RATE_LIMIT = 30;
 
 // Asked once, when the visitor taps the pill. Nothing is polled, so the
@@ -36,12 +37,19 @@ async function handlePresence(req: NextRequest): Promise<NextResponse> {
   const brief = coerceBrief(body.brief);
   const lastMessage =
     typeof body.lastMessage === 'string' ? body.lastMessage.slice(0, MAX_MESSAGE_CHARS) : '';
+  // Everything they have said, not only the newest line. Matching on the
+  // last message alone loses the words that identify the work, which are
+  // usually in the opening turn.
+  const conversation =
+    typeof body.conversation === 'string'
+      ? body.conversation.slice(0, MAX_CONVERSATION_CHARS)
+      : '';
   const haystack = [
     brief.expert_type,
     brief.domain,
     brief.specifics,
     brief.search_query,
-    lastMessage,
+    conversation || lastMessage,
   ]
     .filter(Boolean)
     .join(' ');

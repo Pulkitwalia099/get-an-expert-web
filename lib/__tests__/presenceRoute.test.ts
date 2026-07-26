@@ -195,3 +195,28 @@ describe('presence route guards', () => {
     expect((await POST(request({ lastMessage: 'stripe' }))).status).toBe(200);
   });
 });
+
+describe('matching uses the whole conversation', () => {
+  it('routes on words from the opening turn, not just the newest line', async () => {
+    vi.mocked(readPresence).mockResolvedValue({ pulkit: true, rohit: true });
+    // Exactly the real case: n8n named up front, last line has no keywords.
+    const res = await POST(
+      request({
+        conversation:
+          'I need to wire HubSpot into sheets with n8n and the field mapping keeps breaking \n' +
+          'deals with custom properties mostly \n' +
+          'one way into sheets for now, but it needs to run hourly without babysitting',
+        lastMessage: 'one way into sheets for now, but it needs to run hourly without babysitting',
+      }),
+    );
+    const data = await res.json();
+    expect(data.card.id).toBe('pulkit');
+    expect(data.card.tag).toBe('Workflow automation');
+  });
+
+  it('falls back to the last message when no conversation is sent', async () => {
+    vi.mocked(readPresence).mockResolvedValue({ pulkit: true, rohit: true });
+    const res = await POST(request({ lastMessage: 'my stripe webhook is dropping events' }));
+    expect((await res.json()).card.id).toBe('rohit');
+  });
+});
