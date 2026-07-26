@@ -20,6 +20,10 @@ app/api/chat/      intake questions, calls Claude
 app/api/search/    expert search, calls SerpAPI
 app/api/intros/    intro request, sends email
 app/api/report/    daily monitoring email, hit by Vercel cron (vercel.json)
+app/api/presence/  which card to show and whether that person is on
+app/api/call/      ring, status, answer, end
+app/api/operator/  flip a presence switch, guarded by OPERATOR_SECRET
+app/operator/      /operator?secret=…: both switches, ringtone, Answer
 components/        Chat, Thread, Composer, ExpertCards, IntroForm, GetUnstuck,
                    Sonar, TypingStatus, flows (per-flow copy + install targets)
 lib/               anthropic, serp, email, validate, ratelimit, insights, demo,
@@ -71,6 +75,32 @@ visitors with an LLM judge (see `evals/README.md`).
 - A visitor complaint about the chat starts with `npm run sessions` (last 10
   Supabase transcripts), and ends with a new scenario in
   `evals/scenarios.ts` that reproduces it.
+
+## The call button
+
+A "Talk to a human" pill in the chat titlebar, shown once the visitor has
+sent one message. Tapping it asks `/api/presence` once, which matches the
+brief to Pulkit or Rohit and reports whether that person is switched on. On
+means a Daily audio room plus a Telegram ring; off means a prefilled Cal.com
+picker in the same card.
+
+The pill never shows presence. A control that permanently reads "nobody is
+here" teaches people to stop looking, so the answer only appears on the card
+after the tap. Nothing is polled.
+
+Presence is manual: flip it at `/operator?secret=…` on any device. Every
+toggle expires after four hours. The secret goes in an `x-operator-secret`
+header and is stripped from the address bar on load.
+
+The roster, the credential copy and the tag keywords live in
+`lib/operators.ts`. Tag order inside each person is the priority order,
+because the first keyword hit wins. Reordering that list changes routing.
+
+A human answers this call. No copy anywhere may describe it as AI.
+
+Nothing here touches `lib/prompts.ts`, the model, `sanitizeReply` or the
+question budget, so the call button is outside the eval gate above. Do not
+run `npm run eval` for call button changes.
 
 ## Working on this repo
 

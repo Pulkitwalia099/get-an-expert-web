@@ -679,3 +679,166 @@ div.sav {
 @media (hover: hover) and (pointer: fine) {
   .legal a:hover { text-decoration: underline; }
 }
+
+/* ---------- Call: the titlebar pill ---------- */
+/* Gives away nothing about who is on. A control that permanently reads
+   "nobody is here" teaches people to stop looking. */
+.call-pill {
+  margin-left: auto; position: relative; z-index: 1;
+  border: 1px solid var(--line); cursor: pointer;
+  background: rgba(255, 255, 255, .55); color: var(--ink-2);
+  font-size: 11.5px; font-weight: 600; letter-spacing: -0.005em;
+  padding: 4px 11px; border-radius: 999px; white-space: nowrap;
+  transition: transform 160ms var(--ease-out), background 160ms ease, color 160ms ease;
+}
+.call-pill:active { transform: scale(0.97); }
+@media (hover: hover) and (pointer: fine) {
+  .call-pill:hover { background: rgba(255, 255, 255, .9); color: var(--ink); }
+}
+/* Both elements want the free space. Once the pill is there it owns the
+   push and Privacy just follows it. */
+.call-pill + .privacy-link { margin-left: 12px; }
+
+/* ---------- Call: the card ---------- */
+.call-card {
+  background: rgba(255, 255, 255, .70);
+  border: 1px solid rgba(255, 255, 255, .78);
+  outline: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  padding: 14px;
+  box-shadow: 0 10px 26px rgba(45, 32, 22, .07);
+  display: flex; flex-direction: column; gap: 11px;
+  animation: msg-in 240ms var(--ease-out);
+}
+
+.call-live {
+  align-self: flex-start;
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  color: #2E7D52; background: rgba(46, 125, 82, .1);
+  border: 1px solid rgba(46, 125, 82, .28);
+  border-radius: 999px; padding: 4px 10px;
+}
+.call-dot {
+  width: 7px; height: 7px; border-radius: 50%; flex: none;
+  background: #2E7D52; animation: call-breathe 2.4s ease-in-out infinite;
+}
+@keyframes call-breathe {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .35; }
+}
+
+.call-person { display: flex; gap: 12px; }
+.call-av {
+  flex: none; width: 50px; height: 50px; border-radius: 14px; object-fit: cover;
+  box-shadow: inset 0 0 0 1px rgba(33, 30, 26, .06);
+}
+.call-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+
+.call-top { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.call-name { font-size: 14.5px; font-weight: 600; letter-spacing: -.01em; }
+.call-li {
+  display: inline-flex; color: var(--ink-3); line-height: 0;
+  transition: color 160ms ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .call-li:hover { color: #0A66C2; }
+}
+.call-loc { font-size: 12.5px; color: var(--ink-3); margin-left: auto; }
+.call-role { font-size: 12.5px; color: var(--ink-3); }
+
+.call-cos { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 11.5px; color: var(--ink-2); }
+.call-co { display: inline-flex; align-items: center; gap: 6px; }
+.call-cos img { width: 15px; height: 15px; border-radius: 4px; object-fit: cover; }
+.call-sep { color: var(--ink-3); font-weight: 400; }
+
+.call-bot { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; margin-top: 2px; }
+.call-tag {
+  font-size: 11.5px; font-weight: 600; color: var(--accent-deep);
+  background: var(--accent-tint); border: 1px solid rgba(196, 89, 60, .22);
+  padding: 3px 9px; border-radius: 8px;
+}
+.call-rate { display: inline-flex; align-items: baseline; gap: 5px; font-size: 11.5px; color: var(--ink-2); }
+.call-star { color: var(--amber); }
+
+.call-foot { display: flex; flex-direction: column; gap: 7px; }
+
+.call-cta {
+  align-self: flex-start; border: none; cursor: pointer; position: relative;
+  overflow: hidden;
+  background: var(--accent); color: #fff;
+  font-size: 13.5px; font-weight: 600; padding: 9px 20px; border-radius: 999px;
+  box-shadow: 0 6px 16px rgba(196, 89, 60, .26);
+  transition: transform 160ms var(--ease-out), box-shadow 160ms ease;
+}
+.call-cta:active { transform: scale(0.97); }
+@media (hover: hover) and (pointer: fine) {
+  .call-cta:not(:disabled):hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 24px rgba(196, 89, 60, .3);
+  }
+}
+
+.call-cta-ringing { background: var(--amber); cursor: default; box-shadow: none; }
+.call-cta-ringing:active { transform: none; }
+/* Sixty seconds is long enough that a number alone feels stalled. The bar
+   drains at a constant rate, so linear is the honest easing here. */
+.call-progress {
+  position: absolute; inset: 0;
+  background: rgba(255, 255, 255, .26);
+  clip-path: inset(0 0 0 0);
+  animation: call-drain 60s linear forwards;
+  pointer-events: none;
+}
+@keyframes call-drain {
+  from { clip-path: inset(0 100% 0 0); }
+  to   { clip-path: inset(0 0 0 0); }
+}
+
+.call-sub { font-size: 11.5px; color: var(--ink-3); line-height: 1.45; }
+
+.booking-embed { width: 100%; min-height: 360px; overflow: auto; border-radius: 12px; }
+
+/* ---------- Operator page ---------- */
+.op-page {
+  position: relative; z-index: 1;
+  max-width: 420px; margin: 0 auto; padding: 48px 20px;
+  display: flex; flex-direction: column; gap: 12px; color: var(--ink);
+}
+.op-page h1 { font-size: 22px; font-weight: 600; letter-spacing: -.02em; margin-bottom: 4px; }
+.op-switch {
+  display: flex; justify-content: space-between; align-items: center; cursor: pointer;
+  border: 1px solid var(--line); background: rgba(255, 255, 255, .6);
+  border-radius: 14px; padding: 16px 18px; font-size: 15px; font-weight: 600;
+  color: var(--ink);
+  transition: transform 160ms var(--ease-out), background 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+.op-switch:active { transform: scale(0.98); }
+.op-switch.on { border-color: rgba(46, 125, 82, .5); background: rgba(46, 125, 82, .1); color: #2E7D52; }
+.op-answer {
+  cursor: pointer; border: none; background: var(--accent); color: #fff;
+  font-size: 16px; font-weight: 700; padding: 18px; border-radius: 14px;
+  box-shadow: 0 8px 22px rgba(196, 89, 60, .3);
+  transition: transform 160ms var(--ease-out);
+}
+.op-answer:active { transform: scale(0.98); }
+.op-error { color: var(--accent-deep); font-size: 13px; }
+
+/* The titlebar is 44px with an absolutely centred wordmark, so on a narrow
+   phone the pill and the wordmark collide. The pill wins: it is the only
+   thing there anyone can act on. */
+@media (max-width: 460px) {
+  .call-pill { font-size: 11px; padding: 4px 9px; }
+  .titlebar .wordmark { display: none; }
+}
+
+/* The embedded call. Fixed height so the card does not jump when Daily
+   swaps its internal layout mid-call. */
+.call-stage {
+  width: 100%;
+  height: 280px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, .5);
+  outline: 1px solid var(--line);
+}

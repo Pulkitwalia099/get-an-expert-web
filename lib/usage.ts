@@ -14,6 +14,12 @@ const DEFAULT_DAILY_CAPS: Record<string, number> = {
 
 export const SERP_DEFAULT_MONTHLY_CAP = 250;
 
+// Daily.co rooms per month. Their free allowance is 10,000 participant
+// minutes; a 15 minute call with two people spends about 30, so roughly 333
+// calls fit inside it. 300 leaves margin and means a busy month cannot
+// quietly turn into a bill.
+export const CALLS_DEFAULT_MONTHLY_CAP = 300;
+
 function pad(n: number): string {
   return String(n).padStart(2, '0');
 }
@@ -45,6 +51,11 @@ export function dailyCap(route: string): number {
 export function serpMonthlyCap(): number {
   const fromEnv = Number(process.env.SERPAPI_MONTHLY_CAP);
   return Number.isFinite(fromEnv) && fromEnv > 0 ? fromEnv : SERP_DEFAULT_MONTHLY_CAP;
+}
+
+export function callsMonthlyCap(): number {
+  const fromEnv = Number(process.env.CALLS_MONTHLY_CAP);
+  return Number.isFinite(fromEnv) && fromEnv > 0 ? fromEnv : CALLS_DEFAULT_MONTHLY_CAP;
 }
 
 export type LimitVerdict = 'ok' | 'ip' | 'daily';
