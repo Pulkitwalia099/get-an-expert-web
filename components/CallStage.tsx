@@ -62,6 +62,12 @@ export default function CallStage({
           showParticipantsBar: false,
           showFullscreenButton: false,
           showUserNameChangeUI: false,
+          // So the operator sees who they walked in on rather than a blank
+          // tile. The visitor is never asked to type it.
+          userName: 'Visitor',
+          // Audio only, so the loudest person is the only thing worth
+          // showing. Removes the tile grid entirely.
+          activeSpeakerMode: true,
           // Audio only. Nobody has to think about whether they are camera
           // ready, on either side of the call.
           startVideoOff: true,
