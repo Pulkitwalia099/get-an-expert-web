@@ -50,3 +50,26 @@ describe('createAudioRoom', () => {
     expect(await createAudioRoom('abc')).toBeNull();
   });
 });
+
+describe('the room has no lobby and no panels', () => {
+  it('skips the pre-join screen, so Get connected now is the last button pressed', async () => {
+    fetchMock.mockResolvedValue(
+      new Response(JSON.stringify({ url: 'https://x.daily.co/abc' }), { status: 200 }),
+    );
+    await createAudioRoom('abc');
+    const props = JSON.parse(String(fetchMock.mock.calls[0][1].body)).properties;
+    expect(props.enable_prejoin_ui).toBe(false);
+  });
+
+  it('turns off every panel that asks the visitor to decide something', async () => {
+    fetchMock.mockResolvedValue(
+      new Response(JSON.stringify({ url: 'https://x.daily.co/abc' }), { status: 200 }),
+    );
+    await createAudioRoom('abc');
+    const props = JSON.parse(String(fetchMock.mock.calls[0][1].body)).properties;
+    expect(props.enable_chat).toBe(false);
+    expect(props.enable_screenshare).toBe(false);
+    expect(props.enable_video_processing_ui).toBe(false);
+    expect(props.enable_people_ui).toBe(false);
+  });
+});

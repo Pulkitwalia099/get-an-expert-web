@@ -26,8 +26,22 @@ export async function createAudioRoom(callId: string): Promise<string | null> {
           // about whether they are camera ready.
           start_video_off: true,
           start_audio_off: false,
+
+          // No lobby. Daily's pre-join screen asks a visitor to pick a
+          // camera and a mic and then press Join, which is three decisions
+          // and a second button after they already pressed Get connected
+          // now. They go straight into the room instead.
+          enable_prejoin_ui: false,
+
+          // Every other panel that invites a decision. None of them belong
+          // on a fifteen minute audio call with a stranger.
           enable_chat: false,
           enable_screenshare: false,
+          enable_video_processing_ui: false,
+          enable_people_ui: false,
+          enable_network_ui: false,
+          enable_noise_cancellation_ui: false,
+
           exp: Math.floor(Date.now() / 1000) + ROOM_MINUTES * 60,
         },
       }),
