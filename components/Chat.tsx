@@ -137,6 +137,27 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
         setBrief(data.brief);
         void search.runSearch(data.brief);
       }
+
+      // The offer to talk to a human, made by the agent in the thread rather
+      // than parked in the chrome. A finished brief always earns one, because
+      // that is the moment someone is choosing how to proceed. Otherwise the
+      // trigger is engagement or distress. An expert applying for work never
+      // gets it: they are not here to hire anyone.
+      const finished = data.done && !data.expert_signup;
+      const wanted =
+        !data.expert_signup &&
+        (finished ||
+          shouldOfferHuman({
+            text,
+            userTurns: userTurns.current,
+            alreadyOffered: offered,
+          }));
+
+      if (wanted && !offered) {
+        setOffered(true);
+        say('Want to talk it through with someone who has done this before?');
+        void openCall();
+      }
     } catch {
       setTyping(false);
       push({ role: 'ai', text: 'Hit a snag.', retry: true });
