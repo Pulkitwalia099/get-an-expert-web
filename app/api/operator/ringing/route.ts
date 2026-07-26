@@ -20,7 +20,8 @@ const WINDOW_MS = 90_000;
 
 async function handleGet(req: NextRequest): Promise<NextResponse> {
   const expected = process.env.OPERATOR_SECRET;
-  const given = req.nextUrl.searchParams.get('secret');
+  // Header, never the query string: this response carries a Daily join url.
+  const given = req.headers.get('x-operator-secret');
   if (!expected || given !== expected) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }

@@ -55,18 +55,26 @@ async function handlePost(req: NextRequest): Promise<NextResponse> {
     const id = typeof body.callId === 'string' ? body.callId : '';
     if (!id) return NextResponse.json({ error: 'Missing callId' }, { status: 400 });
     const missed = body.missed === true;
+
+    // Everything needed to edit the Telegram message comes from the row,
+    // never from the request. Message ids are small sequential integers,
+    // so accepting a client-supplied one would let anyone rewrite the
+    // bot's history by guessing. The callId is a uuid, so holding one is
+    // itself proof of having started that call.
+    const row = await readCall(id);
+    if (!row) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
+    // Only a call still ringing can be missed. Without this an attacker
+    // replaying an old callId could rewrite a message long after the fact.
+    const wasRinging = row.status === 'ringing';
     await endCall(id, missed ? 'missed' : 'ended');
-    // A missed call leaves a Telegram message inviting you into a room
-    // nobody is in. Edit it so a late tap does not land in an empty call.
-    if (missed) {
-      const messageId = typeof body.messageId === 'number' ? body.messageId : null;
-      if (messageId !== null && isOperatorId(body.operatorId)) {
-        await editRing(
-          body.operatorId,
-          messageId,
-          'They gave up waiting and booked a time instead.',
-        );
-      }
+
+    if (missed && wasRinging && row.telegram_message_id !== null && isOperatorId(row.operator_id)) {
+      await editRing(
+        row.operator_id,
+        row.telegram_message_id,
+        'They gave up waiting and booked a time instead.',
+      );
     }
     return NextResponse.json({ ok: true });
   }
@@ -107,13 +115,14 @@ async function handlePost(req: NextRequest): Promise<NextResponse> {
     typeof body.lastMessage === 'string' ? body.lastMessage.slice(0, MAX_MESSAGE_CHARS) : '';
   const summary = buildSummary(coerceBrief(body.brief), lastMessage);
 
-  await createCall({ id: callId, sessionId, operatorId, roomUrl, summary });
-  const messageId = await sendRing(operatorId, summary, roomUrl);
+  // Ring before the row is written, so the message id lands in the row
+  // rather than coming back through the browser later.
+  const telegramMessageId = await sendRing(operatorId, summary, roomUrl);
+  await createCall({ id: callId, sessionId, operatorId, roomUrl, summary, telegramMessageId });
 
   return NextResponse.json({
     callId,
     roomUrl,
-    messageId,
     operator: OPERATORS[operatorId].name,
   });
 }

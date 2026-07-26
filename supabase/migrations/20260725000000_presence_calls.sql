@@ -29,6 +29,10 @@ create table calls (
   status        text not null check (status in ('ringing', 'answered', 'missed', 'ended')),
   summary       text,
   visitor_name  text,
+  -- The Telegram message this call rang out on. Stored rather than passed
+  -- back by the browser: message ids are small sequential integers, so a
+  -- client-supplied one lets anyone rewrite the bot's history.
+  telegram_message_id bigint,
   created_at    timestamptz not null default now(),
   answered_at   timestamptz,
   ended_at      timestamptz

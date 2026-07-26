@@ -1,8 +1,17 @@
 'use client';
 
-// The Mac window chrome: lights, wordmark, and the privacy link. Static, and
-// the only per-flow part is the small tag beside the wordmark.
-export default function Titlebar({ tag }: { tag: string | null }) {
+import type { ReactNode } from 'react';
+
+// The Mac window chrome: lights, wordmark, an optional action, and the
+// privacy link. Static, and the only per-flow part is the small tag beside
+// the wordmark.
+export default function Titlebar({
+  tag,
+  action,
+}: {
+  tag: string | null;
+  action?: ReactNode;
+}) {
   return (
     <div className="titlebar">
       <div className="lights">
@@ -14,6 +23,7 @@ export default function Titlebar({ tag }: { tag: string | null }) {
         <span className="worb">✳︎</span>midsesh
         {tag && <span className="tag">{tag}</span>}
       </div>
+      {action}
       <a className="privacy-link" href="/privacy">
         Privacy
       </a>

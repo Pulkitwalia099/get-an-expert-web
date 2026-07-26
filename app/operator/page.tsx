@@ -2,8 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-// Both switches on one screen, because both people share a device. The
-// secret comes from the query string: /operator?secret=…
+// Both switches on one screen, because both people share a device.
+//
+// The secret arrives once in the address as /operator?secret=… so the page
+// stays bookmarkable, then it is stripped from the URL and kept in memory.
+// Every request sends it as a header. A secret left in the query string
+// ends up in browser history, in server access logs, and in the Referer
+// header sent to Daily when the call opens.
 //
 // This page also rings. It polls for a ringing call every five seconds so
 // whoever has it open hears the call even if Telegram is muted.
@@ -16,6 +21,8 @@ const NAMES: Record<keyof Presence, string> = { pulkit: 'Pulkit', rohit: 'Rohit'
 
 const POLL_MS = 5_000;
 
+const SECRET_HEADER = 'x-operator-secret';
+
 export default function OperatorPage() {
   const [secret, setSecret] = useState('');
   const [presence, setPresence] = useState<Presence | null>(null);
@@ -27,13 +34,22 @@ export default function OperatorPage() {
   // the instruction below is what a bare /operator shows and there is
   // nothing to mismatch on hydration.
   useEffect(() => {
-    setSecret(new URLSearchParams(window.location.search).get('secret') ?? '');
+    const params = new URLSearchParams(window.location.search);
+    const found = params.get('secret') ?? '';
+    setSecret(found);
+    if (found) {
+      // Out of the address bar straight away. Nothing on this page needs it
+      // to stay there, and leaving it there is what leaks it.
+      params.delete('secret');
+      const rest = params.toString();
+      window.history.replaceState(null, '', `${window.location.pathname}${rest ? `?${rest}` : ''}`);
+    }
   }, []);
 
   const load = useCallback(async () => {
     if (!secret) return;
     try {
-      const res = await fetch(`/api/operator?secret=${encodeURIComponent(secret)}`);
+      const res = await fetch('/api/operator', { headers: { [SECRET_HEADER]: secret } });
       if (!res.ok) {
         setError('That link is not valid.');
         return;
@@ -54,8 +70,8 @@ export default function OperatorPage() {
     try {
       const res = await fetch('/api/operator', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ secret, operatorId: id, online }),
+        headers: { 'Content-Type': 'application/json', [SECRET_HEADER]: secret },
+        body: JSON.stringify({ operatorId: id, online }),
       });
       if (!res.ok) {
         setError('Could not change that.');
@@ -75,7 +91,9 @@ export default function OperatorPage() {
     if (!secret) return;
     const timer = setInterval(async () => {
       try {
-        const res = await fetch(`/api/operator/ringing?secret=${encodeURIComponent(secret)}`);
+        const res = await fetch('/api/operator/ringing', {
+          headers: { [SECRET_HEADER]: secret },
+        });
         if (!res.ok) return;
         const data = (await res.json()) as { call: Ringing | null };
         setRinging(data.call);
@@ -102,11 +120,15 @@ export default function OperatorPage() {
       setError('Could not pick that up.');
       return;
     }
-    window.open(ringing.roomUrl, '_blank', 'noopener');
+    // noreferrer as well as noopener: without it Daily receives the
+    // operator page URL in the Referer header.
+    window.open(ringing.roomUrl, '_blank', 'noopener,noreferrer');
     setRinging(null);
   }
 
-  if (!secret) return <main className="op-page">Add ?secret= to the address.</main>;
+  if (!secret) {
+    return <main className="op-page">Open this with ?secret= on the end of the address.</main>;
+  }
 
   return (
     <main className="op-page">

@@ -10,14 +10,19 @@ import { GET, POST } from '@/app/api/operator/route';
 import { GET as RINGING } from '@/app/api/operator/ringing/route';
 import type { NextRequest } from 'next/server';
 
-function post(body: object): NextRequest {
-  return { json: async () => body } as unknown as NextRequest;
+// The secret travels in a header now, never in the body or the query
+// string, so every helper here builds one.
+function post(body: object, secret: string | null = 'let-me-in'): NextRequest {
+  const headers = new Headers();
+  if (secret !== null) headers.set('x-operator-secret', secret);
+  return { headers, json: async () => body } as unknown as NextRequest;
 }
 
 function get(path: string, secret: string | null): NextRequest {
   const url = new URL(`https://midsesh.com${path}`);
-  if (secret !== null) url.searchParams.set('secret', secret);
-  return { nextUrl: url } as unknown as NextRequest;
+  const headers = new Headers();
+  if (secret !== null) headers.set('x-operator-secret', secret);
+  return { nextUrl: url, headers } as unknown as NextRequest;
 }
 
 beforeEach(() => {
@@ -34,44 +39,44 @@ afterEach(() => {
 
 describe('POST /api/operator', () => {
   it('flips a switch with the right secret', async () => {
-    const res = await POST(post({ secret: 'let-me-in', operatorId: 'pulkit', online: true }));
+    const res = await POST(post({ operatorId: 'pulkit', online: true }));
     expect(res.status).toBe(200);
     expect(setPresence).toHaveBeenCalledWith('pulkit', true);
   });
 
   it('switches someone off when online is false', async () => {
-    await POST(post({ secret: 'let-me-in', operatorId: 'rohit', online: false }));
+    await POST(post({ operatorId: 'rohit', online: false }));
     expect(setPresence).toHaveBeenCalledWith('rohit', false);
   });
 
   it('returns the presence map so the page can render', async () => {
-    const res = await POST(post({ secret: 'let-me-in', operatorId: 'pulkit', online: true }));
+    const res = await POST(post({ operatorId: 'pulkit', online: true }));
     expect(await res.json()).toMatchObject({ presence: { pulkit: false, rohit: true } });
   });
 
   it('401s a wrong secret and changes nothing', async () => {
-    const res = await POST(post({ secret: 'nope', operatorId: 'pulkit', online: true }));
+    const res = await POST(post({ operatorId: 'pulkit', online: true }, 'nope'));
     expect(res.status).toBe(401);
     expect(setPresence).not.toHaveBeenCalled();
   });
 
   it('401s a secret that only starts with the right one', async () => {
     const res = await POST(
-      post({ secret: 'let-me-in-please', operatorId: 'pulkit', online: true }),
+      post({ operatorId: 'pulkit', online: true }, 'let-me-in-please'),
     );
     expect(res.status).toBe(401);
     expect(setPresence).not.toHaveBeenCalled();
   });
 
-  it('401s a non string secret, so true is not a password', async () => {
-    const res = await POST(post({ secret: true, operatorId: 'pulkit', online: true }));
+  it('401s a missing header, so an absent secret is not a password', async () => {
+    const res = await POST(post({ operatorId: 'pulkit', online: true }, null));
     expect(res.status).toBe(401);
     expect(setPresence).not.toHaveBeenCalled();
   });
 
   it('401s when the secret env var is empty, rather than allowing everyone', async () => {
     vi.stubEnv('OPERATOR_SECRET', '');
-    const res = await POST(post({ secret: '', operatorId: 'pulkit', online: true }));
+    const res = await POST(post({ operatorId: 'pulkit', online: true }, ''));
     expect(res.status).toBe(401);
     expect(setPresence).not.toHaveBeenCalled();
   });
@@ -79,28 +84,29 @@ describe('POST /api/operator', () => {
   it('401s when the secret env var is unset entirely', async () => {
     vi.stubEnv('OPERATOR_SECRET', undefined);
     for (const secret of ['', 'anything', 'undefined']) {
-      const res = await POST(post({ secret, operatorId: 'pulkit', online: true }));
+      const res = await POST(post({ operatorId: 'pulkit', online: true }, secret));
       expect(res.status).toBe(401);
     }
-    const missing = await POST(post({ operatorId: 'pulkit', online: true }));
+    const missing = await POST(post({ operatorId: 'pulkit', online: true }, null));
     expect(missing.status).toBe(401);
     expect(setPresence).not.toHaveBeenCalled();
   });
 
   it('400s an unknown operator', async () => {
-    const res = await POST(post({ secret: 'let-me-in', operatorId: 'mallory', online: true }));
+    const res = await POST(post({ operatorId: 'mallory', online: true }));
     expect(res.status).toBe(400);
     expect(setPresence).not.toHaveBeenCalled();
   });
 
   it('400s a missing operator id', async () => {
-    const res = await POST(post({ secret: 'let-me-in', online: true }));
+    const res = await POST(post({ online: true }));
     expect(res.status).toBe(400);
     expect(setPresence).not.toHaveBeenCalled();
   });
 
   it('400s a body that is not JSON', async () => {
     const req = {
+      headers: new Headers({ 'x-operator-secret': 'let-me-in' }),
       json: async () => {
         throw new SyntaxError('bad json');
       },

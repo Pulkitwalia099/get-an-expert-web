@@ -16,6 +16,7 @@ export interface CallRow {
   status: 'ringing' | 'answered' | 'missed' | 'ended';
   room_url: string | null;
   operator_id: string | null;
+  telegram_message_id: number | null;
 }
 
 function config(): { url: string; key: string } | null {
@@ -39,6 +40,7 @@ export async function createCall(row: {
   operatorId: OperatorId;
   roomUrl: string;
   summary: string;
+  telegramMessageId: number | null;
 }): Promise<void> {
   const cfg = config();
   if (!cfg) return;
@@ -52,6 +54,7 @@ export async function createCall(row: {
         operator_id: row.operatorId,
         room_url: row.roomUrl,
         summary: row.summary,
+        telegram_message_id: row.telegramMessageId,
         status: 'ringing',
       }),
       signal: AbortSignal.timeout(TIMEOUT_MS),
@@ -64,7 +67,7 @@ export async function createCall(row: {
 export async function readCall(id: string): Promise<CallRow | null> {
   const rows = await selectRows<CallRow>(
     'calls',
-    `id=eq.${encodeURIComponent(id)}&select=id,status,room_url,operator_id&limit=1`,
+    `id=eq.${encodeURIComponent(id)}&select=id,status,room_url,operator_id,telegram_message_id&limit=1`,
   );
   return rows?.[0] ?? null;
 }

@@ -2,9 +2,12 @@
 
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import { track } from '@/lib/analytics';
+import { buildCalPrefill } from '@/lib/calLink';
 import { trimHistory } from '@/lib/history';
 import { newSessionId } from '@/lib/session';
 import type { ApiRole, Brief, ChatReply, MatchConfidence, PrimaryPath } from '@/lib/types';
+import CallCard, { type CallState, type OperatorCard } from '@/components/CallCard';
+import CallPill from '@/components/CallPill';
 import Composer from '@/components/Composer';
 import ExpertSignup from '@/components/ExpertSignup';
 import { FLOWS, type Flow } from '@/components/flows';
@@ -17,6 +20,10 @@ import Thread, { type Msg } from '@/components/Thread';
 import Titlebar from '@/components/Titlebar';
 import { useExpertSearch } from '@/components/useExpertSearch';
 import WelcomeScreen from '@/components/WelcomeScreen';
+
+// Matches RING_SECONDS in app/api/call/route.ts. Long enough to walk back
+// to the desk, short enough that nobody sits watching a dead countdown.
+const RING_SECONDS = 60;
 
 export default function Chat({ flow = 'main' }: { flow?: Flow }) {
   const config = FLOWS[flow];
@@ -31,6 +38,15 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
   const [matchIntro, setMatchIntro] = useState('');
   const [matchConfidence, setMatchConfidence] = useState<MatchConfidence>('');
   const [primaryPath, setPrimaryPath] = useState<PrimaryPath>('session');
+
+  // The call sits beside the conversation. The pill is in the titlebar once
+  // they have said something, and the card drops under the thread when they
+  // tap it. Null card means they have not asked yet.
+  const [card, setCard] = useState<OperatorCard | null>(null);
+  const [callState, setCallState] = useState<CallState>('booking');
+  const [secondsLeft, setSecondsLeft] = useState(RING_SECONDS);
+  const callIdRef = useRef<string | null>(null);
+  const lastUserMsg = useRef('');
 
   const idRef = useRef(0);
   const sessionIdRef = useRef('');
@@ -84,6 +100,7 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
     if (!retry) {
       // First real turn of the visit: the top of the engagement funnel.
       if (apiMsgs.current.length === 0) track('first_message_sent', { flow });
+      lastUserMsg.current = text;
       push({ role: 'user', text });
       apiMsgs.current = trimHistory([...apiMsgs.current, { role: 'user', content: text }]);
       if (phase === 'welcome' || phase === 'done') setPhase('chat');
@@ -148,6 +165,103 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
     setPhase('chat');
   }
 
+  // One request, made only when they tap. Nothing is polled, so the chat
+  // never advertises an empty room.
+  async function openCall() {
+    try {
+      const res = await fetch('/api/presence', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ brief, lastMessage: lastUserMsg.current }),
+      });
+      if (!res.ok) throw new Error(`presence ${res.status}`);
+      const data = (await res.json()) as { online: boolean; card: OperatorCard };
+      setCard(data.card);
+      setCallState(data.online ? 'live' : 'booking');
+      track('call_card_opened', { flow, online: data.online, operator: data.card.id });
+    } catch {
+      push({ role: 'ai', text: 'Could not check that. Try again in a moment.' });
+    }
+  }
+
+  async function startRing() {
+    if (!card) return;
+    setCallState('ringing');
+    setSecondsLeft(RING_SECONDS);
+    track('call_ring_started', { flow, operator: card.id });
+    try {
+      const res = await fetch('/api/call', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'ring',
+          operatorId: card.id,
+          sessionId: sessionIdRef.current,
+          brief,
+          lastMessage: lastUserMsg.current,
+        }),
+      });
+      if (!res.ok) throw new Error(`ring ${res.status}`);
+      callIdRef.current = ((await res.json()) as { callId: string }).callId;
+    } catch {
+      // Whatever went wrong, the honest answer is the booking picker.
+      callIdRef.current = null;
+      setCallState('booking');
+    }
+  }
+
+  // The countdown and the answer poll are one effect: both only run while
+  // ringing, and both must stop the moment it resolves either way.
+  useEffect(() => {
+    if (callState !== 'ringing') return;
+    const started = Date.now();
+    let stopped = false;
+
+    const timer = setInterval(async () => {
+      if (stopped) return;
+      const left = RING_SECONDS - Math.floor((Date.now() - started) / 1000);
+      setSecondsLeft(left > 0 ? left : 0);
+
+      const id = callIdRef.current;
+      if (id) {
+        try {
+          const res = await fetch(`/api/call?id=${encodeURIComponent(id)}`);
+          if (res.ok) {
+            const data = (await res.json()) as { status: string; roomUrl: string | null };
+            if (data.status === 'answered' && data.roomUrl) {
+              stopped = true;
+              window.open(data.roomUrl, '_blank', 'noopener,noreferrer');
+              setCallState('live');
+              track('call_answered', { flow });
+              return;
+            }
+          }
+        } catch {
+          // A dropped poll costs nothing. The next one is two seconds away,
+          // and the countdown still ends this on its own.
+        }
+      }
+
+      if (left <= 0) {
+        stopped = true;
+        setCallState('booking');
+        track('call_missed', { flow });
+        if (id) {
+          void fetch('/api/call', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'end', callId: id, missed: true }),
+          });
+        }
+      }
+    }, 2_000);
+
+    return () => {
+      stopped = true;
+      clearInterval(timer);
+    };
+  }, [callState, flow]);
+
   function onSubmit(e: FormEvent) {
     e.preventDefault();
     const text = input.trim();
@@ -162,6 +276,9 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
 
   const lastMsgId = msgs.length > 0 ? msgs[msgs.length - 1].id : 0;
   const answering = phase === 'chat' && !typing;
+  // The pill waits for one message, so nobody rings with no context. Derived
+  // from the thread rather than a ref, so it re-renders when it flips.
+  const hasSpoken = msgs.some((m) => m.role === 'user');
 
   return (
     <>
@@ -169,7 +286,10 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
       <div className="grain" />
       <main className="page">
         <section className="window">
-          <Titlebar tag={config.tag} />
+          <Titlebar
+            tag={config.tag}
+            action={hasSpoken ? <CallPill onTap={() => void openCall()} /> : null}
+          />
 
           <div className="chat" ref={scrollRef}>
             {phase === 'welcome' ? (
@@ -239,6 +359,16 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
                     onRefine={startRefine}
                     onSubmit={search.submitIntro}
                     onMore={startMore}
+                  />
+                )}
+
+                {card && (
+                  <CallCard
+                    card={card}
+                    state={callState}
+                    secondsLeft={secondsLeft}
+                    prefill={buildCalPrefill(card.id, brief, lastUserMsg.current, {})}
+                    onCall={() => void startRing()}
                   />
                 )}
               </div>

@@ -10,6 +10,8 @@ function isOperatorId(v: unknown): v is OperatorId {
   return v === 'pulkit' || v === 'rohit';
 }
 
+const SECRET_HEADER = 'x-operator-secret';
+
 function authorised(secret: unknown): boolean {
   const expected = process.env.OPERATOR_SECRET;
   // Boolean(expected) first, so an empty or missing env var can never be
@@ -24,7 +26,7 @@ async function handlePost(req: NextRequest): Promise<NextResponse> {
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
-  if (!authorised(body.secret)) {
+  if (!authorised(req.headers.get(SECRET_HEADER))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   if (!isOperatorId(body.operatorId)) {
@@ -35,7 +37,7 @@ async function handlePost(req: NextRequest): Promise<NextResponse> {
 }
 
 async function handleGet(req: NextRequest): Promise<NextResponse> {
-  if (!authorised(req.nextUrl.searchParams.get('secret'))) {
+  if (!authorised(req.headers.get(SECRET_HEADER))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   return NextResponse.json({ presence: await readPresence() });
