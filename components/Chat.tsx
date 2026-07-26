@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { track } from '@/lib/analytics';
 import { buildCalPrefill } from '@/lib/calLink';
 import { trimHistory } from '@/lib/history';
@@ -268,7 +268,6 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
             const data = (await res.json()) as { status: string; roomUrl: string | null };
             if (data.status === 'answered' && data.roomUrl) {
               stopped = true;
-              // The call mounts inside the card. They never leave the chat.
               setRoomUrl(data.roomUrl);
               setCallState('incall');
               track('call_answered', { flow });
@@ -301,9 +300,29 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
     };
   }, [callState, flow]);
 
+  // Daily saw a second person in the room. That is the ground truth for a
+  // connected call, and it covers the operator arriving through the Telegram
+  // link, which never touches our API. The row is marked answered here so
+  // the records match what actually happened.
+  // Memoised on purpose. CallStage keys its effect on these, and a new
+  // function identity every render would tear the Daily frame down and
+  // rejoin it on a loop.
+  const remoteJoined = useCallback(() => {
+    setCallState((prev) => (prev === 'ringing' ? 'incall' : prev));
+    const id = callIdRef.current;
+    if (id) {
+      void fetch('/api/call', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'answer', callId: id }),
+      });
+    }
+    track('call_answered', { flow });
+  }, [flow]);
+
   // Either side can end it. Daily reports the visitor leaving; the row is
   // closed so the operator page stops offering a call nobody is in.
-  function endCall() {
+  const endCall = useCallback(() => {
     const id = callIdRef.current;
     setCallState('live');
     setRoomUrl(null);
@@ -316,7 +335,7 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
       });
     }
     track('call_ended', { flow });
-  }
+  }, [flow]);
 
   function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -429,6 +448,7 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
                     roomUrl={roomUrl}
                     onCall={() => void startRing()}
                     onLeave={endCall}
+                    onRemoteJoined={remoteJoined}
                   />
                 )}
               </div>
