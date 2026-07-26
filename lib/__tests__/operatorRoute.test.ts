@@ -32,7 +32,7 @@ function get(path: string, secret: string | null): NextRequest {
 beforeEach(() => {
   vi.stubEnv('OPERATOR_SECRET', 'let-me-in');
   vi.mocked(readPresence).mockResolvedValue({ pulkit: false, rohit: true });
-  vi.mocked(setPresence).mockResolvedValue(undefined);
+  vi.mocked(setPresence).mockResolvedValue(true);
   vi.mocked(selectRows).mockResolvedValue([]);
 });
 
@@ -214,5 +214,21 @@ describe('GET /api/operator/ringing', () => {
     vi.stubEnv('OPERATOR_SECRET', '');
     expect((await RINGING(get('/api/operator/ringing', ''))).status).toBe(401);
     expect(selectRows).not.toHaveBeenCalled();
+  });
+});
+
+describe('a switch that does not move', () => {
+  it('503s rather than reporting ok when no row was updated', async () => {
+    vi.mocked(setPresence).mockResolvedValue(false);
+    const res = await POST(post({ operatorId: 'pulkit', online: true }));
+    expect(res.status).toBe(503);
+    const body = await res.json();
+    expect(body.error).toMatch(/did not move/i);
+  });
+
+  it('still reports the presence map so the page can correct itself', async () => {
+    vi.mocked(setPresence).mockResolvedValue(false);
+    const res = await POST(post({ operatorId: 'pulkit', online: true }));
+    expect((await res.json()).presence).toEqual({ pulkit: false, rohit: true });
   });
 });

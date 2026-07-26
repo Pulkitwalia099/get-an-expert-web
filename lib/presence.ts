@@ -50,10 +50,16 @@ export async function readPresence(): Promise<Record<OperatorId, boolean>> {
   return out;
 }
 
-export async function setPresence(id: OperatorId, online: boolean): Promise<void> {
+/**
+ * Returns false when the switch did not move. A PATCH filtered on a row that
+ * does not exist updates nothing and still answers 204, so without asking
+ * for the rows back this reports success while doing nothing. That is how a
+ * missing seed row turns into a switch that silently refuses to flip.
+ */
+export async function setPresence(id: OperatorId, online: boolean): Promise<boolean> {
   const url = process.env.SUPABASE_URL?.replace(/\/+$/, '');
   const key = process.env.SUPABASE_SECRET_KEY;
-  if (!url || !key) return;
+  if (!url || !key) return false;
   const expiresAt = online
     ? new Date(Date.now() + PRESENCE_HOURS * 3_600_000).toISOString()
     : null;
@@ -64,7 +70,7 @@ export async function setPresence(id: OperatorId, online: boolean): Promise<void
         apikey: key,
         Authorization: `Bearer ${key}`,
         'Content-Type': 'application/json',
-        Prefer: 'return=minimal',
+        Prefer: 'return=representation',
       },
       body: JSON.stringify({
         online,
@@ -75,8 +81,19 @@ export async function setPresence(id: OperatorId, online: boolean): Promise<void
     });
     if (!res.ok) {
       console.error('[midsesh:presence] toggle failed', res.status, await res.text());
+      return false;
     }
+    const rows = (await res.json()) as unknown[];
+    if (!Array.isArray(rows) || rows.length === 0) {
+      console.error(
+        `[midsesh:presence] no row for '${id}'. The migration seed did not run: ` +
+          `insert into operator_presence (id) values ('pulkit'), ('rohit');`,
+      );
+      return false;
+    }
+    return true;
   } catch (err) {
     console.error('[midsesh:presence] toggle failed', err);
+    return false;
   }
 }

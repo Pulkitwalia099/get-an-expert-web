@@ -125,7 +125,8 @@ export default function OperatorPage() {
         body: JSON.stringify({ operatorId: id, online }),
       });
       if (!res.ok) {
-        setError('Could not change that.');
+        const detail = await res.json().catch(() => null);
+        setError(detail?.error ?? 'Could not change that.');
         void load();
         return;
       }

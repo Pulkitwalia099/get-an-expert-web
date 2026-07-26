@@ -26,7 +26,18 @@ async function handlePost(req: NextRequest): Promise<NextResponse> {
   if (!isOperatorId(body.operatorId)) {
     return NextResponse.json({ error: 'Unknown operator' }, { status: 400 });
   }
-  await setPresence(body.operatorId, body.online === true);
+  const moved = await setPresence(body.operatorId, body.online === true);
+  if (!moved) {
+    // Saying ok while the switch did not move is how someone ends up
+    // tapping a dead control and blaming their phone.
+    return NextResponse.json(
+      {
+        error: 'That switch did not move. The operator row is missing or Supabase is unreachable.',
+        presence: await readPresence(),
+      },
+      { status: 503 },
+    );
+  }
   return NextResponse.json({ ok: true, presence: await readPresence() });
 }
 
