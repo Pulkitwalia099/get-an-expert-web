@@ -10,13 +10,17 @@ import { isAuthorised } from '@/lib/operatorAuth';
 // Supabase host so a wrong project is obvious. Behind the operator secret,
 // because it describes internal wiring.
 
+interface TableProbe {
+  status: number | null;
+  rowCount: number | null;
+  error: string | null;
+}
+
 interface Report {
   configured: boolean;
   host: string | null;
-  status: number | null;
-  rowCount: number | null;
+  tables: Record<string, TableProbe>;
   ids: string[];
-  body: string | null;
 }
 
 async function handleGet(req: NextRequest): Promise<NextResponse> {
@@ -30,34 +34,38 @@ async function handleGet(req: NextRequest): Promise<NextResponse> {
   const report: Report = {
     configured: Boolean(url && key),
     host: url ? new URL(url).host : null,
-    status: null,
-    rowCount: null,
+    tables: {},
     ids: [],
-    body: null,
   };
 
   if (!url || !key) return NextResponse.json(report);
 
-  try {
-    const res = await fetch(`${url}/rest/v1/operator_presence?select=id,online,expires_at`, {
-      headers: { apikey: key, Authorization: `Bearer ${key}` },
-      signal: AbortSignal.timeout(5_000),
-    });
-    report.status = res.status;
-    const text = await res.text();
-
-    if (!res.ok) {
-      // The message matters here. A stale PostgREST schema cache says the
-      // relation does not exist even though the table is right there.
-      report.body = text.slice(0, 300);
-      return NextResponse.json(report);
+  // sessions predates this work and is written on every chat message. If it
+  // answers and operator_presence does not, the credentials and the project
+  // are right and the problem is that one table. If neither answers, this is
+  // not the project the migration ran in.
+  for (const table of ['sessions', 'operator_presence', 'calls']) {
+    const probe: TableProbe = { status: null, rowCount: null, error: null };
+    try {
+      const res = await fetch(`${url}/rest/v1/${table}?select=*&limit=5`, {
+        headers: { apikey: key, Authorization: `Bearer ${key}` },
+        signal: AbortSignal.timeout(5_000),
+      });
+      probe.status = res.status;
+      const text = await res.text();
+      if (!res.ok) {
+        probe.error = text.slice(0, 200);
+      } else {
+        const rows = JSON.parse(text) as Record<string, unknown>[];
+        probe.rowCount = Array.isArray(rows) ? rows.length : null;
+        if (table === 'operator_presence' && Array.isArray(rows)) {
+          report.ids = rows.map((r) => String(r.id));
+        }
+      }
+    } catch (err) {
+      probe.error = String(err).slice(0, 200);
     }
-
-    const rows = JSON.parse(text) as { id: string }[];
-    report.rowCount = Array.isArray(rows) ? rows.length : null;
-    report.ids = Array.isArray(rows) ? rows.map((r) => r.id) : [];
-  } catch (err) {
-    report.body = String(err).slice(0, 300);
+    report.tables[table] = probe;
   }
 
   return NextResponse.json(report);
