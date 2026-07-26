@@ -12,17 +12,21 @@ import type { NextRequest } from 'next/server';
 
 // The secret travels in a header now, never in the body or the query
 // string, so every helper here builds one.
+// A real NextRequest always carries cookies, and auth now checks them as a
+// second way in, so every fake request needs the shape.
+const noCookies = { get: () => undefined };
+
 function post(body: object, secret: string | null = 'let-me-in'): NextRequest {
   const headers = new Headers();
   if (secret !== null) headers.set('x-operator-secret', secret);
-  return { headers, json: async () => body } as unknown as NextRequest;
+  return { headers, cookies: noCookies, json: async () => body } as unknown as NextRequest;
 }
 
 function get(path: string, secret: string | null): NextRequest {
   const url = new URL(`https://midsesh.com${path}`);
   const headers = new Headers();
   if (secret !== null) headers.set('x-operator-secret', secret);
-  return { nextUrl: url, headers } as unknown as NextRequest;
+  return { nextUrl: url, headers, cookies: noCookies } as unknown as NextRequest;
 }
 
 beforeEach(() => {
@@ -107,6 +111,7 @@ describe('POST /api/operator', () => {
   it('400s a body that is not JSON', async () => {
     const req = {
       headers: new Headers({ 'x-operator-secret': 'let-me-in' }),
+      cookies: noCookies,
       json: async () => {
         throw new SyntaxError('bad json');
       },

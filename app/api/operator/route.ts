@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withMetrics } from '@/lib/metrics';
 import type { OperatorId } from '@/lib/operators';
+import { isAuthorised } from '@/lib/operatorAuth';
 import { readPresence, setPresence } from '@/lib/presence';
 
 // One shared secret for one shared device. An unset secret denies
@@ -10,14 +11,7 @@ function isOperatorId(v: unknown): v is OperatorId {
   return v === 'pulkit' || v === 'rohit';
 }
 
-const SECRET_HEADER = 'x-operator-secret';
 
-function authorised(secret: unknown): boolean {
-  const expected = process.env.OPERATOR_SECRET;
-  // Boolean(expected) first, so an empty or missing env var can never be
-  // matched by an empty supplied secret.
-  return Boolean(expected) && typeof secret === 'string' && secret === expected;
-}
 
 async function handlePost(req: NextRequest): Promise<NextResponse> {
   let body: Record<string, unknown>;
@@ -26,7 +20,7 @@ async function handlePost(req: NextRequest): Promise<NextResponse> {
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
-  if (!authorised(req.headers.get(SECRET_HEADER))) {
+  if (!isAuthorised(req)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   if (!isOperatorId(body.operatorId)) {
@@ -37,7 +31,7 @@ async function handlePost(req: NextRequest): Promise<NextResponse> {
 }
 
 async function handleGet(req: NextRequest): Promise<NextResponse> {
-  if (!authorised(req.headers.get(SECRET_HEADER))) {
+  if (!isAuthorised(req)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   return NextResponse.json({ presence: await readPresence() });

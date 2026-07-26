@@ -842,3 +842,27 @@ div.sav {
   background: rgba(255, 255, 255, .5);
   outline: 1px solid var(--line);
 }
+
+/* Operator sign in */
+.op-login { display: flex; flex-direction: column; gap: 10px; }
+.op-input {
+  border: 1px solid var(--line); border-radius: 14px;
+  background: rgba(255, 255, 255, .7);
+  padding: 15px 16px; font-size: 16px; color: var(--ink);
+  outline: none;
+  transition: border-color 160ms var(--ease-out), background 160ms ease;
+}
+.op-input::placeholder { color: var(--ink-3); }
+.op-input:focus { border-color: var(--accent); background: rgba(255, 255, 255, .9); }
+.op-answer:disabled { opacity: .45; cursor: default; }
+.op-answer:disabled:active { transform: none; }
+.op-note { font-size: 12.5px; color: var(--ink-3); line-height: 1.5; }
+.op-signout {
+  align-self: flex-start; margin-top: 6px;
+  border: none; background: none; cursor: pointer;
+  font-size: 12.5px; color: var(--ink-3); text-decoration: underline;
+  text-underline-offset: 3px; padding: 4px 0;
+}
+@media (hover: hover) and (pointer: fine) {
+  .op-signout:hover { color: var(--ink-2); }
+}
