@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withMetrics } from '@/lib/metrics';
+import { isAuthorised } from '@/lib/operatorAuth';
 import { selectRows } from '@/lib/supabase';
 
 // The newest ringing call, if any. Only reachable with the operator
@@ -19,10 +20,9 @@ interface Row {
 const WINDOW_MS = 90_000;
 
 async function handleGet(req: NextRequest): Promise<NextResponse> {
-  const expected = process.env.OPERATOR_SECRET;
-  // Header, never the query string: this response carries a Daily join url.
-  const given = req.headers.get('x-operator-secret');
-  if (!expected || given !== expected) {
+  // Header or session cookie, never the query string: this response
+  // carries a Daily join url.
+  if (!isAuthorised(req)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   const since = new Date(Date.now() - WINDOW_MS).toISOString();

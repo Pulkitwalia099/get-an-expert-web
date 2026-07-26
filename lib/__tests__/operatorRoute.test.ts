@@ -12,23 +12,27 @@ import type { NextRequest } from 'next/server';
 
 // The secret travels in a header now, never in the body or the query
 // string, so every helper here builds one.
+// A real NextRequest always carries cookies, and auth now checks them as a
+// second way in, so every fake request needs the shape.
+const noCookies = { get: () => undefined };
+
 function post(body: object, secret: string | null = 'let-me-in'): NextRequest {
   const headers = new Headers();
   if (secret !== null) headers.set('x-operator-secret', secret);
-  return { headers, json: async () => body } as unknown as NextRequest;
+  return { headers, cookies: noCookies, json: async () => body } as unknown as NextRequest;
 }
 
 function get(path: string, secret: string | null): NextRequest {
   const url = new URL(`https://midsesh.com${path}`);
   const headers = new Headers();
   if (secret !== null) headers.set('x-operator-secret', secret);
-  return { nextUrl: url, headers } as unknown as NextRequest;
+  return { nextUrl: url, headers, cookies: noCookies } as unknown as NextRequest;
 }
 
 beforeEach(() => {
   vi.stubEnv('OPERATOR_SECRET', 'let-me-in');
   vi.mocked(readPresence).mockResolvedValue({ pulkit: false, rohit: true });
-  vi.mocked(setPresence).mockResolvedValue(undefined);
+  vi.mocked(setPresence).mockResolvedValue(true);
   vi.mocked(selectRows).mockResolvedValue([]);
 });
 
@@ -107,6 +111,7 @@ describe('POST /api/operator', () => {
   it('400s a body that is not JSON', async () => {
     const req = {
       headers: new Headers({ 'x-operator-secret': 'let-me-in' }),
+      cookies: noCookies,
       json: async () => {
         throw new SyntaxError('bad json');
       },
@@ -209,5 +214,21 @@ describe('GET /api/operator/ringing', () => {
     vi.stubEnv('OPERATOR_SECRET', '');
     expect((await RINGING(get('/api/operator/ringing', ''))).status).toBe(401);
     expect(selectRows).not.toHaveBeenCalled();
+  });
+});
+
+describe('a switch that does not move', () => {
+  it('503s rather than reporting ok when no row was updated', async () => {
+    vi.mocked(setPresence).mockResolvedValue(false);
+    const res = await POST(post({ operatorId: 'pulkit', online: true }));
+    expect(res.status).toBe(503);
+    const body = await res.json();
+    expect(body.error).toMatch(/did not move/i);
+  });
+
+  it('still reports the presence map so the page can correct itself', async () => {
+    vi.mocked(setPresence).mockResolvedValue(false);
+    const res = await POST(post({ operatorId: 'pulkit', online: true }));
+    expect((await res.json()).presence).toEqual({ pulkit: false, rohit: true });
   });
 });

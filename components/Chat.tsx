@@ -4,10 +4,10 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { track } from '@/lib/analytics';
 import { buildCalPrefill } from '@/lib/calLink';
 import { trimHistory } from '@/lib/history';
+import { shouldOfferHuman } from '@/lib/humanOffer';
 import { newSessionId } from '@/lib/session';
 import type { ApiRole, Brief, ChatReply, MatchConfidence, PrimaryPath } from '@/lib/types';
 import CallCard, { type CallState, type OperatorCard } from '@/components/CallCard';
-import CallPill from '@/components/CallPill';
 import Composer from '@/components/Composer';
 import ExpertSignup from '@/components/ExpertSignup';
 import { FLOWS, type Flow } from '@/components/flows';
@@ -46,6 +46,9 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
   const [callState, setCallState] = useState<CallState>('booking');
   const [secondsLeft, setSecondsLeft] = useState(RING_SECONDS);
   const [roomUrl, setRoomUrl] = useState<string | null>(null);
+  // At most one offer a visit. A second reads as nagging.
+  const [offered, setOffered] = useState(false);
+  const userTurns = useRef(0);
   const callIdRef = useRef<string | null>(null);
   const lastUserMsg = useRef('');
 
@@ -102,6 +105,7 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
       // First real turn of the visit: the top of the engagement funnel.
       if (apiMsgs.current.length === 0) track('first_message_sent', { flow });
       lastUserMsg.current = text;
+      userTurns.current += 1;
       push({ role: 'user', text });
       apiMsgs.current = trimHistory([...apiMsgs.current, { role: 'user', content: text }]);
       if (phase === 'welcome' || phase === 'done') setPhase('chat');
@@ -297,9 +301,6 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
 
   const lastMsgId = msgs.length > 0 ? msgs[msgs.length - 1].id : 0;
   const answering = phase === 'chat' && !typing;
-  // The pill waits for one message, so nobody rings with no context. Derived
-  // from the thread rather than a ref, so it re-renders when it flips.
-  const hasSpoken = msgs.some((m) => m.role === 'user');
 
   // Memoised because BookingEmbed keys an effect on it. Rebuilt inline it
   // would be a new object every render, which restarts that effect and, in
@@ -315,10 +316,7 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
       <div className="grain" />
       <main className="page">
         <section className="window">
-          <Titlebar
-            tag={config.tag}
-            action={hasSpoken ? <CallPill onTap={() => void openCall()} /> : null}
-          />
+          <Titlebar tag={config.tag} />
 
           <div className="chat" ref={scrollRef}>
             {phase === 'welcome' ? (
