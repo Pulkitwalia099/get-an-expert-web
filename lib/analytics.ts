@@ -21,10 +21,16 @@ export function initAnalytics(): void {
     capture_pageview: false,
     persistence: 'localStorage+cookie',
     session_recording: {
-      // Never record what people type or the words on screen. Replay keeps
-      // the layout and interactions only, which is all we need for drop-off.
-      maskAllInputs: true,
-      maskTextSelector: '*',
+      // Replay records the conversation, because a drop-off is only readable
+      // if you can see what was actually said before it. Layout and clicks
+      // alone tell you someone left, never why.
+      //
+      // Email fields are the exception and stay out: they carry a real
+      // contact detail, they add nothing to understanding the conversation,
+      // and they are already stored properly on the server. Every one of them
+      // carries the ph-no-capture class, which PostHog blocks at record time,
+      // so the value never leaves the browser. See NO_CAPTURE in lib/replay.
+      maskAllInputs: false,
     },
   });
   ready = true;

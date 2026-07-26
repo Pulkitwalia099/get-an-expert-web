@@ -14,22 +14,29 @@ export default function Privacy() {
       </Link>
       <h1>Privacy</h1>
       <p className="lead">
-        Short version: we measure how the site is used so we can make it better. We do not record
-        what you type, and we do not sell anything.
+        Short version: we read the chats so we can make them better, we keep your email and your
+        name out of that, and we do not sell anything.
       </p>
 
       <h2>What we record</h2>
       <p>
         We use PostHog, an analytics tool, to count visits and see where people get stuck. It tells
         us things like which page you landed on, where you came from, and which step you reached in
-        the chat. This helps us fix the parts that are not working.
+        the chat.
+      </p>
+      <p>
+        It also records the chat itself, including what you write to us and what we write back, as
+        part of a replay of your visit. We read these to find the questions that confuse people and
+        the moments they give up. A drop-off only tells us something if we can see what was said
+        before it.
       </p>
 
       <h2>What we do not record</h2>
       <p>
-        The words you type in the chat, and any email you leave, are never captured by the analytics
-        tool. Session recordings are masked, so they show the layout and clicks but not the text on
-        screen. Your conversation content stays between you and the intro we set up.
+        Your email address and your name are left out of those recordings. Those fields are blocked
+        at the moment of recording, so what you type into them never reaches the analytics tool at
+        all. We do not sell any of it, and we do not hand your conversation to anyone beyond the
+        expert you asked us to introduce you to.
       </p>
 
       <h2>Your email</h2>

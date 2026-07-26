@@ -5,6 +5,7 @@ import { track } from '@/lib/analytics';
 import styles from '@/components/ExpertSignup.module.css';
 import type { Flow } from '@/components/flows';
 import { isValidEmail } from '@/lib/email';
+import { NO_CAPTURE } from '@/lib/replay';
 
 // The intros route trims longer text anyway; stopping here keeps the request
 // small and the field honest about how much it wants.
@@ -64,6 +65,7 @@ export default function ExpertSignup({
       <div className={styles.title}>Tell us where to reach you</div>
       <div className={`${styles.field}${invalid ? ` ${styles.invalid}` : ''}`}>
         <input
+          className={NO_CAPTURE}
           type="email"
           inputMode="email"
           autoComplete="email"

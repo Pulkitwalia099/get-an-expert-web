@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { track } from '@/lib/analytics';
 import { FLOWS, INSTALL_TARGETS, type Flow } from '@/components/flows';
 import { isValidEmail } from '@/lib/email';
+import { NO_CAPTURE } from '@/lib/replay';
 import type { Brief, MatchConfidence, PrimaryPath } from '@/lib/types';
 
 // Spelled out rather than derived, so the marker never renders a bare word.
@@ -148,6 +149,7 @@ export default function GetUnstuck({
       </div>
       <div className={`mini-field${invalid ? ' invalid' : ''}`}>
         <input
+          className={NO_CAPTURE}
           type="email"
           inputMode="email"
           autoComplete="email"
