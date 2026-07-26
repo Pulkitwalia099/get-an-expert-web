@@ -35,6 +35,7 @@ export default function CallCard({
   roomUrl,
   onCall,
   onLeave,
+  onRemoteJoined,
 }: {
   card: OperatorCard;
   state: CallState;
@@ -43,6 +44,7 @@ export default function CallCard({
   roomUrl: string | null;
   onCall: () => void;
   onLeave: () => void;
+  onRemoteJoined: () => void;
 }) {
   return (
     <div className="call-card">
@@ -112,11 +114,16 @@ export default function CallCard({
             Ringing… {secondsLeft}s
             <i className="call-progress" aria-hidden="true" />
           </button>
-          <p className="call-sub">Reaching their phone. Hang on.</p>
+          <p className="call-sub">You are in the room already. Stay here, they are joining.</p>
         </div>
       )}
 
-      {state === 'incall' && roomUrl && <CallStage roomUrl={roomUrl} onLeave={onLeave} />}
+      {/* Mounted from the moment it rings, not once someone answers. The
+          visitor waits inside the room with their mic live, so whichever
+          route the operator takes in, the two are already together. */}
+      {(state === 'ringing' || state === 'incall') && roomUrl && (
+        <CallStage roomUrl={roomUrl} onLeave={onLeave} onRemoteJoined={onRemoteJoined} />
+      )}
 
       {state === 'booking' && (
         <div className="call-foot">

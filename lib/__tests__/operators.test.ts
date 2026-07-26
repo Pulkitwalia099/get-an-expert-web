@@ -34,9 +34,11 @@ describe('matchOperator', () => {
     });
   });
 
-  it('prefers the earlier tag when two match, so order is the priority', () => {
-    // 'api' is in Payments & APIs, 'database' is in Backend & databases.
-    expect(matchOperator('an api that reads the database').tag).toBe('Payments & APIs');
+  it('prefers the stronger signal when tags compete', () => {
+    // 'api' is weak, 'postgres' and 'database' are specific.
+    expect(matchOperator('an api that reads the postgres database').tag).toBe(
+      'Backend & databases',
+    );
   });
 
   it('does not match a keyword inside a longer word', () => {
@@ -63,5 +65,40 @@ describe('OPERATORS', () => {
   it('puts both of them in San Francisco', () => {
     expect(OPERATORS.pulkit.location).toBe('San Francisco');
     expect(OPERATORS.rohit.location).toBe('San Francisco');
+  });
+});
+
+describe('scoring beats list order', () => {
+  it('sends an n8n workflow that mentions an error to Pulkit, not Rohit', () => {
+    // The real regression: 'error' is Rohit's, 'n8n' and 'workflow' are
+    // Pulkit's, and Rohit is swept first. Counting has to decide it.
+    expect(
+      matchOperator('i have an n8n workflow that keeps throwing an error on the hubspot node'),
+    ).toEqual({ id: 'pulkit', tag: 'Workflow automation' });
+  });
+
+  it('still sends a real backend error to Rohit', () => {
+    expect(matchOperator('our stripe webhook throws a 500 under load').id).toBe('rohit');
+  });
+
+  it('treats a named tool as stronger than a generic symptom', () => {
+    expect(matchOperator('zapier is broken').id).toBe('pulkit');
+    expect(matchOperator('postgres is broken').id).toBe('rohit');
+  });
+
+  it('breaks an exact tie towards the technical lane', () => {
+    // One weak hit each, nothing specific either way.
+    expect(matchOperator('the design has a bug').id).toBe('rohit');
+  });
+
+  it('routes hubspot work to automation', () => {
+    expect(matchOperator('wire hubspot into sheets').tag).toBe('Workflow automation');
+  });
+
+  it('still falls back when nothing matches at all', () => {
+    expect(matchOperator('i want to talk about something else')).toEqual({
+      id: 'rohit',
+      tag: 'Code & engineering',
+    });
   });
 });

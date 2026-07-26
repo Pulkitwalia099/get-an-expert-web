@@ -34,9 +34,13 @@ const THEME = {
 export default function CallStage({
   roomUrl,
   onLeave,
+  onRemoteJoined,
 }: {
   roomUrl: string;
   onLeave: () => void;
+  /** Someone else entered the room. This, not a database row, is what
+   *  actually means the call connected. */
+  onRemoteJoined: () => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const frameRef = useRef<DailyCall | null>(null);
@@ -73,6 +77,10 @@ export default function CallStage({
         frameRef.current = frame;
 
         frame.on('left-meeting', () => onLeave());
+        // The operator can arrive by any route: the Answer button, or the
+        // Join link in Telegram which never touches our API. Daily seeing a
+        // second participant is the only signal that covers both.
+        frame.on('participant-joined', () => onRemoteJoined());
         frame.on('error', (err) => {
           console.error('[midsesh:call] daily error', err);
           if (!cancelled) setFailed(true);
@@ -94,7 +102,7 @@ export default function CallStage({
       void frameRef.current?.destroy();
       frameRef.current = null;
     };
-  }, [roomUrl, onLeave]);
+  }, [roomUrl, onLeave, onRemoteJoined]);
 
   // Whatever went wrong, they can still get to the room. A dead panel with
   // no way forward is the one outcome worth avoiding.

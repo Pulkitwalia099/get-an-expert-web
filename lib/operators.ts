@@ -85,7 +85,7 @@ export const OPERATORS: Record<OperatorId, Operator> = {
     tags: [
       {
         label: 'Workflow automation',
-        keywords: ['n8n', 'zapier', 'make', 'clay', 'automation', 'workflow', 'scrape'],
+        keywords: ['n8n', 'zapier', 'make', 'clay', 'hubspot', 'automation', 'workflow', 'scrape'],
       },
       {
         label: 'Outbound & GTM',
@@ -115,6 +115,35 @@ export const ALWAYS_NOTIFY: OperatorId = 'pulkit';
 // misroute, and his keywords are the more specific set.
 export const MATCH_ORDER: OperatorId[] = ['rohit', 'pulkit'];
 
+// Words that appear in almost any technical conversation. They are real
+// signal, but weak: someone describing an n8n workflow will say "error"
+// without meaning they need a backend engineer. Naming a specific tool is
+// far more informative than describing a symptom, so the two are weighted
+// differently rather than treated as equal votes.
+const LOW_SIGNAL = new Set([
+  'error',
+  'bug',
+  'crash',
+  'broken',
+  'build',
+  'deploy',
+  'api',
+  'server',
+  'query',
+  'design',
+  'copy',
+  'website',
+  'agent',
+  'claude',
+  'gpt',
+  'sales',
+  'leads',
+  'prompt',
+]);
+
+const STRONG_WEIGHT = 3;
+const WEAK_WEIGHT = 1;
+
 // Word boundaries on both sides, so 'make' does not fire on 'makefile'.
 // Keywords may contain spaces, which is why this is a regex and not a split.
 function hasKeyword(haystack: string, keyword: string): boolean {
@@ -122,30 +151,56 @@ function hasKeyword(haystack: string, keyword: string): boolean {
   return new RegExp(`(^|[^a-z0-9])${escaped}([^a-z0-9]|$)`, 'i').test(haystack);
 }
 
-function findTag(op: Operator, text: string): string | null {
+function scoreTag(tag: OperatorTag, text: string): number {
+  return tag.keywords.reduce(
+    (total, k) =>
+      hasKeyword(text, k) ? total + (LOW_SIGNAL.has(k) ? WEAK_WEIGHT : STRONG_WEIGHT) : total,
+    0,
+  );
+}
+
+// The best scoring tag for one person, and what it scored. Ties inside a
+// person go to the earlier tag, so list order is still the tiebreak.
+function bestTag(op: Operator, text: string): { label: string; score: number } {
+  let best = { label: op.fallbackTag, score: 0 };
   for (const tag of op.tags) {
-    if (tag.keywords.some((k) => hasKeyword(text, k))) return tag.label;
+    const score = scoreTag(tag, text);
+    if (score > best.score) best = { label: tag.label, score };
   }
-  return null;
+  return best;
 }
 
 /** The tag for a specific person, falling back to their general one. */
 export function tagFor(id: OperatorId, text: string): string {
-  const op = OPERATORS[id];
-  return findTag(op, text) ?? op.fallbackTag;
+  return bestTag(OPERATORS[id], text.toLowerCase()).label;
 }
 
 /**
- * Who to offer for this brief, and which tag their card shows. Always
- * returns someone: an unmatched brief goes to the head of MATCH_ORDER with
- * their fallback tag rather than showing nothing.
+ * Who to offer, and which tag their card shows.
+ *
+ * Scored rather than first match wins. First match made list order decide
+ * everything, so a conversation about an n8n workflow that mentioned the
+ * word "error" went to the engineer, because his list was swept first and a
+ * single weak hit ended the search. Now every keyword votes, specific tools
+ * outvote generic symptoms, and the higher total takes it.
+ *
+ * Always returns someone: nothing matching sends it to the head of
+ * MATCH_ORDER with their fallback tag rather than showing no card at all.
  */
 export function matchOperator(text: string): { id: OperatorId; tag: string } {
   const lower = text.toLowerCase();
+  let winner: { id: OperatorId; tag: string; score: number } | null = null;
+
   for (const id of MATCH_ORDER) {
-    const tag = findTag(OPERATORS[id], lower);
-    if (tag) return { id, tag };
+    const { label, score } = bestTag(OPERATORS[id], lower);
+    // Strictly greater, so an exact tie falls to whoever MATCH_ORDER puts
+    // first. A technical brief is the more expensive one to misroute.
+    if (score > 0 && (!winner || score > winner.score)) {
+      winner = { id, tag: label, score };
+    }
   }
+
+  if (winner) return { id: winner.id, tag: winner.tag };
   const first = MATCH_ORDER[0];
   return { id: first, tag: OPERATORS[first].fallbackTag };
 }
