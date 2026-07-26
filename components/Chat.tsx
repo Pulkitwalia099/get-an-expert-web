@@ -51,6 +51,10 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
   const userTurns = useRef(0);
   const callIdRef = useRef<string | null>(null);
   const lastUserMsg = useRef('');
+  // Everything the visitor has said, for matching. The newest message alone
+  // is often the least informative: by the third turn they are answering a
+  // narrow follow up and the words that identify the work are further back.
+  const saidSoFar = useRef<string[]>([]);
 
   const idRef = useRef(0);
   const sessionIdRef = useRef('');
@@ -105,6 +109,7 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
       // First real turn of the visit: the top of the engagement funnel.
       if (apiMsgs.current.length === 0) track('first_message_sent', { flow });
       lastUserMsg.current = text;
+      saidSoFar.current = [...saidSoFar.current, text];
       userTurns.current += 1;
       push({ role: 'user', text });
       apiMsgs.current = trimHistory([...apiMsgs.current, { role: 'user', content: text }]);
@@ -198,7 +203,11 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
       const res = await fetch('/api/presence', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ brief, lastMessage: lastUserMsg.current }),
+        body: JSON.stringify({
+          brief,
+          lastMessage: lastUserMsg.current,
+          conversation: saidSoFar.current.join(' \n'),
+        }),
       });
       if (!res.ok) throw new Error(`presence ${res.status}`);
       const data = (await res.json()) as { online: boolean; card: OperatorCard };
@@ -225,6 +234,7 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
           sessionId: sessionIdRef.current,
           brief,
           lastMessage: lastUserMsg.current,
+          conversation: saidSoFar.current.join(' \n'),
         }),
       });
       if (!res.ok) throw new Error(`ring ${res.status}`);
