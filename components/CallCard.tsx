@@ -1,6 +1,7 @@
 'use client';
 
 import BookingEmbed from '@/components/BookingEmbed';
+import CallStage from '@/components/CallStage';
 import type { CalPrefill } from '@/lib/calLink';
 
 // Three states, one card. The person shown is always the person who would
@@ -21,7 +22,7 @@ export interface OperatorCard {
   tag: string;
 }
 
-export type CallState = 'live' | 'ringing' | 'booking';
+export type CallState = 'live' | 'ringing' | 'incall' | 'booking';
 
 const LINKEDIN_PATH =
   'M4.98 3.5C4.98 4.88 3.87 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.22 8.1h4.56V23H.22V8.1zM8.34 8.1h4.37v2.03h.06c.61-1.15 2.1-2.37 4.32-2.37 4.62 0 5.47 3.04 5.47 6.99V23h-4.55v-7.2c0-1.72-.03-3.93-2.4-3.93-2.4 0-2.77 1.87-2.77 3.8V23H8.34V8.1z';
@@ -31,20 +32,24 @@ export default function CallCard({
   state,
   secondsLeft,
   prefill,
+  roomUrl,
   onCall,
+  onLeave,
 }: {
   card: OperatorCard;
   state: CallState;
   secondsLeft: number;
   prefill: CalPrefill;
+  roomUrl: string | null;
   onCall: () => void;
+  onLeave: () => void;
 }) {
   return (
     <div className="call-card">
-      {state === 'live' && (
+      {(state === 'live' || state === 'incall') && (
         <div className="call-live">
           <i className="call-dot" />
-          Live right now
+          {state === 'incall' ? 'On the call' : 'Live right now'}
         </div>
       )}
 
@@ -110,6 +115,8 @@ export default function CallCard({
           <p className="call-sub">Reaching their phone. Hang on.</p>
         </div>
       )}
+
+      {state === 'incall' && roomUrl && <CallStage roomUrl={roomUrl} onLeave={onLeave} />}
 
       {state === 'booking' && (
         <div className="call-foot">

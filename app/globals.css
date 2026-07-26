@@ -831,3 +831,14 @@ div.sav {
   .call-pill { font-size: 11px; padding: 4px 9px; }
   .titlebar .wordmark { display: none; }
 }
+
+/* The embedded call. Fixed height so the card does not jump when Daily
+   swaps its internal layout mid-call. */
+.call-stage {
+  width: 100%;
+  height: 280px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, .5);
+  outline: 1px solid var(--line);
+}

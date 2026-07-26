@@ -45,6 +45,7 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
   const [card, setCard] = useState<OperatorCard | null>(null);
   const [callState, setCallState] = useState<CallState>('booking');
   const [secondsLeft, setSecondsLeft] = useState(RING_SECONDS);
+  const [roomUrl, setRoomUrl] = useState<string | null>(null);
   const callIdRef = useRef<string | null>(null);
   const lastUserMsg = useRef('');
 
@@ -202,7 +203,9 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
         }),
       });
       if (!res.ok) throw new Error(`ring ${res.status}`);
-      callIdRef.current = ((await res.json()) as { callId: string }).callId;
+      const data = (await res.json()) as { callId: string; roomUrl: string };
+      callIdRef.current = data.callId;
+      setRoomUrl(data.roomUrl);
     } catch {
       // Whatever went wrong, the honest answer is the booking picker.
       callIdRef.current = null;
@@ -230,8 +233,9 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
             const data = (await res.json()) as { status: string; roomUrl: string | null };
             if (data.status === 'answered' && data.roomUrl) {
               stopped = true;
-              window.open(data.roomUrl, '_blank', 'noopener,noreferrer');
-              setCallState('live');
+              // The call mounts inside the card. They never leave the chat.
+              setRoomUrl(data.roomUrl);
+              setCallState('incall');
               track('call_answered', { flow });
               return;
             }
@@ -261,6 +265,23 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
       clearInterval(timer);
     };
   }, [callState, flow]);
+
+  // Either side can end it. Daily reports the visitor leaving; the row is
+  // closed so the operator page stops offering a call nobody is in.
+  function endCall() {
+    const id = callIdRef.current;
+    setCallState('live');
+    setRoomUrl(null);
+    callIdRef.current = null;
+    if (id) {
+      void fetch('/api/call', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'end', callId: id }),
+      });
+    }
+    track('call_ended', { flow });
+  }
 
   function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -376,7 +397,9 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
                     state={callState}
                     secondsLeft={secondsLeft}
                     prefill={prefill}
+                    roomUrl={roomUrl}
                     onCall={() => void startRing()}
+                    onLeave={endCall}
                   />
                 )}
               </div>
