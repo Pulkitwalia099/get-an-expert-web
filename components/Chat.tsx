@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useEffect, useRef, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { track } from '@/lib/analytics';
 import { buildCalPrefill } from '@/lib/calLink';
 import { trimHistory } from '@/lib/history';
@@ -280,6 +280,14 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
   // from the thread rather than a ref, so it re-renders when it flips.
   const hasSpoken = msgs.some((m) => m.role === 'user');
 
+  // Memoised because BookingEmbed keys an effect on it. Rebuilt inline it
+  // would be a new object every render, which restarts that effect and, in
+  // an earlier version, silently cancelled its own fallback timer.
+  const prefill = useMemo(
+    () => (card ? buildCalPrefill(card.id, brief, lastUserMsg.current, {}) : null),
+    [card, brief],
+  );
+
   return (
     <>
       <div className="bg" />
@@ -362,12 +370,12 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
                   />
                 )}
 
-                {card && (
+                {card && prefill && (
                   <CallCard
                     card={card}
                     state={callState}
                     secondsLeft={secondsLeft}
-                    prefill={buildCalPrefill(card.id, brief, lastUserMsg.current, {})}
+                    prefill={prefill}
                     onCall={() => void startRing()}
                   />
                 )}

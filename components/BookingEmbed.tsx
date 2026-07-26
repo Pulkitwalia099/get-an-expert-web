@@ -1,48 +1,92 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { CalPrefill } from '@/lib/calLink';
 
 // Cal.com inline embed, rendered inside the call card so the visitor never
-// leaves the chat. The loader is the snippet Cal ships; it injects their
-// script once and queues calls until it lands.
+// leaves the chat.
+//
+// Cal ship a minified snippet you are meant to paste into a script tag.
+// embed.js does NOT define window.Cal on its own: it augments the stub the
+// snippet creates, and queues any call made before it lands. So the stub is
+// required. It is written out here as real TypeScript rather than injected
+// as a string, which means the compiler checks it and there is nothing to
+// mis-transcribe.
 
-declare global {
-  interface Window {
-    Cal?: ((...args: unknown[]) => void) & {
-      ns?: Record<string, (...args: unknown[]) => void>;
-      loaded?: boolean;
-    };
-  }
+type CalFn = ((...args: unknown[]) => void) & {
+  q?: unknown[][];
+  ns?: Record<string, CalFn>;
+  loaded?: boolean;
+};
+
+const EMBED_SRC = 'https://app.cal.com/embed/embed.js';
+const NAMESPACE = 'callcard';
+const RENDER_TIMEOUT_MS = 12_000;
+
+function push(target: CalFn, args: unknown[]): void {
+  target.q = target.q ?? [];
+  target.q.push(args);
 }
 
-const LOADER = `(function(C,A,L){let p=function(a,ar){a.q.push(ar)};let d=C.document;C.Cal=C.Cal||function(){let cal=C.Cal;let ar=arguments;if(!cal.loaded){cal.ns={};cal.q=cal.q||[];d.head.appendChild(d.createElement("script")).src=A;cal.loaded=true}if(ar[0]===L){const api=function(){p(api,arguments)};const namespace=ar[1];api.q=api.q||[];typeof namespace==="string"?(cal.ns[namespace]=api)&&p(api,ar):p(cal,ar);return}p(cal,ar)})(window,"https://app.cal.com/embed/embed.js","init");`;
+function ensureCal(): CalFn {
+  const w = window as Window & { Cal?: CalFn };
+  if (w.Cal) return w.Cal;
 
-const NAMESPACE = 'callcard';
+  const cal = function (...args: unknown[]): void {
+    const self = w.Cal as CalFn;
+
+    // First call loads the real script, which drains self.q on arrival.
+    if (!self.loaded) {
+      self.ns = {};
+      self.q = self.q ?? [];
+      const script = document.createElement('script');
+      script.src = EMBED_SRC;
+      script.async = true;
+      document.head.appendChild(script);
+      self.loaded = true;
+    }
+
+    if (args[0] === 'init') {
+      const namespace = args[1];
+      const api = function (...inner: unknown[]): void {
+        push(api as CalFn, inner);
+      } as CalFn;
+      api.q = api.q ?? [];
+
+      if (typeof namespace === 'string') {
+        self.ns = self.ns ?? {};
+        self.ns[namespace] = self.ns[namespace] ?? api;
+        push(self.ns[namespace], args);
+        push(self, ['initNamespace', namespace]);
+      } else {
+        push(self, args);
+      }
+      return;
+    }
+
+    push(self, args);
+  } as CalFn;
+
+  w.Cal = cal;
+  return cal;
+}
 
 export default function BookingEmbed({ prefill }: { prefill: CalPrefill }) {
   const ref = useRef<HTMLDivElement>(null);
-  // Cal mutates the container itself, so mounting twice stacks two
-  // calendars. A ref guard is more reliable here than an effect dependency.
+  // Cal mutates the container, so mounting twice stacks two calendars.
   const mounted = useRef(false);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     if (mounted.current || !ref.current) return;
     mounted.current = true;
-
-    if (!window.Cal) {
-      const script = document.createElement('script');
-      script.textContent = LOADER;
-      document.head.appendChild(script);
-    }
-
-    const cal = window.Cal;
-    if (!cal) return;
+    const target = ref.current;
 
     try {
+      const cal = ensureCal();
       cal('init', NAMESPACE, { origin: 'https://app.cal.com' });
       cal.ns?.[NAMESPACE]?.('inline', {
-        elementOrSelector: ref.current,
+        elementOrSelector: target,
         calLink: prefill.calLink,
         config: {
           layout: 'month_view',
@@ -53,15 +97,38 @@ export default function BookingEmbed({ prefill }: { prefill: CalPrefill }) {
       });
     } catch (err) {
       console.error('[midsesh:booking] embed failed', err);
+      setFailed(true);
     }
   }, [prefill]);
 
-  return (
-    <div className="booking-embed">
-      <div ref={ref} />
-      <noscript>
-        <a href={`https://cal.com/${prefill.calLink}`}>Pick a time</a>
-      </noscript>
-    </div>
-  );
+  // The watchdog gets its own mount-only effect on purpose. Living beside
+  // the mount effect made it depend on `prefill`, whose identity changes on
+  // every render, so each render cancelled the pending timer and then hit
+  // the mounted guard before setting a new one. It could never fire.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      // Cal fails quietly: a blocked script, an ad blocker, a bad link. A
+      // blank rectangle is the worst outcome here, because they came to book.
+      if (!ref.current?.querySelector('iframe')) {
+        console.error('[midsesh:booking] embed produced no iframe');
+        setFailed(true);
+      }
+    }, RENDER_TIMEOUT_MS);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (failed) {
+    return (
+      <a
+        className="call-cta"
+        href={`https://cal.com/${prefill.calLink}`}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Pick a time
+      </a>
+    );
+  }
+
+  return <div className="booking-embed" ref={ref} />;
 }
