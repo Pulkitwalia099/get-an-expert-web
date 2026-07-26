@@ -121,11 +121,20 @@ The remaining blocker is environment variables on Vercel, which Pulkit said
 he has now added: `DAILY_API_KEY`, `TELEGRAM_BOT_TOKEN`,
 `TELEGRAM_CHAT_ID_PULKIT`, `TELEGRAM_CHAT_ID_ROHIT`, `OPERATOR_SECRET`.
 
-Note on Daily: Pulkit chose not to add a payment card, which caps the
-account at **50 programmatic rooms**. One room is created per call, so that
-is the ceiling before rooms stop being created. When the cap is hit,
-`createAudioRoom` returns null and the card falls back to the booking
-picker rather than failing visibly. Worth watching early.
+Note on Daily: Pulkit has since added a payment card, which lifts the 50
+room signup cap, and asked that it not cost anything. The app now enforces
+its own ceiling rather than trusting a dashboard setting: `CALLS_MONTHLY_CAP`
+in `lib/usage.ts`, default 300 rooms per calendar month. Daily's free
+allowance is 10,000 participant minutes and a 15 minute call with two people
+spends about 30, so 300 sits inside it with margin. Past the cap the ring
+returns 503 and the visitor gets the booking picker.
+
+This counter uses the same `bump_usage` Postgres function as the existing
+chat and search caps, so it needs that function to already exist in the
+project. It does: earlier migrations added it. If `bump_usage` is missing,
+`bumpUsage` returns null, the cap check is skipped, and rooms are created
+without a ceiling. Worth confirming while you are in the SQL editor:
+`select proname from pg_proc where proname = 'bump_usage';`
 
 Then the end to end check on the Vercel preview for `feat/call-button`:
 

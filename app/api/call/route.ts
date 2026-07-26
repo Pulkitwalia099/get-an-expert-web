@@ -8,6 +8,7 @@ import { OPERATORS, type OperatorId } from '@/lib/operators';
 import { readPresence } from '@/lib/presence';
 import { clientId, rateLimit } from '@/lib/ratelimit';
 import { matchesOrigin } from '@/lib/sanitize';
+import { bumpUsage, callsMonthlyCap, monthKey } from '@/lib/usage';
 import { editRing, sendRing } from '@/lib/telegram';
 import { coerceBrief, parseSessionId } from '@/lib/validate';
 
@@ -102,12 +103,25 @@ async function handlePost(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Nobody is available' }, { status: 503 });
   }
 
+  // Spend guard, checked before Daily is touched. Their free allowance is
+  // generous but a card is on file, so an unusual month must not turn into
+  // a bill. Over the cap the visitor gets the booking picker, which is the
+  // same graceful path as nobody being available.
+  const used = await bumpUsage(monthKey('calls'), 0);
+  if (used !== null && used >= callsMonthlyCap()) {
+    console.error('[midsesh:call] monthly room cap reached', used);
+    return NextResponse.json({ error: 'Nobody is available' }, { status: 503 });
+  }
+
   const callId = randomUUID();
   const roomUrl = await createAudioRoom(callId);
   if (!roomUrl) {
     return NextResponse.json({ error: 'Could not start the call' }, { status: 503 });
   }
 
+  // Counted only once a room really exists, so a Daily outage cannot burn
+  // through the month's allowance.
+  await bumpUsage(monthKey('calls'));
   lastRing.set(ringKey, Date.now());
   if (lastRing.size > MAX_TRACKED_SESSIONS) lastRing.clear();
 

@@ -10,6 +10,11 @@ vi.mock('@/lib/callStore', () => ({
   answerCall: vi.fn(),
   endCall: vi.fn(),
 }));
+vi.mock('@/lib/usage', () => ({
+  bumpUsage: vi.fn(async () => 0),
+  callsMonthlyCap: () => 300,
+  monthKey: (scope: string) => `m:${scope}:2026-07`,
+}));
 vi.mock('@/lib/metrics', () => ({ withMetrics: (_r: string, fn: unknown) => fn }));
 
 const SESSION = '3b241101-e2bb-4255-8caf-4136c566a962';
@@ -358,5 +363,38 @@ describe('answerCall compare and set', () => {
     vi.stubEnv('SUPABASE_URL', '');
     expect(await answerCall('abc')).toBe(false);
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('monthly spend cap', () => {
+  it('refuses to create a room once the cap is reached', async () => {
+    const { bumpUsage } = await import('@/lib/usage');
+    vi.mocked(bumpUsage).mockResolvedValueOnce(300);
+    const res = await app.POST(
+      post({ action: 'ring', operatorId: 'rohit', sessionId: SESSION, lastMessage: 'stripe' }),
+    );
+    expect(res.status).toBe(503);
+    expect(app.createAudioRoom).not.toHaveBeenCalled();
+  });
+
+  it('allows a ring below the cap', async () => {
+    const { bumpUsage } = await import('@/lib/usage');
+    vi.mocked(bumpUsage).mockResolvedValueOnce(299);
+    const res = await app.POST(
+      post({ action: 'ring', operatorId: 'rohit', sessionId: SESSION, lastMessage: 'stripe' }),
+    );
+    expect(res.status).toBe(200);
+  });
+
+  it('does not count a ring when Daily failed to give a room', async () => {
+    const { bumpUsage } = await import('@/lib/usage');
+    vi.mocked(bumpUsage).mockClear().mockResolvedValue(0);
+    vi.mocked(app.createAudioRoom).mockResolvedValueOnce(null);
+    await app.POST(
+      post({ action: 'ring', operatorId: 'rohit', sessionId: SESSION, lastMessage: 'stripe' }),
+    );
+    // Only the read (by = 0), never the increment.
+    const increments = vi.mocked(bumpUsage).mock.calls.filter((c) => c[1] === undefined);
+    expect(increments).toHaveLength(0);
   });
 });
