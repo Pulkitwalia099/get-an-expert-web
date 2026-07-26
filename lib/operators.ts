@@ -106,6 +106,11 @@ export const OPERATORS: Record<OperatorId, Operator> = {
   },
 };
 
+// Whoever is here gets a copy of every ring, even one meant for someone
+// else. Pulkit wants to know when a call is happening whether or not it is
+// his, and to be able to step in when it is not answered.
+export const ALWAYS_NOTIFY: OperatorId = 'pulkit';
+
 // Rohit is swept first: a technical brief is the more expensive one to
 // misroute, and his keywords are the more specific set.
 export const MATCH_ORDER: OperatorId[] = ['rohit', 'pulkit'];

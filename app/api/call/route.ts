@@ -4,12 +4,12 @@ import { buildSummary } from '@/lib/callSummary';
 import { answerCall, createCall, endCall, readCall } from '@/lib/callStore';
 import { createAudioRoom } from '@/lib/daily';
 import { withMetrics } from '@/lib/metrics';
-import { OPERATORS, type OperatorId } from '@/lib/operators';
+import { ALWAYS_NOTIFY, OPERATORS, type OperatorId } from '@/lib/operators';
 import { readPresence } from '@/lib/presence';
 import { clientId, rateLimit } from '@/lib/ratelimit';
 import { matchesOrigin } from '@/lib/sanitize';
 import { bumpUsage, callsMonthlyCap, monthKey } from '@/lib/usage';
-import { editRing, sendRing } from '@/lib/telegram';
+import { editRing, sendRing, sendRingCopy } from '@/lib/telegram';
 import { coerceBrief, parseSessionId } from '@/lib/validate';
 
 export const RING_SECONDS = 60;
@@ -132,6 +132,10 @@ async function handlePost(req: NextRequest): Promise<NextResponse> {
   // Ring before the row is written, so the message id lands in the row
   // rather than coming back through the browser later.
   const telegramMessageId = await sendRing(operatorId, summary, roomUrl);
+  // Pulkit sees every ring, including Rohit's, so he knows a call is
+  // happening and can step in if it goes unanswered. A no-op when the ring
+  // was already his.
+  await sendRingCopy(ALWAYS_NOTIFY, operatorId, summary, roomUrl);
   await createCall({ id: callId, sessionId, operatorId, roomUrl, summary, telegramMessageId });
 
   return NextResponse.json({

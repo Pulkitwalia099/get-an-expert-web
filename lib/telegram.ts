@@ -52,6 +52,28 @@ export async function sendRing(
   return data?.result?.message_id ?? null;
 }
 
+/**
+ * A copy of someone else's ring. Same information, but it names who is
+ * actually being rung, so a backup joiner knows to introduce themselves
+ * rather than assume the visitor expected them.
+ */
+export async function sendRingCopy(
+  toId: OperatorId,
+  aboutId: OperatorId,
+  summary: string,
+  joinUrl: string,
+): Promise<void> {
+  const chat = chatId(toId);
+  if (!chat || toId === aboutId) return;
+  await call('sendMessage', {
+    chat_id: chat,
+    text: `${OPERATORS[aboutId].name} is being rung.\n\n${summary}`,
+    reply_markup: {
+      inline_keyboard: [[{ text: 'Join as backup', url: joinUrl }]],
+    },
+  });
+}
+
 export async function editRing(
   id: OperatorId,
   messageId: number,

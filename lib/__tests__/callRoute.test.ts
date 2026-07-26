@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { NextRequest } from 'next/server';
 
 vi.mock('@/lib/daily', () => ({ createAudioRoom: vi.fn() }));
-vi.mock('@/lib/telegram', () => ({ sendRing: vi.fn(), editRing: vi.fn() }));
+vi.mock('@/lib/telegram', () => ({ sendRing: vi.fn(), editRing: vi.fn(), sendRingCopy: vi.fn() }));
 vi.mock('@/lib/presence', () => ({ readPresence: vi.fn() }));
 vi.mock('@/lib/callStore', () => ({
   createCall: vi.fn(),
@@ -49,6 +49,7 @@ async function load() {
   vi.mocked(daily.createAudioRoom).mockResolvedValue(ROOM);
   vi.mocked(telegram.sendRing).mockResolvedValue(7);
   vi.mocked(telegram.editRing).mockResolvedValue(undefined);
+  vi.mocked(telegram.sendRingCopy).mockResolvedValue(undefined);
   vi.mocked(store.createCall).mockResolvedValue(undefined);
   vi.mocked(store.answerCall).mockResolvedValue(true);
   vi.mocked(store.endCall).mockResolvedValue(undefined);
@@ -61,6 +62,7 @@ async function load() {
     createAudioRoom: vi.mocked(daily.createAudioRoom),
     sendRing: vi.mocked(telegram.sendRing),
     editRing: vi.mocked(telegram.editRing),
+    sendRingCopy: vi.mocked(telegram.sendRingCopy),
     readPresence: vi.mocked(presence.readPresence),
     createCall: vi.mocked(store.createCall),
     readCall: vi.mocked(store.readCall),
@@ -396,5 +398,36 @@ describe('monthly spend cap', () => {
     // Only the read (by = 0), never the increment.
     const increments = vi.mocked(bumpUsage).mock.calls.filter((c) => c[1] === undefined);
     expect(increments).toHaveLength(0);
+  });
+});
+
+describe('copy ping', () => {
+  it('copies Pulkit on a ring meant for Rohit', async () => {
+    await app.POST(post(RING));
+    expect(app.sendRingCopy).toHaveBeenCalledWith(
+      'pulkit',
+      'rohit',
+      expect.stringContaining('stripe'),
+      ROOM,
+    );
+  });
+
+  it('sends the copy to the same room the ring points at', async () => {
+    const res = await app.POST(post(RING));
+    const data = await res.json();
+    expect(app.sendRingCopy).toHaveBeenCalledWith('pulkit', 'rohit', expect.anything(), data.roomUrl);
+  });
+
+  it('does not copy when the ring was already Pulkit\'s', async () => {
+    app.readPresence.mockResolvedValue({ pulkit: true, rohit: false });
+    await app.POST(post({ ...RING, operatorId: 'pulkit' }));
+    // sendRingCopy is still called, and no-ops internally on toId === aboutId.
+    expect(app.sendRingCopy).toHaveBeenCalledWith('pulkit', 'pulkit', expect.anything(), ROOM);
+  });
+
+  it('does not copy when no room was created', async () => {
+    app.createAudioRoom.mockResolvedValueOnce(null);
+    await app.POST(post(RING));
+    expect(app.sendRingCopy).not.toHaveBeenCalled();
   });
 });

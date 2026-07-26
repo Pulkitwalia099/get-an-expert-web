@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { editRing, sendRing } from '../telegram';
+import { editRing, sendRing, sendRingCopy } from '../telegram';
 
 const fetchMock = vi.fn();
 
@@ -61,6 +61,31 @@ describe('editRing', () => {
   it('does nothing without a token', async () => {
     vi.stubEnv('TELEGRAM_BOT_TOKEN', '');
     await editRing('rohit', 42, 'x');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('sendRingCopy', () => {
+  it('names who is actually being rung', async () => {
+    vi.stubEnv('TELEGRAM_CHAT_ID_PULKIT', '999');
+    fetchMock.mockResolvedValue(new Response(JSON.stringify({ ok: true }), { status: 200 }));
+    await sendRingCopy('pulkit', 'rohit', 'needs help', 'https://x.daily.co/a');
+    const body = JSON.parse(String(fetchMock.mock.calls[0][1].body));
+    expect(body.chat_id).toBe('999');
+    expect(body.text).toContain('Rohit J.');
+    expect(body.text).toContain('needs help');
+    expect(JSON.stringify(body.reply_markup)).toContain('backup');
+  });
+
+  it('sends nothing when the copy would go to the person already rung', async () => {
+    vi.stubEnv('TELEGRAM_CHAT_ID_PULKIT', '999');
+    await sendRingCopy('pulkit', 'pulkit', 'x', 'https://x.daily.co/a');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('sends nothing when that person has no chat id', async () => {
+    vi.stubEnv('TELEGRAM_CHAT_ID_PULKIT', '');
+    await sendRingCopy('pulkit', 'rohit', 'x', 'https://x.daily.co/a');
     expect(fetchMock).not.toHaveBeenCalled();
   });
 });
