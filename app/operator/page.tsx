@@ -34,12 +34,25 @@ export default function OperatorPage() {
   // the instruction below is what a bare /operator shows and there is
   // nothing to mismatch on hydration.
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const found = params.get('secret') ?? '';
+    // Read the raw query rather than URLSearchParams.get, which follows the
+    // form-encoding rule that a plus sign means a space. A base64 secret can
+    // contain one, and it would arrive here silently mangled into a space.
+    // decodeURIComponent leaves it alone, so any alphabet works.
+    const raw = window.location.search.slice(1).split('&').find((p) => p.startsWith('secret='));
+    let found = '';
+    if (raw) {
+      try {
+        found = decodeURIComponent(raw.slice('secret='.length));
+      } catch {
+        found = '';
+      }
+    }
     setSecret(found);
+
     if (found) {
       // Out of the address bar straight away. Nothing on this page needs it
       // to stay there, and leaving it there is what leaks it.
+      const params = new URLSearchParams(window.location.search);
       params.delete('secret');
       const rest = params.toString();
       window.history.replaceState(null, '', `${window.location.pathname}${rest ? `?${rest}` : ''}`);
