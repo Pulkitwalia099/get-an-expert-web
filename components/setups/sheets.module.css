@@ -1,0 +1,172 @@
+/* Overlays, mobile-first: bottom sheets on phones, centered cards on desktop. */
+
+.overlay {
+  position: fixed; inset: 0; z-index: 10; display: flex; align-items: flex-end; justify-content: center;
+  background: rgba(20, 20, 22, 0.32);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+}
+
+.sheet, .bookSheet, .askSheet {
+  position: relative; width: 100%; max-height: 94dvh; overflow-y: auto;
+  border-radius: 22px 22px 0 0; background: var(--glass-strong);
+  -webkit-backdrop-filter: blur(44px) saturate(170%); backdrop-filter: blur(44px) saturate(170%);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.3);
+}
+/* The ask dialog centers on every screen size, like a native alert. */
+.center { align-items: center; padding: 20px; }
+.askSheet { width: min(360px, 100%); border-radius: 24px; padding: 20px 20px 24px; max-height: 86dvh; }
+
+.x {
+  position: absolute; top: 12px; right: 14px; z-index: 3; width: 30px; height: 30px;
+  border-radius: 50%; border: none; cursor: pointer; font-size: 13px;
+  background: rgba(0, 0, 0, 0.35); color: #fff; display: grid; place-items: center;
+}
+.bookSheet .x { background: rgba(0, 0, 0, 0.08); color: var(--ink-2); }
+
+/* ---------- Detail ---------- */
+.embedCol { position: relative; background: #101014; }
+.embed { display: block; width: 100%; aspect-ratio: 9 / 14; border: 0; background: #fff; }
+
+.detailBody { padding: 20px 18px 22px; display: flex; flex-direction: column; }
+.detailBody h2 { font-size: 20px; font-weight: 650; letter-spacing: -0.02em; }
+.credit { margin-top: 5px; font-size: 11.5px; color: var(--ink-3); }
+.credit b { color: var(--ink-2); font-weight: 560; }
+
+.list { margin-top: 14px; display: flex; flex-direction: column; gap: 9px; }
+.list > div { display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; line-height: 1.4; color: var(--ink-2); }
+.check { flex: none; width: 15px; height: 15px; margin-top: 1px; color: var(--accent); }
+
+.chips { display: flex; gap: 7px; margin-top: 14px; flex-wrap: wrap; }
+.chips span {
+  font-size: 11.5px; font-weight: 560; color: var(--ink-2); padding: 6px 11px;
+  border-radius: 13px; background: rgba(0, 0, 0, 0.045);
+}
+
+.consultNote {
+  margin-top: 14px; padding: 11px 13px; border-radius: 13px; font-size: 12px; line-height: 1.45;
+  background: rgba(10, 122, 255, 0.07); border: 1px solid rgba(10, 122, 255, 0.18); color: var(--ink-2);
+}
+.consultNote b { color: var(--accent-deep); font-weight: 620; }
+
+.detailFoot { margin-top: 18px; display: flex; align-items: center; gap: 9px; }
+.bigPrice { font-size: 20px; font-weight: 640; margin-right: 2px; }
+.bigPrice s { font-size: 13px; font-weight: 480; color: var(--ink-3); margin-right: 5px; text-decoration-thickness: 1px; }
+.btnGhost {
+  padding: 12px 14px; font-size: 13px; font-weight: 600; color: var(--ink); cursor: pointer;
+  background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(0, 0, 0, 0.1); border-radius: 13px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transition: transform 160ms var(--ease-out);
+}
+.btnGhost:active { transform: scale(0.97); }
+.bigCta {
+  flex: 1; padding: 12px 0; text-align: center; font-size: 14px; font-weight: 600; color: #fff;
+  border: none; border-radius: 13px; cursor: pointer;
+  background: linear-gradient(180deg, #2b8cff, var(--accent-deep));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 10px 24px -8px rgba(10, 122, 255, 0.6);
+  transition: transform 160ms var(--ease-out);
+}
+.bigCta:active { transform: scale(0.97); }
+.bigCta:disabled { opacity: 0.55; }
+
+/* ---------- Booking ---------- */
+.bookSheet { padding: 22px 18px; display: flex; flex-direction: column; gap: 22px; }
+
+.cartCol h3, .calCol h3 { font-size: 14.5px; font-weight: 630; margin-bottom: 11px; }
+.cartEmpty { font-size: 12.5px; color: var(--ink-3); line-height: 1.45; }
+.cartItem {
+  display: flex; align-items: center; gap: 11px; padding: 10px; border-radius: 14px;
+  background: rgba(255, 255, 255, 0.6); border: 1px solid var(--line);
+}
+.cartItem + .cartItem { margin-top: 8px; }
+.cartItem img { flex: none; width: 42px; height: 54px; border-radius: 9px; object-fit: cover; }
+.cartItem h4 { font-size: 12.5px; font-weight: 610; line-height: 1.25; }
+.cartItem p { font-size: 11px; color: var(--ink-3); margin-top: 2px; }
+.amt { margin-left: auto; font-size: 12.5px; font-weight: 640; }
+.rm { border: none; background: none; color: var(--ink-3); font-size: 12px; cursor: pointer; padding: 4px; }
+.total { display: flex; justify-content: space-between; align-items: baseline; font-size: 13px; font-weight: 640; padding: 13px 10px 0; }
+.total small { font-weight: 480; color: var(--ink-3); }
+.freeChip {
+  margin-top: 13px; padding: 12px 13px; border-radius: 14px; font-size: 12px; line-height: 1.45;
+  background: rgba(48, 176, 88, 0.09); border: 1px solid rgba(48, 176, 88, 0.25); color: var(--ink-2);
+}
+.freeChip b { color: #1f8a45; font-weight: 630; }
+
+.calHead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; }
+.calHead h4 { font-size: 13.5px; font-weight: 620; }
+.arrows { display: flex; gap: 4px; }
+.arrows button {
+  width: 26px; height: 26px; border-radius: 8px; border: none; cursor: pointer;
+  color: var(--ink-2); background: rgba(0, 0, 0, 0.045); font-size: 13px;
+}
+.arrows button:disabled { opacity: 0.4; }
+
+.dow, .days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+.dow span {
+  text-align: center; font-size: 10px; font-weight: 620; color: var(--ink-3);
+  padding: 4px 0; text-transform: uppercase; letter-spacing: 0.04em;
+}
+.days button, .days span { aspect-ratio: 1; display: grid; place-items: center; font-size: 12.5px; font-weight: 540; border-radius: 50%; border: none; background: none; }
+.dayOpen { background: rgba(10, 122, 255, 0.08); color: var(--accent-deep); font-weight: 600; cursor: pointer; }
+.dayPast { color: rgba(0, 0, 0, 0.22); }
+.dayToday { box-shadow: inset 0 0 0 1.5px rgba(10, 122, 255, 0.5); }
+.daySel { background: var(--accent); color: #fff; font-weight: 640; cursor: pointer; }
+.tz { margin-top: 9px; font-size: 11px; color: var(--ink-3); }
+
+.slotCol h4 { font-size: 12.5px; font-weight: 620; margin-bottom: 9px; color: var(--ink-2); }
+.slots {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px;
+  max-height: 216px; overflow-y: auto; padding-bottom: 4px;
+}
+.slot, .slotSel {
+  padding: 10px 0; text-align: center; border-radius: 11px; font-size: 12.5px; font-weight: 590;
+  cursor: pointer; border: 1px solid rgba(10, 122, 255, 0.3);
+  background: rgba(255, 255, 255, 0.75); color: var(--accent-deep);
+}
+.slot:disabled { opacity: 0.45; cursor: default; }
+.slotSel { background: var(--accent); border-color: var(--accent); color: #fff; }
+.emailField {
+  margin-top: 11px; width: 100%; padding: 11px 13px; border-radius: 12px; font-size: 16px;
+  color: var(--ink); background: rgba(255, 255, 255, 0.85); border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+.emailField::placeholder { color: var(--ink-3); }
+.slotCol .bigCta { width: 100%; margin-top: 11px; padding: 12px 0; }
+.fine { margin-top: 9px; font-size: 10.5px; color: var(--ink-3); line-height: 1.4; text-align: center; }
+
+.doneBox { padding: 26px 8px 18px; text-align: center; }
+.doneBox h3 { font-size: 17px; font-weight: 640; }
+.doneBox p { margin-top: 9px; font-size: 13px; line-height: 1.5; color: var(--ink-2); }
+.doneBox b { color: var(--ink); }
+
+/* ---------- Wider screens ---------- */
+@media (min-width: 880px) {
+  .overlay { align-items: center; padding: 24px; }
+
+  .sheet {
+    width: min(940px, 100%); max-height: none; border-radius: 26px; overflow: hidden;
+    display: grid; grid-template-columns: 400px 1fr;
+    box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.4);
+  }
+  .embedCol { min-height: 640px; }
+  .embed { height: 100%; aspect-ratio: auto; }
+  .detailBody { padding: 26px 28px 24px; }
+  .detailBody h2 { font-size: 22px; }
+
+  .bookSheet {
+    width: min(900px, 100%); border-radius: 26px; padding: 26px;
+    display: grid; grid-template-columns: 285px 1fr 205px; gap: 24px; align-items: start;
+    box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.4);
+  }
+
+  .askSheet {
+    width: min(430px, 100%); border-radius: 26px; padding: 26px 26px 28px;
+    box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.4);
+  }
+  .slots { grid-template-columns: 1fr; max-height: 258px; }
+  .emailField { font-size: 12.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bigCta, .btnGhost { transition: none; }
+}

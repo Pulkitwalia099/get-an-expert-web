@@ -1,0 +1,229 @@
+/* Mobile-first: base styles are the phone layout, media queries widen it. */
+
+/* Mac palette, scoped here so the chat app at /chat keeps its cream tokens. */
+.page {
+  position: relative; min-height: 100dvh;
+  --bg: #F5F5F7;
+  --ink: #1D1D1F;
+  --ink-2: #515154;
+  --ink-3: #86868B;
+  --line: rgba(0, 0, 0, 0.07);
+  --glass: rgba(255, 255, 255, 0.58);
+  --glass-strong: rgba(255, 255, 255, 0.82);
+  --accent: #0A7AFF;
+  --accent-deep: #0063E0;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+/* Two soft blobs drift very slowly; subtle life, never distracting. */
+.bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.bg::before, .bg::after {
+  content: ''; position: absolute; width: 90vmax; height: 90vmax; border-radius: 50%;
+  will-change: transform;
+}
+.bg::before {
+  top: -50vmax; right: -28vmax;
+  background: radial-gradient(circle, rgba(10, 122, 255, 0.13), rgba(64, 200, 255, 0.05) 45%, transparent 63%);
+  animation: drift-a 38s ease-in-out infinite alternate;
+}
+.bg::after {
+  bottom: -55vmax; left: -32vmax;
+  background: radial-gradient(circle, rgba(124, 92, 255, 0.11), rgba(255, 140, 190, 0.04) 48%, transparent 63%);
+  animation: drift-b 47s ease-in-out infinite alternate;
+}
+@keyframes drift-a {
+  from { transform: translate3d(0, 0, 0) scale(1) rotate(0deg); }
+  to { transform: translate3d(-20vmax, 14vmax, 0) scale(1.22) rotate(10deg); }
+}
+@keyframes drift-b {
+  from { transform: translate3d(0, 0, 0) scale(1.12) rotate(0deg); }
+  to { transform: translate3d(18vmax, -12vmax, 0) scale(0.92) rotate(-8deg); }
+}
+
+.frame { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 0 16px 56px; }
+
+/* ---------- Nav ---------- */
+.nav { display: flex; align-items: center; justify-content: space-between; padding: 16px 0 0; }
+.brand { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 620; letter-spacing: -0.014em; }
+.navRight { display: flex; align-items: center; gap: 10px; }
+.cartBtn {
+  position: relative; display: flex; align-items: center; justify-content: center;
+  width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--line);
+  background: var(--glass-strong); cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 4px 14px rgba(0, 0, 0, 0.05);
+  transition: transform 160ms var(--ease-out);
+}
+.cartBtn:active { transform: scale(0.94); }
+.cartIcon { width: 16px; height: 16px; color: var(--ink); }
+.cartBtn b {
+  position: absolute; top: -3px; right: -3px; min-width: 17px; height: 17px; padding: 0 4px;
+  border-radius: 9px; background: var(--accent); color: #fff; font-size: 10.5px; font-weight: 640;
+  display: grid; place-items: center; border: 2px solid var(--bg);
+}
+.navBtn {
+  padding: 9px 15px; border-radius: 20px; font-size: 13px; font-weight: 590; color: #fff;
+  background: linear-gradient(180deg, #2b8cff, var(--accent-deep)); text-decoration: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 6px 16px -6px rgba(10, 122, 255, 0.55);
+  transition: transform 160ms var(--ease-out);
+}
+.navBtn:active { transform: scale(0.97); }
+
+/* ---------- Hero ---------- */
+.hero { padding: 40px 0 26px; }
+.hero h1 { font-size: 33px; line-height: 1.09; letter-spacing: -0.028em; font-weight: 700; max-width: 860px; }
+.hero em { font-style: normal; color: var(--accent); }
+
+/* ---------- Grid ---------- */
+.grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+
+.card {
+  display: flex; flex-direction: column; border-radius: 18px; overflow: hidden;
+  background: var(--glass-strong); border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75), 0 18px 40px -18px rgba(0, 0, 0, 0.18),
+    0 4px 14px rgba(0, 0, 0, 0.04);
+  transition: transform 200ms var(--ease-out), box-shadow 200ms var(--ease-out);
+  animation: rise 400ms var(--ease-out) both;
+}
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.card:nth-child(2) { animation-delay: 40ms; }
+.card:nth-child(3) { animation-delay: 80ms; }
+.card:nth-child(4) { animation-delay: 120ms; }
+.card:nth-child(5) { animation-delay: 160ms; }
+.card:nth-child(6) { animation-delay: 200ms; }
+.card:nth-child(7) { animation-delay: 240ms; }
+.card:nth-child(8) { animation-delay: 280ms; }
+.card:nth-child(9) { animation-delay: 320ms; }
+.card:nth-child(10) { animation-delay: 360ms; }
+.card:nth-child(11) { animation-delay: 400ms; }
+.card:nth-child(12) { animation-delay: 440ms; }
+
+.reel {
+  position: relative; display: flex; flex-direction: column; justify-content: flex-end;
+  aspect-ratio: 3 / 4; overflow: hidden; color: #fff; background: #101014;
+  border: none; padding: 0; cursor: pointer; text-align: left; width: 100%;
+}
+.reelLive { position: relative; aspect-ratio: 3 / 4; background: #101014; }
+.reelFrame { display: block; width: 100%; height: 100%; border: 0; background: #fff; }
+.thumb {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  transition: transform 450ms var(--ease-out);
+}
+.reel::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.3), transparent 26%, transparent 52%, rgba(0, 0, 0, 0.62));
+}
+.views {
+  position: absolute; top: 8px; left: 8px; z-index: 2; display: flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 13px;
+  background: rgba(0, 0, 0, 0.45); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+}
+.viewsGlyph { width: 9px; height: 9px; color: #fff; }
+.badge {
+  position: absolute; top: 8px; right: 8px; z-index: 2; font-size: 9.5px; font-weight: 650;
+  letter-spacing: 0.05em; text-transform: uppercase; padding: 4px 8px; border-radius: 11px;
+  color: #fff; background: rgba(0, 0, 0, 0.45); border: 1px solid rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+}
+.play {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2;
+  width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center;
+  background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+}
+.playGlyph { width: 14px; height: 14px; color: #fff; margin-left: 2px; }
+.rail {
+  position: absolute; right: 8px; bottom: 12px; z-index: 2;
+  display: flex; flex-direction: column; gap: 11px; opacity: 0.92;
+}
+.railIcon { width: 16px; height: 16px; color: #fff; }
+.cap {
+  position: relative; z-index: 2; display: block; padding: 0 38px 10px 10px;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
+}
+.handle { display: block; font-size: 11.5px; font-weight: 640; }
+.capLine {
+  display: -webkit-box; margin-top: 3px; font-size: 10.5px; line-height: 1.35; opacity: 0.85;
+  -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+
+/* flex:1 + margin-top:auto pin every Get This to its card's bottom edge, so
+   buttons in a row align even when titles wrap differently. */
+.info { padding: 11px 12px 12px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.info .cta { margin-top: auto; }
+.info h3 { font-size: 14px; font-weight: 620; letter-spacing: -0.012em; }
+.meta { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; }
+.price { font-size: 13.5px; font-weight: 640; }
+.price small { font-size: 11px; font-weight: 480; color: #1f8a45; margin-left: 5px; }
+.price s { font-size: 11.5px; font-weight: 480; color: var(--ink-3); margin-right: 4px; text-decoration-thickness: 1px; }
+.credit { font-size: 10.5px; color: var(--ink-3); }
+.credit b { font-weight: 560; color: var(--ink-2); }
+.cta {
+  margin-top: 2px; padding: 10px 0; text-align: center; font-size: 12.5px; font-weight: 600;
+  color: #fff; border: none; border-radius: 11px; cursor: pointer;
+  background: linear-gradient(180deg, #2b8cff, var(--accent-deep));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 6px 16px -6px rgba(10, 122, 255, 0.5);
+  transition: transform 160ms var(--ease-out);
+}
+.cta:active { transform: scale(0.97); }
+.cta:disabled { opacity: 0.6; }
+.ctaDone { background: rgba(29, 29, 31, 0.85); box-shadow: none; }
+
+/* ---------- Send a reel ---------- */
+.ask { background: rgba(255, 255, 255, 0.4); box-shadow: none; border: 1.5px dashed rgba(0, 0, 0, 0.16); justify-content: center; }
+.askInner { padding: 20px 16px; display: flex; flex-direction: column; gap: 9px; }
+.askPlus {
+  width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 17px; color: var(--accent-deep); background: rgba(10, 122, 255, 0.1); margin: 0 auto 2px;
+}
+.ask h3 { font-size: 14px; font-weight: 620; text-align: center; }
+.ask p { font-size: 11.5px; line-height: 1.4; color: var(--ink-3); text-align: center; }
+.askError { color: #b3372a; }
+.miniField {
+  padding: 11px 12px; border-radius: 11px; font-size: 16px; color: var(--ink);
+  background: rgba(255, 255, 255, 0.85); border: 1px solid rgba(0, 0, 0, 0.09);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9); width: 100%;
+}
+.miniField::placeholder { color: var(--ink-3); }
+
+/* ---------- Footer ---------- */
+.foot {
+  margin-top: 48px; padding-top: 18px; border-top: 1px solid var(--line);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.foot .brand { font-size: 13px; }
+.foot > span { font-size: 12px; color: var(--ink-3); }
+
+/* ---------- Wider screens ---------- */
+@media (min-width: 640px) {
+  .frame { padding: 0 24px 70px; }
+  .nav { padding-top: 20px; }
+  .hero { padding: 56px 0 34px; }
+  .hero h1 { font-size: 44px; line-height: 1.07; }
+  .grid { grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .meta { flex-direction: row; align-items: baseline; justify-content: space-between; }
+  .miniField { font-size: 12.5px; }
+}
+
+@media (min-width: 1000px) {
+  .frame { padding: 0 32px 80px; }
+  .nav { padding-top: 24px; }
+  .hero { padding: 72px 0 44px; }
+  .hero h1 { font-size: 54px; }
+  .grid { grid-template-columns: repeat(4, 1fr); gap: 18px; }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75), 0 26px 54px -20px rgba(0, 0, 0, 0.26),
+      0 4px 14px rgba(0, 0, 0, 0.05);
+  }
+  .card:hover .thumb { transform: scale(1.045); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card { animation: none; transition: none; }
+  .thumb, .cta, .navBtn, .cartBtn { transition: none; }
+  .bg::before, .bg::after { animation: none; }
+}
