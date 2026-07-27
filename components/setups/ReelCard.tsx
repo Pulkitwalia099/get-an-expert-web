@@ -84,7 +84,7 @@ export default function ReelCard({ setup, onGet, eager = false }: ReelCardProps)
           </div>
         </div>
         <button type="button" className={s.cta} onClick={() => onGet(setup.slug)}>
-          Get This
+          Try this
         </button>
       </div>
     </article>

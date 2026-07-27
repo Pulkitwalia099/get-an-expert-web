@@ -1,7 +1,6 @@
 import { recordInsight } from '@/lib/insights';
-import { notifyBooking } from '@/lib/notify';
 import { rateLimit } from '@/lib/ratelimit';
-import { parseConsultRequest, parseReelRequest } from '@/lib/setups-validate';
+import { parseReelRequest } from '@/lib/setups-validate';
 
 export interface SetupRequestResult {
   status: number;
@@ -21,16 +20,6 @@ export async function processSetupRequest(
 
   const type =
     typeof input === 'object' && input !== null ? (input as { type?: unknown }).type : undefined;
-
-  if (type === 'consult') {
-    const parsed = parseConsultRequest(input, today);
-    if (!parsed) {
-      return { status: 400, body: { ok: false, error: 'Check the booking details.' } };
-    }
-    await recordInsight('custom', { form: 'setup_consult', ...parsed });
-    await notifyBooking(parsed);
-    return { status: 200, body: { ok: true } };
-  }
 
   if (type === 'reel') {
     const parsed = parseReelRequest(input);

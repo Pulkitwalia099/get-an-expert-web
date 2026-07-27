@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-export type IconName = 'heart' | 'comment' | 'share' | 'bag';
+export type IconName = 'heart' | 'comment' | 'share';
 
 interface IconProps {
   name: IconName;
@@ -15,7 +15,6 @@ const STROKE_PATHS: Record<IconName, ReactNode> = {
     <path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.3 9 9 0 0 1-3.8-.8L3 21l2-5.1a8 8 0 0 1-1.5-4.4A8.4 8.4 0 0 1 12 3.2a8.4 8.4 0 0 1 9 8.3z" />
   ),
   share: <path d="M22 2L11 13M22 2l-7 20-4-9-9-4z" />,
-  bag: <path d="M6 8h12l-1.2 12.2a2 2 0 0 1-2 1.8H9.2a2 2 0 0 1-2-1.8L6 8zM9 8V6a3 3 0 0 1 6 0v2" />,
 };
 
 export function Icon({ name, className }: IconProps) {
@@ -31,6 +30,25 @@ export function Icon({ name, className }: IconProps) {
       aria-hidden
     >
       {STROKE_PATHS[name]}
+    </svg>
+  );
+}
+
+// The hero's scroll cue. A line with a head rather than a chevron alone, so
+// it reads as "keep going" instead of "expand this".
+export function ArrowDown({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M8 2.5v11M3.5 9.5 8 14l4.5-4.5" />
     </svg>
   );
 }

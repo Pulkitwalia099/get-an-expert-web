@@ -6,9 +6,7 @@ import sh from './sheets.module.css';
 
 interface DetailSheetProps {
   setup: Setup;
-  inCart: boolean;
   onClose: () => void;
-  onAdd: (slug: string) => void;
   onBook: (slug: string) => void;
 }
 
@@ -24,7 +22,7 @@ const CheckGlyph = () => (
   </svg>
 );
 
-export default function DetailSheet({ setup, inCart, onClose, onAdd, onBook }: DetailSheetProps) {
+export default function DetailSheet({ setup, onClose, onBook }: DetailSheetProps) {
   const ref = useDialog<HTMLDivElement>(onClose);
 
   return (
@@ -56,6 +54,9 @@ export default function DetailSheet({ setup, inCart, onClose, onAdd, onBook }: D
           <p className={sh.credit}>
             Video by <b>{setup.handle}</b> on TikTok · {setup.views} plays
           </p>
+          {/* These four ticks answer "what am I buying" and nothing labelled
+              them, so they read as decoration rather than the offer. */}
+          <h3 className={sh.listHead}>What&apos;s included</h3>
           <div className={sh.list}>
             {setup.checklist.map((line) => (
               <div key={line}>
@@ -64,24 +65,15 @@ export default function DetailSheet({ setup, inCart, onClose, onAdd, onBook }: D
               </div>
             ))}
           </div>
-          <div className={sh.chips}>
-            <span>{setup.minutes} min remote</span>
-            <span>Any machine</span>
-            <span>7 day guarantee</span>
-          </div>
-          <div className={sh.consultNote}>
-            <b>First consultation is free.</b> 15 minutes on a video call to plan your install
-            before you pay anything.
+          <div className={sh.payNote}>
+            You pay after the setup is running on your laptop, not before.
           </div>
           <div className={sh.detailFoot}>
             <div className={sh.bigPrice}>
               {SALE_ON ? <s>${setup.price}</s> : null} ${currentPrice(setup)}
             </div>
-            <button type="button" className={sh.btnGhost} onClick={() => onAdd(setup.slug)}>
-              {inCart ? 'In your cart' : 'Add to cart'}
-            </button>
             <button type="button" className={sh.bigCta} onClick={() => onBook(setup.slug)}>
-              Book this setup
+              Book a time
             </button>
           </div>
         </div>

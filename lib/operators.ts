@@ -30,7 +30,7 @@ export interface Operator {
   calLink: string;
 }
 
-const CAL_LINK = 'pulkit-walia-plcgb7/15min';
+export const CAL_LINK = 'pulkit-walia-plcgb7/15min';
 
 export const OPERATORS: Record<OperatorId, Operator> = {
   rohit: {
