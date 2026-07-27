@@ -24,6 +24,12 @@ const DAILY_ROOM_ORIGIN = 'https://midsesh.daily.co';
 const DAILY = 'https://*.daily.co wss://*.daily.co';
 const CAL = 'https://app.cal.com https://cal.com';
 
+// Every card on /setups embeds TikTok's official player in an iframe. Without
+// this the browser refuses the frame and shows its own "This content is
+// blocked" panel where the video should be, which is what shipped: the whole
+// page is videos, and none of them played.
+const TIKTOK = 'https://www.tiktok.com';
+
 const CSP = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline' ${POSTHOG} https://app.cal.com`,
@@ -31,7 +37,7 @@ const CSP = [
   "img-src 'self' https: data: blob:",
   "font-src 'self' data:",
   `connect-src 'self' ${POSTHOG} ${DAILY} ${CAL}`,
-  `frame-src 'self' ${DAILY} ${CAL}`,
+  `frame-src 'self' ${DAILY} ${CAL} ${TIKTOK}`,
   `media-src 'self' blob: ${DAILY}`,
   "worker-src 'self' blob:",
   "object-src 'none'",
@@ -66,6 +72,10 @@ const nextConfig: NextConfig = {
   },
   async headers() {
     return [{ source: '/(.*)', headers: SECURITY_HEADERS }];
+  },
+  // The page is /setups. People type and share the singular, and got a 404.
+  async redirects() {
+    return [{ source: '/setup', destination: '/setups', permanent: true }];
   },
 };
 

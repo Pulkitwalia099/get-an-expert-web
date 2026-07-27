@@ -30,6 +30,12 @@ describe('Content-Security-Policy', () => {
     expect(frameSrc).toContain('cal.com');
   });
 
+  it('lets the TikTok player frame load, which is every card on /setups', async () => {
+    const csp = (await headers())['Content-Security-Policy'];
+    const frameSrc = csp.split('; ').find((d) => d.startsWith('frame-src'))!;
+    expect(frameSrc).toContain('https://www.tiktok.com');
+  });
+
   it('allows the Daily signalling websocket', async () => {
     const csp = (await headers())['Content-Security-Policy'];
     const connect = csp.split('; ').find((d) => d.startsWith('connect-src'))!;
