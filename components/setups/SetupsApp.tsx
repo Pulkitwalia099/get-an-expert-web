@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { MAIN_SETUPS, getSetup } from '@/lib/setups';
+import { ORDERED_SETUPS, getSetup } from '@/lib/setups';
 import AskForm from './AskForm';
 import AskSheet from './AskSheet';
 import BookingSheet from './BookingSheet';
@@ -67,7 +67,7 @@ export default function SetupsApp() {
         </section>
 
         <section className={s.grid}>
-          {MAIN_SETUPS.map((setup, i) => (
+          {ORDERED_SETUPS.map((setup, i) => (
             <ReelCard key={setup.slug} setup={setup} onGet={setOpenSlug} eager={i < 4} />
           ))}
           <article className={`${s.card} ${s.ask}`}>

@@ -4,11 +4,13 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import {
   MAIN_SETUPS,
+  ORDERED_SETUPS,
   SALE_ON,
   SALE_PRICE,
   currentPrice,
   getSetup,
   isSetupSlug,
+  parseViews,
   playerUrl,
 } from '@/lib/setups';
 
@@ -60,6 +62,34 @@ describe('setup catalog', () => {
         new RegExp(`\\$\\{?${SALE_PRICE}\\b`),
       );
     }
+  });
+
+  it('leads with automations, then growth, then video, then the rest', () => {
+    const ranks = ORDERED_SETUPS.map((setup) => setup.category);
+    const order = ['automation', 'growth', 'video', 'other'];
+    const asIndexes = ranks.map((c) => order.indexOf(c));
+    expect(asIndexes).toEqual([...asIndexes].sort((a, b) => a - b));
+    expect(ORDERED_SETUPS[0].category).toBe('automation');
+    expect(ORDERED_SETUPS).toHaveLength(MAIN_SETUPS.length);
+  });
+
+  it('puts the most watched card first inside each group', () => {
+    const groups = new Map<string, number[]>();
+    for (const setup of ORDERED_SETUPS) {
+      const list = groups.get(setup.category) ?? [];
+      list.push(parseViews(setup.views));
+      groups.set(setup.category, list);
+    }
+    for (const [category, views] of groups) {
+      expect(views, category).toEqual([...views].sort((a, b) => b - a));
+    }
+  });
+
+  it('reads play counts back out of their display strings', () => {
+    expect(parseViews('11.3M')).toBe(11_300_000);
+    expect(parseViews('345K')).toBe(345_000);
+    expect(parseViews('8.7K')).toBe(8_700);
+    expect(parseViews('nope')).toBe(0);
   });
 
   it('builds the autoplaying TikTok player url', () => {

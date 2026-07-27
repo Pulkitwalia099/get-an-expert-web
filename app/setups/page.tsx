@@ -4,7 +4,7 @@ import SetupsApp from '@/components/setups/SetupsApp';
 export const metadata: Metadata = {
   title: 'midsesh · setups',
   description:
-    'The AI setups all over your feed, installed for you. Pick a video, book a free consultation, and a vetted expert sets it up on your machine at a fixed price.',
+    'There are AI setups all over your feed that could save you hours. Pick one, book a time, and our agents set it up on your laptop. $0 to pay today.',
 };
 
 export default function SetupsPage() {

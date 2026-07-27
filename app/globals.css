@@ -544,7 +544,7 @@ div.sav {
 .term code::-webkit-scrollbar { display: none; }
 .term .pkg { color: #F0B27E; }
 
-/* Blurred teaser: signals a real person was matched, details on connect. */
+/* Blurred teaser: signals an agent was matched, details on connect. */
 .teaser {
   display: flex; align-items: center; gap: 12px;
   background: rgba(255, 255, 255, .5);

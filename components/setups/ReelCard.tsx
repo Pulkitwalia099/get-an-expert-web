@@ -71,17 +71,18 @@ export default function ReelCard({ setup, onGet, eager = false }: ReelCardProps)
         </button>
       )}
       <div className={s.info}>
+        {/* Sat next to the price, which read as though the creator set the
+            price. It belongs against the video, which is the thing that is
+            theirs. */}
+        <div className={s.credit}>
+          Video by <b>{setup.handle}</b>
+        </div>
         <h3>{setup.title}</h3>
-        <div className={s.meta}>
-          {/* Every price on the page reads from currentPrice, so ending the sale
-              moves the card, the cart, and the total together. */}
-          <div className={s.price}>
-            {SALE_ON ? <s>${setup.price}</s> : null} ${currentPrice(setup)}
-            {SALE_ON ? <small>sale</small> : null}
-          </div>
-          <div className={s.credit}>
-            By <b>{setup.handle}</b>
-          </div>
+        {/* Every price on the page reads from currentPrice, so ending the sale
+            moves the card and the booking screen together. */}
+        <div className={s.price}>
+          {SALE_ON ? <s>${setup.price}</s> : null} ${currentPrice(setup)}
+          {SALE_ON ? <small>sale</small> : null}
         </div>
         <button type="button" className={s.cta} onClick={() => onGet(setup.slug)}>
           Try this

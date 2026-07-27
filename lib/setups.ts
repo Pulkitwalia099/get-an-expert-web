@@ -1,8 +1,21 @@
 export const SALE_ON = true;
 export const SALE_PRICE = 11;
 
+// Ordering the grid. The catalog below stays grouped the way it was written;
+// what ships is sorted by this priority, then by play count inside each group
+// so the most viral card leads its own section.
+export type SetupCategory = 'automation' | 'growth' | 'video' | 'other';
+
+const CATEGORY_RANK: Record<SetupCategory, number> = {
+  automation: 0,
+  growth: 1,
+  video: 2,
+  other: 3,
+};
+
 export interface Setup {
   slug: string;
+  category: SetupCategory;
   title: string;
   price: number;
   minutes: number;
@@ -31,6 +44,7 @@ export function playerUrl(tiktokId: string): string {
 export const MAIN_SETUPS: Setup[] = [
   {
     slug: 'claude-code-free',
+    category: 'other',
     title: 'Run Claude Code free',
     price: 35,
     minutes: 60,
@@ -49,6 +63,7 @@ export const MAIN_SETUPS: Setup[] = [
   },
   {
     slug: 'motion-website',
+    category: 'growth',
     title: '3D motion website',
     price: 75,
     minutes: 90,
@@ -67,6 +82,7 @@ export const MAIN_SETUPS: Setup[] = [
   },
   {
     slug: 'voice-clone',
+    category: 'video',
     title: 'Your voice, cloned',
     price: 35,
     minutes: 60,
@@ -85,6 +101,7 @@ export const MAIN_SETUPS: Setup[] = [
   },
   {
     slug: 'linkedin-voice',
+    category: 'growth',
     title: 'LinkedIn, in your voice',
     price: 75,
     minutes: 90,
@@ -103,6 +120,7 @@ export const MAIN_SETUPS: Setup[] = [
   },
   {
     slug: 'post-everywhere',
+    category: 'growth',
     title: 'Post once, everywhere',
     price: 75,
     minutes: 90,
@@ -121,6 +139,7 @@ export const MAIN_SETUPS: Setup[] = [
   },
   {
     slug: 'chief-of-staff',
+    category: 'automation',
     title: 'AI chief of staff',
     price: 75,
     minutes: 90,
@@ -139,6 +158,7 @@ export const MAIN_SETUPS: Setup[] = [
   },
   {
     slug: 'no-ai-slop',
+    category: 'growth',
     title: 'Writing with no AI slop',
     price: 35,
     minutes: 60,
@@ -158,6 +178,7 @@ export const MAIN_SETUPS: Setup[] = [
   },
   {
     slug: 'ai-support',
+    category: 'automation',
     title: 'AI customer support',
     price: 75,
     minutes: 90,
@@ -176,6 +197,7 @@ export const MAIN_SETUPS: Setup[] = [
   },
   {
     slug: 'openclaw',
+    category: 'automation',
     title: 'OpenClaw, set up for you',
     price: 75,
     minutes: 90,
@@ -195,6 +217,7 @@ export const MAIN_SETUPS: Setup[] = [
   },
   {
     slug: 'ollama',
+    category: 'other',
     title: 'Ollama, private AI at home',
     price: 35,
     minutes: 60,
@@ -213,6 +236,7 @@ export const MAIN_SETUPS: Setup[] = [
   },
   {
     slug: 'vibe-coding',
+    category: 'other',
     title: 'The vibe coding setup',
     price: 35,
     minutes: 90,
@@ -230,6 +254,21 @@ export const MAIN_SETUPS: Setup[] = [
     ],
   },
 ];
+
+// '11.3M' and '8.7K' are display strings, so they need turning back into a
+// number before anything can be sorted by them.
+export function parseViews(views: string): number {
+  const match = /^([\d.]+)\s*([KMB]?)$/i.exec(views.trim());
+  if (!match) return 0;
+  const scale = { K: 1e3, M: 1e6, B: 1e9 }[match[2].toUpperCase()] ?? 1;
+  return Number(match[1]) * scale;
+}
+
+export const ORDERED_SETUPS: Setup[] = [...MAIN_SETUPS].sort(
+  (a, b) =>
+    CATEGORY_RANK[a.category] - CATEGORY_RANK[b.category] ||
+    parseViews(b.views) - parseViews(a.views),
+);
 
 const BY_SLUG = new Map(MAIN_SETUPS.map((s) => [s.slug, s]));
 

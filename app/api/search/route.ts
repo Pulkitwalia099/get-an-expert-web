@@ -13,7 +13,7 @@ import { recordSearch, recordSession } from '@/lib/supabase';
 import { bumpUsage, durableLimit, monthKey, serpMonthlyCap } from '@/lib/usage';
 import { coerceBrief, parseSessionId } from '@/lib/validate';
 
-const RANK_SYSTEM = `You turn raw web search results into expert matches for midsesh, a service that finds human experts for high-stakes work.
+const RANK_SYSTEM = `You turn raw web search results into expert matches for midsesh, a service that finds expert agents for high-stakes work.
 
 You get a hiring brief and search results (title, snippet, link) from freelance marketplaces. Pick up to 3 results that are most likely a real, individual professional who fits the brief. Return fewer when fewer qualify. Never invent people; skip results with no discernible person.
 
