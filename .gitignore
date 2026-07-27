@@ -13,3 +13,4 @@ npm-debug.log*
 
 # eval run reports
 evals/.last-run.json
+.gstack/
