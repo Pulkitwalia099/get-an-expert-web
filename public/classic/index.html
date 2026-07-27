@@ -411,6 +411,18 @@ a:focus-visible,button:focus-visible,summary:focus-visible,[tabindex]:focus-visi
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#2F4A38&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;#2F4A38&quot;,&quot;#8C7136&quot;],&quot;section&quot;:&quot;Theme&quot;},&quot;motion&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Behavior&quot;}}">
+// The logic class lives in the real script below, not in this tag. The runtime
+// only needs this tag for data-props now, plus a non-empty body so it knows the
+// component has logic to pick up.
+</script>
+<script>
+// Registered as a factory instead of being written straight out, for two
+// reasons: it has to be callable before the runtime publishes DCLogic on
+// window, and handing the class over directly means nothing has to compile a
+// string at runtime. The site's Content-Security-Policy has no 'unsafe-eval',
+// so the old string path was blocked and every interaction on this page was
+// dead: no scroll reveals, no demo player, no responsive pass.
+window.__dcLogicFactory = function (DCLogic, StreamableLogic, React) {
 class Component extends DCLogic {
   state = { termLines: [], offer: false, pressed: false, connected: false, expertMsgs: [], solved: false, demoStep: 0 };
   componentDidMount() {
@@ -904,6 +916,8 @@ class Component extends DCLogic {
     };
   }
 }
+return Component;
+};
 </script>
 <script>
 // Waitlist submit — plain JS, delegated on document so it survives re-renders.

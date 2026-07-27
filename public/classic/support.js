@@ -1,4 +1,8 @@
 // GENERATED from dc-runtime/src/*.ts — do not edit. Rebuild with `cd dc-runtime && bun run build`.
+//
+// LOCAL PATCH: evalDcLogic prefers window.__dcLogicFactory over `new Function`,
+// so this archived page runs under the site CSP (no 'unsafe-eval'). Reapply it
+// if this file is ever regenerated from dc-runtime.
 "use strict";
 (() => {
   var __defProp = Object.defineProperty;
@@ -770,6 +774,14 @@
     }
   };
   function evalDcLogic(src) {
+    // A page can hand the logic class over directly as a factory. That skips the
+    // string compile below, which a Content-Security-Policy without
+    // 'unsafe-eval' refuses to run. The eval path stays for authoring, where the
+    // logic arrives as text over the wire.
+    const factory = typeof window !== "undefined" && window.__dcLogicFactory;
+    if (typeof factory === "function") {
+      return factory(StreamableLogic, StreamableLogic, getReact());
+    }
     //! nosemgrep: eval-and-function-constructor
     const fn = new Function(
       "DCLogic",
