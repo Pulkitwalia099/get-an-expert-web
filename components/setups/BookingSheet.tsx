@@ -1,9 +1,11 @@
 'use client';
 
+import Image from 'next/image';
 import { useMemo, useState } from 'react';
 import { cartTotal } from '@/lib/cart';
 import { currentPrice, getSetup } from '@/lib/setups';
 import { consultSlots, monthGrid, toDateKey } from '@/lib/slots';
+import { useDialog } from './useDialog';
 import sh from './sheets.module.css';
 
 interface BookingSheetProps {
@@ -25,6 +27,7 @@ export default function BookingSheet({ cart, onRemove, onClose, onBooked }: Book
   const [slot, setSlot] = useState<string | null>(null);
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<Status>('idle');
+  const ref = useDialog<HTMLDivElement>(onClose);
 
   const shown = new Date(today.getFullYear(), today.getMonth() + monthOffset, 1);
   const grid = monthGrid(shown.getFullYear(), shown.getMonth());
@@ -62,6 +65,8 @@ export default function BookingSheet({ cart, onRemove, onClose, onBooked }: Book
   return (
     <div className={sh.overlay} onClick={onClose} role="presentation">
       <div
+        ref={ref}
+        tabIndex={-1}
         className={sh.bookSheet}
         role="dialog"
         aria-modal="true"
@@ -91,7 +96,11 @@ export default function BookingSheet({ cart, onRemove, onClose, onBooked }: Book
               ) : (
                 items.map((item) => (
                   <div className={sh.cartItem} key={item.slug}>
-                    {item.thumb ? <img src={item.thumb} alt="" /> : null}
+                    {/* Renders at 42x54. Asking for the source file here meant
+                        downloading up to 2.6MB for a stamp. */}
+                    {item.thumb ? (
+                      <Image src={item.thumb} alt="" width={42} height={54} />
+                    ) : null}
                     <div>
                       <h4>{item.title}</h4>
                       <p>{item.minutes} min remote</p>

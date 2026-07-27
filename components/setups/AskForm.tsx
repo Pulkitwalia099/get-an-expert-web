@@ -12,6 +12,14 @@ export default function AskForm() {
   const [contact, setContact] = useState('');
   const [status, setStatus] = useState<AskStatus>('idle');
 
+  // The server parses this with the URL constructor, which throws on anything
+  // without a scheme. Share sheets hand over a full https link; an address bar
+  // copy or a typed handle does not, and those were being turned away.
+  function normalize(value: string): string {
+    const trimmed = value.trim();
+    return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+  }
+
   async function send() {
     if (status === 'sending' || link.trim().length === 0) return;
     setStatus('sending');
@@ -19,7 +27,7 @@ export default function AskForm() {
       const res = await fetch('/api/requests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'reel', link, contact }),
+        body: JSON.stringify({ type: 'reel', link: normalize(link), contact }),
       });
       const body = (await res.json()) as { ok?: boolean };
       setStatus(body.ok ? 'done' : 'error');
@@ -64,7 +72,7 @@ export default function AskForm() {
         {status === 'sending' ? 'Sending…' : 'Send it'}
       </button>
       {status === 'error' ? (
-        <p className={s.askError}>That link did not go through. Try again.</p>
+        <p className={s.askError}>That does not look like a link. Paste the full address.</p>
       ) : null}
     </div>
   );

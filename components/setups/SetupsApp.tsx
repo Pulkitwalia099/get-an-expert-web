@@ -4,12 +4,12 @@ import { useEffect, useState } from 'react';
 import { addToCart, removeFromCart } from '@/lib/cart';
 import { MAIN_SETUPS, getSetup, isSetupSlug } from '@/lib/setups';
 import AskForm from './AskForm';
+import AskSheet from './AskSheet';
 import BookingSheet from './BookingSheet';
 import DetailSheet from './DetailSheet';
 import ReelCard from './ReelCard';
 import { Icon, LogoMark } from './icons';
 import s from './setups.module.css';
-import sh from './sheets.module.css';
 
 const CART_KEY = 'gae-cart';
 
@@ -79,8 +79,8 @@ export default function SetupsApp() {
         </header>
 
         <section className={s.grid}>
-          {MAIN_SETUPS.map((setup) => (
-            <ReelCard key={setup.slug} setup={setup} onGet={setOpenSlug} />
+          {MAIN_SETUPS.map((setup, i) => (
+            <ReelCard key={setup.slug} setup={setup} onGet={setOpenSlug} eager={i < 4} />
           ))}
           <article className={`${s.card} ${s.ask}`}>
             <AskForm />
@@ -113,26 +113,7 @@ export default function SetupsApp() {
           onBooked={() => setCart([])}
         />
       ) : null}
-      {asking ? (
-        <div
-          className={`${sh.overlay} ${sh.center}`}
-          onClick={() => setAsking(false)}
-          role="presentation"
-        >
-          <div
-            className={sh.askSheet}
-            role="dialog"
-            aria-modal="true"
-            aria-label="Request a setup"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button type="button" className={sh.x} onClick={() => setAsking(false)} aria-label="Close">
-              ✕
-            </button>
-            <AskForm />
-          </div>
-        </div>
-      ) : null}
+      {asking ? <AskSheet onClose={() => setAsking(false)} /> : null}
     </div>
   );
 }

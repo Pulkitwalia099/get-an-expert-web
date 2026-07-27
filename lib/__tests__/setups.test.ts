@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import {
   MAIN_SETUPS,
@@ -8,6 +11,8 @@ import {
   isSetupSlug,
   playerUrl,
 } from '@/lib/setups';
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 describe('setup catalog', () => {
   it('has eleven setups with unique slugs', () => {
@@ -38,6 +43,22 @@ describe('setup catalog', () => {
     expect(SALE_PRICE).toBe(11);
     for (const setup of MAIN_SETUPS) {
       expect(currentPrice(setup)).toBe(11);
+    }
+  });
+
+  // The card and the detail sheet used to print "$11" as literal text while
+  // the cart and the totals called currentPrice. They agreed only because the
+  // sale is on. Turning SALE_ON off would have advertised $11 and charged $75.
+  // There is no DOM test setup in this project, so the guard reads the source.
+  it('never hardcodes the sale price in a component', () => {
+    const dir = path.join(root, 'components', 'setups');
+    for (const file of ['ReelCard.tsx', 'DetailSheet.tsx']) {
+      const source = readFileSync(path.join(dir, file), 'utf8');
+      const code = source.replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '');
+      expect(code, `${file} should price from currentPrice()`).toContain('currentPrice(setup)');
+      expect(code, `${file} still has a literal $${SALE_PRICE}`).not.toMatch(
+        new RegExp(`\\$\\{?${SALE_PRICE}\\b`),
+      );
     }
   });
 

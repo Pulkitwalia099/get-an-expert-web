@@ -151,6 +151,10 @@
   .embedCol { min-height: 640px; }
   .embed { height: 100%; aspect-ratio: auto; }
   .detailBody { padding: 26px 28px 24px; }
+  /* The video column sets the sheet height, and the copy runs out well before
+     it, which left a dead band under the buttons. Pushing the price and the
+     buttons to the bottom edge turns that slack into a purchase bar. */
+  .detailBody .detailFoot { margin-top: auto; }
   .detailBody h2 { font-size: 22px; }
 
   .bookSheet {

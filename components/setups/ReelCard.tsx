@@ -1,18 +1,27 @@
 'use client';
 
+import Image from 'next/image';
 import { useState } from 'react';
-import { playerUrl, type Setup } from '@/lib/setups';
+import { SALE_ON, currentPrice, playerUrl, type Setup } from '@/lib/setups';
 import { Icon, PlayGlyph } from './icons';
 import s from './setups.module.css';
 
 interface ReelCardProps {
   setup: Setup;
   onGet: (slug: string) => void;
+  /** Top row only. Those thumbnails are what a visitor stares at while the
+      page settles, so they load with the page instead of waiting for scroll. */
+  eager?: boolean;
 }
+
+// The source files run up to 2160px wide and 2.6MB for a picture that draws at
+// roughly 270px. next/image resizes and re-encodes to AVIF or WebP per
+// breakpoint, so the browser fetches something close to what it renders.
+const THUMB_SIZES = '(min-width: 1000px) 25vw, (min-width: 640px) 33vw, 50vw';
 
 // One tap plays the video in place: TikTok's official player autoplays
 // muted the moment it mounts. Buying lives entirely behind Get This.
-export default function ReelCard({ setup, onGet }: ReelCardProps) {
+export default function ReelCard({ setup, onGet, eager = false }: ReelCardProps) {
   const [playing, setPlaying] = useState(false);
 
   return (
@@ -34,7 +43,14 @@ export default function ReelCard({ setup, onGet }: ReelCardProps) {
           onClick={() => setPlaying(true)}
           aria-label={`Play the reel by ${setup.handle}`}
         >
-          <img className={s.thumb} src={setup.thumb} alt="" loading="lazy" />
+          <Image
+            className={s.thumb}
+            src={setup.thumb}
+            alt=""
+            fill
+            sizes={THUMB_SIZES}
+            priority={eager}
+          />
           <span className={s.views}>
             <PlayGlyph className={s.viewsGlyph} />
             {setup.views}
@@ -57,9 +73,11 @@ export default function ReelCard({ setup, onGet }: ReelCardProps) {
       <div className={s.info}>
         <h3>{setup.title}</h3>
         <div className={s.meta}>
+          {/* Every price on the page reads from currentPrice, so ending the sale
+              moves the card, the cart, and the total together. */}
           <div className={s.price}>
-            <s>${setup.price}</s> $11
-            <small>sale</small>
+            {SALE_ON ? <s>${setup.price}</s> : null} ${currentPrice(setup)}
+            {SALE_ON ? <small>sale</small> : null}
           </div>
           <div className={s.credit}>
             By <b>{setup.handle}</b>

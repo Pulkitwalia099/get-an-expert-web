@@ -1,4 +1,7 @@
-import { playerUrl, type Setup } from '@/lib/setups';
+'use client';
+
+import { SALE_ON, currentPrice, playerUrl, type Setup } from '@/lib/setups';
+import { useDialog } from './useDialog';
 import sh from './sheets.module.css';
 
 interface DetailSheetProps {
@@ -22,9 +25,13 @@ const CheckGlyph = () => (
 );
 
 export default function DetailSheet({ setup, inCart, onClose, onAdd, onBook }: DetailSheetProps) {
+  const ref = useDialog<HTMLDivElement>(onClose);
+
   return (
     <div className={sh.overlay} onClick={onClose} role="presentation">
       <div
+        ref={ref}
+        tabIndex={-1}
         className={sh.sheet}
         role="dialog"
         aria-modal="true"
@@ -68,7 +75,7 @@ export default function DetailSheet({ setup, inCart, onClose, onAdd, onBook }: D
           </div>
           <div className={sh.detailFoot}>
             <div className={sh.bigPrice}>
-              <s>${setup.price}</s> $11
+              {SALE_ON ? <s>${setup.price}</s> : null} ${currentPrice(setup)}
             </div>
             <button type="button" className={sh.btnGhost} onClick={() => onAdd(setup.slug)}>
               {inCart ? 'In your cart' : 'Add to cart'}
