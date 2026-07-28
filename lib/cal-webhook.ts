@@ -35,6 +35,18 @@ function str(value: unknown): string | null {
 }
 
 /**
+ * Whatever the booker had typed into the notes field, whichever of the two
+ * names Cal chose to send it under. Defined once because two parsers read it.
+ */
+export function calNotes(body: unknown): unknown {
+  if (typeof body !== 'object' || body === null) return null;
+  const payload = (body as Record<string, unknown>).payload;
+  if (typeof payload !== 'object' || payload === null) return null;
+  const p = payload as Record<string, unknown>;
+  return p.additionalNotes ?? p.description;
+}
+
+/**
  * The setup slug travels in the booking notes, which is what BookingSheet
  * writes: "Setup: <title> (<slug>), 60 min, $11 after the session." Reading it
  * back out is deliberately narrow, and the slug is checked against the catalog
@@ -47,6 +59,22 @@ export function setupSlugFromNotes(notes: unknown): string | null {
   if (!match) return null;
   const slug = match[1].toLowerCase();
   return isSetupSlug(slug) ? slug : null;
+}
+
+/**
+ * The visitor's PostHog id, which BookingSheet appends to the same notes as
+ * "[ph:<id>]". Cal runs in a cross-origin iframe, so this is the only thread
+ * back to the person who walked the funnel.
+ *
+ * Narrow on purpose, like the slug above. Anything that is not a plain id
+ * shaped token comes back null, and null means "no stitch": the booking is
+ * recorded, and no funnel event is filed against a guess.
+ */
+export function distinctIdFromNotes(notes: unknown): string | null {
+  const text = str(notes);
+  if (!text) return null;
+  const match = /\[ph:([A-Za-z0-9_-]{8,64})\]/.exec(text);
+  return match ? match[1] : null;
 }
 
 export function parseCalBooking(body: unknown): SetupBookingRow | null {
@@ -73,7 +101,7 @@ export function parseCalBooking(body: unknown): SetupBookingRow | null {
 
   return {
     calBookingUid: uid,
-    setupSlug: setupSlugFromNotes(p.additionalNotes ?? p.description),
+    setupSlug: setupSlugFromNotes(calNotes(body)),
     attendeeEmail: str(first.email),
     attendeeName: str(first.name),
     startsAt: str(p.startTime),

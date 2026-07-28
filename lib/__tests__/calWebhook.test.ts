@@ -1,6 +1,11 @@
 import { createHmac } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
-import { parseCalBooking, setupSlugFromNotes, verifyCalSignature } from '@/lib/cal-webhook';
+import {
+  distinctIdFromNotes,
+  parseCalBooking,
+  setupSlugFromNotes,
+  verifyCalSignature,
+} from '@/lib/cal-webhook';
 
 const SECRET = 'test-secret';
 const sign = (body: string) => createHmac('sha256', SECRET).update(body).digest('hex');
@@ -57,6 +62,33 @@ describe('setupSlugFromNotes', () => {
     expect(setupSlugFromNotes('just a note')).toBeNull();
     expect(setupSlugFromNotes(null)).toBeNull();
     expect(setupSlugFromNotes(42)).toBeNull();
+  });
+});
+
+describe('distinctIdFromNotes', () => {
+  const PH_ID = '019fa64e-beec-7508-b061-13f7bfa845c5';
+  const stitched = `${notesFor('openclaw')} [ph:${PH_ID}]`;
+
+  it('reads the id the booking sheet appended', () => {
+    expect(distinctIdFromNotes(stitched)).toBe(PH_ID);
+  });
+
+  it('leaves the slug readable in the same string', () => {
+    // The two parsers share one notes field. Neither may eat the other.
+    expect(setupSlugFromNotes(stitched)).toBe('openclaw');
+  });
+
+  it('returns null when the booking came from somewhere other than the page', () => {
+    expect(distinctIdFromNotes(notesFor('openclaw'))).toBeNull();
+    expect(distinctIdFromNotes('booked from the Cal link directly')).toBeNull();
+  });
+
+  it('returns null on anything that is not an id shaped string', () => {
+    expect(distinctIdFromNotes(`${notesFor('openclaw')} [ph:]`)).toBeNull();
+    expect(distinctIdFromNotes(`${notesFor('openclaw')} [ph:visitor@example.com]`)).toBeNull();
+    expect(distinctIdFromNotes(`${notesFor('openclaw')} [ph:${'x'.repeat(65)}]`)).toBeNull();
+    expect(distinctIdFromNotes(null)).toBeNull();
+    expect(distinctIdFromNotes(42)).toBeNull();
   });
 });
 

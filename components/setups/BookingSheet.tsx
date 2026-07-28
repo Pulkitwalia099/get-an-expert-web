@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { useEffect, useMemo } from 'react';
 import BookingEmbed from '@/components/BookingEmbed';
-import { track } from '@/lib/analytics';
+import { distinctId, track } from '@/lib/analytics';
 import { CAL_LINK } from '@/lib/operators';
 import { currentPrice, type Setup } from '@/lib/setups';
 import { useDialog } from './useDialog';
@@ -41,15 +41,21 @@ export default function BookingSheet({ setup, from, onClose }: BookingSheetProps
 
   // BookingEmbed keys its mount effect on this object, so a fresh identity on
   // every render would remount the calendar mid-booking.
-  const prefill = useMemo(
-    () => ({
+  const prefill = useMemo(() => {
+    const notes = `Setup: ${setup.title} (${setup.slug}), ${setup.minutes} min, $${currentPrice(setup)} after the session.`;
+    // The visitor's PostHog id rides out with the booking so the webhook can
+    // file booking_completed against the person who got this far, rather than
+    // against a stranger the funnel has never seen. Appended, and with no
+    // brackets of the round kind, because the slug is read back out of the
+    // first (parenthesised) group in this same string.
+    const id = distinctId();
+    return {
       calLink: CAL_LINK,
       name: null,
       email: null,
-      notes: `Setup: ${setup.title} (${setup.slug}), ${setup.minutes} min, $${currentPrice(setup)} after the session.`,
-    }),
-    [setup],
-  );
+      notes: id ? `${notes} [ph:${id}]` : notes,
+    };
+  }, [setup]);
 
   return (
     <div className={sh.overlay} onClick={onClose} role="presentation">

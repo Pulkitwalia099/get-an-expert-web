@@ -14,6 +14,7 @@
     "@daily-co/daily-js": "^0.91.0",
     "next": "^16.2.11",
     "posthog-js": "^1.407.2",
+    "posthog-node": "^5.21.2",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },

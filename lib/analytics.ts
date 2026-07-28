@@ -45,6 +45,27 @@ export function capturePageview(url: string): void {
   posthog.capture('$pageview', { $current_url: url });
 }
 
+/**
+ * The id PostHog is filing this visitor's events under. It exists so the
+ * booking sheet can carry it into the Cal notes: the calendar is a
+ * cross-origin iframe, so the only way `booking_completed` lands on the person
+ * who walked the funnel is to send the id out with the booking and read it
+ * back off the webhook. Without that the last step is a stranger and the
+ * funnel reads 0%.
+ *
+ * Null before init, on the server, and with no key set, same as everything
+ * else here. Callers treat that as "no stitch" rather than an error.
+ */
+export function distinctId(): string | null {
+  initAnalytics();
+  if (!ready) return null;
+  try {
+    return posthog.get_distinct_id() || null;
+  } catch {
+    return null;
+  }
+}
+
 export function track(event: string, props?: Record<string, unknown>): void {
   // Same ordering guarantee as capturePageview: the first event of a visit
   // (chat_opened) fires from a child effect before the provider mounts, so
