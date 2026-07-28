@@ -10,6 +10,19 @@ interface DetailSheetProps {
   onBook: (slug: string) => void;
 }
 
+// The same shape as POINTS in Included: the copy is the same for every setup,
+// so it lives next to the component rather than being threaded through props.
+//
+// 15 minutes is fixed rather than read from setup.minutes, which still holds
+// the 60 and 90 the catalog was written with. The hero on this same page
+// already promises a 15 minute call, so this now agrees with it. The booking
+// sheet and the Cal notes still say 60 or 90.
+const STEPS = [
+  'Pick a 15 minute slot that suits you',
+  'An agent joins the screen share and sets it up on your laptop',
+  'You watch it happen, test, and then you pay',
+];
+
 const CheckGlyph = () => (
   <svg viewBox="0 0 16 16" className={sh.check} aria-hidden>
     <path
@@ -66,11 +79,7 @@ export default function DetailSheet({ setup, onClose, onBook }: DetailSheetProps
 
           <h3 className={sh.listHead}>How it gets installed</h3>
           <div className={sh.steps}>
-            {[
-              `Pick a slot, ${setup.minutes} minutes`,
-              'An agent, on your laptop',
-              `Watch, test, then pay $${currentPrice(setup)}`,
-            ].map((step, i) => (
+            {STEPS.map((step, i) => (
               <div key={step}>
                 <span className={sh.stepNum} aria-hidden>
                   {i + 1}
