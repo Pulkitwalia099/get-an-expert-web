@@ -1,4 +1,5 @@
 import { recordInsight } from '@/lib/insights';
+import { recordSetupRequest } from '@/lib/supabase';
 import { rateLimit } from '@/lib/ratelimit';
 import { parseReelRequest } from '@/lib/setups-validate';
 
@@ -27,6 +28,10 @@ export async function processSetupRequest(
       return { status: 400, body: { ok: false, error: 'That link did not parse.' } };
     }
     await recordInsight('custom', { form: 'setup_reel', ...parsed });
+    // Supabase is the durable copy. Like every other write in this codebase
+    // it swallows its own errors, so an outage costs the record but never the
+    // submission: the visitor still gets their "Got it".
+    await recordSetupRequest(parsed);
     return { status: 200, body: { ok: true } };
   }
 

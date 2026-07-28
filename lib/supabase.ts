@@ -232,3 +232,46 @@ export async function recordLead(sessionId: string | null, lead: LeadRecord): Pr
   if (lead.flow === 'dev') row.flow = 'dev';
   await write('leads', row);
 }
+
+export interface SetupRequestRow {
+  link: string;
+  contact?: string;
+}
+
+// "Seen a setup we're missing?" submissions. These used to exist only in the
+// Vercel log, which rolls off, so a reel link plus an email address was
+// effectively thrown away.
+export async function recordSetupRequest(request: SetupRequestRow): Promise<void> {
+  await write('setup_requests', {
+    link: request.link,
+    contact: request.contact ?? null,
+  });
+}
+
+export interface SetupBookingRow {
+  calBookingUid: string;
+  setupSlug: string | null;
+  attendeeEmail: string | null;
+  attendeeName: string | null;
+  startsAt: string | null;
+  status: 'booked' | 'cancelled' | 'rescheduled';
+  payload: unknown;
+}
+
+// One row per Cal booking. Upserted on the Cal uid so a cancellation or a
+// reschedule updates the booking it belongs to instead of adding a second row.
+export async function recordSetupBooking(booking: SetupBookingRow): Promise<void> {
+  await write(
+    'setup_bookings',
+    {
+      cal_booking_uid: booking.calBookingUid,
+      setup_slug: booking.setupSlug,
+      attendee_email: booking.attendeeEmail,
+      attendee_name: booking.attendeeName,
+      starts_at: booking.startsAt,
+      status: booking.status,
+      payload: booking.payload,
+    },
+    { upsertOn: 'cal_booking_uid' },
+  );
+}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { NO_CAPTURE } from '@/lib/replay';
 import s from './setups.module.css';
 
 type AskStatus = 'idle' | 'sending' | 'done' | 'error';
@@ -61,7 +62,7 @@ export default function AskForm() {
         aria-label="Reel link"
       />
       <input
-        className={s.miniField}
+        className={`${s.miniField} ${NO_CAPTURE}`}
         type="text"
         placeholder="Email or social, optional"
         value={contact}
