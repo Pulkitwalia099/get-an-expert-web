@@ -27,6 +27,11 @@ const CheckGlyph = () => (
 // thing they had watched. What they have not seen is what the setup includes
 // and what it costs, so that comes first now and the clip sits underneath for
 // anyone who wants it again.
+//
+// It still went straight from a checklist to a calendar, which asked for a
+// slot without ever saying what the slot was for. The steps below are that
+// missing piece, kept to the fewest words that still carry it: who does it,
+// where it happens, and when the money changes hands.
 export default function DetailSheet({ setup, onClose, onBook }: DetailSheetProps) {
   const ref = useDialog<HTMLDivElement>(onClose);
 
@@ -59,16 +64,37 @@ export default function DetailSheet({ setup, onClose, onBook }: DetailSheetProps
             ))}
           </div>
 
-          <div className={sh.payNote}>
-            You pay after the setup is running on your laptop, not before.
+          <h3 className={sh.listHead}>How it gets installed</h3>
+          <div className={sh.steps}>
+            {[
+              `Pick a slot, ${setup.minutes} minutes`,
+              'An agent, on your laptop',
+              `Watch, test, then pay $${currentPrice(setup)}`,
+            ].map((step, i) => (
+              <div key={step}>
+                <span className={sh.stepNum} aria-hidden>
+                  {i + 1}
+                </span>
+                {step}
+              </div>
+            ))}
           </div>
+
+          {/* Was "You pay after the setup is running on your laptop, not
+              before." Step three now says that, and the two sat one on top of
+              the other. What is left is the part the steps do not cover: how
+              much leaves your account right now. */}
+          <div className={sh.payNote}>$0 to pay today.</div>
 
           <div className={sh.detailFoot}>
             <div className={sh.bigPrice}>
               {SALE_ON ? <s>${setup.price}</s> : null} ${currentPrice(setup)}
             </div>
+            {/* Was "Book a time", which named the mechanism. The steps above
+                end on picking a slot, so the button finishes that sentence
+                rather than starting a new one. */}
             <button type="button" className={sh.bigCta} onClick={() => onBook(setup.slug)}>
-              Book a time
+              Pick your slot
             </button>
           </div>
 

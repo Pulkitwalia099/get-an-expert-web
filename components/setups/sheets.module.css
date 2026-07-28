@@ -56,6 +56,29 @@
   text-transform: uppercase; color: var(--ink-3);
 }
 
+/* The sheet said what you get and then asked for your calendar, with nothing
+   in between about what the time was for. These are that missing middle.
+   Numbered rather than ticked, because unlike the checklist above this is a
+   sequence and the order is the information. */
+.steps { margin-top: 10px; display: flex; flex-direction: column; gap: 9px; }
+.steps > div {
+  display: flex; gap: 9px; align-items: flex-start;
+  font-size: 12.5px; line-height: 1.4; color: var(--ink-2);
+}
+/* The tint is mixed from --accent rather than read from --accent-tint. The
+   setups page redefines --accent to blue and leaves --accent-tint alone, so
+   the named token still holds the warm global value: a rust chip behind a blue
+   numeral. Mixing from the same variable the text uses keeps the two together
+   whatever --accent is in scope. */
+.stepNum {
+  flex: none; width: 15px; height: 15px; margin-top: 1px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: color-mix(in srgb, var(--accent) 11%, transparent);
+  color: var(--accent);
+  font-size: 9.5px; font-weight: 680; line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
 .payNote {
   margin-top: 16px; padding: 11px 13px; border-radius: 13px; font-size: 12.5px; line-height: 1.45;
   background: rgba(48, 176, 88, 0.09); border: 1px solid rgba(48, 176, 88, 0.24); color: var(--ink-2);
