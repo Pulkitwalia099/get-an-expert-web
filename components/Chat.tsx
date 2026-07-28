@@ -139,16 +139,27 @@ export default function Chat({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [overlay, seed]);
 
+  // Every way out goes through here, so the drop-off point is recorded once
+  // whichever control they used. The phase is the whole value of the event:
+  // leaving on 'welcome' is a different problem from leaving on 'email'.
+  const dismiss = useCallback(
+    (how: string) => {
+      track('ask_chat_closed', { flow, how, phase, turns: userTurns.current });
+      onClose?.();
+    },
+    [flow, phase, onClose],
+  );
+
   // Escape closes the overlay, the same as the scrim. Not bound in page mode,
   // where there is nothing to close back to.
   useEffect(() => {
     if (!overlay || !onClose) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') dismiss('escape');
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [overlay, onClose]);
+  }, [overlay, onClose, dismiss]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: 1e7, behavior: 'smooth' });
@@ -485,7 +496,7 @@ export default function Chat({
             type="button"
             className="overlay-scrim"
             aria-label="Close the chat"
-            onClick={onClose}
+            onClick={() => dismiss('scrim')}
           />
         )}
         <section className={overlay ? 'window window-overlay' : 'window'}>
@@ -494,7 +505,7 @@ export default function Chat({
             onRestart={restart}
             canRestart={phase !== 'welcome'}
             needsConfirm={callLive}
-            onDismiss={overlay ? onClose : undefined}
+            onDismiss={overlay ? () => dismiss('close_button') : undefined}
           />
 
           <div className="chat" ref={scrollRef}>

@@ -111,7 +111,72 @@ button:active { transform: scale(0.96); }
   font-size: 13.5px; font-weight: 600; color: var(--ink); letter-spacing: -0.012em;
 }
 
+.sitenav { display: flex; align-items: center; gap: 16px; }
 .sitebar .privacy-link { margin-left: 0; }
+
+/* Same weight as the privacy link on purpose. A visitor looking for a human
+   should find one, but the search bar is the thing the page is asking for, and
+   a filled Contact button up here would compete with it. */
+.contact-link {
+  position: relative; z-index: 1;
+  font-size: 11px; font-weight: 500; letter-spacing: 0.01em;
+  color: var(--ink-3); text-decoration: none;
+  transition: color .2s var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .contact-link:hover { color: var(--ink-2); }
+}
+.contact-link:focus-visible, .privacy-link:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px;
+}
+
+/* ---------- The closing ask ---------- */
+/* Deliberately the loudest control on the page. Everything above it is quiet,
+   so the one filled button is unambiguous about what to do next. */
+.closer {
+  position: relative; z-index: 1;
+  width: min(720px, 100%);
+  margin: 0 auto;
+  padding: 8px var(--page-gutter) clamp(72px, 14vw, 120px);
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  text-align: center;
+}
+
+.closer-title {
+  font-size: clamp(20px, 4.4vw, 26px);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+.closer-sub {
+  font-size: 13.5px; line-height: 1.55; color: var(--ink-2);
+  max-width: 46ch; margin-bottom: 6px;
+}
+
+.closer-cta {
+  border: none;
+  background: var(--accent);
+  color: #FDFAF5;
+  font-size: 15px; font-weight: 600; letter-spacing: -0.01em;
+  padding: 13px 26px;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 8px 22px -8px rgba(168, 69, 44, .55);
+  transition: transform 160ms var(--ease-out), background 160ms var(--ease-out),
+    box-shadow 160ms var(--ease-out);
+}
+
+.closer-cta:active { transform: scale(0.97); }
+.closer-cta:focus-visible { outline: 2px solid var(--accent-deep); outline-offset: 3px; }
+
+@media (hover: hover) and (pointer: fine) {
+  .closer-cta:hover {
+    background: var(--accent-deep);
+    box-shadow: 0 10px 26px -8px rgba(168, 69, 44, .62);
+  }
+}
 
 /* ---------- The chat as an overlay ---------- */
 /* On the homepage the hero is the front door and the window is the committed

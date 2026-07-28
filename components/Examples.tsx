@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { CATEGORIES, type CategoryKey } from '@/components/flows';
 import { EXAMPLES } from '@/lib/examples';
 import styles from '@/components/Sections.module.css';
+import { track } from '@/lib/analytics';
 
 // How many cards a visitor gets before they ask for the rest. A phone should
 // not be handed the whole list on arrival.
@@ -22,8 +23,11 @@ export default function Examples() {
     [filter],
   );
 
-  // A new filter starts a new list, so it starts folded again.
+  // A new filter starts a new list, so it starts folded again. The event is
+  // what tells us which kinds of work people actually scan for, which is the
+  // demand signal the chip order upstairs is currently guessing at.
   function pick(next: Filter) {
+    track('example_filtered', { category: next });
     setFilter(next);
     setShown(BATCH);
   }
@@ -80,7 +84,10 @@ export default function Examples() {
 
       {hidden > 0 && (
         <div className={styles.moreRow}>
-          <button type="button" className={styles.more} onClick={() => setShown(list.length)}>
+          <button type="button" className={styles.more} onClick={() => {
+              track('examples_expanded', { category: filter, revealed: hidden });
+              setShown(list.length);
+            }}>
             Show {hidden} more
           </button>
         </div>
