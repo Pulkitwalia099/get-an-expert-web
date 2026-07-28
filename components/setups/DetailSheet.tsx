@@ -48,9 +48,6 @@ export default function DetailSheet({ setup, onClose, onBook }: DetailSheetProps
 
         <div className={sh.detailBody}>
           <h2>{setup.title}</h2>
-          <p className={sh.credit}>
-            Video by <b>{setup.handle}</b> on TikTok · {setup.views} plays
-          </p>
 
           <h3 className={sh.listHead}>What&apos;s included</h3>
           <div className={sh.list}>
@@ -76,7 +73,6 @@ export default function DetailSheet({ setup, onClose, onBook }: DetailSheetProps
           </div>
 
           <div className={sh.replay}>
-            <h3 className={sh.listHead}>The video this came from</h3>
             <div className={sh.embedCol}>
               <iframe
                 className={sh.embed}

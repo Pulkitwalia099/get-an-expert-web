@@ -191,7 +191,7 @@ export const MAIN_SETUPS: Setup[] = [
     checklist: [
       'A support agent trained on your docs and past tickets',
       'Answers calls and chat on your site or WhatsApp',
-      'Hands off to a human the moment it is unsure',
+      'Hands the conversation over the moment it is unsure',
       'A weekly digest of what customers asked',
     ],
   },
