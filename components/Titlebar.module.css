@@ -177,3 +177,44 @@
 @media (hover: hover) and (pointer: fine) {
   .dismiss:hover { background: rgba(33, 30, 26, .10); color: var(--ink); }
 }
+
+/* ---------- The context strip ---------- */
+/* What the visitor tapped on the way in, named under the titlebar. It lives
+   here with the rest of the window chrome because that is what it is: a strip
+   outside the scroller, so the subject is still on screen at turn six, and it
+   never becomes part of the conversation. Quiet by design. The thread below is
+   the thing being read, and a heading that shouts would compete with it.
+   Nothing here is pressable or focusable, so there is no press, hover or focus
+   state to give it, and it draws no motion of its own: it arrives inside the
+   window, which already animates up. */
+.contextStrip {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 8px 20px 9px;
+  border-bottom: 1px solid var(--line);
+  background: var(--accent-tint);
+}
+
+.contextLabel {
+  flex: none;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--accent-deep);
+}
+
+/* Two lines then an ellipsis. A long tapped phrase must not eat a phone screen
+   the thread needs, and the whole of it is in the first message anyway. */
+.contextText {
+  min-width: 0;
+  font-size: 12.5px;
+  line-height: 1.35;
+  color: var(--ink-2);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}

@@ -5,6 +5,10 @@
   --ink-2: #5F594E;
   --ink-3: #8B8375;
   --line: rgba(33, 30, 26, .08);
+  /* One step up from --line, for the edge of something you can press. A card
+     border can whisper; the control painted on it has to be findable without
+     borrowing the accent, which stays on the category label. */
+  --line-2: rgba(33, 30, 26, .16);
   --glass: rgba(255, 255, 255, .55);
   --glass-strong: rgba(255, 255, 255, .74);
   --accent: #C4593C;
@@ -114,9 +118,9 @@ button:active { transform: scale(0.96); }
 .sitenav { display: flex; align-items: center; gap: 16px; }
 .sitebar .privacy-link { margin-left: 0; }
 
-/* Same weight as the privacy link on purpose. A visitor looking for a human
-   should find one, but the search bar is the thing the page is asking for, and
-   a filled Contact button up here would compete with it. */
+/* Same weight as the privacy link on purpose. A visitor looking for a way to
+   reach us should find one, but the search bar is the thing the page is asking
+   for, and a filled Contact button up here would compete with it. */
 .contact-link {
   position: relative; z-index: 1;
   font-size: 11px; font-weight: 500; letter-spacing: 0.01em;
@@ -249,7 +253,11 @@ button:active { transform: scale(0.96); }
     inset 0 1px 0 rgba(255, 255, 255, .7),
     0 40px 90px -28px rgba(45, 32, 22, .38),
     0 10px 30px rgba(45, 32, 22, .10);
-  animation: window-up 240ms var(--ease-out) both;
+  /* No entrance here on purpose. The growth wrapper inside the layer
+     (Overlay.module.css) owns it, and it scales from the card that was tapped.
+     A rise on this element as well ran a second opacity ramp inside the first,
+     so the panel arrived late and abruptly, and sent it up 12px while it grew
+     out of a point somewhere else on screen. One entrance, one owner. */
 }
 
 /* Frostier still when the visitor has asked for less transparency. */
@@ -259,14 +267,6 @@ button:active { transform: scale(0.96); }
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }
-}
-
-/* Rises rather than scaling up. Scaling a 720px panel from small reads as a
-   dialog popping; a short lift reads as a sheet arriving, which is what this
-   is on a phone. */
-@keyframes window-up {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
 }
 
 /* ---------- Under the window ---------- */
@@ -888,6 +888,14 @@ div.sav {
   .field input { font-size: 16px; }
 }
 
+/* Deliberately blunt. Most of the motion in this file is decorative and several
+   pieces loop forever (the sonar rings, the breathing orbs, the ring countdown),
+   so an allowlist would have to name every one of them and would go stale the
+   first time somebody adds a keyframe.
+   The cost: a component that wants to keep an opacity only cross fade under
+   this query has to say `animation: ... !important` in its own module, or its
+   rule is inert and the element simply appears. Overlay.module.css does exactly
+   that and explains why. Narrow this rule and those !importants can drop. */
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }

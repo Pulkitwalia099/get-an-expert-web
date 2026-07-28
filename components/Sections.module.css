@@ -1,7 +1,9 @@
-/* Shared styling for the two sections that sit below the hero chat:
-   HowItWorks and Examples. Scoped here so nothing has to out-specify the
-   window rules in globals.css. Tokens come from globals.css.
-   Mobile first: the base rules are the phone, the min-width block widens. */
+/* Shared styling for the sections below the hero: HowItWorks, Setups and
+   Examples. Scoped here so nothing has to out-specify the window rules in
+   globals.css. Tokens come from globals.css.
+   Mobile first: the base rules are the phone, the min-width block widens.
+   Setups and Examples share .cardItem, .card and the meta row, so a change to
+   either one lands on both. Check both before editing those. */
 
 .section {
   position: relative;
@@ -124,12 +126,22 @@
   align-content: start;
 }
 
+/* The grid cell. Holds the entrance animation so the card inside it is free to
+   use transform for the press, and the two never fight over one property. */
+.cardItem {
+  display: flex;
+  /* Runs on mount, which includes remounting after a filter change, so
+     narrowing the list confirms itself without a separate transition. */
+  animation: card-in 220ms var(--ease-out) backwards;
+}
+
 /* One quiet surface. The left rail and the colour wash went the same way as
    the step bars: with eight hues on screen at once the page read as a swatch
    sheet rather than a list of work. The category label carries the colour on
    its own, which is enough to group them. */
 .card {
   position: relative;
+  width: 100%;
   background: rgba(255, 255, 255, .68);
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
@@ -137,14 +149,89 @@
   display: flex;
   flex-direction: column;
   gap: 5px;
-  transition: background 180ms var(--ease-out), border-color 180ms var(--ease-out);
-  /* Runs on mount, which includes remounting after a filter change, so
-     narrowing the list confirms itself without a separate transition. */
-  animation: card-in 220ms var(--ease-out) backwards;
+  /* It is a button now, so it has to be told to look like the card it was. */
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  /* No 300ms wait for a double tap, and no grey system flash on top of our own
+     press state. */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 180ms var(--ease-out), border-color 180ms var(--ease-out),
+    transform 160ms var(--ease-out);
+}
+
+/* Down while the thumb is still on it. data-pressed is written on pointerdown,
+   so the card never waits for the release to acknowledge the touch. :active is
+   the keyboard path, where Enter and Space have no pointer to listen for. It
+   also overrides the global button:active, which presses to 0.96. */
+.card[data-pressed='true'],
+/* Two routes to the same press, because the two sections ask differently.
+   Examples leans on :active; Setups drives it from pointer events so the state
+   survives a drag off the card. */
+.card:active,
+.card[data-pressed='true'] { transform: scale(0.97); }
+
+/* Examples put the arrow beside the copy rather than under it, so that row
+   turns and the text column takes the space that is left. */
+.cardRow { flex-direction: row; align-items: center; gap: 12px; }
+
+.cardBody {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* Setups: a labelled affordance, because eleven of them can each afford a word
+   and "Get this" says what the tap does before you commit to it. Painted on at
+   full opacity, never revealed on hover: most of these visitors are on a phone
+   and would never see it. */
+.cardPill {
+  margin-left: auto;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px 4px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--line-2);
+  background: rgba(255, 255, 255, .6);
+  color: var(--ink);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  transition: transform 160ms var(--ease-out), background 160ms var(--ease-out);
+}
+
+/* Examples: the same promise with no word on it. Thirty two cards each holding
+   a label would shout, so the shape carries it. */
+.cardGo {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid var(--line-2);
+  background: rgba(255, 255, 255, .6);
+  color: var(--ink-2);
+  transition: transform 160ms var(--ease-out), background 160ms var(--ease-out);
 }
 
 @media (hover: hover) and (pointer: fine) {
   .card:hover { background: rgba(255, 255, 255, .86); border-color: rgba(33, 30, 26, .16); }
+  /* One nudge, on the affordance itself, in the direction the card is about to
+     take you. Declared once here rather than also on the arrow inside the pill,
+     or the two stack and the glyph drifts twice as far as the pill it sits in. */
+  .card:hover .cardGo,
+  .card:hover .cardPill {
+    transform: translateX(2px);
+    background: rgba(255, 255, 255, .92);
+  }
 }
 
 @keyframes card-in {
@@ -152,13 +239,13 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-.card:nth-child(2) { animation-delay: 30ms; }
-.card:nth-child(3) { animation-delay: 60ms; }
-.card:nth-child(4) { animation-delay: 90ms; }
-.card:nth-child(5) { animation-delay: 120ms; }
-.card:nth-child(6) { animation-delay: 150ms; }
-.card:nth-child(7) { animation-delay: 180ms; }
-.card:nth-child(n + 8) { animation-delay: 210ms; }
+.cardItem:nth-child(2) { animation-delay: 30ms; }
+.cardItem:nth-child(3) { animation-delay: 60ms; }
+.cardItem:nth-child(4) { animation-delay: 90ms; }
+.cardItem:nth-child(5) { animation-delay: 120ms; }
+.cardItem:nth-child(6) { animation-delay: 150ms; }
+.cardItem:nth-child(7) { animation-delay: 180ms; }
+.cardItem:nth-child(n + 8) { animation-delay: 210ms; }
 
 
 .cardCat {
@@ -221,8 +308,9 @@
 
 .more:active { transform: scale(0.97); }
 
-/* Visible keyboard focus, on the two things here you can tab to. */
+/* Visible keyboard focus on everything you can tab to. */
 .filter:focus-visible,
+.card:focus-visible,
 .more:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;

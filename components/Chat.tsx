@@ -18,9 +18,12 @@ import { PLACEHOLDERS, type Phase } from '@/components/phases';
 import Sonar from '@/components/Sonar';
 import Thread, { type Msg } from '@/components/Thread';
 import Titlebar from '@/components/Titlebar';
+// The window chrome stylesheet. The context strip is pinned chrome that sits
+// between the titlebar and the thread, so it is styled alongside the titlebar
+// rather than with the conversation.
+import chrome from '@/components/Titlebar.module.css';
 import { useExpertSearch } from '@/components/useExpertSearch';
 import { useTypedPlaceholder } from '@/components/useTypedPlaceholder';
-import { useVisualViewport } from '@/components/useVisualViewport';
 import WelcomeScreen from '@/components/WelcomeScreen';
 
 // Matches RING_SECONDS in app/api/call/route.ts. Long enough to walk back
@@ -32,17 +35,24 @@ export default function Chat({
   // Overlay mode. Off by default so /chat keeps rendering the window as the
   // whole page. On the homepage the hero is the front door and this becomes
   // the committed state, opened by a tap and closable back to the hero.
+  // In overlay mode this renders the window and nothing else: the layer, the
+  // scrim, the aurora and the grain all belong to components/Overlay.tsx.
   overlay = false,
   onClose,
   // Sent as the opening message the moment the overlay opens. An empty string
   // opens the chat with nothing said yet, which is what tapping the bare
   // search bar does.
   seed = null,
+  // What the visitor tapped to get here, named in a pinned strip above the
+  // thread. Chrome only. It is never pushed into apiMsgs, so the model reads
+  // the conversation and nothing else.
+  context = null,
 }: {
   flow?: Flow;
   overlay?: boolean;
   onClose?: () => void;
   seed?: string | null;
+  context?: string | null;
 }) {
   const config = FLOWS[flow];
   const [phase, setPhase] = useState<Phase>('welcome');
@@ -139,27 +149,42 @@ export default function Chat({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [overlay, seed]);
 
-  // Every way out goes through here, so the drop-off point is recorded once
-  // whichever control they used. The phase is the whole value of the event:
-  // leaving on 'welcome' is a different problem from leaving on 'email'.
+  // Which control was used, for the close event below. Only the titlebar sets
+  // it, because only the titlebar is still ours: Escape, the scrim and the
+  // Android back button belong to Overlay and call onClose straight past here.
+  const howRef = useRef('overlay');
+  // The phase at the moment of closing. Read through a ref because the unmount
+  // cleanup below runs with whatever it closed over, and an effect that
+  // depended on phase would tear down and re-register on every phase change,
+  // firing the event mid-conversation.
+  const phaseRef = useRef(phase);
+  phaseRef.current = phase;
+
   const dismiss = useCallback(
     (how: string) => {
-      track('ask_chat_closed', { flow, how, phase, turns: userTurns.current });
+      howRef.current = how;
       onClose?.();
     },
-    [flow, phase, onClose],
+    [onClose],
   );
 
-  // Escape closes the overlay, the same as the scrim. Not bound in page mode,
-  // where there is nothing to close back to.
+  // Recorded on unmount, not in dismiss(). Three of the four ways out of this
+  // chat never touch dismiss(): Overlay owns Escape, the scrim and the back
+  // button, and they call onClose directly. Tracking in dismiss() therefore
+  // logged the titlebar button and silently lost the other three, which is how
+  // this shipped once already with ask_chat_closed almost never firing.
+  // Unmount is the one thing every exit has in common.
   useEffect(() => {
-    if (!overlay || !onClose) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') dismiss('escape');
+    if (!overlay) return;
+    return () => {
+      track('ask_chat_closed', {
+        flow,
+        how: howRef.current,
+        phase: phaseRef.current,
+        turns: userTurns.current,
+      });
     };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [overlay, onClose, dismiss]);
+  }, [overlay, flow]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: 1e7, behavior: 'smooth' });
@@ -171,9 +196,9 @@ export default function Chat({
 
   const busy = typing || phase === 'searching';
 
-  // Only while the overlay is up. On /chat the window IS the page, so there is
-  // no fixed layer to pin and nothing to correct.
-  useVisualViewport(overlay);
+  // The visual viewport is measured by Overlay, which owns the fixed layer the
+  // keyboard numbers correct. On /chat the window IS the page, so nothing there
+  // needs pinning and this component watches nothing.
 
   // The welcome composer types its way through the example asks. Paused once
   // the visitor starts writing, so it never competes with what they are
@@ -484,134 +509,146 @@ export default function Chat({
     [card, brief],
   );
 
-  return (
-    <>
-      {/* The aurora and grain are painted by the page itself in overlay mode.
-          Drawing a second copy here would double their opacity. */}
-      {!overlay && <div className="bg" />}
-      {!overlay && <div className="grain" />}
-      <main className={overlay ? 'page page-overlay' : 'page'}>
-        {overlay && (
-          <button
-            type="button"
-            className="overlay-scrim"
-            aria-label="Close the chat"
-            onClick={() => dismiss('scrim')}
-          />
-        )}
-        <section className={overlay ? 'window window-overlay' : 'window'}>
-          <Titlebar
-            tag={config.tag}
-            onRestart={restart}
-            canRestart={phase !== 'welcome'}
-            needsConfirm={callLive}
-            onDismiss={overlay ? () => dismiss('close_button') : undefined}
-          />
+  // Built once and placed by one of the two returns below. Both modes render
+  // the identical window, which is the point: the overlay work happens around
+  // this element, never inside it.
+  const windowEl = (
+    <section className={overlay ? 'window window-overlay' : 'window'}>
+      <Titlebar
+        tag={config.tag}
+        onRestart={restart}
+        canRestart={phase !== 'welcome'}
+        needsConfirm={callLive}
+        onDismiss={overlay ? () => dismiss('close_button') : undefined}
+      />
 
-          <div className="chat" ref={scrollRef}>
-            {phase === 'welcome' ? (
-              <WelcomeScreen config={config} onPick={(t) => void sendChat(t)} onElse={pickElse} />
-            ) : (
-              <div className="thread">
-                <Thread
-                  msgs={msgs}
-                  typing={typing}
-                  chipsActive={answering}
-                  onSend={(text, retry) => void sendChat(text, retry)}
-                />
+      {/* Pinned above the thread, outside the scroller, so the thing they
+          tapped is still named on turn six. role="note" keeps a screen reader
+          from reading it as another turn in the conversation, and the visible
+          "About" label is its accessible name. */}
+      {overlay && context && (
+        <div className={chrome.contextStrip} role="note">
+          <span className={chrome.contextLabel}>About</span>
+          <span className={chrome.contextText}>{context}</span>
+        </div>
+      )}
 
-                {multi && multi.turn === lastMsgId && answering && (
-                  <MultiChips
-                    key={multi.turn}
-                    chips={multi.chips}
-                    onConfirm={(picks) => void sendChat(picks.join(', '))}
-                  />
-                )}
+      <div className="chat" ref={scrollRef}>
+        {phase === 'welcome' ? (
+          <WelcomeScreen config={config} onPick={(t) => void sendChat(t)} onElse={pickElse} />
+        ) : (
+          <div className="thread">
+            <Thread
+              msgs={msgs}
+              typing={typing}
+              chipsActive={answering}
+              onSend={(text, retry) => void sendChat(text, retry)}
+            />
 
-                {signup && answering && (
-                  <ExpertSignup
-                    flow={flow}
-                    sessionId={sessionIdRef.current}
-                    onSent={(email) => {
-                      push({ role: 'user', text: email });
-                      setSignup(false);
-                      say('Got it, thanks. If there is a fit, we will email you.');
-                    }}
-                    onFailed={() => push({ role: 'ai', text: 'Hit a snag. Send that again.' })}
-                  />
-                )}
+            {multi && multi.turn === lastMsgId && answering && (
+              <MultiChips
+                key={multi.turn}
+                chips={multi.chips}
+                onConfirm={(picks) => void sendChat(picks.join(', '))}
+              />
+            )}
 
-                {phase === 'searching' && (
-                  <Sonar found={search.preview} status={config.searchingStatus} />
-                )}
+            {signup && answering && (
+              <ExpertSignup
+                flow={flow}
+                sessionId={sessionIdRef.current}
+                onSent={(email) => {
+                  push({ role: 'user', text: email });
+                  setSignup(false);
+                  say('Got it, thanks. If there is a fit, we will email you.');
+                }}
+                onFailed={() => push({ role: 'ai', text: 'Hit a snag. Send that again.' })}
+              />
+            )}
 
-                {phase === 'choice' && (
-                  <GetUnstuck
-                    flow={flow}
-                    brief={brief}
-                    sessionId={sessionIdRef.current}
-                    matchIntro={matchIntro}
-                    matchConfidence={matchConfidence}
-                    primaryPath={primaryPath}
-                    onEmailSent={(email) => {
-                      push({ role: 'user', text: email });
-                      push({
-                        role: 'ai',
-                        text: 'Done. Expert and price land in your inbox within the hour.',
-                      });
-                      setPhase('done');
-                    }}
-                    onEmailFailed={() => push({ role: 'ai', text: 'Hit a snag. Send that again.' })}
-                  />
-                )}
+            {phase === 'searching' && (
+              <Sonar found={search.preview} status={config.searchingStatus} />
+            )}
 
-                {(phase === 'matches' || phase === 'email' || phase === 'done') && (
-                  <MatchStep
-                    phase={phase}
-                    experts={search.experts}
-                    selected={search.selected}
-                    introCount={search.introCount}
-                    onToggle={search.toggleExpert}
-                    onRequest={search.requestIntros}
-                    onRefine={startRefine}
-                    onSubmit={search.submitIntro}
-                    onMore={startMore}
-                  />
-                )}
+            {phase === 'choice' && (
+              <GetUnstuck
+                flow={flow}
+                brief={brief}
+                sessionId={sessionIdRef.current}
+                matchIntro={matchIntro}
+                matchConfidence={matchConfidence}
+                primaryPath={primaryPath}
+                onEmailSent={(email) => {
+                  push({ role: 'user', text: email });
+                  push({
+                    role: 'ai',
+                    text: 'Done. Expert and price land in your inbox within the hour.',
+                  });
+                  setPhase('done');
+                }}
+                onEmailFailed={() => push({ role: 'ai', text: 'Hit a snag. Send that again.' })}
+              />
+            )}
 
-                {card && prefill && (
-                  <CallCard
-                    card={card}
-                    state={callState}
-                    secondsLeft={secondsLeft}
-                    prefill={prefill}
-                    roomUrl={roomUrl}
-                    onCall={() => void startRing()}
-                    onLeave={endCall}
-                    onRemoteJoined={remoteJoined}
-                  />
-                )}
-              </div>
+            {(phase === 'matches' || phase === 'email' || phase === 'done') && (
+              <MatchStep
+                phase={phase}
+                experts={search.experts}
+                selected={search.selected}
+                introCount={search.introCount}
+                onToggle={search.toggleExpert}
+                onRequest={search.requestIntros}
+                onRefine={startRefine}
+                onSubmit={search.submitIntro}
+                onMore={startMore}
+              />
+            )}
+
+            {card && prefill && (
+              <CallCard
+                card={card}
+                state={callState}
+                secondsLeft={secondsLeft}
+                prefill={prefill}
+                roomUrl={roomUrl}
+                onCall={() => void startRing()}
+                onLeave={endCall}
+                onRemoteJoined={remoteJoined}
+              />
             )}
           </div>
+        )}
+      </div>
 
-          {phase !== 'email' && (
-            <Composer
-              inputRef={inputRef}
-              value={input}
-              placeholder={
-                phase === 'welcome'
-                  ? typedPlaceholder || config.welcomePlaceholder
-                  : PLACEHOLDERS[phase]
-              }
-              disabled={phase === 'searching'}
-              canSend={!busy && input.trim().length > 0}
-              onChange={setInput}
-              onSubmit={onSubmit}
-            />
-          )}
-        </section>
-      </main>
+      {phase !== 'email' && (
+        <Composer
+          inputRef={inputRef}
+          value={input}
+          placeholder={
+            phase === 'welcome'
+              ? typedPlaceholder || config.welcomePlaceholder
+              : PLACEHOLDERS[phase]
+          }
+          disabled={phase === 'searching'}
+          canSend={!busy && input.trim().length > 0}
+          onChange={setInput}
+          onSubmit={onSubmit}
+        />
+      )}
+    </section>
+  );
+
+  // The window and nothing else. Overlay draws the layer, the scrim and the
+  // backdrop around it, so a second copy of any of those here would double up.
+  if (overlay) return windowEl;
+
+  // The page. /chat and /stuck have no hero to sit over, so the window is the
+  // whole view and this component still paints the aurora and the grain.
+  return (
+    <>
+      <div className="bg" />
+      <div className="grain" />
+      <main className="page">{windowEl}</main>
     </>
   );
 }

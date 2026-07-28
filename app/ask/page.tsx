@@ -1,7 +1,5 @@
 import type { Metadata } from 'next';
-import Examples from '@/components/Examples';
 import HomeApp from '@/components/HomeApp';
-import Setups from '@/components/Setups';
 import ContactLink from '@/components/ContactLink';
 
 export const metadata: Metadata = {
@@ -14,6 +12,10 @@ export const metadata: Metadata = {
 // actually done, then the wider range we cover, then one last ask. HowItWorks
 // lives inside the hero rather than here, because the steps are the thing a
 // first-time visitor needs before they will type anything.
+//
+// That order is now HomeApp's, not this file's. Every card in those sections
+// opens a layer over the page, so they need callbacks from the component that
+// owns which layer is open, which rules out passing them down as children.
 export default function Ask() {
   return (
     <>
@@ -33,12 +35,7 @@ export default function Ask() {
           </a>
         </nav>
       </header>
-      <HomeApp>
-        <div className="below">
-          <Setups />
-          <Examples />
-        </div>
-      </HomeApp>
+      <HomeApp />
     </>
   );
 }

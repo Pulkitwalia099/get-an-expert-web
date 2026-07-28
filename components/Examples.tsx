@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { CATEGORIES, type CategoryKey } from '@/components/flows';
 import { EXAMPLES } from '@/lib/examples';
 import styles from '@/components/Sections.module.css';
+import { type OverlayOrigin } from '@/components/Overlay';
 import { track } from '@/lib/analytics';
 
 // How many cards a visitor gets before they ask for the rest. A phone should
@@ -14,9 +15,27 @@ type Filter = CategoryKey | 'all';
 
 const LABELS = new Map<CategoryKey, string>(CATEGORIES.map((c) => [c.key, c.label]));
 
-export default function Examples() {
+// Where on screen the press happened, so the overlay grows out of the card the
+// visitor actually touched instead of appearing from nowhere. The centre of the
+// pressed element, in viewport coordinates.
+function originOf(el: HTMLElement): OverlayOrigin {
+  const r = el.getBoundingClientRect();
+  return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+}
+
+export default function Examples({
+  onPick,
+}: {
+  onPick: (ask: string, origin: OverlayOrigin) => void;
+}) {
   const [filter, setFilter] = useState<Filter>('all');
   const [shown, setShown] = useState(BATCH);
+  // Which card is being held down, keyed the way the list is keyed. Written on
+  // pointerdown, so the card goes down under the thumb instead of waiting for
+  // the release. Cleared on cancel too, which is what a browser sends the
+  // moment a touch turns into a scroll, so scrolling past leaves nothing lit.
+  const [pressed, setPressed] = useState<string | null>(null);
+  const release = () => setPressed(null);
 
   const list = useMemo(
     () => (filter === 'all' ? EXAMPLES : EXAMPLES.filter((e) => e.category === filter)),
@@ -42,7 +61,8 @@ export default function Examples() {
           What else we cover
         </h2>
         <p className={styles.sub}>
-          Ask for anything here. Pick a category to narrow it down.
+          Ask for anything here. Tap one to start there, or pick a category to narrow it
+          down.
         </p>
       </header>
 
@@ -73,13 +93,59 @@ export default function Examples() {
       </div>
 
       <ul className={styles.cards}>
-        {visible.map((e) => (
-          <li key={`${e.category}:${e.ask}`} className={styles.card} data-cat={e.category}>
-            <span className={styles.cardCat}>{LABELS.get(e.category) ?? e.category}</span>
-            <span className={styles.cardAsk}>{e.ask}</span>
-            <span className={styles.cardOut}>{e.outcome}</span>
-          </li>
-        ))}
+        {visible.map((e) => {
+          const key = `${e.category}:${e.ask}`;
+          return (
+            <li key={key} className={styles.cardItem} data-cat={e.category}>
+              {/* The ask is both the thing you read and the thing that gets
+                  sent, so the card is the control rather than holding one.
+                  The arrow carries no label: thirty two of them each saying
+                  "Get this" would shout, so the shape says it instead. */}
+              <button
+                type="button"
+                className={`${styles.card} ${styles.cardRow}`}
+                data-pressed={pressed === key ? 'true' : undefined}
+                // Two sentences and a closing line, so the row does not
+                // announce as one run-on string of ask and outcome.
+                aria-label={`${e.ask}. ${e.outcome}. Start with this ask.`}
+                onPointerDown={() => setPressed(key)}
+                onPointerUp={release}
+                onPointerCancel={release}
+                onPointerLeave={release}
+                onBlur={release}
+                onClick={(ev) => {
+                  release();
+                  track('example_tapped', { category: e.category, ask: e.ask });
+                  // Verbatim. This line was written in a customer's voice, so
+                  // it is already the right thing to open the chat with.
+                  onPick(e.ask, originOf(ev.currentTarget));
+                }}
+              >
+                <span className={styles.cardBody}>
+                  <span className={styles.cardCat}>{LABELS.get(e.category) ?? e.category}</span>
+                  <span className={styles.cardAsk}>{e.ask}</span>
+                  <span className={styles.cardOut}>{e.outcome}</span>
+                </span>
+                <span className={styles.cardGo}>
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 12 12"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.7"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M2 6h7.1" />
+                    <path d="M6.3 3.2 9.5 6 6.3 8.8" />
+                  </svg>
+                </span>
+              </button>
+            </li>
+          );
+        })}
       </ul>
 
       {hidden > 0 && (
