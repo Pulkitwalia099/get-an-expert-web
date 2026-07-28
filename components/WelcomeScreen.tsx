@@ -1,9 +1,11 @@
 'use client';
 
 import type { FlowConfig } from '@/components/flows';
+import TryChips from '@/components/TryChips';
 
 // The first screen: the greeting and the starter chips. Picking a suggestion
-// sends it as the opening message; the catch-all chip only opens the
+// sends its full message as the opening line, not the short chip label, so the
+// model gets a sentence to work with. The catch-all chip only opens the
 // conversation, so the parent handles it separately.
 export default function WelcomeScreen({
   config,
@@ -16,23 +18,19 @@ export default function WelcomeScreen({
 }) {
   return (
     <div className="s1">
+      {/* No orb. The wordmark in the titlebar already says whose window this
+          is, and a second mark directly above the headline pushed the question
+          down the screen to say the same thing twice. */}
       <div className="greet">
-        <div className="orb">✳︎</div>
         <h1>{config.headline}</h1>
         {config.sub && <div className="sub">{config.sub}</div>}
       </div>
-      <div className="chips">
-        {config.suggestions.map((s) => (
-          <button key={s} className="chip" onClick={() => onPick(s)}>
-            {s}
-          </button>
-        ))}
-        {config.elseChip && (
-          <button className="chip ghost" onClick={onElse}>
-            {config.elseChip}
-          </button>
-        )}
-      </div>
+      <TryChips
+        suggestions={config.suggestions}
+        onPick={onPick}
+        elseChip={config.elseChip}
+        onElse={onElse}
+      />
     </div>
   );
 }

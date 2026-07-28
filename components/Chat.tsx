@@ -19,13 +19,31 @@ import Sonar from '@/components/Sonar';
 import Thread, { type Msg } from '@/components/Thread';
 import Titlebar from '@/components/Titlebar';
 import { useExpertSearch } from '@/components/useExpertSearch';
+import { useTypedPlaceholder } from '@/components/useTypedPlaceholder';
+import { useVisualViewport } from '@/components/useVisualViewport';
 import WelcomeScreen from '@/components/WelcomeScreen';
 
 // Matches RING_SECONDS in app/api/call/route.ts. Long enough to walk back
 // to the desk, short enough that nobody sits watching a dead countdown.
 const RING_SECONDS = 60;
 
-export default function Chat({ flow = 'main' }: { flow?: Flow }) {
+export default function Chat({
+  flow = 'main',
+  // Overlay mode. Off by default so /chat keeps rendering the window as the
+  // whole page. On the homepage the hero is the front door and this becomes
+  // the committed state, opened by a tap and closable back to the hero.
+  overlay = false,
+  onClose,
+  // Sent as the opening message the moment the overlay opens. An empty string
+  // opens the chat with nothing said yet, which is what tapping the bare
+  // search bar does.
+  seed = null,
+}: {
+  flow?: Flow;
+  overlay?: boolean;
+  onClose?: () => void;
+  seed?: string | null;
+}) {
   const config = FLOWS[flow];
   const [phase, setPhase] = useState<Phase>('welcome');
   const [msgs, setMsgs] = useState<Msg[]>([]);
@@ -59,6 +77,12 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
   const idRef = useRef(0);
   const sessionIdRef = useRef('');
   if (!sessionIdRef.current) sessionIdRef.current = newSessionId();
+  // Bumped by every restart. Work already in flight belongs to a conversation
+  // the visitor has walked away from, and neither the chat request nor the
+  // search timer can be called back, so both check this number before they
+  // put anything on screen.
+  const runRef = useRef(0);
+  const currentRun = runRef.current;
   const apiMsgs = useRef<{ role: ApiRole; content: string }[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -84,8 +108,15 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
     flow,
     sessionId: sessionIdRef.current,
     brief,
-    push,
-    setPhase,
+    // The search lands on a timer it owns. These are captured at render, so a
+    // search started before a restart carries the old run number and finishes
+    // silently instead of dragging the visitor back into the old thread.
+    push: (m) => {
+      if (currentRun === runRef.current) push(m);
+    },
+    setPhase: (next) => {
+      if (currentRun === runRef.current) setPhase(next);
+    },
   });
 
   // One event per visit marking which page (flow) they opened. Pageviews are
@@ -93,6 +124,31 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
   useEffect(() => {
     track('chat_opened', { flow });
   }, [flow]);
+
+  // The hero hands over whatever the visitor tapped. Runs once on mount: the
+  // overlay is remounted on every open, so there is no stale seed to guard
+  // against, and an empty seed means they tapped the bare bar and have not
+  // said anything yet.
+  const seeded = useRef(false);
+  useEffect(() => {
+    if (!overlay || seeded.current) return;
+    seeded.current = true;
+    if (seed) void sendChat(seed);
+    // sendChat is stable enough for a mount-only send, and listing it would
+    // re-fire the opening message on every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [overlay, seed]);
+
+  // Escape closes the overlay, the same as the scrim. Not bound in page mode,
+  // where there is nothing to close back to.
+  useEffect(() => {
+    if (!overlay || !onClose) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [overlay, onClose]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: 1e7, behavior: 'smooth' });
@@ -104,7 +160,22 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
 
   const busy = typing || phase === 'searching';
 
+  // Only while the overlay is up. On /chat the window IS the page, so there is
+  // no fixed layer to pin and nothing to correct.
+  useVisualViewport(overlay);
+
+  // The welcome composer types its way through the example asks. Paused once
+  // the visitor starts writing, so it never competes with what they are
+  // saying, and paused off the welcome screen where each phase has its own
+  // prompt. Focus alone does not pause it: the field is autofocused on load,
+  // so pausing there would freeze it before the first character.
+  const typedPlaceholder = useTypedPlaceholder(config.placeholders, phase !== 'welcome' || input !== '');
+  // Ringing or connected. A restart here would drop a call that is actually
+  // happening, which is the one thing starting over cannot hand back.
+  const callLive = callState === 'ringing' || callState === 'incall';
+
   async function sendChat(text: string, retry = false) {
+    const run = runRef.current;
     if (!retry) {
       // First real turn of the visit: the top of the engagement funnel.
       if (apiMsgs.current.length === 0) track('first_message_sent', { flow });
@@ -124,6 +195,10 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
       });
       if (!res.ok) throw new Error(`chat ${res.status}`);
       const data = (await res.json()) as ChatReply;
+      // They restarted while this was in the air. The reply answers a question
+      // that no longer exists, so it is dropped rather than pasted into the
+      // fresh conversation.
+      if (run !== runRef.current) return;
       apiMsgs.current.push({ role: 'assistant', content: data.reply });
       setTyping(false);
       // Multi select chips are rendered by this component, so they are kept
@@ -164,6 +239,7 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
         void openCall();
       }
     } catch {
+      if (run !== runRef.current) return;
       setTyping(false);
       push({ role: 'ai', text: 'Hit a snag.', retry: true });
     }
@@ -337,6 +413,43 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
     track('call_ended', { flow });
   }, [flow]);
 
+  // The red light in the titlebar. Everything a visit accumulates is cleared
+  // in one place, and the session id is replaced so what follows is recorded
+  // as its own visit rather than a corrupted continuation of the last one.
+  function restart() {
+    track('conversation_restarted', { flow, phase });
+    // A live call is hung up rather than unmounted. Dropping the card alone
+    // would leave the row open and the operator page would keep offering a
+    // call nobody is in.
+    if (callLive) endCall();
+
+    runRef.current += 1;
+    apiMsgs.current = [];
+    sessionIdRef.current = newSessionId();
+    idRef.current = 0;
+    userTurns.current = 0;
+    lastUserMsg.current = '';
+    saidSoFar.current = [];
+    callIdRef.current = null;
+
+    setMsgs([]);
+    setInput('');
+    setTyping(false);
+    setBrief(null);
+    setMulti(null);
+    setSignup(false);
+    setMatchIntro('');
+    setMatchConfidence('');
+    setPrimaryPath('session');
+    setOffered(false);
+    setCard(null);
+    setCallState('booking');
+    setSecondsLeft(RING_SECONDS);
+    setRoomUrl(null);
+    search.startOver();
+    setPhase('welcome');
+  }
+
   function onSubmit(e: FormEvent) {
     e.preventDefault();
     const text = input.trim();
@@ -362,11 +475,27 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
 
   return (
     <>
-      <div className="bg" />
-      <div className="grain" />
-      <main className="page">
-        <section className="window">
-          <Titlebar tag={config.tag} />
+      {/* The aurora and grain are painted by the page itself in overlay mode.
+          Drawing a second copy here would double their opacity. */}
+      {!overlay && <div className="bg" />}
+      {!overlay && <div className="grain" />}
+      <main className={overlay ? 'page page-overlay' : 'page'}>
+        {overlay && (
+          <button
+            type="button"
+            className="overlay-scrim"
+            aria-label="Close the chat"
+            onClick={onClose}
+          />
+        )}
+        <section className={overlay ? 'window window-overlay' : 'window'}>
+          <Titlebar
+            tag={config.tag}
+            onRestart={restart}
+            canRestart={phase !== 'welcome'}
+            needsConfirm={callLive}
+            onDismiss={overlay ? onClose : undefined}
+          />
 
           <div className="chat" ref={scrollRef}>
             {phase === 'welcome' ? (
@@ -459,7 +588,11 @@ export default function Chat({ flow = 'main' }: { flow?: Flow }) {
             <Composer
               inputRef={inputRef}
               value={input}
-              placeholder={phase === 'welcome' ? config.welcomePlaceholder : PLACEHOLDERS[phase]}
+              placeholder={
+                phase === 'welcome'
+                  ? typedPlaceholder || config.welcomePlaceholder
+                  : PLACEHOLDERS[phase]
+              }
               disabled={phase === 'searching'}
               canSend={!busy && input.trim().length > 0}
               onChange={setInput}

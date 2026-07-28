@@ -2,15 +2,52 @@
 // expert search; 'dev' is /stuck, which skips the marketplace search and
 // ends on the install-or-email choice instead of expert cards.
 
-export type Flow = 'main' | 'dev';
+export type Flow = 'main' | 'dev' | 'ask';
+
+// The eight things we match people to. Used by the starter chips and by the
+// examples list below the window, so a chip and an example agree on wording.
+export type CategoryKey =
+  | 'design'
+  | 'web'
+  | 'video'
+  | 'ai'
+  | 'marketing'
+  | 'writing'
+  | 'data'
+  | 'admin';
+
+export const CATEGORIES: { key: CategoryKey; label: string }[] = [
+  { key: 'design', label: 'Design & branding' },
+  { key: 'web', label: 'Web & apps' },
+  { key: 'video', label: 'Video & audio' },
+  { key: 'ai', label: 'AI & automation' },
+  { key: 'marketing', label: 'Marketing & growth' },
+  { key: 'writing', label: 'Writing & content' },
+  { key: 'data', label: 'Data & analytics' },
+  { key: 'admin', label: 'Admin & professional' },
+];
+
+// A starter chip carries two lengths of the same idea. `label` has to survive
+// a 390px marquee, so it stays short; `message` is what actually gets sent as
+// the visitor's opening line, so it has to read like something a person typed.
+// Sending the label would give the model two or three words to work with.
+export interface Suggestion {
+  label: string;
+  message: string;
+  category: CategoryKey;
+}
 
 export interface FlowConfig {
   tag: string | null;
   headline: string;
   sub: string | null;
-  // Starter chips. The last one can be a soft opener (see elseChip) that
-  // just starts the conversation instead of sending itself as the need.
-  suggestions: string[];
+  // Starter chips. The catch-all lives in elseChip, not here, because it
+  // opens the conversation instead of sending itself as the need.
+  suggestions: Suggestion[];
+  // Cycled through the empty composer, typed rather than swapped. The longest
+  // and most specific asks go here: this is the only place the page shows how
+  // much detail is welcome. Keep every line true to what we actually match.
+  placeholders: string[];
   elseChip: string | null;
   elseOpener: string;
   welcomePlaceholder: string;
@@ -73,12 +110,19 @@ export const FLOWS: Record<Flow, FlowConfig> = {
     // Broad and varied on purpose, so no visitor feels the tool is built
     // for someone else. "Something else" covers the rest.
     suggestions: [
-      'AI engineer',
-      'Web & app dev',
-      'Designer',
-      'Video editor',
-      'Lawyer',
-      'Marketing',
+      { label: 'Designer', message: 'I need a designer', category: 'design' },
+      { label: 'Web & app dev', message: 'I need a web or app developer', category: 'web' },
+      { label: 'Video editor', message: 'I need a video editor', category: 'video' },
+      { label: 'AI engineer', message: 'I need an AI engineer', category: 'ai' },
+      { label: 'Marketing', message: 'I need a marketer', category: 'marketing' },
+      { label: 'Lawyer', message: 'I need a lawyer', category: 'admin' },
+    ],
+    placeholders: [
+      'I need a designer for a logo and brand kit',
+      'I need a developer to build my website',
+      'I need an editor for my YouTube videos',
+      'I need someone to build an AI agent',
+      'I need help with cold outreach',
     ],
     elseChip: 'Something else',
     elseOpener: 'Tell me what you need, in a sentence.',
@@ -100,16 +144,22 @@ export const FLOWS: Record<Flow, FlowConfig> = {
     // what the visitor ends up with. The expert is the subject here, and "takes
     // it off your plate" is the ending the old line was missing.
     sub: 'Talk it through, then an expert who has done it many times before takes it off your plate.',
-    // Sent verbatim as the visitor's opening message, so each one reads like
-    // something they would say about their own project. The spread covers
-    // improving, fixing, building, automating and speed.
+    // The old set was five verbs about code you had already written, which
+    // asked every visitor to have started before they arrived. Someone after a
+    // logo or a website read five doors and none said their name. These are
+    // outcomes instead, and they spread across every category we match, so the
+    // page stops looking like it was built for one kind of person.
+    // The copy the root page has always shipped. Kept byte for byte in meaning
+    // when the Suggestion shape changed: label and message are the same string
+    // here, because these were written to be sent verbatim.
     suggestions: [
-      'Improve what I built',
-      'Fix what’s broken',
-      'Build something new',
-      'Automate a manual task',
-      'Make it faster',
+      { label: 'Improve what I built', message: 'Improve what I built', category: 'web' },
+      { label: 'Fix what’s broken', message: 'Fix what’s broken', category: 'web' },
+      { label: 'Build something new', message: 'Build something new', category: 'web' },
+      { label: 'Automate a manual task', message: 'Automate a manual task', category: 'ai' },
+      { label: 'Make it faster', message: 'Make it faster', category: 'web' },
     ],
+    placeholders: ['I’m working on…'],
     elseChip: 'Something else',
     elseOpener: 'Tell me what you need, in a sentence.',
     welcomePlaceholder: 'I’m working on…',
@@ -121,6 +171,46 @@ export const FLOWS: Record<Flow, FlowConfig> = {
     ending: 'choice',
     // Fallback only. The model writes a per-visitor line when it has one, so
     // this has to stay true for any need and never mention code.
+    teaserIntro: 'An expert who has done this kind of work before.',
+  },
+
+  // /ask. Same machinery as dev, different front door: the hero owns the
+  // headline and the chips, so this copy is written for a search bar rather
+  // than a chat window.
+  ask: {
+    tag: null,
+    headline: 'What do you need done?',
+    sub: 'Talk it through, then an expert who has done it many times before takes it off your plate.',
+    // Ordered by where the demand actually is, not by what reads nicest. The
+    // setups people already buy are automation and growth first, so those lead
+    // and design sits further down. Label has to survive a 390px row; message
+    // is what actually gets sent, so it has to read like a person typed it.
+    suggestions: [
+      { label: 'Automations', message: 'Automate a task I do by hand every week', category: 'ai' },
+      { label: 'AI agent', message: 'Build an AI agent for my business', category: 'ai' },
+      { label: 'Cold outreach', message: 'Set up cold outreach that gets replies', category: 'marketing' },
+      { label: 'Content', message: 'Get my content written and posted every week', category: 'marketing' },
+      { label: 'Website', message: 'Make a professional website for my business', category: 'web' },
+      { label: 'Video edit', message: 'Turn my raw footage into a finished video', category: 'video' },
+      { label: 'Fix a bug', message: 'Fix something in my app that keeps breaking', category: 'web' },
+      { label: 'Mobile app', message: 'Build a mobile app from my idea', category: 'web' },
+      { label: 'Logo & brand', message: 'Get a logo and brand kit designed', category: 'design' },
+    ],
+    // Longer and more specific than the chips on purpose. The chips say what is
+    // on offer; these say how much detail is welcome.
+    placeholders: [
+      'Automate the report I build by hand every Monday',
+      'Build an AI agent that answers customer emails',
+      'Post my content everywhere without writing it twice',
+      'Turn 4 hours of footage into a 10 minute video',
+      'Make a professional website for my business',
+    ],
+    elseChip: 'Something else',
+    elseOpener: 'Tell me what you need, in a sentence.',
+    welcomePlaceholder: 'I need…',
+    searchingStatus: ['Looking for the right person…', 'Checking who has done this…'],
+    foundText: 'Found one. Two ways to connect:',
+    ending: 'choice',
     teaserIntro: 'An expert who has done this kind of work before.',
   },
 };

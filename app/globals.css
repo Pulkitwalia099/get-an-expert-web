@@ -14,7 +14,43 @@
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --radius-window: 24px;
   --radius-card: 16px;
+  /* The sections under the chat are siblings of .page, not children, so they
+     cannot inherit its padding. Both read this instead and stay aligned. */
+  --page-gutter: 16px;
+
+  /* One hue per category. This is sorting colour, not decoration: 32 example
+     cards are unreadable as a beige wall, and a consistent hue lets the eye
+     group them before reading a word. Every value is mid saturation so it
+     holds on the warm sand ground without shouting over the terracotta.
+     Terracotta itself stays with design, so the brand colour keeps a job. */
+  --cat-design: #C4593C;
+  --cat-web: #3D6FA8;
+  --cat-video: #7A54A3;
+  --cat-ai: #1F7A6B;
+  --cat-marketing: #B87613;
+  --cat-writing: #63762F;
+  --cat-data: #B0466A;
+  --cat-admin: #556070;
 }
+
+/* Set on any element that belongs to a category. Children read --cat and
+   --cat-soft, so a card, a chip and a label all tint from one place and none
+   of them needs to know which category it is. */
+[data-cat="design"]    { --cat: var(--cat-design);    --cat-soft: rgba(196, 89, 60, .10); }
+[data-cat="web"]       { --cat: var(--cat-web);       --cat-soft: rgba(61, 111, 168, .10); }
+[data-cat="video"]     { --cat: var(--cat-video);     --cat-soft: rgba(122, 84, 163, .10); }
+[data-cat="ai"]        { --cat: var(--cat-ai);        --cat-soft: rgba(31, 122, 107, .10); }
+[data-cat="marketing"] { --cat: var(--cat-marketing); --cat-soft: rgba(184, 118, 19, .11); }
+[data-cat="writing"]   { --cat: var(--cat-writing);   --cat-soft: rgba(99, 118, 47, .11); }
+[data-cat="data"]      { --cat: var(--cat-data);      --cat-soft: rgba(176, 70, 106, .10); }
+[data-cat="admin"]     { --cat: var(--cat-admin);     --cat-soft: rgba(85, 96, 112, .10); }
+
+/* The setups group into four buckets rather than the eight above, and they
+   borrow the same hues so a teal card means the same kind of work in both
+   sections. "video" is shared outright and needs no entry of its own. */
+[data-cat="automation"] { --cat: var(--cat-ai);        --cat-soft: rgba(31, 122, 107, .10); }
+[data-cat="growth"]     { --cat: var(--cat-marketing); --cat-soft: rgba(184, 118, 19, .11); }
+[data-cat="other"]      { --cat: var(--cat-admin);     --cat-soft: rgba(85, 96, 112, .10); }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -49,16 +85,144 @@ button:active { transform: scale(0.96); }
 }
 
 /* ---------- Page frame ---------- */
+/* Only /chat still uses this as a full page frame. On the homepage the hero
+   owns the top of the document and .page is reused by the overlay below. */
 .page {
   position: relative; z-index: 1;
   min-height: 100dvh;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  padding: 24px 16px;
+  padding: 24px var(--page-gutter);
+}
+
+/* ---------- Site bar ---------- */
+/* Deliberately thin. The hero is the thing that has to land in the first
+   screen, so the bar takes as little height from it as a wordmark allows. */
+.sitebar {
+  position: relative; z-index: 2;
+  width: 100%;
+  max-width: calc(720px + var(--page-gutter) * 2);
+  margin: 0 auto;
+  padding: 16px var(--page-gutter) 0;
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+.sitemark {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 13.5px; font-weight: 600; color: var(--ink); letter-spacing: -0.012em;
+}
+
+.sitebar .privacy-link { margin-left: 0; }
+
+/* ---------- The chat as an overlay ---------- */
+/* On the homepage the hero is the front door and the window is the committed
+   state, so it stops being a page and becomes a layer over one. Fixed rather
+   than absolute: the page underneath keeps its scroll position, and closing
+   returns the visitor exactly where they were. */
+/* Sized and offset from the visual viewport, not `inset: 0`. See
+   components/useVisualViewport.ts: on iOS the soft keyboard leaves the layout
+   viewport alone, so a fixed `inset: 0` layer keeps its full height and gets
+   scrolled up out of view the moment the composer is focused. The fallbacks
+   are what every browser uses until the hook writes real numbers, and are what
+   Android stays on, since `interactive-widget` already resizes things there. */
+.page-overlay {
+  position: fixed;
+  left: 0;
+  width: 100%;
+  top: var(--vv-top, 0px);
+  height: var(--vv-height, 100dvh);
+  z-index: 40;
+  min-height: 0;
+  justify-content: center;
+  animation: overlay-in 200ms var(--ease-out) both;
+}
+
+@keyframes overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* A real button, not a div, so the chat can be dismissed from the keyboard as
+   well as by tapping outside it. */
+.overlay-scrim {
+  position: absolute;
+  inset: 0;
+  border: none;
+  padding: 0;
+  cursor: default;
+  background: rgba(38, 28, 20, .28);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+.overlay-scrim:active { transform: none; }
+
+/* Much more opaque than the inline window ever needed to be. At --glass (55%)
+   the hero and the cards read straight through the conversation and the text
+   sat on moving noise. A surface you are meant to read and type into is the
+   focused layer, so it takes the heavier material and the page behind it gets
+   the scrim. Stronger blur too: bigger surfaces should read as thicker. */
+/* Compound selector on purpose. .window is defined further down this file, so
+   a lone .window-overlay ties on specificity and loses on order, which is how
+   this shipped once already looking exactly as transparent as before. */
+.window.window-overlay {
+  position: relative;
+  z-index: 1;
+  /* Never taller than the layer holding it. .page-overlay shrinks to the visual
+     viewport when a keyboard opens, and without this the window keeps its own
+     height, overflows, and takes the composer off screen with it. Applies at
+     every width: a touch laptop and an iPad both raise keyboards.
+
+     min-height has to be reset in the same breath. .window sets a 500px floor,
+     and in the CSS box model min-height always beats max-height, so the clamp
+     above did nothing at all until this line existed. */
+  max-height: 100%;
+  min-height: 0;
+  background: rgba(253, 251, 247, .93);
+  -webkit-backdrop-filter: blur(56px) saturate(180%);
+  backdrop-filter: blur(56px) saturate(180%);
+  border-color: rgba(255, 255, 255, .8);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .7),
+    0 40px 90px -28px rgba(45, 32, 22, .38),
+    0 10px 30px rgba(45, 32, 22, .10);
+  animation: window-up 240ms var(--ease-out) both;
+}
+
+/* Frostier still when the visitor has asked for less transparency. */
+@media (prefers-reduced-transparency: reduce) {
+  .window.window-overlay {
+    background: #FDFBF7;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* Rises rather than scaling up. Scaling a 720px panel from small reads as a
+   dialog popping; a short lift reads as a sheet arriving, which is what this
+   is on a phone. */
+@keyframes window-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- Under the window ---------- */
+/* Repeats the window's width maths rather than inheriting it: the chat renders
+   its own <main class="page">, so this wrapper is a sibling of that, not a
+   child. 720px is the window's own width, the gutters are .page's. Layout
+   only. The sections inside bring their own styles. */
+.below {
+  position: relative; z-index: 1;
+  width: 100%;
+  max-width: calc(720px + var(--page-gutter) * 2);
+  margin: 0 auto;
+  padding: clamp(24px, 5vw, 48px) var(--page-gutter) clamp(64px, 12vw, 104px);
+  display: flex; flex-direction: column;
+  gap: clamp(48px, 9vw, 80px);
 }
 
 /* ---------- The Mac window ---------- */
 /* A fixed stage: fills most of the viewport on desktop, the chat scrolls
-   inside it. On phones it goes near full screen (see the media query). */
+   inside it. On phones it gives up the last quarter of the screen so the page
+   under it is visible (see the media query). */
 .window {
   width: min(720px, 100%);
   height: min(78dvh, 820px);
@@ -634,11 +798,24 @@ div.sav {
 
 /* ---------- Small screens ---------- */
 @media (max-width: 560px) {
-  .page { padding: 10px 8px; }
+  /* Narrower gutters on a phone. .below reads the same token, so the window
+     edge and the sections under it stay on one line. */
+  :root { --page-gutter: 8px; }
+  .page { padding: 10px var(--page-gutter); }
   .window {
     height: calc(100dvh - 20px);
     min-height: 0;
     border-radius: 20px;
+  }
+  /* As an overlay it stops just short of the top so the page it covers is
+     still visible behind it. That strip is what makes it read as something
+     you opened and can close, rather than a new screen you navigated to.
+     max-height is the keyboard case: .page-overlay has already shrunk to the
+     visual viewport, so 92dvh overflows it and this clamps the window to what
+     is actually on screen instead of pushing the composer under the keys. */
+  .window-overlay {
+    height: 92dvh;
+    max-height: 100%;
   }
   .chat { padding: 14px 14px 4px; }
   .msg { max-width: 92%; }

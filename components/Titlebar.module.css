@@ -1,0 +1,179 @@
+/* The red light, promoted from decoration to the one control in the window
+   chrome. The 12px dot itself is still drawn by .lights i in globals.css and
+   keeps its size; everything here is hit area, feedback, and the confirm
+   step that guards a live call. */
+
+.slot { position: relative; display: flex; }
+
+/* Flex, not block: the dot is an inline <i> sized by .lights i in globals,
+   and only a flex parent blockifies it so that 12px still applies. It used to
+   get that from .lights itself, before it moved inside a button. */
+.close {
+  position: relative;
+  display: flex;
+  padding: 0;
+  border: none;
+  background: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: opacity 160ms var(--ease-out), transform 160ms var(--ease-out);
+}
+
+/* A thumb sized target without moving anything: layout still measures the
+   12px dot, the 44px square is painted by nothing and only catches taps. */
+.close::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  transform: translate(-50%, -50%);
+}
+
+.close:disabled { opacity: .45; cursor: default; }
+.close:disabled:active { transform: none; }
+.close:not(:disabled):active { transform: scale(0.92); }
+.close:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+
+.tip {
+  display: none;
+  position: absolute;
+  top: calc(100% + 11px);
+  left: -5px;
+  z-index: 5;
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--glass-strong);
+  backdrop-filter: blur(10px);
+  color: var(--ink-2);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.3;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-3px);
+  transition: opacity 140ms var(--ease-out), transform 140ms var(--ease-out);
+}
+
+/* Hover only. On touch there is no hover to wait out, and a label that fires
+   on tap just covers the thing you tapped. */
+@media (hover: hover) and (pointer: fine) {
+  .tip { display: block; }
+  .close:not(:disabled):hover .tip {
+    opacity: 1;
+    transform: translateY(0);
+    /* Long enough that a cursor crossing the lights on its way somewhere
+       else never sees it. */
+    transition-delay: 400ms;
+  }
+}
+
+/* Ordered after the hover block so it wins at equal specificity. The label
+   and the question want the same spot, and the question is the one that
+   needs answering. */
+.tipOff { display: none; }
+
+.confirm {
+  position: absolute;
+  top: calc(100% + 11px);
+  left: -7px;
+  z-index: 6;
+  width: 212px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 11px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--glass-strong);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 10px 26px rgba(45, 32, 22, .12);
+  animation: confirm-in 180ms var(--ease-out);
+}
+
+@keyframes confirm-in {
+  from { opacity: 0; transform: translateY(-5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.confirmText {
+  font-size: 12.5px;
+  line-height: 1.35;
+  color: var(--ink-2);
+}
+
+.confirmRow { display: flex; gap: 7px; }
+
+.keep, .go {
+  flex: 1;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform 140ms var(--ease-out), background 140ms ease,
+    border-color 140ms ease, color 140ms ease;
+}
+
+.keep {
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, .6);
+  color: var(--ink-2);
+}
+
+.go {
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+.keep:active, .go:active { transform: scale(0.92); }
+.keep:focus-visible, .go:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+@media (hover: hover) and (pointer: fine) {
+  .keep:hover { background: rgba(255, 255, 255, .92); color: var(--ink); }
+  .go:hover { background: var(--accent-deep); border-color: var(--accent-deep); }
+}
+
+/* The way out. Sized as a real target rather than a decorative dot, because
+   the only alternative was tapping the scrim, which nobody discovers. Sits at
+   the trailing edge where a web modal's close lives; the Mac lights that used
+   to sit leading are gone in overlay mode, so nothing competes with it. */
+.dismiss {
+  position: relative;
+  margin-left: auto;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 50%;
+  color: var(--ink-2);
+  background: rgba(33, 30, 26, .05);
+  cursor: pointer;
+  transition: background 160ms var(--ease-out), color 160ms var(--ease-out),
+    transform 140ms var(--ease-out);
+}
+
+/* Extends the touch area to 44px without changing the 30px it draws. */
+.dismiss::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  transform: translate(-50%, -50%);
+}
+
+.dismiss:active { transform: scale(0.92); }
+.dismiss:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+@media (hover: hover) and (pointer: fine) {
+  .dismiss:hover { background: rgba(33, 30, 26, .10); color: var(--ink); }
+}
