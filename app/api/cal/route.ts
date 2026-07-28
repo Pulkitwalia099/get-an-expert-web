@@ -84,8 +84,16 @@ export async function POST(req: NextRequest) {
 
   const booking = parseCalBooking(body);
   if (!booking) {
-    // A trigger this route does not care about, such as a meeting ending.
-    // 200 on purpose: a 4xx makes Cal retry something that will never parse.
+    // A trigger this route does not care about, such as a meeting ending, or a
+    // payload that does not have the shape the parser expects. Both look
+    // identical from here, and the second one is a booking silently going
+    // unrecorded, so the trigger is logged rather than dropped. A ping shows up
+    // here too, which is how you tell the secret matched.
+    //
+    // 200 on purpose either way: a 4xx makes Cal retry something that will
+    // never parse.
+    const trigger = (body as { triggerEvent?: unknown })?.triggerEvent;
+    console.log('[midsesh:cal] ignored', typeof trigger === 'string' ? trigger : 'no trigger');
     return NextResponse.json({ ok: true, ignored: true });
   }
 
