@@ -42,6 +42,12 @@ describe('Content-Security-Policy', () => {
     expect(connect).toContain('wss://*.daily.co');
   });
 
+  it('lets the /classic waitlist form reach its API, which lives on another origin', async () => {
+    const csp = (await headers())['Content-Security-Policy'];
+    const connect = csp.split('; ').find((d) => d.startsWith('connect-src'))!;
+    expect(connect).toContain('https://get-an-expert-v2.vercel.app');
+  });
+
   it('allows blob media, which is how call audio plays', async () => {
     const csp = (await headers())['Content-Security-Policy'];
     const media = csp.split('; ').find((d) => d.startsWith('media-src'))!;
