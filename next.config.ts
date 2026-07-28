@@ -73,9 +73,11 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: '/(.*)', headers: SECURITY_HEADERS }];
   },
-  // The page is /setups. People type and share the singular, and got a 404.
+  // People type and share the singular, and got a 404. It points at the root
+  // rather than /setups so it is one hop, not two, now that setups is the
+  // home page and /setups is itself a redirect.
   async redirects() {
-    return [{ source: '/setup', destination: '/setups', permanent: true }];
+    return [{ source: '/setup', destination: '/', permanent: true }];
   },
 };
 
