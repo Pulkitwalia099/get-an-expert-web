@@ -1,10 +1,11 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { track } from '@/lib/analytics';
 import { ORDERED_SETUPS, getSetup } from '@/lib/setups';
 import AskForm from './AskForm';
 import AskSheet from './AskSheet';
-import BookingSheet from './BookingSheet';
+import BookingSheet, { type BookingSource } from './BookingSheet';
 import DetailSheet from './DetailSheet';
 import Included from './Included';
 import ReelCard from './ReelCard';
@@ -17,22 +18,34 @@ import s from './setups.module.css';
 // the offer and points down; the grid starts below it.
 export default function SetupsApp() {
   const [openSlug, setOpenSlug] = useState<string | null>(null);
-  const [bookingSlug, setBookingSlug] = useState<string | null>(null);
+  // Slug and origin travel together: booking_opened reports which path was
+  // taken, and that is only known at the click, not at the sheet's mount.
+  const [booking, setBooking] = useState<{ slug: string; from: BookingSource } | null>(null);
   const [asking, setAsking] = useState(false);
 
   const openSetup = openSlug ? getSetup(openSlug) : undefined;
-  const bookingSetup = bookingSlug ? getSetup(bookingSlug) : undefined;
+  const bookingSetup = booking ? getSetup(booking.slug) : undefined;
+
+  // The top of the funnel. It fires from the client rather than the server so
+  // it carries what brought the visit, which is the cut that says whether
+  // Reddit or Instagram is doing the work.
+  useEffect(() => {
+    track('setups_viewed', {
+      referrer: document.referrer || null,
+      utm_source: new URLSearchParams(window.location.search).get('utm_source'),
+    });
+  }, []);
 
   // Straight from a card, or from the detail sheet. Either way one setup is
   // being booked, so the detail sheet closes as the booking sheet opens.
-  const book = (slug: string) => {
+  const book = (slug: string, from: BookingSource) => {
     setOpenSlug(null);
-    setBookingSlug(slug);
+    setBooking({ slug, from });
   };
 
   const closeAll = useCallback(() => {
     setOpenSlug(null);
-    setBookingSlug(null);
+    setBooking(null);
     setAsking(false);
   }, []);
 
@@ -44,7 +57,7 @@ export default function SetupsApp() {
   // sheet. Per sheet it would break on the detail to booking hand off: the
   // first would pop its entry while the second pushed one, and the pop lands a
   // tick later and closes the sheet that just opened.
-  const anySheetOpen = Boolean(openSlug || bookingSlug || asking);
+  const anySheetOpen = Boolean(openSlug || booking || asking);
   useEffect(() => {
     if (!anySheetOpen) return;
     window.history.pushState({ midseshSheet: true }, '');
@@ -96,7 +109,13 @@ export default function SetupsApp() {
 
         <section className={s.grid}>
           {ORDERED_SETUPS.map((setup, i) => (
-            <ReelCard key={setup.slug} setup={setup} onGet={setOpenSlug} eager={i < 4} />
+            <ReelCard
+              key={setup.slug}
+              setup={setup}
+              position={i}
+              onGet={setOpenSlug}
+              eager={i < 4}
+            />
           ))}
           <article className={`${s.card} ${s.ask}`}>
             <AskForm />
@@ -115,10 +134,18 @@ export default function SetupsApp() {
       </div>
 
       {openSetup ? (
-        <DetailSheet setup={openSetup} onClose={() => setOpenSlug(null)} onBook={book} />
+        <DetailSheet
+          setup={openSetup}
+          onClose={() => setOpenSlug(null)}
+          onBook={(slug) => book(slug, 'sheet')}
+        />
       ) : null}
-      {bookingSetup ? (
-        <BookingSheet setup={bookingSetup} onClose={() => setBookingSlug(null)} />
+      {bookingSetup && booking ? (
+        <BookingSheet
+          setup={bookingSetup}
+          from={booking.from}
+          onClose={() => setBooking(null)}
+        />
       ) : null}
       {asking ? <AskSheet onClose={() => setAsking(false)} /> : null}
     </div>

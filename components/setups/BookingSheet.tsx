@@ -1,15 +1,22 @@
 'use client';
 
 import Image from 'next/image';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import BookingEmbed from '@/components/BookingEmbed';
+import { track } from '@/lib/analytics';
 import { CAL_LINK } from '@/lib/operators';
 import { currentPrice, type Setup } from '@/lib/setups';
 import { useDialog } from './useDialog';
 import sh from './sheets.module.css';
 
+/** Which route reached the calendar. Only the detail sheet can today, but the
+    card may get its own Book a time, and by then the funnel needs to have been
+    telling the two apart all along. */
+export type BookingSource = 'card' | 'sheet';
+
 interface BookingSheetProps {
   setup: Setup;
+  from: BookingSource;
   onClose: () => void;
 }
 
@@ -17,8 +24,20 @@ interface BookingSheetProps {
 // posting to /api/requests, which never sent the visitor a confirmation or a
 // calendar invite. Cal does all of that, and it is the same embed the chat
 // call card and the classic book page already use.
-export default function BookingSheet({ setup, onClose }: BookingSheetProps) {
+export default function BookingSheet({ setup, from, onClose }: BookingSheetProps) {
   const ref = useDialog<HTMLDivElement>(onClose);
+
+  // The last thing the page can see. Cal runs in a cross-origin iframe, so
+  // from here on the browser learns nothing: whether a time was picked comes
+  // back through the webhook, not from this component.
+  useEffect(() => {
+    track('booking_opened', {
+      slug: setup.slug,
+      category: setup.category,
+      price: currentPrice(setup),
+      from,
+    });
+  }, [setup, from]);
 
   // BookingEmbed keys its mount effect on this object, so a fresh identity on
   // every render would remount the calendar mid-booking.

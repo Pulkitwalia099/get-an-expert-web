@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { track } from '@/lib/analytics';
 import { NO_CAPTURE } from '@/lib/replay';
 import s from './setups.module.css';
 
@@ -32,6 +33,9 @@ export default function AskForm() {
       });
       const body = (await res.json()) as { ok?: boolean };
       setStatus(body.ok ? 'done' : 'error');
+      // Whether they left a way to reply, never what they left. The address is
+      // already stored properly on the server and has no business here.
+      if (body.ok) track('setup_requested', { has_contact: contact.trim().length > 0 });
     } catch {
       setStatus('error');
     }
