@@ -201,17 +201,34 @@
 .miniField::placeholder { color: var(--ink-3); }
 
 /* ---------- What's included in every setup ---------- */
-.included { margin-top: 44px; padding: 24px 20px 26px; border-radius: 18px;
+/* ---------- What's included in every setup ---------- */
+.included {
+  margin-top: 48px; padding: 26px 20px 28px; border-radius: 20px;
   background: var(--glass-strong); border: 1px solid rgba(255, 255, 255, 0.7);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75), 0 18px 40px -20px rgba(0, 0, 0, 0.14);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 20px 44px -22px rgba(0, 0, 0, 0.16);
 }
-.included h2 { font-size: 19px; font-weight: 650; letter-spacing: -0.018em; }
-.points { margin-top: 14px; display: flex; flex-direction: column; gap: 9px; }
-.points li { position: relative; padding-left: 22px; font-size: 14px; line-height: 1.45; color: var(--ink-2); }
-.points li::before {
-  content: ''; position: absolute; left: 2px; top: 7px; width: 7px; height: 7px;
-  border-radius: 50%; background: var(--accent);
+.included h2 { font-size: 20px; font-weight: 660; letter-spacing: -0.02em; }
+.includedLead { margin-top: 5px; font-size: 13px; color: var(--ink-3); }
+
+/* list-style:none matters: there is no global list reset, so the browser's own
+   marker sat next to the tick and every line showed two bullets. */
+.points {
+  list-style: none; margin: 18px 0 0; padding: 0;
+  display: grid; gap: 10px;
 }
+.points li {
+  display: flex; align-items: flex-start; gap: 11px;
+  padding: 11px 13px; border-radius: 13px;
+  background: rgba(255, 255, 255, 0.55); border: 1px solid var(--line);
+  font-size: 14px; line-height: 1.42; color: var(--ink-2);
+}
+.tick {
+  flex: none; width: 21px; height: 21px; border-radius: 50%; margin-top: 0.5px;
+  display: grid; place-items: center;
+  color: var(--accent-deep); background: rgba(10, 122, 255, 0.12);
+}
+.tick svg { width: 11px; height: 11px; }
+
 /* ---------- Footer ---------- */
 .foot {
   margin-top: 48px; padding-top: 18px; border-top: 1px solid var(--line);
@@ -229,6 +246,7 @@
   .heroSub { font-size: 16px; max-width: 46ch; }
   .pick h2 { font-size: 22px; }
   .grid { grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .points { grid-template-columns: 1fr 1fr; gap: 11px; }
   .miniField { font-size: 12.5px; }
 }
 
@@ -238,7 +256,8 @@
   .hero { padding: 76px 0 52px; }
   .hero h1 { font-size: 50px; line-height: 1.06; }
   .heroSub { font-size: 17px; }
-  .included { padding: 30px 32px 32px; }
+  .included { padding: 32px 34px 34px; }
+  .included h2 { font-size: 23px; }
   .grid { grid-template-columns: repeat(4, 1fr); gap: 18px; }
 }
 

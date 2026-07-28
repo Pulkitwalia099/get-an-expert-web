@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ORDERED_SETUPS, getSetup } from '@/lib/setups';
 import AskForm from './AskForm';
 import AskSheet from './AskSheet';
@@ -29,6 +29,34 @@ export default function SetupsApp() {
     setOpenSlug(null);
     setBookingSlug(slug);
   };
+
+  const closeAll = useCallback(() => {
+    setOpenSlug(null);
+    setBookingSlug(null);
+    setAsking(false);
+  }, []);
+
+  // Back should close the sheet, not leave the page. On a phone that is the
+  // gesture people reach for first, and without this it threw them back to
+  // Instagram.
+  //
+  // One history entry for "a sheet is open", owned here rather than by each
+  // sheet. Per sheet it would break on the detail to booking hand off: the
+  // first would pop its entry while the second pushed one, and the pop lands a
+  // tick later and closes the sheet that just opened.
+  const anySheetOpen = Boolean(openSlug || bookingSlug || asking);
+  useEffect(() => {
+    if (!anySheetOpen) return;
+    window.history.pushState({ midseshSheet: true }, '');
+    const onPop = () => closeAll();
+    window.addEventListener('popstate', onPop);
+    return () => {
+      window.removeEventListener('popstate', onPop);
+      // Closing by any other route leaves our entry behind, so take it off.
+      // After a real back press the entry is already gone and this is skipped.
+      if (window.history.state?.midseshSheet) window.history.back();
+    };
+  }, [anySheetOpen, closeAll]);
 
   return (
     <div className={s.page}>
