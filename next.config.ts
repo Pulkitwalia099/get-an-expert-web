@@ -80,11 +80,16 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: '/(.*)', headers: SECURITY_HEADERS }];
   },
-  // People type and share the singular, and got a 404. It points at the root
-  // rather than /setups so it is one hop, not two, now that setups is the
-  // home page and /setups is itself a redirect.
+  // People type and share the singular, and got a 404. It points straight at
+  // /get rather than /setups so it is one hop, not two.
+  //
+  // Now temporary, where it used to be permanent. A permanent redirect is
+  // cached by the browser and is close to impossible to take back: everyone who
+  // hit /setup while it pointed at the root will keep landing on the root, which
+  // is the ask page now, and nothing served from here can reach them. That is
+  // the cost of guessing a destination will never move, and it moved.
   async redirects() {
-    return [{ source: '/setup', destination: '/', permanent: true }];
+    return [{ source: '/setup', destination: '/get', permanent: false }];
   },
 };
 

@@ -1,41 +1,9 @@
-import type { Metadata } from 'next';
-import HomeApp from '@/components/HomeApp';
-import ContactLink from '@/components/ContactLink';
+import { redirect } from 'next/navigation';
 
-export const metadata: Metadata = {
-  title: 'midsesh · Tell us what you need done',
-  description:
-    'Say what you need in one sentence. We find someone who has done it before, send you a name and a price, and they take it off your plate.',
-};
-
-// Order is the hierarchy: the hero and its four steps, then the work we have
-// actually done, then the wider range we cover, then one last ask. HowItWorks
-// lives inside the hero rather than here, because the steps are the thing a
-// first-time visitor needs before they will type anything.
-//
-// That order is now HomeApp's, not this file's. Every card in those sections
-// opens a layer over the page, so they need callbacks from the component that
-// owns which layer is open, which rules out passing them down as children.
+// This page is the site root now. The path stays alive because it has been
+// linked out already. Temporary (307) rather than permanent for the same reason
+// /setups is: a browser caches a permanent redirect hard, and reversing this
+// would strand anyone who had visited here.
 export default function Ask() {
-  return (
-    <>
-      <div className="bg" />
-      <div className="grain" />
-      {/* The wordmark and these links live in the chat titlebar, which is only
-          inside the overlay here, so without this the page would carry no brand
-          and no route to privacy or to a human. */}
-      <header className="sitebar">
-        <span className="sitemark">
-          <span className="worb">✳︎</span>midsesh
-        </span>
-        <nav className="sitenav">
-          <ContactLink />
-          <a className="privacy-link" href="/privacy">
-            Privacy
-          </a>
-        </nav>
-      </header>
-      <HomeApp />
-    </>
-  );
+  redirect('/');
 }
