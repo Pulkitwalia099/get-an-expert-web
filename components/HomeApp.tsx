@@ -27,7 +27,13 @@ import { getSetup } from '@/lib/setups';
 // with booleans it is one missed reset away. There is a single layer, so what
 // is inside it is a single answer.
 type View =
-  | { kind: 'chat'; seed: string; context: string | null; origin: OverlayOrigin | null }
+  | {
+      kind: 'chat';
+      seed: string;
+      context: string | null;
+      setup: string | null;
+      origin: OverlayOrigin | null;
+    }
   | { kind: 'setup'; slug: string; origin: OverlayOrigin | null }
   | { kind: 'booking'; slug: string; origin: OverlayOrigin | null };
 
@@ -56,10 +62,19 @@ export default function HomeApp() {
   // `source` is the point of this event. Which entry earns the commit is the
   // one thing the funnel could not answer before: chat_opened fired identically
   // whether they tapped the bar, a chip, or scrolled all the way to the bottom.
+  // `context` is the line printed above the thread; `setup` is the slug the
+  // server reads the card's facts from. They are separate arguments because
+  // only one of them is trusted enough to reach the prompt.
   const openChat = useCallback(
-    (source: string, seed: string, context: string | null, origin: OverlayOrigin | null) => {
+    (
+      source: string,
+      seed: string,
+      context: string | null,
+      origin: OverlayOrigin | null,
+      setup: string | null = null,
+    ) => {
       track('ask_chat_opened', { source, label: seed || null });
-      setView({ kind: 'chat', seed, context, origin });
+      setView({ kind: 'chat', seed, context, setup, origin });
     },
     [],
   );
@@ -98,7 +113,14 @@ export default function HomeApp() {
     // the seed sends exactly once. Nothing can open a second conversation over
     // the first, because the layer covers every control that would do it.
     body = (
-      <Chat flow="ask" overlay onClose={onClose} seed={view.seed} context={view.context} />
+      <Chat
+        flow="ask"
+        overlay
+        onClose={onClose}
+        seed={view.seed}
+        context={view.context}
+        setup={view.setup}
+      />
     );
   } else if (view && setup) {
     const origin = view.origin;
@@ -110,14 +132,16 @@ export default function HomeApp() {
           // Same slug, same origin. Booking is a step further into the card
           // they are already looking at, not a new place.
           onBook={() => setView({ kind: 'booking', slug: setup.slug, origin })}
-          // Seeded with the setup named, and carrying the title as context, so
-          // the conversation opens already knowing what they were reading.
+          // Seeded with the setup named, the title above the thread, and the
+          // slug for the server, so the conversation opens already knowing
+          // what they were reading rather than asking them to explain it.
           onAsk={() =>
             openChat(
               'setup_ask',
               `I have a question about ${setup.title}.`,
               setup.title,
               origin,
+              setup.slug,
             )
           }
         />

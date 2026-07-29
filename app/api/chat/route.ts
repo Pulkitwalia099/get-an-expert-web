@@ -9,8 +9,14 @@ import { clientId, rateLimit } from '@/lib/ratelimit';
 import { matchesOrigin } from '@/lib/sanitize';
 import { recordMessages, recordSession } from '@/lib/supabase';
 import { durableLimit } from '@/lib/usage';
-import { parseFlow, parseMessages, parseSessionId, sanitizeReply } from '@/lib/validate';
-import { schemaFor, systemFor } from '@/lib/prompts';
+import {
+  parseFlow,
+  parseMessages,
+  parseSessionId,
+  parseSetupSlug,
+  sanitizeReply,
+} from '@/lib/validate';
+import { schemaFor, setupBrief, systemFor } from '@/lib/prompts';
 
 // The question ceiling is the one rule the prompt could not hold on its own.
 // Against a visitor answering "not sure" and "dunno", the model kept rewording
@@ -64,6 +70,10 @@ async function handleChat(req: NextRequest): Promise<NextResponse> {
   }
   const sessionId = parseSessionId((body as { sessionId?: unknown })?.sessionId);
   const flow = parseFlow((body as { flow?: unknown })?.flow);
+  // Null unless they opened the chat from a setup card, which is most of the
+  // time. An unknown slug is the same as none rather than an error: the worst
+  // case is the conversation the visitor would have had anyway.
+  const setup = parseSetupSlug((body as { setup?: unknown })?.setup);
 
   // Persist the session and the newest user turn right away, so a visitor
   // who types one line and leaves still produces rows. The session upsert
@@ -93,7 +103,10 @@ async function handleChat(req: NextRequest): Promise<NextResponse> {
         );
 
   try {
-    const system = systemFor(flow) + finalTurnNudge(flow, asked, questionBudget(messages));
+    const system =
+      systemFor(flow) +
+      setupBrief(setup) +
+      finalTurnNudge(flow, asked, questionBudget(messages));
     const raw = hasAnthropicKey()
       ? await askClaude({ system, messages, schema: schemaFor(flow), maxTokens: 1_200 })
       : flow === 'dev'

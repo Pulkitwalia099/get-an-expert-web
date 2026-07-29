@@ -1,5 +1,6 @@
 import { stripEmDashes } from '@/lib/humanize';
 import { scrubUntrusted } from '@/lib/sanitize';
+import { isSetupSlug } from '@/lib/setups';
 import type {
   Brief,
   ChatMessage,
@@ -31,6 +32,14 @@ export function parseSessionId(input: unknown): string | null {
 // collapses to 'main'.
 export function parseFlow(input: unknown): 'main' | 'dev' {
   return input === 'dev' ? 'dev' : 'main';
+}
+
+// Which setup card the chat was opened from. The catalog is the whole allowed
+// set: a slug either names a card or it is nothing. That is the point of
+// sending a slug rather than the card's title, because what comes back from
+// here is appended to the system prompt.
+export function parseSetupSlug(input: unknown): string | null {
+  return typeof input === 'string' && isSetupSlug(input) ? input : null;
 }
 
 export function parseMessages(input: unknown): ChatMessage[] | null {

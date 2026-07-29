@@ -47,12 +47,18 @@ export default function Chat({
   // thread. Chrome only. It is never pushed into apiMsgs, so the model reads
   // the conversation and nothing else.
   context = null,
+  // The setup card this was opened from, if any. Unlike `context` above, this
+  // does reach the model: the server turns the slug back into the card's own
+  // facts and appends them to the system prompt. Sent as a slug rather than
+  // the title so nothing the browser writes can land in that prompt.
+  setup = null,
 }: {
   flow?: Flow;
   overlay?: boolean;
   onClose?: () => void;
   seed?: string | null;
   context?: string | null;
+  setup?: string | null;
 }) {
   const config = FLOWS[flow];
   const [phase, setPhase] = useState<Phase>('welcome');
@@ -227,7 +233,12 @@ export default function Chat({
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: apiMsgs.current, sessionId: sessionIdRef.current, flow }),
+        body: JSON.stringify({
+          messages: apiMsgs.current,
+          sessionId: sessionIdRef.current,
+          flow,
+          setup,
+        }),
       });
       if (!res.ok) throw new Error(`chat ${res.status}`);
       const data = (await res.json()) as ChatReply;
