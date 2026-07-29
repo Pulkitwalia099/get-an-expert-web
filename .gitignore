@@ -14,3 +14,6 @@ npm-debug.log*
 # eval run reports
 evals/.last-run.json
 .gstack/
+
+# Internal notes kept out of a public repo.
+docs/handoff.md
