@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import Chat from '@/components/Chat';
 import Examples from '@/components/Examples';
+import Explainer from '@/components/Explainer';
 import { FLOWS } from '@/components/flows';
 import Hero from '@/components/Hero';
 import Overlay, { type OverlayOrigin } from '@/components/Overlay';
@@ -176,6 +177,10 @@ export default function HomeApp() {
     <>
       <Hero config={config} onOpen={onOpen} />
       <div className="below">
+        {/* Before the proof, not after. Someone who has just read the four
+            steps is ready to hear who is behind them; someone who has already
+            scrolled the setups has stopped asking that question. */}
+        <Explainer />
         <Setups onPick={onPickSetup} />
         <Examples onPick={onPickExample} />
       </div>

@@ -1,0 +1,86 @@
+/* The founder video, between the four steps and the setups. The section
+   chrome comes from Sections.module.css so this file only owns the frame, the
+   poster and the play control. Tokens come from globals.css. */
+
+.frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--line-2);
+  background: var(--bg);
+  /* Same weight as a setup card, so the video reads as one more surface on
+     the page rather than an embed dropped into it. */
+  box-shadow: 0 8px 22px rgba(45, 32, 22, .06);
+}
+
+.video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Covers the whole frame, so the poster is the button. A small play badge in
+   the middle of a large image is a smaller target than the image itself, and
+   on a phone the image is what a thumb goes for. */
+.play {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  /* Just enough to lift the badge off the footage. The poster is a bright
+     office shot and a white triangle vanishes into it. */
+  background: linear-gradient(180deg, rgba(20, 14, 8, .06), rgba(20, 14, 8, .30));
+  transition: opacity 200ms var(--ease-out);
+}
+
+.play:active { transform: scale(0.97); }
+
+/* Waiting on the first frame. The badge softens so the press is visibly
+   acknowledged, and the press feedback is dropped because there is nothing
+   left to press. */
+.play:disabled { cursor: default; }
+.play:disabled .badge { opacity: .62; }
+.play:disabled:active { transform: none; }
+
+.badge {
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--accent);
+  color: #FBF7F0;
+  box-shadow: 0 10px 26px -8px rgba(168, 69, 44, .62);
+  transition: transform 160ms var(--ease-out);
+}
+
+/* Nudged right by a third of the optical gap: a triangle's visual centre is
+   left of its bounding box, so a centred one always looks like it is falling
+   over backwards. */
+.badge svg { transform: translateX(2px); }
+
+.label {
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #FBF7F0;
+  text-shadow: 0 1px 8px rgba(20, 14, 8, .5);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .play:hover .badge { transform: scale(1.06); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .play, .badge { transition: none; }
+  .play:active { transform: none; }
+}
