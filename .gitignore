@@ -17,3 +17,7 @@ evals/.last-run.json
 
 # Internal notes kept out of a public repo.
 docs/handoff.md
+.env*
+
+# Supabase CLI link cache. Holds a pooler connection string with credentials.
+supabase/.temp/
