@@ -20,7 +20,11 @@ import styles from '@/components/Sections.module.css';
 // Harvard Business School programme, renamed from Rock Summer Fellows. The
 // mark beside it is the HBS tile, because the programme sits inside the
 // school and has no separate mark of its own.
+// Two different reds on purpose. The Innovation Labs mark is a brighter red
+// than Harvard crimson, and flattening both to one value to tidy the palette
+// would make one of them wrong.
 const CRIMSON = '#A51C30';
+const HI_RED = '#E8403E';
 const FOUNDERS = '#111111';
 
 // One tile geometry for all three, so no mark can shout over its neighbours.
@@ -37,7 +41,7 @@ const BACKERS = [
   {
     name: 'Harvard Innovation Labs',
     mark: (
-      <Tile fill={CRIMSON}>
+      <Tile fill={HI_RED}>
         <text
           x="20"
           y="27.5"
