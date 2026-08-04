@@ -233,9 +233,27 @@ export const FLOWS: Record<Flow, FlowConfig> = {
     elseChip: 'Something else',
     elseOpener: 'Tell me what you need, in a sentence.',
     welcomePlaceholder: 'I need…',
-    searchingStatus: ['Looking for the right person…', 'Checking who has done this…'],
-    foundText: 'Found one. Two ways to connect:',
-    ending: 'choice',
+    // Now describes a marketplace sweep, because that is what is happening
+    // behind it. The old pair implied one person was being looked up.
+    searchingStatus: [
+      'Scanning profiles…',
+      'Checking who has done this…',
+      'Ranking matches…',
+    ],
+    // Unused on this flow now that it ends on cards: the count is written per
+    // search in useExpertSearch, because "found 8" and "found 3" are
+    // different sentences. Kept true to the ending so it does not mislead a
+    // reader of this file.
+    foundText: 'These are the closest matches.',
+    // The front door shows the matches now, rather than ending on the choice
+    // between an install and an email. Somebody who has just described what
+    // they need is at the moment they most want to see who exists, and this
+    // page was answering that with a card about two ways to connect.
+    //
+    // The free call is not lost with it. The offer to talk to a human fires
+    // off a finished brief in Chat, not off this ending, so it still arrives
+    // in the thread alongside the cards.
+    ending: 'cards',
     teaserIntro: 'An expert who has done this kind of work before.',
   },
 };
