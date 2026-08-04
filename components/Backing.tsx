@@ -17,9 +17,13 @@ import styles from '@/components/Sections.module.css';
 //
 // object-fit is contain rather than cover so the shield keeps its proportions:
 // cover would crop the point off the bottom of it.
+// `note` is desktop only. On a phone the strip is three cells across a 390px
+// screen and a second line under each name turns a glance into a paragraph.
+// The wider column has the room, so the detail appears where it costs nothing.
 const BACKERS = [
   {
     name: 'Harvard Innovation Labs',
+    note: 'Boston',
     src: '/backers/hi.jpeg',
     // Natural size, so the browser reserves the right box before the file
     // arrives and the strip does not jump on load.
@@ -30,12 +34,14 @@ const BACKERS = [
     // Harvard is named in full. "Rock Venture Catalyst" alone reads as an
     // unrelated fund; the school is the part that carries any weight.
     name: 'Harvard Rock Venture Catalyst',
+    note: 'Harvard Business School',
     src: '/backers/harvard-shield.png',
     w: 150,
     h: 177,
   },
   {
     name: 'Founders Inc',
+    note: 'San Francisco',
     src: '/backers/founders.png',
     w: 225,
     h: 225,
@@ -61,7 +67,10 @@ export default function Backing() {
                 screen reader announcing the logo too would say it twice. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img className={styles.backerMark} src={b.src} alt="" width={b.w} height={b.h} />
-            <span className={styles.backerLabel}>{b.name}</span>
+            <span className={styles.backerText}>
+              <span className={styles.backerLabel}>{b.name}</span>
+              <span className={styles.backerNote}>{b.note}</span>
+            </span>
           </li>
         ))}
       </ul>
