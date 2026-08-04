@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { track } from '@/lib/analytics';
+import { useMe } from '@/components/useMe';
 
 // Sign in, or who you are signed in as, in the site bar.
 //
@@ -12,31 +13,9 @@ import { track } from '@/lib/analytics';
 // It also renders nothing when sign in is unconfigured, so a deployment
 // without Google credentials shows no dead button.
 
-interface Me {
-  signedIn: boolean;
-  available: boolean;
-  email?: string;
-  name?: string | null;
-  credit?: string;
-  creditKnown?: boolean;
-}
-
 export default function AccountLink() {
-  const [me, setMe] = useState<Me | null>(null);
+  const me = useMe();
   const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    let live = true;
-    fetch('/api/me')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data: Me | null) => {
-        if (live && data) setMe(data);
-      })
-      .catch(() => {});
-    return () => {
-      live = false;
-    };
-  }, []);
 
   if (!me || !me.available) return null;
 

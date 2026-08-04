@@ -42,11 +42,18 @@ describe('setup catalog', () => {
     }
   });
 
-  it('sells everything at the sale price while the sale runs', () => {
-    expect(SALE_ON).toBe(true);
-    expect(SALE_PRICE).toBe(11);
+  // The launch price is over, so every card charges its real price. The
+  // discount moved to the welcome credit, which is given to someone who signed
+  // in rather than to everyone who scrolled past.
+  //
+  // Written to hold either way round rather than to hard code the answer: turn
+  // SALE_ON back on and this still describes what should happen.
+  it('charges the list price with the sale off, and the sale price with it on', () => {
     for (const setup of MAIN_SETUPS) {
-      expect(currentPrice(setup)).toBe(11);
+      expect(currentPrice(setup)).toBe(SALE_ON ? SALE_PRICE : setup.price);
+    }
+    if (!SALE_ON) {
+      expect(new Set(MAIN_SETUPS.map(currentPrice))).toEqual(new Set([35, 75]));
     }
   });
 

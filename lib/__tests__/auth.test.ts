@@ -112,20 +112,33 @@ describe('oauth start', () => {
 });
 
 describe('credit split', () => {
-  // The reason the cap exists. During the launch sale a setup lists at $11,
-  // and an uncapped $50 would buy four of them and collect nothing.
-  it('never lets credit cover a whole order', () => {
-    const sale = splitPrice(1_100, SIGNUP_CREDIT_CENTS);
-    expect(sale.creditCents).toBe(550);
-    expect(sale.dueCents).toBe(550);
-    expect(sale.dueCents).toBeGreaterThan(0);
+  // The offer, stated as a test. $50 makes the $35 tier free outright and
+  // leaves $25 on the $75 tier, and those two numbers are what the setup cards
+  // print, so they are worth pinning rather than inferring.
+  it('makes a first $35 setup free and a first $75 setup $25', () => {
+    const cheap = splitPrice(3_500, SIGNUP_CREDIT_CENTS);
+    expect(cheap.creditCents).toBe(3_500);
+    expect(cheap.dueCents).toBe(0);
+
+    const dear = splitPrice(7_500, SIGNUP_CREDIT_CENTS);
+    expect(dear.creditCents).toBe(5_000);
+    expect(dear.dueCents).toBe(2_500);
   });
 
-  it('caps at half no matter how big the balance', () => {
-    for (const price of [1_100, 3_500, 7_500, 12_000]) {
+  it('spends the balance and no more, however big the order', () => {
+    for (const price of [3_500, 7_500, 12_000]) {
+      const s = splitPrice(price, SIGNUP_CREDIT_CENTS);
+      expect(s.creditCents).toBe(Math.min(SIGNUP_CREDIT_CENTS, price));
+      expect(s.creditCents + s.dueCents).toBe(price);
+    }
+  });
+
+  // The cap is lifted, not deleted. If it is ever put back this keeps the two
+  // in step instead of leaving the constant lying about what it does.
+  it('honours whatever MAX_CREDIT_SHARE says', () => {
+    for (const price of [3_500, 7_500]) {
       const s = splitPrice(price, 10_000_000);
       expect(s.creditCents).toBe(Math.floor(price * MAX_CREDIT_SHARE));
-      expect(s.creditCents + s.dueCents).toBe(price);
     }
   });
 

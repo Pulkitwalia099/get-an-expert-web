@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { setupBrief } from '@/lib/prompts';
 import { parseSetupSlug } from '@/lib/validate';
-import { MAIN_SETUPS } from '@/lib/setups';
+import { MAIN_SETUPS, currentPrice, getSetup } from '@/lib/setups';
 
 describe('parseSetupSlug', () => {
   it('accepts a slug that is really in the catalog', () => {
@@ -37,10 +37,13 @@ describe('setupBrief', () => {
   });
 
   it('quotes the price and length actually shown on the card', () => {
+    const setup = getSetup('openclaw');
     const brief = setupBrief('openclaw');
-    // The sale price is what the card shows, so quoting the list price would
-    // read as a bait and switch to someone who just looked at it.
-    expect(brief).toContain('$11');
+    // Whatever the card charges is what the model must quote. Reading it from
+    // currentPrice rather than hard coding a number is the point: this broke
+    // when the launch price ended, and a test that says $11 forever would have
+    // let the chat quote a dead price to somebody looking at the real one.
+    expect(brief).toContain(`$${currentPrice(setup!)}`);
     expect(brief).toContain('90 minutes');
     expect(brief).toContain('nothing is charged at booking');
   });

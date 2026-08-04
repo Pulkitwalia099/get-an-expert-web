@@ -99,11 +99,19 @@ Credits are an append-only ledger in `lib/credits.ts`. Balance is a sum over
 `credit_entries`, never a stored column, so the number and its history cannot
 disagree. Every amount is integer cents.
 
+- The arithmetic is in `lib/credit-math.ts`, not `lib/credits.ts`. That second
+  module is server-only and throws if it reaches a browser, and the setup cards
+  need the same sums to tell a visitor what their credit would do to a price.
 - `SIGNUP_CREDIT_CENTS` is granted once, made idempotent by a unique index on
   `(sub, ref)` rather than by a read-then-write that two requests could race.
-- `MAX_CREDIT_SHARE` caps credit at half an order. A credit that can cover a
-  whole order is a free product: $50 against a setup listed at $11 buys four
-  of them and collects nothing.
+- `MAX_CREDIT_SHARE` is 1: credit may cover a whole order. It was 0.5 while the
+  launch price was on, because $50 against a setup listed at $11 bought four of
+  them. With real prices back the cap is lifted deliberately, to make a first
+  setup free and buy a first cohort to learn from.
+- Two things bound that. Nothing is fulfilled automatically, since every setup
+  is a live call somebody schedules and can decline, so a bogus free order
+  costs a calendar slot rather than money. And setting `SIGNUP_CREDIT_CENTS` to
+  0 stops new grants without touching anyone's existing balance.
 
 Orders carry no payment. Nothing here touches Stripe, and the booking sheet's
 "$0 to pay today, you pay once the setup is running" promise is unchanged.

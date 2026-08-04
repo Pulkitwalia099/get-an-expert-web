@@ -1,11 +1,11 @@
 import { insertRows, selectRows } from '@/lib/supabase';
 import type { SessionUser } from '@/lib/auth';
 
-// The credit ledger, kept deliberately small.
+// The credit ledger: the writes, and the reads that need the secret key.
 //
-// Every amount in this file is integer cents. Nothing is a float, because
-// money in floating point rounds in ways that only show up once the numbers
-// are real ones.
+// The arithmetic lives in lib/credit-math.ts, because the setup cards have to
+// show what credit does to a price and this module must never reach a browser.
+// Re-exported here so a server caller has one import rather than two.
 //
 // Balance is never stored. It is the sum of the entries, so the number and its
 // history cannot disagree.
@@ -14,19 +14,15 @@ if (typeof window !== 'undefined') {
   throw new Error('lib/credits is server-only and must never reach the client');
 }
 
-/** What a new account is given, once. */
-export const SIGNUP_CREDIT_CENTS = 5_000;
+import { SIGNUP_CREDIT_CENTS } from '@/lib/credit-math';
 
-/**
- * The most of any single order that credit is allowed to cover.
- *
- * A credit that can pay for an entire order is a free product with extra
- * steps: $50 against a setup listed at $11 during the launch sale buys four of
- * them and collects nothing, and each one is an hour of a real person's time.
- * Half means the order still collects money while the credit still feels like
- * money. One constant, deliberately easy to find and change.
- */
-export const MAX_CREDIT_SHARE = 0.5;
+export {
+  MAX_CREDIT_SHARE,
+  SIGNUP_CREDIT_CENTS,
+  formatCents,
+  splitPrice,
+  type Split,
+} from '@/lib/credit-math';
 
 export interface Balance {
   cents: number;
@@ -99,21 +95,6 @@ export async function ensureAccount(user: SessionUser): Promise<void> {
   );
 }
 
-export interface Split {
-  priceCents: number;
-  creditCents: number;
-  dueCents: number;
-}
-
-/** How an order divides between credit and what is still owed. Pure. */
-export function splitPrice(priceCents: number, balanceCents: number): Split {
-  const price = Math.max(0, Math.round(priceCents));
-  const available = Math.max(0, Math.round(balanceCents));
-  const ceiling = Math.floor(price * MAX_CREDIT_SHARE);
-  const creditCents = Math.min(available, ceiling);
-  return { priceCents: price, creditCents, dueCents: price - creditCents };
-}
-
 /**
  * Spend credit against an order.
  *
@@ -133,10 +114,4 @@ export async function spendCredit(
     { ignoreDuplicatesOn: 'sub,ref' },
   );
   return res.ok;
-}
-
-/** Cents to the string a person reads. 5000 becomes "$50". */
-export function formatCents(cents: number): string {
-  const whole = cents / 100;
-  return Number.isInteger(whole) ? `$${whole}` : `$${whole.toFixed(2)}`;
 }

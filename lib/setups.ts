@@ -1,4 +1,13 @@
-export const SALE_ON = true;
+// The launch price is over. $11 for ninety minutes of a vetted expert works
+// out at $7.33 an hour, which is not a price, and an 85% discount off a struck
+// $75 reads as the $75 having been invented rather than as a bargain. That
+// worry is written out below and it was the right one.
+//
+// The discount did not go away, it moved. New accounts get $50 of credit, so
+// the first setup is free on the $35 tier and $25 on the $75 tier. Same money
+// off, given to someone who signed in rather than to everyone who scrolled
+// past, which is what makes signing in worth doing.
+export const SALE_ON = false;
 export const SALE_PRICE = 11;
 
 // The launch price is a real offer with a real end. A struck $75 next to $11

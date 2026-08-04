@@ -394,6 +394,15 @@
    second number, so it must not compete with it. */
 .metaSale { color: var(--ink-3); }
 
+/* What the welcome credit does to this price. Weight rather than colour: the
+   price beside it already wears the category hue, and a second colour in a
+   three item row turns a fact into a sticker. Ink is darker than the rest of
+   the meta line, which is enough to make it the part you read. */
+.metaCredit {
+  color: var(--ink);
+  font-weight: 650;
+}
+
 .metaDot {
   width: 3px;
   height: 3px;

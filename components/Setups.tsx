@@ -9,6 +9,8 @@ import {
   type SetupCategory,
 } from '@/lib/setups';
 import styles from '@/components/Sections.module.css';
+import { firstOrderLabel } from '@/lib/credit-math';
+import { useMe } from '@/components/useMe';
 import { type OverlayOrigin } from '@/components/Overlay';
 import { track } from '@/lib/analytics';
 
@@ -77,6 +79,10 @@ export default function Setups({ onPick }: SetupsProps) {
   // Which card is held down. Set on pointerdown so the card is already pressed
   // while the thumb is still on it, instead of confirming after release.
   const [pressed, setPressed] = useState<string | null>(null);
+  // Null while /api/me is in flight, so the line arrives with the answer
+  // rather than flashing an offer at somebody who already has an account.
+  const me = useMe();
+  const showCredit = Boolean(me?.available && !me.signedIn);
   const release = () => setPressed(null);
 
   return (
@@ -105,7 +111,7 @@ export default function Setups({ onPick }: SetupsProps) {
                 // Spelled out so the card does not announce as one run-on
                 // string of title, outcome and price. The struck sale price
                 // stays out of it: only what you pay is read.
-                aria-label={`${setup.title}. ${setup.checklist[0]}. $${price}${SALE_ON ? ', launch price' : ''}. Get this.`}
+                aria-label={`${setup.title}. ${setup.checklist[0]}. $${price}${SALE_ON ? ', launch price' : ''}${showCredit ? `, ${firstOrderLabel(price).toLowerCase()} with the welcome credit` : ''}. Get this.`}
                 onPointerDown={() => setPressed(setup.slug)}
                 onPointerUp={release}
                 onPointerCancel={release}
@@ -139,6 +145,20 @@ export default function Setups({ onPick }: SetupsProps) {
                     <>
                       <span className={styles.metaDot} aria-hidden="true" />
                       <span className={styles.metaSale}>Launch price</span>
+                    </>
+                  )}
+                  {/* What the welcome credit does to this exact number, shown
+                      only to somebody who does not have an account yet. A
+                      discount is abstract in a nav bar and concrete beside a
+                      price, and this is the one place both are on screen.
+
+                      Hidden once signed in, because by then it is either spent
+                      or it is a balance rather than an offer, and the card has
+                      no idea which. */}
+                  {showCredit && (
+                    <>
+                      <span className={styles.metaDot} aria-hidden="true" />
+                      <span className={styles.metaCredit}>{firstOrderLabel(price)}</span>
                     </>
                   )}
                   <span className={styles.cardPill}>
