@@ -876,6 +876,38 @@ div.sav {
   transition: opacity 300ms ease;
 }
 
+/* The progress bar under the sonar.
+   scaleX rather than width, so the browser only composites: this runs for
+   about twenty-five seconds and a width animation would lay out the page on
+   every frame of it. transform-origin left makes it grow from the start. */
+.sbar {
+  margin: 10px auto 2px;
+  width: min(210px, 60%);
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(33, 30, 26, .08);
+  overflow: hidden;
+}
+.sbar-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  transform-origin: left center;
+  background: linear-gradient(90deg, var(--accent), #E8A184);
+  /* Matches the 200ms tick, so the bar glides between samples instead of
+     stepping. Linear on purpose: the easing is in the value, not the paint,
+     and a second curve on top would make it stutter. */
+  transition: transform 200ms linear;
+}
+
+/* The sonar is ambient motion for a wait that cannot be removed, so it stays
+   at reduced motion; what goes is the sweeping and the pulsing. The bar keeps
+   its value and stops sliding, which is the part that carries the meaning. */
+@media (prefers-reduced-motion: reduce) {
+  .ring, .sdot, .sonar-orb { animation: none; }
+  .sbar-fill { transition: none; }
+}
+
 /* ---------- Matches ---------- */
 .cards { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
 .card {

@@ -141,7 +141,15 @@ export const FLOWS: Record<Flow, FlowConfig> = {
     elseChip: 'Something else',
     elseOpener: 'Tell me what you need, in a sentence.',
     welcomePlaceholder: "I'm looking for…",
-    searchingStatus: ['Scanning profiles…', 'Checking availability…', 'Ranking matches…'],
+    // Held in order across the wait, not cycled. Each line is a real phase of
+    // the work, so reaching the last one means the search is nearly done
+    // rather than that the list has looped again.
+    searchingStatus: [
+      'Searching for people who do this',
+      'Reading their profiles',
+      'Checking each one against your brief',
+      'Writing up why they fit',
+    ],
     foundText:
       'These are the top matches. Who would you like an intro to? You can pick more than one.',
     ending: 'cards',
@@ -233,12 +241,13 @@ export const FLOWS: Record<Flow, FlowConfig> = {
     elseChip: 'Something else',
     elseOpener: 'Tell me what you need, in a sentence.',
     welcomePlaceholder: 'I need…',
-    // Now describes a marketplace sweep, because that is what is happening
-    // behind it. The old pair implied one person was being looked up.
+    // Describes a marketplace sweep, because that is what is happening behind
+    // it. The old pair implied one person was being looked up, and cycled.
     searchingStatus: [
-      'Scanning profiles…',
-      'Checking who has done this…',
-      'Ranking matches…',
+      'Searching for people who do this',
+      'Reading their profiles',
+      'Checking each one against your brief',
+      'Writing up why they fit',
     ],
     // Unused on this flow now that it ends on cards: the count is written per
     // search in useExpertSearch, because "found 8" and "found 3" are
