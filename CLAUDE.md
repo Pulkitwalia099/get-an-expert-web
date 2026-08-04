@@ -76,6 +76,42 @@ visitors with an LLM judge (see `evals/README.md`).
   Supabase transcripts), and ends with a new scenario in
   `evals/scenarios.ts` that reproduces it.
 
+## Sign in and credits
+
+Google sign in, written by hand in `lib/auth.ts` with no SDK. This repo has
+six runtime dependencies and talks to Supabase over raw fetch, so adding
+`@supabase/ssr` for a login button would have been the largest dependency
+change in the project. The authorization code flow is a redirect, a POST and a
+cookie, so it is spelled out instead.
+
+- `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` turn it on. Without both, the
+  Sign in control is not rendered and every auth route answers 503.
+- `SESSION_SECRET` signs the session cookie, separate from the OAuth secret so
+  rotating one does not invalidate the other. Changing it signs everyone out.
+- The Google console must hold the callback URL exactly. Preview deploys get
+  generated hostnames, so set `AUTH_ORIGIN` to pin them at the registered one.
+- The ID token's signature is not verified, on purpose. It is fetched directly
+  from Google's token endpoint over TLS with the client secret, which is the
+  case OpenID Connect Core 3.1.3.7 exempts. `iss`, `aud`, `exp` and
+  `email_verified` are all still checked.
+
+Credits are an append-only ledger in `lib/credits.ts`. Balance is a sum over
+`credit_entries`, never a stored column, so the number and its history cannot
+disagree. Every amount is integer cents.
+
+- `SIGNUP_CREDIT_CENTS` is granted once, made idempotent by a unique index on
+  `(sub, ref)` rather than by a read-then-write that two requests could race.
+- `MAX_CREDIT_SHARE` caps credit at half an order. A credit that can cover a
+  whole order is a free product: $50 against a setup listed at $11 buys four
+  of them and collects nothing.
+
+Orders carry no payment. Nothing here touches Stripe, and the booking sheet's
+"$0 to pay today, you pay once the setup is running" promise is unchanged.
+`lib/orders.ts` is shared by two callers, and the Cal webhook is the honest
+one: the browser cannot see a time being picked, so an order written when the
+sheet opened would count everyone who only looked. Both paths key off a `ref`
+behind a unique index, which is what makes a Cal redelivery a no-op.
+
 ## The call button
 
 A "Talk to a human" pill in the chat titlebar, shown once the visitor has

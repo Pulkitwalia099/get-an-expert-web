@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import AccountLink from '@/components/AccountLink';
 import HomeApp from '@/components/HomeApp';
 import ContactLink from '@/components/ContactLink';
 import SiteFooter from '@/components/SiteFooter';
@@ -38,6 +39,10 @@ export default function Home() {
           <a className="privacy-link" href="/privacy">
             Privacy
           </a>
+          {/* Last in the bar, and silent until it knows whether anyone is
+              signed in. Renders nothing at all when Google credentials are
+              unset, so a deployment without them shows no dead button. */}
+          <AccountLink />
         </nav>
       </header>
       <HomeApp />

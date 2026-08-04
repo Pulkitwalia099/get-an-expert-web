@@ -8,7 +8,10 @@ export type InsightKind =
   // The contact card and the /register form. Both are people reaching us
   // directly rather than through the chat funnel.
   | 'contact'
-  | 'register';
+  | 'register'
+  // A signed in visitor asking for a setup. Nothing is charged at this point,
+  // so this is a commitment rather than a payment.
+  | 'order';
 
 const PRIVATE_HOST_PATTERNS = [
   /^localhost$/i,

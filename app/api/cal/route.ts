@@ -2,9 +2,11 @@ import { createHash } from 'node:crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { PostHog } from 'posthog-node';
 import { calNotes, distinctIdFromNotes, parseCalBooking, verifyCalSignature } from '@/lib/cal-webhook';
+import { accountByEmail } from '@/lib/credits';
 import { recordInsight } from '@/lib/insights';
+import { placeOrder } from '@/lib/orders';
 import { getSetup } from '@/lib/setups';
-import { recordSetupBooking } from '@/lib/supabase';
+import { recordSetupBooking, type SetupBookingRow } from '@/lib/supabase';
 
 export const runtime = 'nodejs';
 
@@ -57,6 +59,52 @@ async function captureBookingCompleted(
     console.error('[midsesh:posthog] booking_completed failed', err);
   } finally {
     await client.shutdown();
+  }
+}
+
+/**
+ * Turn a confirmed booking into an order, when we can tell whose it is.
+ *
+ * This is the honest commitment point in the whole flow. The browser cannot
+ * see it, so an order written when the sheet opened would count everyone who
+ * glanced at the calendar and left.
+ *
+ * Three ways this correctly does nothing: a booking with no setup in the
+ * notes, which came through the bare Cal link; an address that has never
+ * signed in, so there is no account to spend credit from; and a redelivery,
+ * which lands on the same ref and is dropped by a unique index rather than by
+ * a check that two deliveries could race past.
+ *
+ * Failures are logged and swallowed, like every other write in this route. Cal
+ * retries anything that is not a 2xx, and a retry loop over a booking that is
+ * already recorded helps nobody.
+ */
+async function placeOrderForBooking(booking: SetupBookingRow): Promise<void> {
+  if (!booking.setupSlug || !booking.attendeeEmail) return;
+  const setup = getSetup(booking.setupSlug);
+  if (!setup) return;
+
+  try {
+    const account = await accountByEmail(booking.attendeeEmail);
+    if (!account) return;
+
+    const placed = await placeOrder({
+      sub: account.sub,
+      setup,
+      ref: `cal:${booking.calBookingUid}`,
+    });
+
+    await recordInsight('order', {
+      email: booking.attendeeEmail,
+      slug: setup.slug,
+      priceCents: placed.priceCents,
+      creditCents: placed.creditCents,
+      dueCents: placed.dueCents,
+      stored: placed.stored,
+      from: 'cal',
+    });
+  } catch (err) {
+    console.error('[midsesh:cal] order for booking failed', err);
   }
 }
 
@@ -114,6 +162,7 @@ export async function POST(req: NextRequest) {
   if (booking.status === 'booked') {
     const visitor = distinctIdFromNotes(calNotes(body));
     if (visitor) await captureBookingCompleted(visitor, booking.setupSlug, booking.calBookingUid);
+    await placeOrderForBooking(booking);
   }
 
   return NextResponse.json({ ok: true });
