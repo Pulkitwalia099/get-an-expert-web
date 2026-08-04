@@ -6,24 +6,38 @@ export type Flow = 'main' | 'dev' | 'ask';
 
 // The eight things we match people to. Used by the starter chips and by the
 // examples list below the window, so a chip and an example agree on wording.
+//
+// 'writing' is gone and 'security' took its slot. Posts, homepage copy and
+// blog drafts are go to market work that happened to be filed on their own,
+// and folding them into marketing frees the eighth slot without making the
+// filter row any longer than it already is on a phone.
+//
+// The keys are deliberately not renamed to match the new labels. 'marketing'
+// reads Growth & GTM and 'data' reads Data & intelligence, because a key is
+// referenced by every example, every chip and a colour token, and renaming one
+// to match a label buys nothing a reader ever sees.
 export type CategoryKey =
   | 'design'
   | 'web'
   | 'video'
   | 'ai'
   | 'marketing'
-  | 'writing'
+  | 'security'
   | 'data'
   | 'admin';
 
+// Order is the argument. This list used to open on design and web, which are
+// the two things a visitor can now do themselves with Claude Code, and buried
+// growth at five and AI at four. Leading on the work that still needs a person
+// is the whole point of the reorder.
 export const CATEGORIES: { key: CategoryKey; label: string }[] = [
-  { key: 'design', label: 'Design & branding' },
-  { key: 'web', label: 'Web & apps' },
-  { key: 'video', label: 'Video & audio' },
+  { key: 'marketing', label: 'Growth & GTM' },
   { key: 'ai', label: 'AI & automation' },
-  { key: 'marketing', label: 'Marketing & growth' },
-  { key: 'writing', label: 'Writing & content' },
-  { key: 'data', label: 'Data & analytics' },
+  { key: 'video', label: 'Video & motion' },
+  { key: 'security', label: 'Security' },
+  { key: 'data', label: 'Data & intelligence' },
+  { key: 'web', label: 'Web & apps' },
+  { key: 'design', label: 'Design & brand' },
   { key: 'admin', label: 'Admin & professional' },
 ];
 

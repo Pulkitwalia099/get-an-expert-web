@@ -41,7 +41,13 @@
   --cat-video: #7A54A3;
   --cat-ai: #1F7A6B;
   --cat-marketing: #B87613;
-  --cat-writing: #63762F;
+  /* Security took the slot writing left behind, and its hue as well. The seven
+     others sit at roughly 14, 38, 168, 211, 213, 272 and 340 degrees, so the
+     only real gap in the wheel is the yellow green one. A red would have
+     crowded design and data, a slate would have crowded web and admin. This
+     sits 68 degrees off the nearest neighbour, which is the most separation
+     the palette had left to give. */
+  --cat-security: #4F7A3A;
   --cat-data: #B0466A;
   --cat-admin: #556070;
 }
@@ -54,7 +60,7 @@
 [data-cat="video"]     { --cat: var(--cat-video);     --cat-soft: rgba(122, 84, 163, .10); }
 [data-cat="ai"]        { --cat: var(--cat-ai);        --cat-soft: rgba(31, 122, 107, .10); }
 [data-cat="marketing"] { --cat: var(--cat-marketing); --cat-soft: rgba(184, 118, 19, .11); }
-[data-cat="writing"]   { --cat: var(--cat-writing);   --cat-soft: rgba(99, 118, 47, .11); }
+[data-cat="security"]  { --cat: var(--cat-security);  --cat-soft: rgba(79, 122, 58, .11); }
 [data-cat="data"]      { --cat: var(--cat-data);      --cat-soft: rgba(176, 70, 106, .10); }
 [data-cat="admin"]     { --cat: var(--cat-admin);     --cat-soft: rgba(85, 96, 112, .10); }
 

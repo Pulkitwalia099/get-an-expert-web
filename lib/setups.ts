@@ -19,9 +19,13 @@ export const SALE_ENDS_LABEL = '10 August';
 // so the most viral card leads its own section.
 export type SetupCategory = 'automation' | 'growth' | 'video' | 'other';
 
+// Growth leads. This opened on automation while the examples list below it
+// opened on growth, so the two grids on one page argued for a different first
+// thing. Whichever order is right, they have to agree, and growth is the one
+// a visitor is most often paying to fix.
 const CATEGORY_RANK: Record<SetupCategory, number> = {
-  automation: 0,
-  growth: 1,
+  growth: 0,
+  automation: 1,
   video: 2,
   other: 3,
 };
@@ -77,7 +81,10 @@ export const MAIN_SETUPS: Setup[] = [
   {
     slug: 'motion-website',
     category: 'growth',
-    title: '3D motion website',
+    // Named for the result and the time it takes, not for the technique. "3D
+    // motion website" is a thing we can build; "a 3D site, built in an hour"
+    // is a thing someone wants.
+    title: 'A 3D site, built in an hour',
     price: 75,
     minutes: 90,
     views: '165K',
@@ -192,7 +199,9 @@ export const MAIN_SETUPS: Setup[] = [
   {
     slug: 'ai-support',
     category: 'automation',
-    title: 'AI customer support',
+    // Same reason. The reel underneath it is a phone call being answered, so
+    // the title now says that rather than naming a department.
+    title: 'An AI that answers your phone',
     price: 75,
     minutes: 90,
     views: '64.4K',

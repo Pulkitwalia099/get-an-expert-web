@@ -5,6 +5,20 @@ import type { CategoryKey } from '@/components/flows';
 // be true. `ask` is written the way someone types it into the chat; `outcome`
 // is the thing they end up holding. Four per category in CATEGORIES, so the
 // filter never lands on an empty list.
+//
+// Rewritten in full on 2026-08-04. The old list was ordered design, web,
+// video, ai, marketing, and read as a freelance board: a logo for a coffee
+// shop, a Shopify checkout, eight blog posts, books before tax season. The
+// setups grid one screen above it sells 3D sites, cloned voices and OpenClaw,
+// so a visitor met two different companies in one scroll and the second one
+// took back what the first had promised.
+//
+// The rule for what belongs here now: if someone could get a good version of
+// it out of Claude Code in an afternoon, it does not earn a slot. Design and
+// web survive by pointing at the part the model does not finish.
+//
+// Blocks are in CATEGORIES order, so reading this file top to bottom is the
+// same as reading the filter row left to right.
 export interface Example {
   category: CategoryKey;
   ask: string;
@@ -12,95 +26,11 @@ export interface Example {
 }
 
 export const EXAMPLES: Example[] = [
-  // Design & branding
-  {
-    category: 'design',
-    ask: 'Design a logo and brand kit for my coffee shop',
-    outcome: 'Logo files, colours and fonts in one folder.',
-  },
-  {
-    category: 'design',
-    ask: 'Make my pitch deck look like a real company built it',
-    outcome: 'Investor slides in your own brand, editable.',
-  },
-  {
-    category: 'design',
-    ask: 'Redesign the onboarding screens in our app',
-    outcome: 'Figma screens a developer can build straight from.',
-  },
-  {
-    category: 'design',
-    ask: 'Design packaging for a three product skincare line',
-    outcome: 'Print ready artwork with the dielines set up.',
-  },
-
-  // Web & apps
-  {
-    category: 'web',
-    ask: 'Build a website for my consulting business',
-    outcome: 'A live site you can edit yourself afterwards.',
-  },
-  {
-    category: 'web',
-    ask: 'Fix my Shopify checkout, it drops people at payment',
-    outcome: 'Checkout working again, tested on card and Apple Pay.',
-  },
-  {
-    category: 'web',
-    ask: 'Turn my Figma file into a working front end',
-    outcome: 'Coded pages that match the design on phone and desktop.',
-  },
-  {
-    category: 'web',
-    ask: 'Build an iPhone app from my idea, enough to show investors',
-    outcome: 'A working build you can hand out on TestFlight.',
-  },
-
-  // Video & audio
-  {
-    category: 'video',
-    ask: 'Turn 4 hours of footage into a 10 minute video',
-    outcome: 'Cut, graded and captioned, ready to post.',
-  },
-  {
-    category: 'video',
-    ask: 'Cut my podcast into shorts for TikTok and Reels',
-    outcome: 'Ten vertical clips with captions burned in.',
-  },
-  {
-    category: 'video',
-    ask: 'Clean up an interview I recorded in a noisy cafe',
-    outcome: 'Room noise gone, both voices level across the track.',
-  },
-  {
-    category: 'video',
-    ask: 'Make a 30 second ad out of photos of my product',
-    outcome: 'One finished ad, exported square, vertical and wide.',
-  },
-
-  // AI & automation
-  {
-    category: 'ai',
-    ask: 'Build an AI agent that answers my customer emails',
-    outcome: 'An agent drafting replies in your inbox, on your rules.',
-  },
-  {
-    category: 'ai',
-    ask: 'Put a chatbot on our site that answers from our help docs',
-    outcome: 'A bot answering from your own docs, linking the source.',
-  },
-  {
-    category: 'ai',
-    ask: 'Stop my team copying form entries into the CRM by hand',
-    outcome: 'An n8n or Zapier flow that runs without anyone watching.',
-  },
-  {
-    category: 'ai',
-    ask: 'Pull 5,000 listings into a spreadsheet every week',
-    outcome: 'A scraper on a schedule, writing into Google Sheets.',
-  },
-
-  // Marketing & growth
+  // Growth & GTM
+  // Absorbs the old writing category. Every line is a motion with public
+  // evidence behind it: Reddit carries roughly 40% of what ChatGPT cites,
+  // most small businesses still miss inbound calls, and buyers now research
+  // through a model before they ever reach a search box.
   {
     category: 'marketing',
     ask: 'Set up cold outreach that actually gets replies',
@@ -108,79 +38,175 @@ export const EXAMPLES: Example[] = [
   },
   {
     category: 'marketing',
-    ask: 'Run Meta ads for my gym on 1,000 a month',
-    outcome: 'Campaigns live and a weekly cost per lead figure.',
+    ask: 'Get us into the Reddit threads our buyers actually read',
+    outcome: 'Threads you own in the subreddits that decide your category.',
   },
   {
     category: 'marketing',
-    ask: 'Get my site ranking for what my customers actually search',
-    outcome: 'A keyword plan, plus the on page fixes made for you.',
+    ask: 'Put a voice agent on our phone line that books the job',
+    outcome: 'A number that picks up at any hour, qualifies, and fills the calendar.',
   },
   {
     category: 'marketing',
-    ask: 'Email people who leave something in their cart',
-    outcome: 'A three email flow live in Klaviyo, triggered and tested.',
+    ask: 'Make ChatGPT recommend us when someone asks for our category',
+    outcome: 'Cited by the answer engines, with a weekly record of where.',
   },
 
-  // Writing & content
+  // AI & automation
   {
-    category: 'writing',
-    ask: 'Rewrite my homepage so people get what we sell',
-    outcome: 'New copy for every section, ready to paste in.',
+    category: 'ai',
+    ask: 'Wire our own tools into Claude so the team can just ask',
+    outcome: 'An MCP server your systems talk through, with access you control.',
   },
   {
-    category: 'writing',
-    ask: 'Write 8 blog posts on things my customers search for',
-    outcome: 'Eight edited drafts with titles and meta text.',
+    category: 'ai',
+    ask: 'Give the company one brain that knows our docs, Slack and drive',
+    outcome: 'One place to ask, answering with the source attached.',
   },
   {
-    category: 'writing',
-    ask: 'Turn our 40 page report into something a customer will read',
-    outcome: 'A short version plus a one page summary.',
+    category: 'ai',
+    ask: 'Put an agent in my inbox that drafts replies the way I write',
+    outcome: 'Drafts waiting each morning, on rules you approved.',
   },
   {
-    category: 'writing',
-    ask: 'Write my LinkedIn posts in my voice, twice a week',
-    outcome: 'A month of posts, scheduled, still sounding like you.',
+    category: 'ai',
+    ask: 'Run tier one support without a human reading every ticket',
+    outcome: 'The common questions closed, the rest escalated with context.',
   },
 
-  // Data & analytics
+  // Video & motion
+  // Was "Video & audio". Cleaning up a noisy interview recording was the
+  // weakest line on the page and nobody comes looking for it.
+  {
+    category: 'video',
+    ask: 'Make a digital clone of me I can shoot videos with for years',
+    outcome: 'Your face and voice on demand, from a script.',
+  },
+  {
+    category: 'video',
+    ask: 'Build a site with real 3D and motion, not a template',
+    outcome: 'A site that moves, still fast on a phone.',
+  },
+  {
+    category: 'video',
+    ask: 'Turn one long video into a month of clips people finish',
+    outcome: 'Thirty vertical cuts, hooks written, captions burned in.',
+  },
+  {
+    category: 'video',
+    ask: 'Make a month of UGC ads without hiring a single creator',
+    outcome: 'Ten scripted, voiced variants, ready to test.',
+  },
+
+  // Security
+  // New category. It exists because everyone is now shipping code they did
+  // not write and cannot fully read.
+  {
+    category: 'security',
+    ask: 'Find what my vibe coded app is exposing',
+    outcome: 'Every key, open endpoint and public bucket found and shut.',
+  },
+  {
+    category: 'security',
+    ask: 'Check my AI agent cannot leak customer data before we launch',
+    outcome: 'What it can reach, written down, and the holes closed.',
+  },
+  {
+    category: 'security',
+    ask: 'Break into our app before an enterprise buyer asks us to',
+    outcome: 'Findings ranked by what an attacker gets, with the fixes made.',
+  },
+  {
+    category: 'security',
+    ask: 'Get us SOC 2 ready without stopping the roadmap',
+    outcome: 'Controls in place and evidence collecting on its own.',
+  },
+
+  // Data & intelligence
   {
     category: 'data',
-    ask: 'Build a dashboard so I stop asking people for numbers',
-    outcome: 'One dashboard your team opens every morning.',
+    ask: 'Let me ask our numbers a question in Slack and get an answer',
+    outcome: 'Plain English in, the query run for you, chart out.',
   },
   {
     category: 'data',
-    ask: 'Work out which of my ad channels actually made money',
+    ask: 'Work out which channel made money, not which got clicks',
     outcome: 'Spend against revenue, broken out per channel.',
   },
   {
     category: 'data',
-    ask: 'Clean up a customer list full of duplicates and dead emails',
-    outcome: 'One deduped list with the bad rows flagged, not deleted.',
+    ask: 'Turn five years of messy records into something a model can train on',
+    outcome: 'A clean labelled set, with a sample checked by hand.',
   },
   {
     category: 'data',
-    ask: 'Label 5,000 images so I can train a model on them',
-    outcome: 'A labelled set with a sample checked for accuracy.',
+    ask: 'Tell me when a competitor changes price, hires, or ships',
+    outcome: 'A weekly brief, sourced and linked.',
+  },
+
+  // Web & apps
+  // Demoted from first to sixth, and repointed at the job the model leaves
+  // behind rather than the one it now does well.
+  {
+    category: 'web',
+    ask: 'Finish the app my AI got most of the way',
+    outcome: 'The last stretch done, tested, and live.',
+  },
+  {
+    category: 'web',
+    ask: 'Take my prototype to something real users will not break',
+    outcome: 'Auth, payments and a database that holds up.',
+  },
+  {
+    category: 'web',
+    ask: 'Build the integration my customers keep asking for',
+    outcome: 'A live API connection, documented, with errors handled.',
+  },
+  {
+    category: 'web',
+    ask: 'Rebuild our checkout so it stops losing people at payment',
+    outcome: 'Tested on card, Apple Pay and a bad connection.',
+  },
+
+  // Design & brand
+  {
+    category: 'design',
+    ask: 'Make my product look like a real company built it',
+    outcome: 'A design system a developer can build straight from.',
+  },
+  {
+    category: 'design',
+    ask: 'Brand an AI product so it does not look like every other one',
+    outcome: 'Name, marks, colour and type, in one folder.',
+  },
+  {
+    category: 'design',
+    ask: 'Redesign onboarding so people reach the thing they came for',
+    outcome: 'Flows tested on real users, with the drop off marked.',
+  },
+  {
+    category: 'design',
+    ask: 'Turn our deck into something an investor reads to the end',
+    outcome: 'Investor slides in your own brand, editable.',
   },
 
   // Admin & professional
+  // Deliberately unchanged in spirit. A contract review is not a frontier ask
+  // and dressing one up as if it were would read as a stretch.
   {
     category: 'admin',
-    ask: 'Hand off my inbox and calendar, 10 hours a week',
+    ask: 'Read this contract before I sign it Monday',
+    outcome: 'Marked up, with the risky clauses called out.',
+  },
+  {
+    category: 'admin',
+    ask: 'Hand off my inbox and calendar, ten hours a week',
     outcome: 'An assistant working your hours, in your tools.',
   },
   {
     category: 'admin',
-    ask: 'Cover customer messages while I am asleep',
-    outcome: 'Overnight replies handled, from answers you approved.',
-  },
-  {
-    category: 'admin',
-    ask: 'Read this contract before I sign it on Monday',
-    outcome: 'The contract marked up, risky clauses called out.',
+    ask: 'Set us up to hire someone in another country',
+    outcome: 'Entity, contracts and payroll, ready to run.',
   },
   {
     category: 'admin',

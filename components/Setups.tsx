@@ -35,8 +35,8 @@ import { track } from '@/lib/analytics';
 // nothing. An empty string renders no label at all.
 const LABELS: Record<SetupCategory, string> = {
   automation: 'AI & automation',
-  growth: 'Marketing & growth',
-  video: 'Video & audio',
+  growth: 'Growth & GTM',
+  video: 'Video & motion',
   other: '',
 };
 

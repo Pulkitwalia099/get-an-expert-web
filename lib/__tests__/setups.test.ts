@@ -91,12 +91,40 @@ describe('setup catalog', () => {
     }
   });
 
-  it('leads with automations, then growth, then video, then the rest', () => {
+  // Setups.tsx labels its cards from its own map and its comment promises that
+  // map is worded exactly like the example filters, so the page names a
+  // category once rather than twice. Nothing enforced it, and renaming
+  // "Marketing & growth" to "Growth & GTM" in flows.ts left the setup cards
+  // printing the old wording one screen above the new one. Same source reading
+  // approach as the price guard above, for the same reason: no DOM setup here.
+  it('labels setup cards with the same words as the example filters', () => {
+    const strip = (s: string): string => s.replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '');
+    const setups = strip(readFileSync(path.join(root, 'components', 'Setups.tsx'), 'utf8'));
+    const flows = strip(readFileSync(path.join(root, 'components', 'flows.ts'), 'utf8'));
+
+    const block = setups.match(/const LABELS[^{]*\{([^}]*)\}/);
+    expect(block, 'could not find the LABELS map in Setups.tsx').not.toBeNull();
+
+    const labels = [...block![1].matchAll(/:\s*'([^']*)'/g)]
+      .map((m) => m[1])
+      .filter(Boolean);
+    expect(labels.length).toBeGreaterThan(0);
+
+    const filters = [...flows.matchAll(/label:\s*'([^']+)'/g)].map((m) => m[1]);
+    for (const label of labels) {
+      expect(filters, `"${label}" is not one of the example filter labels`).toContain(label);
+    }
+  });
+
+  // Growth first, matching the examples list under it. The two grids sit one
+  // screen apart and used to disagree about what a visitor came for, so this
+  // guard is really about them agreeing rather than about growth in itself.
+  it('leads with growth, then automations, then video, then the rest', () => {
     const ranks = ORDERED_SETUPS.map((setup) => setup.category);
-    const order = ['automation', 'growth', 'video', 'other'];
+    const order = ['growth', 'automation', 'video', 'other'];
     const asIndexes = ranks.map((c) => order.indexOf(c));
     expect(asIndexes).toEqual([...asIndexes].sort((a, b) => a - b));
-    expect(ORDERED_SETUPS[0].category).toBe('automation');
+    expect(ORDERED_SETUPS[0].category).toBe('growth');
     expect(ORDERED_SETUPS).toHaveLength(MAIN_SETUPS.length);
   });
 
