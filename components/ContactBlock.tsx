@@ -95,34 +95,35 @@ export default function ContactBlock() {
 
   return (
     <>
-      <section className={styles.section} aria-labelledby="demo-title">
-        <header className={styles.head}>
-          <h2 id="demo-title" className={styles.title}>
-            Book a demo with us
-          </h2>
-          <p className={styles.sub}>
-            Fifteen minutes. We walk you through how it works and take your brief.
-          </p>
-        </header>
-        <div className={form.actions}>
+      {/* One line, not three sections. This was a demo section and a register
+          section, each with its own heading, subtitle and button, stacked
+          above the closing ask which has all three of those too. Three
+          headings in a row at the bottom of a page all asking for something
+          different is not a close, it is a menu, and the real ask gets lost in
+          it. These are the secondary routes, so they read as one quiet row and
+          the closer keeps the only loud button on the page. */}
+      <section className={`${styles.section} ${form.compact}`} aria-labelledby="more-title">
+        <h2 id="more-title" className={form.rowLabel}>
+          Other ways in
+        </h2>
+        <div className={form.row}>
           <button
             type="button"
-            className={form.submit}
+            className={form.ghost}
             onClick={() => openForm('Book a demo', 'demo')}
             aria-expanded={open}
             aria-controls="contact-panel"
           >
-            Ask for a demo
+            Book a demo
           </button>
-          <button
-            type="button"
+          <span className={form.rowDot} aria-hidden="true" />
+          <Link
+            href="/register"
             className={form.ghost}
-            onClick={() => openForm('', 'contact')}
-            aria-expanded={open}
-            aria-controls="contact-panel"
+            onClick={() => analytics('register_opened', { source: 'home' })}
           >
-            Or just send a message
-          </button>
+            Register as an expert
+          </Link>
         </div>
       </section>
 
@@ -225,24 +226,6 @@ export default function ContactBlock() {
       </section>
       )}
 
-      <section className={styles.section} aria-labelledby="join-title">
-        <header className={styles.head}>
-          {/* No sub. This is a one-line CTA for people who already know whether
-              it applies to them, and an explanation under it was answering a
-              question nobody standing here is asking. The /register page does
-              the explaining, including for agent builders. */}
-          <h2 id="join-title" className={styles.title}>
-            Register as an expert
-          </h2>
-        </header>
-        <Link
-          href="/register"
-          className={form.submit}
-          onClick={() => analytics('register_opened', { source: 'home' })}
-        >
-          Register
-        </Link>
-      </section>
     </>
   );
 }

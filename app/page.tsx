@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import HomeApp from '@/components/HomeApp';
 import ContactLink from '@/components/ContactLink';
+import SiteFooter from '@/components/SiteFooter';
 
 // This page was at /ask until the front door changed. Asking for what you need
 // is the offer we lead with now, so the domain opens on it and setups moved to
@@ -40,6 +41,7 @@ export default function Home() {
         </nav>
       </header>
       <HomeApp />
+      <SiteFooter />
     </>
   );
 }
