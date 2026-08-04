@@ -35,7 +35,7 @@ const NEXT_STEPS = [
     when: 'Within two working days',
     what: 'We read it and reply',
     detail:
-      'A person reads what you sent and answers by email, either with questions or with a time to talk. You get a reply whether or not it is a fit, because waiting to hear nothing is the worst version of this.',
+      'You hear back by email, either with questions or with a time to talk. You get an answer whether or not it is a fit.',
   },
   {
     when: 'The call',
@@ -117,7 +117,7 @@ export default function RegisterForm() {
         </h2>
         <p className={styles.doneBody}>
           {delivered ? (
-            'A person reads every one of these. Expect a reply by email within two working days.'
+            'Expect a reply by email within two working days.'
           ) : (
             <>
               Send it to <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> instead so it does

@@ -93,7 +93,7 @@ export default function ExpertSignup({
         {sending ? 'Sending…' : 'Send it'}
       </button>
       <div className={styles.note}>
-        A person reads every one of these. If there is a fit, you hear from us by email.
+        If there is a fit, you hear from us by email.
       </div>
     </div>
   );

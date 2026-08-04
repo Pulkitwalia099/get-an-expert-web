@@ -55,7 +55,7 @@ export default function Privacy() {
       <p>
         {ENTITY} (&quot;we&quot;, &quot;us&quot;) operates this website and the Get An Expert agent.
         We are the controller of the information described here. Our postal address is {ADDRESS}.
-        You can reach a person at <a href={`mailto:${CONTACT}`}>{CONTACT}</a>.
+        You can reach us at <a href={`mailto:${CONTACT}`}>{CONTACT}</a>.
       </p>
 
       <h2>What we collect</h2>
@@ -275,7 +275,7 @@ export default function Privacy() {
 
       <h2>Contact</h2>
       <p>
-        Email <a href={`mailto:${CONTACT}`}>{CONTACT}</a> and a person will answer. If you are
+        Email <a href={`mailto:${CONTACT}`}>{CONTACT}</a> and we will answer. If you are
         writing about your own information, say so in the subject line and it will be handled
         first.
       </p>

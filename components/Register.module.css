@@ -126,6 +126,51 @@
 .submit:active { transform: scale(0.97); }
 .submit:disabled { opacity: 0.6; cursor: default; }
 
+/* Two ways into the same form, side by side. Wraps rather than shrinks,
+   because a button that has been squeezed narrower than its label is worse
+   than a button on its own line. */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+}
+
+/* The second way in. Quiet on purpose: asking for a demo is the move this
+   section is arguing for, and two buttons of equal weight would make the
+   visitor choose instead of act. */
+.ghost {
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink-2);
+  background: none;
+  border: 0;
+  padding: 6px 2px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--line-2);
+}
+
+.ghost:active { transform: scale(0.97); }
+
+/* The panel arrives rather than appears. Ease out and under 300ms, transform
+   and opacity only, and nothing to animate at all for anyone who has asked
+   for less motion. */
+.panel {
+  animation: panelIn 240ms var(--ease-out) both;
+}
+
+@keyframes panelIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel { animation: none; }
+}
+
 .error {
   font-size: 12.5px;
   color: var(--accent-deep);
@@ -260,4 +305,5 @@
   .track:hover { border-color: var(--ink-3); }
   .trackOn:hover { border-color: var(--accent); }
   .submit:hover { background: var(--accent-deep); }
+  .ghost:hover { color: var(--ink); text-decoration-color: var(--ink-3); }
 }

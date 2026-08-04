@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import form from '@/components/Register.module.css';
 import styles from '@/components/Sections.module.css';
@@ -37,16 +37,31 @@ export default function ContactBlock() {
   const [delivered, setDelivered] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const messageRef = useRef<HTMLTextAreaElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  // Closed until asked for. A form sitting open on a page nobody asked to fill
+  // reads as a demand, and it pushes everything below it down for the majority
+  // who were never going to type in it.
+  const [open, setOpen] = useState(false);
 
-  // The demo button is a shortcut into this form, not a second form. Focus
-  // moves to the message box because the purpose is already answered and the
-  // next thing to do is say what they want to see.
-  function askForDemo() {
-    setPurpose('Book a demo');
-    analytics('demo_requested', {});
-    messageRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' });
-    messageRef.current?.focus({ preventScroll: true });
+  // Both buttons open the same form. The only difference is what it already
+  // knows about why they came, so a second form would exist to vary one
+  // preset field.
+  function openForm(reason: string, source: string) {
+    setPurpose(reason);
+    setOpen(true);
+    analytics('contact_opened', { source });
   }
+
+  // Scroll and focus live here rather than in the click handler. The panel is
+  // mounted by the state change above, and a requestAnimationFrame queued in
+  // the handler can still run before React has committed it, which sent focus
+  // to whatever happened to hold it (the founder video, in testing). An effect
+  // keyed on `open` cannot run before the panel exists.
+  useEffect(() => {
+    if (!open || sent) return;
+    panelRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    messageRef.current?.focus({ preventScroll: true });
+  }, [open, sent]);
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -80,14 +95,53 @@ export default function ContactBlock() {
 
   return (
     <>
-      <section className={styles.section} aria-labelledby="contact-title">
+      <section className={styles.section} aria-labelledby="demo-title">
+        <header className={styles.head}>
+          <h2 id="demo-title" className={styles.title}>
+            Book a demo with us
+          </h2>
+          <p className={styles.sub}>
+            Fifteen minutes. We walk through a real brief, show you how an expert is matched, and
+            answer whatever you want to ask. No calendar to wrestle with: tell us roughly when
+            suits and we will send a time.
+          </p>
+        </header>
+        <div className={form.actions}>
+          <button
+            type="button"
+            className={form.submit}
+            onClick={() => openForm('Book a demo', 'demo')}
+            aria-expanded={open}
+            aria-controls="contact-panel"
+          >
+            Ask for a demo
+          </button>
+          <button
+            type="button"
+            className={form.ghost}
+            onClick={() => openForm('', 'contact')}
+            aria-expanded={open}
+            aria-controls="contact-panel"
+          >
+            Or just send a message
+          </button>
+        </div>
+      </section>
+
+      {/* Mounted only once asked for, so the entrance below has something to
+          animate and the closed state costs the page nothing. */}
+      {(open || sent) && (
+      <section
+        className={`${styles.section} ${form.panel}`}
+        aria-labelledby="contact-title"
+        id="contact-panel"
+        ref={panelRef}
+      >
         <header className={styles.head}>
           <h2 id="contact-title" className={styles.title}>
             Talk to us
           </h2>
-          <p className={styles.sub}>
-            A person reads these and answers by email. Usually the same day.
-          </p>
+          <p className={styles.sub}>We answer by email, usually the same day.</p>
         </header>
 
         {sent ? (
@@ -171,22 +225,7 @@ export default function ContactBlock() {
           </form>
         )}
       </section>
-
-      <section className={styles.section} aria-labelledby="demo-title">
-        <header className={styles.head}>
-          <h2 id="demo-title" className={styles.title}>
-            Book a demo with us
-          </h2>
-          <p className={styles.sub}>
-            Fifteen minutes. We walk through a real brief, show you how an expert is matched, and
-            answer whatever you want to ask. No calendar to wrestle with: tell us roughly when
-            suits and we will send a time.
-          </p>
-        </header>
-        <button type="button" className={form.submit} onClick={askForDemo}>
-          Ask for a demo
-        </button>
-      </section>
+      )}
 
       <section className={styles.section} aria-labelledby="join-title">
         <header className={styles.head}>
