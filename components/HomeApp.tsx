@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import Backing from '@/components/Backing';
 import Chat from '@/components/Chat';
 import Examples from '@/components/Examples';
 import Explainer from '@/components/Explainer';
@@ -189,6 +190,9 @@ export default function HomeApp() {
             higher: a visitor still deciding what we do has not asked the
             question yet. */}
         <Trust />
+        {/* Who stands behind the people above. Second, because a visitor asks
+            who is doing the work before they ask who is backing it. */}
+        <Backing />
       </div>
       {/* The second ask. Someone who has read to the bottom of the examples has
           just spent a minute learning what we do, and sending them back up to

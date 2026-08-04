@@ -22,7 +22,10 @@ const STEPS = [
   {
     num: '04',
     title: 'They do the work',
-    body: 'You pay the expert directly. No subscription.',
+    // "After it is delivered" is the strongest line on this page and it was
+    // missing. It answers the money question before it is asked, and it is
+    // simply how the business runs, so it costs nothing to say.
+    body: 'You pay the expert directly, after it is delivered.',
   },
 ];
 

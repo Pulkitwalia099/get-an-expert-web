@@ -11,22 +11,28 @@ import styles from '@/components/Sections.module.css';
 // visitor has already accepted that someone will touch their code. Security
 // copy on a page with no security risk reads as a confession.
 //
-// Every line is a real step in the offline vetting process. Nothing here is
-// aspirational, and nothing claims a check we do not run. In particular this
-// says "identity", never "background check", which means a specific regulated
-// thing we do not do.
+// Every line is a real step in the vetting process. Bodies are deliberately
+// one short clause each, the same rhythm as HowItWorks, because four claims
+// about people are read at a glance or not at all.
+//
+// This says "identity", never "background check". A background check is a
+// specific regulated product from a licensed vendor, and we do not run one.
 const CHECKS = [
   {
+    title: 'A real person, named',
+    body: 'From our own roster, never an anonymous bidder.',
+  },
+  {
     title: 'We meet every expert',
-    body: 'A video call before they take any work. We confirm who they are and that the accounts they list are actually theirs.',
+    body: 'A video call, and we check their accounts are really theirs.',
   },
   {
     title: 'We test the work',
-    body: 'A skills interview, plus real samples from jobs they have already delivered.',
+    body: 'A skills interview and samples from real jobs.',
   },
   {
     title: 'Everyone signs an NDA',
-    body: 'A confidentiality agreement, signed before the first job, covering every client they work with.',
+    body: 'Signed before they take their first job.',
   },
 ];
 
@@ -40,7 +46,7 @@ export default function Trust() {
         <p className={styles.sub}>Every expert goes through this before they take a single job.</p>
       </header>
       {/* Not numbered. HowItWorks is numbered because it is a sequence you move
-          through; these are three things that are all already true when you
+          through; these are four things that are all already true when you
           arrive, so numbering them would invent an order that is not there. */}
       <ul className={styles.checks}>
         {CHECKS.map((c) => (
