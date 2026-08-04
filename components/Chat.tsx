@@ -271,14 +271,22 @@ export default function Chat({
       // trigger is engagement or distress. An expert applying for work never
       // gets it: they are not here to hire anyone.
       const finished = data.done && !data.expert_signup;
+      // Mid-intake offers are for the flows that end on the choice between a
+      // call and an email, where interrupting is the whole point. A flow that
+      // ends in cards asks two or three questions and then shows people, and
+      // an offer landing on top of an unanswered question buries it: the
+      // visitor gets asked their budget and then two more messages before
+      // they can reply to any of them. Here it waits for the brief.
+      const interruptible = config.ending !== 'cards';
       const wanted =
         !data.expert_signup &&
         (finished ||
-          shouldOfferHuman({
-            text,
-            userTurns: userTurns.current,
-            alreadyOffered: offered,
-          }));
+          (interruptible &&
+            shouldOfferHuman({
+              text,
+              userTurns: userTurns.current,
+              alreadyOffered: offered,
+            })));
 
       if (wanted && !offered) {
         setOffered(true);
@@ -338,10 +346,16 @@ export default function Chat({
       // tag would be wrong, say so and leave the email intro as the route,
       // which is the one that was always going to serve this brief.
       if (!data.card) {
-        push({
-          role: 'ai',
-          text: 'Nobody here covers this one well enough to be useful on a call. Leave your email and we will find the right expert and send you a name and a price.',
-        });
+        // On a flow that ends in cards the matches are the answer, so this
+        // says nothing and lets them arrive. The line below is the choice
+        // ending's fallback: it asks for an email, which only makes sense on
+        // a flow that goes on to render somewhere to type one.
+        if (config.ending !== 'cards') {
+          push({
+            role: 'ai',
+            text: 'Nobody here covers this one well enough to be useful on a call. Leave your email and we will find the right expert and send you a name and a price.',
+          });
+        }
         track('call_card_withheld', { flow });
         return;
       }
