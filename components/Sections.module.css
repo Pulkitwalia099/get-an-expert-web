@@ -90,11 +90,25 @@
   list-style: none;
 }
 
+/* Icon in its own column, spanning both text rows, so the title and the body
+   share one left edge and the icon hangs beside them rather than pushing the
+   body out of line with the title. */
 .check {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  column-gap: 11px;
+  row-gap: 3px;
+  align-items: start;
   padding: 0 0 0 2px;
+}
+
+.checkIcon {
+  grid-row: 1 / span 2;
+  width: 18px;
+  height: 18px;
+  color: var(--accent);
+  /* Optical, not mathematical: nudged to sit on the title's cap height. */
+  margin-top: 1px;
 }
 
 .checkTitle {

@@ -34,7 +34,7 @@ export default function Backing() {
     <section className={styles.section} aria-labelledby="backing-title">
       <header className={styles.head}>
         <h2 id="backing-title" className={styles.title}>
-          Where we come from
+          Backed by
         </h2>
       </header>
       <ul className={styles.backers}>
