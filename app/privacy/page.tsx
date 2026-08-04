@@ -20,6 +20,10 @@ export const metadata: Metadata = {
 
 const UPDATED = '3 August 2026';
 const CONTACT = 'midsesh.social@gmail.com';
+// UK and EU GDPR both require the controller to be identifiable by legal name
+// and reachable at a physical address, not only by email.
+const ENTITY = 'Midsesh';
+const ADDRESS = '704, 1 Western Avenue, Boston, Massachusetts, United States';
 
 export default function Privacy() {
   return (
@@ -49,9 +53,9 @@ export default function Privacy() {
 
       <h2>Who this covers</h2>
       <p>
-        midsesh (&quot;we&quot;, &quot;us&quot;) operates this website and the Get An Expert agent.
-        We are the controller of the information described here. You can reach a person at{' '}
-        <a href={`mailto:${CONTACT}`}>{CONTACT}</a>.
+        {ENTITY} (&quot;we&quot;, &quot;us&quot;) operates this website and the Get An Expert agent.
+        We are the controller of the information described here. Our postal address is {ADDRESS}.
+        You can reach a person at <a href={`mailto:${CONTACT}`}>{CONTACT}</a>.
       </p>
 
       <h2>What we collect</h2>
