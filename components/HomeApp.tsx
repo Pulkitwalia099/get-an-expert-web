@@ -183,16 +183,20 @@ export default function HomeApp() {
             steps is ready to hear who is behind them; someone who has already
             scrolled the setups has stopped asking that question. */}
         <Explainer />
+        {/* These two used to sit last, on the argument that a visitor still
+            deciding what we do has not yet asked who we are. That argument
+            loses to the measurement: on a 390px screen the page is 5.6 screens
+            tall, the setups grid takes two of them on its own, and trust
+            landed 4.6 screens down. On a phone the answer to "who are these
+            people" arrived after most people had already gone. Proof that has
+            to be scrolled to is proof most visitors never see.
+
+            Their order relative to each other is unchanged, because a visitor
+            asks who does the work before they ask who is backing it. */}
+        <Trust />
+        <Backing />
         <Setups onPick={onPickSetup} />
         <Examples onPick={onPickExample} />
-        {/* Last thing before the ask. It answers "who are these people" rather
-            than making the offer, so it earns its place here and nowhere
-            higher: a visitor still deciding what we do has not asked the
-            question yet. */}
-        <Trust />
-        {/* Who stands behind the people above. Second, because a visitor asks
-            who is doing the work before they ask who is backing it. */}
-        <Backing />
       </div>
       {/* The second ask. Someone who has read to the bottom of the examples has
           just spent a minute learning what we do, and sending them back up to
