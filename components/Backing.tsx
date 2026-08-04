@@ -4,94 +4,41 @@ import styles from '@/components/Sections.module.css';
 // in that order: a visitor asks who is doing the work first, and who is
 // standing behind them second.
 //
-// The marks are redrawn here as SVG rather than dropped in as image files.
-// Three reasons: nothing has to be fetched, they stay sharp at any size, and
-// each one can be held to a single tile size so the strip reads as one row
-// instead of three logos of whatever dimensions they happened to ship in.
-// They are approximations of the real marks, close enough to be recognised at
-// 36px and no larger. If the official assets turn up, drop them in
-// public/backers/ and swap the <svg> for an <img>; the layout does not change.
+// These are the real supplied marks, not redrawings. They are used as shipped
+// and nothing is recoloured: a logo tinted to match a page is no longer that
+// company's logo.
 //
-// Brand colours are exact and deliberately not tinted toward the page:
-// Harvard crimson #A51C30, Founders Inc black. A logo recoloured to match a
-// site is no longer that company's logo.
+// Every one sits on a white rounded tile of the same size, which solves a
+// problem the files create. The shield is 150x177 with no alpha channel, so
+// its white background is baked in and would show as a white rectangle against
+// the cream page. On a white tile that background disappears, while the two
+// full bleed square marks cover their tile entirely and the tile is never
+// seen. One rule, three different files, no image editing.
 //
-// Names have to be exact. "Rock Venture Catalyst" is the current name of the
-// Harvard Business School programme, renamed from Rock Summer Fellows. The
-// mark beside it is the HBS tile, because the programme sits inside the
-// school and has no separate mark of its own.
-// Two different reds on purpose. The Innovation Labs mark is a brighter red
-// than Harvard crimson, and flattening both to one value to tidy the palette
-// would make one of them wrong.
-const CRIMSON = '#A51C30';
-const HI_RED = '#E8403E';
-const FOUNDERS = '#111111';
-
-// One tile geometry for all three, so no mark can shout over its neighbours.
-function Tile({ fill, children }: { fill: string; children: React.ReactNode }) {
-  return (
-    <svg className={styles.backerMark} viewBox="0 0 40 40" aria-hidden focusable="false">
-      <rect width="40" height="40" rx="3.5" fill={fill} />
-      {children}
-    </svg>
-  );
-}
-
+// object-fit is contain rather than cover so the shield keeps its proportions:
+// cover would crop the point off the bottom of it.
 const BACKERS = [
   {
     name: 'Harvard Innovation Labs',
-    mark: (
-      <Tile fill={HI_RED}>
-        <text
-          x="20"
-          y="27.5"
-          textAnchor="middle"
-          fill="#FFFFFF"
-          fontSize="19"
-          fontWeight="500"
-          fontFamily="ui-sans-serif, -apple-system, 'Helvetica Neue', Arial, sans-serif"
-        >
-          Hi
-        </text>
-      </Tile>
-    ),
+    src: '/backers/hi.jpeg',
+    // Natural size, so the browser reserves the right box before the file
+    // arrives and the strip does not jump on load.
+    w: 300,
+    h: 300,
   },
   {
     // Harvard is named in full. "Rock Venture Catalyst" alone reads as an
     // unrelated fund; the school is the part that carries any weight.
     name: 'Harvard Rock Venture Catalyst',
-    mark: (
-      <Tile fill={CRIMSON}>
-        {/* The shield, not the letters. Simplified to what survives at 36px:
-            the silhouette and the three books, two above and one below. The
-            VERITAS lettering on the real shield is illegible at this size, so
-            drawing it would only add noise. */}
-        <path d="M11.5 10h17v11.4c0 4.7-3.6 7.7-8.5 9.6-4.9-1.9-8.5-4.9-8.5-9.6z" fill="#FFFFFF" />
-        <rect x="13.8" y="13.1" width="5.1" height="3.3" rx="0.4" fill={CRIMSON} />
-        <rect x="21.1" y="13.1" width="5.1" height="3.3" rx="0.4" fill={CRIMSON} />
-        <rect x="17.4" y="18.1" width="5.1" height="3.3" rx="0.4" fill={CRIMSON} />
-      </Tile>
-    ),
+    src: '/backers/harvard-shield.png',
+    w: 150,
+    h: 177,
   },
   {
     name: 'Founders Inc',
-    mark: (
-      <Tile fill={FOUNDERS}>
-        {/* An "A" laid on its side, apex to the left. The crossbar rotates with
-            it, so it runs vertically between the two legs. The previous
-            version drew it horizontally out of the apex, which turned the mark
-            into an arrow. */}
-        <path
-          d="M28 10.8 L12.5 20 L28 29.2"
-          fill="none"
-          stroke="#FFFFFF"
-          strokeWidth="3.2"
-          strokeLinecap="butt"
-          strokeLinejoin="miter"
-        />
-        <path d="M22.4 15.4 V24.6" stroke="#FFFFFF" strokeWidth="3.2" strokeLinecap="butt" />
-      </Tile>
-    ),
+    src: '/backers/founders.png',
+    w: 225,
+    h: 225,
   },
 ];
 
@@ -110,7 +57,10 @@ export default function Backing() {
       <ul className={styles.backerStrip}>
         {BACKERS.map((b) => (
           <li key={b.name} className={styles.backerCell}>
-            {b.mark}
+            {/* Empty alt: the name is right underneath in real text, so a
+                screen reader announcing the logo too would say it twice. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className={styles.backerMark} src={b.src} alt="" width={b.w} height={b.h} />
             <span className={styles.backerLabel}>{b.name}</span>
           </li>
         ))}

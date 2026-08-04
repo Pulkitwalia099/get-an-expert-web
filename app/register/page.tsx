@@ -23,7 +23,7 @@ export default function Register() {
 
       <h1>Work with us</h1>
       <p className="lead">
-        Clients come to us with the work already scoped. We find the right person, introduce you
+        Clients come to us with the work already scoped. We find the right expert, introduce you
         by name, and you agree the price before you start. Tell us what you do and we will come
         back to you.
       </p>

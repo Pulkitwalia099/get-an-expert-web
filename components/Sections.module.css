@@ -149,11 +149,21 @@
   min-width: 0;
 }
 
+/* White ground on purpose. The Harvard shield ships with no alpha channel, so
+   its white background is part of the image; on a white tile it disappears,
+   and the two square marks cover their tile so it is never seen behind them.
+   contain, not cover, or the shield loses the point off its bottom. */
 .backerMark {
   width: 36px;
   height: 36px;
   flex: none;
   display: block;
+  object-fit: contain;
+  background: #fff;
+  border-radius: 8px;
+  /* The supplied squares have hard corners of their own, so the radius has to
+     clip the image rather than only the box behind it. */
+  overflow: hidden;
 }
 
 .backerLabel {
