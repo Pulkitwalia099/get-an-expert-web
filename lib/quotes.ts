@@ -24,22 +24,20 @@ export const INTENT_MAX_AGE = 15 * 60;
 
 export const MAX_SLOTS = 8;
 
-export type QuoteStatus = 'open' | 'contacting' | 'quotes_ready' | 'closed';
+// The labels live in lib/quote-status.ts, which is browser safe. They are
+// re-exported here so a server caller still has one import, exactly as
+// lib/credits.ts re-exports the arithmetic from lib/credit-math.ts.
+//
+// A client component must import them from that module, never from this one:
+// this file throws the moment it reaches a browser, and one such import is
+// what broke the dashboard after sign in.
+export {
+  STATUS_LABELS,
+  STATUS_NOTES,
+  type QuoteStatus,
+} from '@/lib/quote-status';
 
-/** What a visitor is told each status means. The stored values never appear. */
-export const STATUS_LABELS: Record<QuoteStatus, string> = {
-  open: 'Reaching out',
-  contacting: 'Waiting on replies',
-  quotes_ready: 'Quotes sent to you',
-  closed: 'Closed',
-};
-
-export const STATUS_NOTES: Record<QuoteStatus, string> = {
-  open: 'We have your request and are contacting these people now.',
-  contacting: 'Messages are out. We email you as soon as prices come back.',
-  quotes_ready: 'Check your inbox. Every quote we got back is in there.',
-  closed: 'This one is finished.',
-};
+import type { QuoteStatus } from '@/lib/quote-status';
 
 function secret(): string | null {
   return process.env.SESSION_SECRET || null;

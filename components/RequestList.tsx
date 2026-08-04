@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import { initials } from '@/lib/initials';
-import { STATUS_LABELS, STATUS_NOTES, type QuoteStatus } from '@/lib/quotes';
+// From lib/quote-status, never lib/quotes. That module is server-only and
+// throws on sight of a browser, which is exactly what this import used to do.
+import { STATUS_LABELS, STATUS_NOTES, type QuoteStatus } from '@/lib/quote-status';
 import type { Expert } from '@/lib/types';
 
 export interface DashRequest {
