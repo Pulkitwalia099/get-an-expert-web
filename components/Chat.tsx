@@ -340,7 +340,7 @@ export default function Chat({
       if (!data.card) {
         push({
           role: 'ai',
-          text: 'Nobody here covers this one well enough to be useful on a call. Leave your email and we will find the right person and send you a name and a price.',
+          text: 'Nobody here covers this one well enough to be useful on a call. Leave your email and we will find the right expert and send you a name and a price.',
         });
         track('call_card_withheld', { flow });
         return;

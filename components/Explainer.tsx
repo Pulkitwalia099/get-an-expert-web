@@ -9,12 +9,13 @@ import s from '@/components/Explainer.module.css';
 // who has just read what happens after they type is the right person to hear
 // who is behind it, and it lands before the proof rather than after.
 //
-// It does not repeat the install command the video closes on. The offer on
-// this page is a first session by talking to the agent; the MCP is what makes
-// the second one better. Putting a terminal command next to the ask bar asks
-// a visitor to choose between two front doors on their first visit.
+// This used to carry a note about not repeating the install command the video
+// closed on, because the offer on this page is a first session by talking to
+// the agent and the MCP is what makes the second one better. The video was
+// recut on 2026-08-03 and now closes on the free first call and the domain, so
+// the two say the same thing and there is nothing left to hold apart.
 
-// Three states, not a boolean. The file is 20MB, so on a slow connection there
+// Three states, not a boolean. The file is 18MB, so on a slow connection there
 // is a real gap between the press and the first frame. Unmounting the overlay
 // on click left a visitor looking at a still poster with nothing happening and
 // no way to tell whether their tap registered, so the overlay stays up until
@@ -43,10 +44,20 @@ export default function Explainer() {
   return (
     <section className={sections.section} aria-labelledby="explainer-title">
       <header className={sections.head}>
+        {/* Not "Who you are dealing with". That frames the visitor as someone
+            who has already been put on guard, and answers a worry nobody had
+            yet. This just introduces the video.
+
+            The names are gone too: both founders are captioned on the
+            thumbnail directly below, so printing them here says the same thing
+            twice and spends the subtitle on something already on screen.
+
+            "How it works" was the other option and is taken: it is the heading
+            of the section immediately above this one. */}
         <h2 id="explainer-title" className={sections.title}>
-          What we&rsquo;re building
+          From the founders
         </h2>
-        <p className={sections.sub}>Rohit and Pulkit, in 84 seconds.</p>
+        <p className={sections.sub}>Why we built this, in 77 seconds.</p>
       </header>
 
       <div className={s.frame}>
@@ -67,7 +78,7 @@ export default function Explainer() {
             className={s.play}
             onClick={start}
             disabled={phase === 'loading'}
-            aria-label="Play the founder video, 84 seconds"
+            aria-label="Play the founder video, 77 seconds"
           >
             <span className={s.badge} aria-hidden="true">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">

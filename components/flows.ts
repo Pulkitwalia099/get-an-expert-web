@@ -106,7 +106,7 @@ export const FLOWS: Record<Flow, FlowConfig> = {
   main: {
     tag: null,
     headline: 'What kind of expert are you looking for?',
-    sub: 'Tell us what you need. We find the right person and make the intro.',
+    sub: 'Tell us what you need. We find the right expert and make the intro.',
     // Broad and varied on purpose, so no visitor feels the tool is built
     // for someone else. "Something else" covers the rest.
     suggestions: [

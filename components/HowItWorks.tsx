@@ -11,7 +11,10 @@ const STEPS = [
   },
   {
     num: '02',
-    title: 'We find the person',
+    // "Expert", not "person". It is the product's own word, step 04 below
+    // already uses it, and the founder video directly under this section says
+    // the same sentence.
+    title: 'We find the expert',
     body: 'Vetted, and has done this exact job before.',
   },
   {
