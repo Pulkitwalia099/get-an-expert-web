@@ -185,7 +185,13 @@ export const FLOWS: Record<Flow, FlowConfig> = {
     // it many times before", which is a vetting claim the hero cannot back up.
     // That claim moved down to Trust, which says how the vetting works, so the
     // hero is shorter now and says the thing that gets someone to type.
-    sub: 'Your first session is free. Talk it through, then an expert takes it off your plate.',
+    //
+    // "Call", not "session". Session was doing three jobs on one page: the free
+    // thing here, a paid 60 or 90 minute setup in the grid below, and the
+    // coding session an expert joins at the end of the chat. A visitor read
+    // "first session is free" next to eleven $11 setups and could not tell
+    // which was true. The free thing is a 15 minute call, so it says call.
+    sub: 'Your first call is free. Talk it through, then an expert takes it off your plate.',
     // Ordered by where the demand actually is, not by what reads nicest. The
     // setups people already buy are automation and growth first, so those lead
     // and design sits further down. Label has to survive a 390px row; message

@@ -1,6 +1,19 @@
 export const SALE_ON = true;
 export const SALE_PRICE = 11;
 
+// The launch price is a real offer with a real end. A struck $75 next to $11
+// with no reason and no deadline does not read as a bargain, it reads as the
+// $75 being invented, and eleven of them in a row reads worse.
+//
+// This is a stated date and a manual switch rather than a live clock, because
+// the home page is statically prerendered: a Date.now() check would be baked
+// at build time, go stale the moment it passed, and disagree with the client
+// on the boundary. The guard in setups.test.ts fails once this date is behind
+// us, so the flip cannot be quietly forgotten while the page still promises
+// an end date.
+export const SALE_ENDS = '2026-08-10';
+export const SALE_ENDS_LABEL = '10 August';
+
 // Ordering the grid. The catalog below stays grouped the way it was written;
 // what ships is sorted by this priority, then by play count inside each group
 // so the most viral card leads its own section.

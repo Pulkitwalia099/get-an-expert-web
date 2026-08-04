@@ -1,7 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { ORDERED_SETUPS, SALE_ON, currentPrice, type SetupCategory } from '@/lib/setups';
+import {
+  ORDERED_SETUPS,
+  SALE_ENDS_LABEL,
+  SALE_ON,
+  currentPrice,
+  type SetupCategory,
+} from '@/lib/setups';
 import styles from '@/components/Sections.module.css';
 import { type OverlayOrigin } from '@/components/Overlay';
 import { track } from '@/lib/analytics';
@@ -72,7 +78,12 @@ export default function Setups({ onPick }: SetupsProps) {
         <h2 id="setups-title" className={styles.title}>
           What people come for
         </h2>
-        <p className={styles.sub}>Set up for you, start to finish, at a fixed price.</p>
+        {/* The deadline is the point. Every card shows a struck price, and a
+            struck price with no end on it reads as the original being made up. */}
+        <p className={styles.sub}>
+          Set up for you, start to finish, at a fixed price.
+          {SALE_ON && ` Launch price, until ${SALE_ENDS_LABEL}.`}
+        </p>
       </header>
 
       <ul className={styles.cards}>

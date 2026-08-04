@@ -333,7 +333,18 @@ export default function Chat({
         }),
       });
       if (!res.ok) throw new Error(`presence ${res.status}`);
-      const data = (await res.json()) as { online: boolean; card: OperatorCard };
+      const data = (await res.json()) as { online: boolean; card: OperatorCard | null };
+      // Nobody on the roster covers this work. Rather than name someone whose
+      // tag would be wrong, say so and leave the email intro as the route,
+      // which is the one that was always going to serve this brief.
+      if (!data.card) {
+        push({
+          role: 'ai',
+          text: 'Nobody here covers this one well enough to be useful on a call. Leave your email and we will find the right person and send you a name and a price.',
+        });
+        track('call_card_withheld', { flow });
+        return;
+      }
       setCard(data.card);
       setCallState(data.online ? 'live' : 'booking');
       track('call_card_opened', { flow, online: data.online, operator: data.card.id });

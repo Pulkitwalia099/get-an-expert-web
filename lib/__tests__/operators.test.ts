@@ -27,11 +27,20 @@ describe('matchOperator', () => {
     expect(matchOperator('STRIPE WEBHOOK').id).toBe('rohit');
   });
 
-  it('falls back to Rohit and his fallback tag when nothing matches', () => {
-    expect(matchOperator('i want to talk about something else')).toEqual({
-      id: 'rohit',
-      tag: 'Code & engineering',
-    });
+  it('returns null rather than naming someone when nothing matches', () => {
+    expect(matchOperator('i want to talk about something else')).toBeNull();
+  });
+
+  // The categories the home page advertises but the roster has no tag for.
+  // These used to return Rohit with the tag "Code & engineering", which is
+  // how a video editing brief was offered a backend engineer.
+  it.each([
+    ['video', 'edit my youtube videos every week, talking head, 12 minutes'],
+    ['writing', 'get my content written and posted every week'],
+    ['admin', 'i need a bookkeeper to sort out my invoices'],
+    ['legal', 'i need a lawyer to review a contract'],
+  ])('returns null for %s, which no tag covers', (_label, brief) => {
+    expect(matchOperator(brief)).toBeNull();
   });
 
   it('prefers the stronger signal when tags compete', () => {
@@ -95,10 +104,7 @@ describe('scoring beats list order', () => {
     expect(matchOperator('wire hubspot into sheets').tag).toBe('Workflow automation');
   });
 
-  it('still falls back when nothing matches at all', () => {
-    expect(matchOperator('i want to talk about something else')).toEqual({
-      id: 'rohit',
-      tag: 'Code & engineering',
-    });
+  it('still returns null when nothing matches at all', () => {
+    expect(matchOperator('i want to talk about something else')).toBeNull();
   });
 });

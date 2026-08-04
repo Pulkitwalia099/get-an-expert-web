@@ -5,6 +5,8 @@ import { describe, expect, it } from 'vitest';
 import {
   MAIN_SETUPS,
   ORDERED_SETUPS,
+  SALE_ENDS,
+  SALE_ENDS_LABEL,
   SALE_ON,
   SALE_PRICE,
   currentPrice,
@@ -46,6 +48,31 @@ describe('setup catalog', () => {
     for (const setup of MAIN_SETUPS) {
       expect(currentPrice(setup)).toBe(11);
     }
+  });
+
+  // Deliberately time based. The grid tells visitors the launch price runs
+  // "until 10 August", and the home page is static, so nothing turns the sale
+  // off on its own. This fails the day the promise expires, which is the point:
+  // either extend SALE_ENDS and its label, or set SALE_ON to false. A struck
+  // price that outlives its own deadline is the thing this guards against.
+  it('has not outlived the deadline printed on the page', () => {
+    const ended = Date.now() > Date.parse(`${SALE_ENDS}T23:59:59Z`);
+    expect(
+      ended && SALE_ON,
+      `The launch price ran out on ${SALE_ENDS} but SALE_ON is still true. ` +
+        'Either move SALE_ENDS and SALE_ENDS_LABEL forward, or set SALE_ON to false.',
+    ).toBe(false);
+  });
+
+  // The label is what visitors read; the date is what the guard above checks.
+  // They drifted apart once already in review, so they are asserted together.
+  it('prints a label that matches the date it guards', () => {
+    const parsed = new Date(`${SALE_ENDS}T00:00:00Z`);
+    const expected = `${parsed.getUTCDate()} ${parsed.toLocaleString('en-GB', {
+      month: 'long',
+      timeZone: 'UTC',
+    })}`;
+    expect(SALE_ENDS_LABEL).toBe(expected);
   });
 
   // The card and the detail sheet used to print "$11" as literal text while

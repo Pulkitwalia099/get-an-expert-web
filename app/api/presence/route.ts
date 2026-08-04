@@ -55,6 +55,14 @@ async function handlePresence(req: NextRequest): Promise<NextResponse> {
     .join(' ');
 
   const matched = matchOperator(haystack);
+  // Nothing on the roster covers this work. Naming someone anyway is how a
+  // video editing brief got offered a backend engineer, so the card is
+  // withheld and the chat falls back to the email intro, which is what
+  // actually happens for these briefs regardless.
+  if (!matched) {
+    return NextResponse.json({ online: false, card: null });
+  }
+
   const presence = await readPresence();
 
   // If the matched person is off but the other is on, offer the one who is

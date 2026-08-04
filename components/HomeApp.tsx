@@ -200,8 +200,8 @@ export default function HomeApp() {
       <section className="closer">
         <h2 className="closer-title">Ready when you are</h2>
         <p className="closer-sub">
-          Your first session is free. One sentence is enough, and there is nothing to pay
-          until you have a name and a price.
+          Your first call is free, about 15 minutes. One sentence is enough, and there is
+          nothing to pay until you have a name and a price.
         </p>
         <button
           type="button"

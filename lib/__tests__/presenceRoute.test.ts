@@ -86,14 +86,27 @@ describe('POST /api/presence', () => {
     expect(data.card.tag).toBe('Workflow automation');
   });
 
-  it('returns a card even for an empty body', async () => {
+  // Used to answer with Rohit and the tag "Code & engineering" for any body it
+  // could not match, which is how a video editing brief was offered a backend
+  // engineer. An empty body matches nothing, so it now withholds the card and
+  // the chat routes the visitor to the email intro instead.
+  it('withholds the card for an empty body rather than naming someone', async () => {
     vi.mocked(readPresence).mockResolvedValue({ pulkit: false, rohit: false });
     const res = await POST(request({}));
     const data = await res.json();
     expect(res.status).toBe(200);
     expect(data.online).toBe(false);
-    expect(data.card.id).toBe('rohit');
-    expect(data.card.tag).toBe('Code & engineering');
+    expect(data.card).toBeNull();
+  });
+
+  it('withholds the card for work no tag covers', async () => {
+    vi.mocked(readPresence).mockResolvedValue({ pulkit: true, rohit: true });
+    const res = await POST(
+      request({ lastMessage: 'i need a lawyer to review a contract' }),
+    );
+    const data = await res.json();
+    expect(res.status).toBe(200);
+    expect(data.card).toBeNull();
   });
 });
 

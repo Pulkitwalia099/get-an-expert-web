@@ -96,7 +96,10 @@ export default function GetUnstuck({
   const sessionOption = (
     <div key="session" className={`opt${sessionLeads ? ' primary' : ''}`}>
       <div className="opt-top">
-        <span className="opt-title">Bring them into your session</span>
+        {/* "Project", not "session". The word was carrying three meanings on
+            the home page: the free call, a paid 90 minute setup, and this. The
+            other two kept theirs, so this one moved. */}
+        <span className="opt-title">Bring them into your project</span>
         {sessionLeads && <span className="badge">Fastest</span>}
       </div>
       {!sessionLeads && (

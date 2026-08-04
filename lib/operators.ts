@@ -184,10 +184,15 @@ export function tagFor(id: OperatorId, text: string): string {
  * single weak hit ended the search. Now every keyword votes, specific tools
  * outvote generic symptoms, and the higher total takes it.
  *
- * Always returns someone: nothing matching sends it to the head of
- * MATCH_ORDER with their fallback tag rather than showing no card at all.
+ * Returns null when nothing scores. It used to send an unmatched brief to the
+ * head of MATCH_ORDER with their fallback tag, which put a senior backend
+ * engineer labelled "Code & engineering" in front of a visitor asking for a
+ * YouTube video editor, directly under a High confidence badge. Six of the
+ * eight categories the home page advertises score zero against this roster,
+ * so that was the common path rather than the edge case. No card is honest.
+ * A wrong one tells the visitor the matching does not work.
  */
-export function matchOperator(text: string): { id: OperatorId; tag: string } {
+export function matchOperator(text: string): { id: OperatorId; tag: string } | null {
   const lower = text.toLowerCase();
   let winner: { id: OperatorId; tag: string; score: number } | null = null;
 
@@ -200,7 +205,5 @@ export function matchOperator(text: string): { id: OperatorId; tag: string } {
     }
   }
 
-  if (winner) return { id: winner.id, tag: winner.tag };
-  const first = MATCH_ORDER[0];
-  return { id: first, tag: OPERATORS[first].fallbackTag };
+  return winner ? { id: winner.id, tag: winner.tag } : null;
 }
