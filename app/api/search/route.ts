@@ -107,7 +107,6 @@ async function handleSearch(req: NextRequest): Promise<NextResponse> {
   // nothing to be gated from, so their set is written as theirs and their
   // cards arrive unlocked. Everyone else gets a payload with no names in it.
   const user = readSession(req.cookies.get(SESSION_COOKIE)?.value);
-  const locked = user === null;
 
   // The one place a set becomes a response. Storing and redacting are done
   // together so no caller can hand back records that skipped the redaction.
@@ -123,9 +122,18 @@ async function handleSearch(req: NextRequest): Promise<NextResponse> {
     if (records.length > 0 && records.length < MIN_EXPERTS) {
       console.log(`[midsesh:search] thin match set (${records.length})`);
     }
-    // setId null means Supabase could not take the write. The cards still
-    // render; there is just nothing to claim afterwards, so the UI falls back
-    // to asking for an email instead of offering a dashboard.
+
+    // Lock only what can be unlocked.
+    //
+    // A null setId means the write did not land: Supabase is unreachable, or
+    // the match_sets migration has not been applied yet. Either way nobody
+    // can ever claim that set, so hiding the names behind "sign in to see
+    // them" would be a promise with no way to keep it. The cards come back
+    // open instead and the visit ends the way it did before the gate existed,
+    // on an email address. This is also what makes the gate safe to deploy
+    // ahead of the migration: it stays off until the tables are there, then
+    // turns itself on.
+    const locked = user === null && setId !== null;
     return NextResponse.json({ setId, locked, experts: redactExperts(records, locked) });
   };
 
@@ -175,7 +183,8 @@ async function handleSearch(req: NextRequest): Promise<NextResponse> {
     if (raw.length === 0) {
       await recordInsight('search', { brief, results: 0, matched: 0 });
       await persist(0, false);
-      return NextResponse.json({ setId: null, locked, experts: [] });
+      // No matches at all, so there is nothing to gate and nothing to store.
+      return NextResponse.json({ setId: null, locked: false, experts: [] });
     }
 
     const prompt = `Brief:\n${JSON.stringify(brief, null, 2)}\n\nSearch results:\n${raw
