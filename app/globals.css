@@ -1024,6 +1024,22 @@ a.cta { text-decoration: none; display: inline-block; }
 }
 
 .match-action { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 14px 0 6px; }
+
+/* Eight cards is roughly 3900px of scrolling on a phone, and the button used
+   to sit under all of it, so acting on the first card meant scrolling past
+   the other seven to reach the control. It sticks to the bottom of the
+   thread instead: tick whoever you want, press whenever, at any depth.
+   Only on small screens, because on a desktop the set is already in view. */
+@media (max-width: 640px) {
+  .match-action {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    padding: 12px 0 10px;
+    margin-top: 4px;
+    background: linear-gradient(to top, var(--bg) 62%, rgba(246, 243, 237, 0));
+  }
+}
 .cta {
   border: none; cursor: pointer;
   font-size: 13.5px; font-weight: 600; padding: 9px 20px; border-radius: 999px;
