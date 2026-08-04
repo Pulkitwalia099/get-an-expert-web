@@ -30,10 +30,12 @@
 --
 -- No foreign key to accounts, deliberately. `sub` is Google's subject id and
 -- it is only ever written from a session cookie this server signed, so the
--- value is already vouched for by the time it gets here. A key would add
--- nothing to that and would tie this table to a migration that has not been
--- applied, which is how a search stops being recorded because an unrelated
--- feature is half deployed. Rows are read by sub, never joined through it.
+-- value is already vouched for by the time it gets here, and rows are read by
+-- sub rather than joined through it. A key would buy no integrity that the
+-- cookie has not already bought, and it would make recording a search depend
+-- on the accounts feature being fully deployed. That is not hypothetical:
+-- this migration first failed on exactly that key against a project where
+-- accounts had never been created.
 create table if not exists match_sets (
   id          uuid primary key default gen_random_uuid(),
   session_id  text,
