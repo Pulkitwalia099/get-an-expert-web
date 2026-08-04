@@ -16,6 +16,22 @@ import type { ExpertRecord } from '@/lib/types';
 import { bumpUsage, durableLimit, monthKey, serpMonthlyCap } from '@/lib/usage';
 import { coerceBrief, parseSessionId } from '@/lib/validate';
 
+/**
+ * The ranking runs on Sonnet, not the site's default Opus.
+ *
+ * This call went from three people with one short paragraph to eight with
+ * two, and the generation grew with it: measured on production, a search took
+ * 29 to 40 seconds while the chat was promising "about 20 seconds". Nobody
+ * watches a spinner for forty seconds to see who is available.
+ *
+ * The work itself is extraction plus short-form writing over about thirty
+ * snippets that are already in the prompt, which is squarely what Sonnet is
+ * for. The intake conversation, which is the part that has to read a person
+ * and decide what to ask next, stays on Opus and is untouched. That also
+ * keeps this outside the eval gate, which covers the chat rather than this.
+ */
+const RANK_MODEL = 'claude-sonnet-5';
+
 const RANK_SYSTEM = `You turn raw web search results into expert matches for midsesh, a service that finds expert professionals for high-stakes work.
 
 You get a hiring brief and search results (title, snippet, link) from freelance marketplaces. Pick up to 8 results that are most likely a real, individual professional who fits the brief, best fit first. Aim for at least 3. Return fewer when fewer qualify, and skip any result with no discernible person.
@@ -200,6 +216,7 @@ async function handleSearch(req: NextRequest): Promise<NextResponse> {
       // Eight people with two text blocks each, where it used to be three with
       // one. The old ceiling truncated the response rather than shortening it.
       maxTokens: 6_000,
+      model: RANK_MODEL,
     });
 
     const records = finalizeExperts(ranked.experts, raw);
