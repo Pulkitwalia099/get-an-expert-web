@@ -199,7 +199,10 @@ button:active { transform: scale(0.96); }
   position: relative; z-index: 1;
   width: min(720px, 100%);
   margin: 0 auto;
-  padding: 8px var(--page-gutter) clamp(72px, 14vw, 120px);
+  /* The bottom padding used to close the whole page. It now only has to reach
+     the register line under it, which carries the rest of the space down to
+     the footer, or the contact panel when that has been asked for. */
+  padding: 8px var(--page-gutter) clamp(36px, 7vw, 56px);
   display: flex; flex-direction: column; align-items: center; gap: 10px;
   text-align: center;
 }
@@ -217,12 +220,28 @@ button:active { transform: scale(0.96); }
   max-width: 46ch; margin-bottom: 6px;
 }
 
+/* Two ways to start, on one row. Wraps rather than shrinks, because a button
+   squeezed narrower than its own label is worse than a button on its own
+   line. */
+.closer-actions {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+  gap: 10px 12px;
+}
+
 .closer-cta {
-  border: none;
+  /* Transparent rather than none. The outlined button beside it pays for a 1px
+     border, and a filled button with no border sits 2px shorter than its
+     neighbour for no reason a reader could name. */
+  border: 1px solid transparent;
   background: var(--accent);
   color: #FDFAF5;
   font-size: 15px; font-weight: 600; letter-spacing: -0.01em;
-  padding: 13px 26px;
+  /* The pair wants 361px of a 359px row at 375px wide, so at full padding the
+     second button wrapped onto its own line. The clamp gives back what the
+     row is short of, and takes it from the air around the label rather than
+     from the label. Both buttons read the same value, so they stay the same
+     shape at every width. */
+  padding: 13px clamp(20px, 5vw, 26px);
   border-radius: 999px;
   cursor: pointer;
   box-shadow: 0 8px 22px -8px rgba(168, 69, 44, .55);
@@ -230,14 +249,80 @@ button:active { transform: scale(0.96); }
     box-shadow 160ms var(--ease-out);
 }
 
-.closer-cta:active { transform: scale(0.97); }
-.closer-cta:focus-visible { outline: 2px solid var(--accent-deep); outline-offset: 3px; }
+/* The same shape and size as the button beside it, so the pair reads as one
+   row and neither looks like an afterthought. Outlined rather than filled
+   because only one of them can be the thing we are asking for, and a visitor
+   who came to buy should not have to choose between two equal buttons. */
+.closer-alt {
+  border: 1px solid var(--line-2);
+  background: rgba(255, 255, 255, .5);
+  color: var(--ink);
+  font-size: 15px; font-weight: 600; letter-spacing: -0.01em;
+  /* The pair wants 361px of a 359px row at 375px wide, so at full padding the
+     second button wrapped onto its own line. The clamp gives back what the
+     row is short of, and takes it from the air around the label rather than
+     from the label. Both buttons read the same value, so they stay the same
+     shape at every width. */
+  padding: 13px clamp(20px, 5vw, 26px);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 160ms var(--ease-out), background 160ms var(--ease-out),
+    border-color 160ms var(--ease-out);
+}
+
+.closer-cta:active, .closer-alt:active { transform: scale(0.97); }
+.closer-cta:focus-visible, .closer-alt:focus-visible {
+  outline: 2px solid var(--accent-deep); outline-offset: 3px;
+}
+
+/* The contact panel sits outside .below, which is what pays the page gutter
+   and holds the column for every section above it. Without this the form
+   would run to the window edge on a wide screen. Empty and zero height until
+   Book a demo is pressed. */
+.closer-form {
+  position: relative; z-index: 1;
+  width: 100%;
+  max-width: calc(var(--page-max) + var(--page-gutter) * 2);
+  margin: 0 auto;
+  padding: 0 var(--page-gutter);
+}
+
+/* A line of its own under the close, not a second button in it. Whoever this
+   is for did not come to hire anyone, so it takes none of the weight above it
+   and carries the last of the page's space down to the footer. */
+.signup {
+  position: relative; z-index: 1;
+  display: flex; justify-content: center;
+  padding: 0 var(--page-gutter) clamp(56px, 11vw, 88px);
+}
+
+.signup-link {
+  /* Inline would make the press below a no-op: transforms do not apply to an
+     inline box. */
+  display: inline-block;
+  font-size: 13px; font-weight: 600; color: var(--ink-2);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--line-2);
+  transition: transform 160ms var(--ease-out), color 160ms var(--ease-out),
+    text-decoration-color 160ms var(--ease-out);
+}
+
+.signup-link:active { transform: scale(0.97); }
+.signup-link:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px;
+}
 
 @media (hover: hover) and (pointer: fine) {
   .closer-cta:hover {
     background: var(--accent-deep);
     box-shadow: 0 10px 26px -8px rgba(168, 69, 44, .62);
   }
+  .closer-alt:hover {
+    background: rgba(255, 255, 255, .85);
+    border-color: var(--ink-3);
+  }
+  .signup-link:hover { color: var(--ink); text-decoration-color: var(--ink-3); }
 }
 
 /* ---------- The chat as an overlay ---------- */

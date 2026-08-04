@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
 import Backing from '@/components/Backing';
 import Chat from '@/components/Chat';
 import ContactBlock from '@/components/ContactBlock';
@@ -53,6 +54,13 @@ export default function HomeApp() {
   const config = FLOWS.ask;
   // null means nothing is open and the hero is the page.
   const [view, setView] = useState<View | null>(null);
+  // The contact panel, which is a section of the page rather than a layer over
+  // it, so it is not part of the union above. It lives here because the button
+  // that opens it is in the closer and the panel mounts under the closer: one
+  // owner for the control and the thing it controls. It only ever opens, since
+  // someone who asked for the form and then scrolled past it has not asked for
+  // it to be taken back.
+  const [demo, setDemo] = useState(false);
 
   // Which control opened the layer is deliberately not tracked here. Overlay
   // records the opener on mount and hands focus back on unmount, and because it
@@ -62,6 +70,11 @@ export default function HomeApp() {
   // second copy of that bookkeeping in here would fight it, so this component
   // only ever decides which view is open.
   const onClose = useCallback(() => setView(null), []);
+
+  const openDemo = useCallback(() => {
+    setDemo(true);
+    track('contact_opened', { source: 'demo' });
+  }, []);
 
   // `source` is the point of this event. Which entry earns the commit is the
   // one thing the funnel could not answer before: chat_opened fired identically
@@ -198,11 +211,6 @@ export default function HomeApp() {
         <Backing />
         <Setups onPick={onPickSetup} />
         <Examples onPick={onPickExample} />
-        {/* After the offer, not before it. Someone who has not yet seen what
-            we do has nothing to ask about, and the supply side pitch is aimed
-            at a different reader entirely, so it sits at the end where it
-            cannot distract a client from the ask above. */}
-        <ContactBlock />
       </div>
       {/* The second ask. Someone who has read to the bottom of the examples has
           just spent a minute learning what we do, and sending them back up to
@@ -213,14 +221,47 @@ export default function HomeApp() {
           Your first call is free, about 15 minutes. One sentence is enough, and there is
           nothing to pay until you have a name and a price.
         </p>
-        <button
-          type="button"
-          className="closer-cta"
-          onClick={(e) => openChat('closing_cta', '', null, originOf(e.currentTarget))}
-        >
-          Tell us what you need
-        </button>
+        {/* Two ways to start the same conversation, in the one place on the
+            page that asks for it. Book a demo used to sit in a row of its own
+            above this, where it read as an alternative to the close rather
+            than part of it, and the close was the thing it competed with. */}
+        <div className="closer-actions">
+          <button
+            type="button"
+            className="closer-cta"
+            onClick={(e) => openChat('closing_cta', '', null, originOf(e.currentTarget))}
+          >
+            Tell us what you need
+          </button>
+          <button
+            type="button"
+            className="closer-alt"
+            onClick={openDemo}
+            aria-expanded={demo}
+            aria-controls="contact-panel"
+          >
+            Book a demo
+          </button>
+        </div>
       </section>
+      {/* Directly under the button that opened it. Above the closer, asking
+          for the form scrolled the page backwards to reach it. Renders
+          nothing at all until then. */}
+      <div className="closer-form">
+        <ContactBlock open={demo} />
+      </div>
+      {/* Its own line, deliberately. This is aimed at someone offering to do
+          the work rather than someone buying it, and putting it in the row
+          above would ask one reader to sort through two different offers. */}
+      <div className="signup">
+        <Link
+          href="/register"
+          className="signup-link"
+          onClick={() => track('register_opened', { source: 'home' })}
+        >
+          Register as an expert
+        </Link>
+      </div>
       {body && (
         <Overlay onClose={onClose} origin={view?.origin ?? null}>
           {body}

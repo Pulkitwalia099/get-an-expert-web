@@ -126,72 +126,11 @@
 .submit:active { transform: scale(0.97); }
 .submit:disabled { opacity: 0.6; cursor: default; }
 
-/* ---------- The secondary row above the closing ask ---------- */
+/* ---------- The contact panel ---------- */
 
-/* A label, not a headline. These routes are for the minority who want them,
-   so the row announces itself at the size of a caption and leaves the page's
-   only loud control to the closer underneath. */
-/* Two lines of content do not need a full section's worth of air above them.
-   With the standard padding this row floated alone in a band of empty page
-   between the examples and the closing ask, reading as something that had come
-   loose rather than a deliberate aside. It now sits close under the grid it
-   follows, and the space before the closer does the separating. */
-.compact {
-  padding-top: 8px;
-}
-
-.rowLabel {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-}
-
-.row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px 10px;
-  margin-top: -4px;
-}
-
-.rowDot {
-  width: 3px;
-  height: 3px;
-  border-radius: 50%;
-  background: var(--ink-3);
-  opacity: .5;
-}
-
-/* Two ways into the same form, side by side. Wraps rather than shrinks,
-   because a button that has been squeezed narrower than its label is worse
-   than a button on its own line. */
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px 14px;
-}
-
-/* The second way in. Quiet on purpose: asking for a demo is the move this
-   section is arguing for, and two buttons of equal weight would make the
-   visitor choose instead of act. */
-.ghost {
-  font: inherit;
-  font-size: 13.5px;
-  font-weight: 600;
-  color: var(--ink-2);
-  background: none;
-  border: 0;
-  padding: 6px 2px;
-  cursor: pointer;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  text-decoration-color: var(--line-2);
-}
-
-.ghost:active { transform: scale(0.97); }
+/* The row of secondary links that used to live here is gone, and so are the
+   rules that drew it. Book a demo is a button in the closer now, and the only
+   thing this stylesheet still owns below the hero is the panel it opens. */
 
 /* The panel arrives rather than appears. Ease out and under 300ms, transform
    and opacity only, and nothing to animate at all for anyone who has asked
@@ -343,5 +282,4 @@
   .track:hover { border-color: var(--ink-3); }
   .trackOn:hover { border-color: var(--accent); }
   .submit:hover { background: var(--accent-deep); }
-  .ghost:hover { color: var(--ink); text-decoration-color: var(--ink-3); }
 }
