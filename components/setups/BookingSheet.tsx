@@ -6,6 +6,8 @@ import BookingEmbed from '@/components/BookingEmbed';
 import { distinctId, track } from '@/lib/analytics';
 import { CAL_LINK } from '@/lib/operators';
 import { currentPrice, type Setup } from '@/lib/setups';
+import { SIGNUP_CREDIT_CENTS, splitPrice } from '@/lib/credit-math';
+import { useMe } from '@/components/useMe';
 import { useDialog } from './useDialog';
 import sh from './sheets.module.css';
 
@@ -26,6 +28,12 @@ interface BookingSheetProps {
 // call card and the classic book page already use.
 export default function BookingSheet({ setup, from, onClose }: BookingSheetProps) {
   const ref = useDialog<HTMLDivElement>(onClose);
+  // Null until /api/me answers, so the line settles with the answer rather
+  // than promising free and then taking it back.
+  const me = useMe();
+  const firstFree =
+    Boolean(me?.available && !me.signedIn) &&
+    splitPrice(currentPrice(setup) * 100, SIGNUP_CREDIT_CENTS).dueCents === 0;
 
   // The last thing the page can see. Cal runs in a cross-origin iframe, so
   // from here on the browser learns nothing: whether a time was picked comes
@@ -81,10 +89,26 @@ export default function BookingSheet({ setup, from, onClose }: BookingSheetProps
               <p>{setup.minutes} min on a call, on your laptop</p>
             </div>
           </div>
-          <p className={sh.bookPay}>
-            <b>$0 to pay today.</b> You pay ${currentPrice(setup)} once the setup is running on your
-            laptop.
-          </p>
+          {/* The decision happens here, so the offer is repeated here. A
+              visitor who has opened the calendar has already chosen; telling
+              them at this point that it is free is worth more than any number
+              of nudges further up the page.
+
+              Only for somebody without an account. Signed in, the honest line
+              depends on a balance this component cannot see, and a confident
+              "free" over a spent balance would be a lie at the worst possible
+              moment. They get the plain price instead. */}
+          {firstFree ? (
+            <p className={sh.bookPay}>
+              <b>Free on your first setup.</b> Sign in when you book and your welcome credit
+              covers all ${currentPrice(setup)} of it. Nothing to pay today either way.
+            </p>
+          ) : (
+            <p className={sh.bookPay}>
+              <b>$0 to pay today.</b> You pay ${currentPrice(setup)} once the setup is running on
+              your laptop.
+            </p>
+          )}
         </div>
 
         <div className={sh.calWrap}>

@@ -8,8 +8,22 @@
 // Every amount is integer cents. Money in floating point rounds in ways that
 // only show up once the numbers are real.
 
-/** What a new account is given, once. */
-export const SIGNUP_CREDIT_CENTS = 5_000;
+/**
+ * What a new account is given, once.
+ *
+ * $75 rather than $50, and the number is not arbitrary: it is the price of the
+ * dearest setup, so a first booking is free whichever card someone picks. At
+ * $50 the six setups on the $75 tier still cost $25, and those are the exact
+ * six worth watching somebody go through, so the toll fell on the wrong ones.
+ *
+ * That is what lets the offer be one sentence. "Your first setup is free" is a
+ * thing a person can act on; "get $50 of credit" is a thing they have to do
+ * arithmetic on first.
+ *
+ * Raise the dearest setup above this and the promise quietly stops being true,
+ * which is what SETUP_PRICES_COVERED in the tests is there to catch.
+ */
+export const SIGNUP_CREDIT_CENTS = 7_500;
 
 /**
  * The most of any single order that credit may cover.
@@ -60,4 +74,16 @@ export function formatCents(cents: number): string {
 export function firstOrderLabel(priceDollars: number): string {
   const { dueCents } = splitPrice(priceDollars * 100, SIGNUP_CREDIT_CENTS);
   return dueCents === 0 ? 'Free on your first' : `${formatCents(dueCents)} on your first`;
+}
+
+/**
+ * True when the welcome credit covers every price in the catalog, which is the
+ * condition "your first setup is free" depends on.
+ *
+ * The claim is printed on the sign in control, so it must be derived rather
+ * than typed. A price rise or a smaller grant has to change the words on the
+ * button, not quietly make them false.
+ */
+export function coversEveryPrice(pricesInDollars: number[]): boolean {
+  return pricesInDollars.every((p) => splitPrice(p * 100, SIGNUP_CREDIT_CENTS).dueCents === 0);
 }

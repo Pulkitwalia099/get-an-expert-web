@@ -8,7 +8,15 @@ import {
   signSession,
   stateMatches,
 } from '@/lib/auth';
-import { MAX_CREDIT_SHARE, SIGNUP_CREDIT_CENTS, formatCents, splitPrice } from '@/lib/credits';
+import {
+  MAX_CREDIT_SHARE,
+  SIGNUP_CREDIT_CENTS,
+  coversEveryPrice,
+  firstOrderLabel,
+  formatCents,
+  splitPrice,
+} from '@/lib/credit-math';
+import { MAIN_SETUPS } from '@/lib/setups';
 
 const USER = { sub: '10769150350006150715', email: 'a@example.com', name: 'A', picture: null };
 
@@ -112,17 +120,24 @@ describe('oauth start', () => {
 });
 
 describe('credit split', () => {
-  // The offer, stated as a test. $50 makes the $35 tier free outright and
-  // leaves $25 on the $75 tier, and those two numbers are what the setup cards
-  // print, so they are worth pinning rather than inferring.
-  it('makes a first $35 setup free and a first $75 setup $25', () => {
-    const cheap = splitPrice(3_500, SIGNUP_CREDIT_CENTS);
-    expect(cheap.creditCents).toBe(3_500);
-    expect(cheap.dueCents).toBe(0);
+  // The claim printed on the sign in control. If a price ever rises above the
+  // grant, or the grant is cut, the button starts telling people something
+  // that is not true, and this is what says so first.
+  it('covers a first booking of every setup in the catalog', () => {
+    const prices = MAIN_SETUPS.map((s) => s.price);
+    expect(coversEveryPrice(prices)).toBe(true);
+    for (const price of prices) {
+      expect(splitPrice(price * 100, SIGNUP_CREDIT_CENTS).dueCents).toBe(0);
+    }
+    expect(firstOrderLabel(Math.max(...prices))).toBe('Free on your first');
+  });
 
-    const dear = splitPrice(7_500, SIGNUP_CREDIT_CENTS);
-    expect(dear.creditCents).toBe(5_000);
-    expect(dear.dueCents).toBe(2_500);
+  // The same guard from the other side: one dollar over the grant and the
+  // promise has to change wording rather than quietly break.
+  it('stops claiming a free first setup once a price passes the grant', () => {
+    const tooDear = SIGNUP_CREDIT_CENTS / 100 + 1;
+    expect(coversEveryPrice([35, tooDear])).toBe(false);
+    expect(firstOrderLabel(tooDear)).toBe('$1 on your first');
   });
 
   it('spends the balance and no more, however big the order', () => {

@@ -2,6 +2,8 @@
 
 import Titlebar from '@/components/Titlebar';
 import { SALE_ON, currentPrice, type Setup, type SetupCategory } from '@/lib/setups';
+import { SIGNUP_CREDIT_CENTS, splitPrice } from '@/lib/credit-math';
+import { useMe } from '@/components/useMe';
 import st from './SetupDetail.module.css';
 
 // One setup, opened over the homepage. It renders only the window: Overlay owns
@@ -46,6 +48,13 @@ export interface SetupDetailProps {
 
 export default function SetupDetail({ setup, onBook, onAsk, onClose }: SetupDetailProps) {
   const headingId = `setup-${setup.slug}-title`;
+  // Null until /api/me answers, so the pill settles rather than promising free
+  // and taking it back. Signed in it says nothing about credit, because what
+  // this person owes depends on a balance this component cannot see.
+  const me = useMe();
+  const firstFree =
+    Boolean(me?.available && !me.signedIn) &&
+    splitPrice(currentPrice(setup) * 100, SIGNUP_CREDIT_CENTS).dueCents === 0;
 
   return (
     <section
@@ -65,10 +74,14 @@ export default function SetupDetail({ setup, onBook, onAsk, onClose }: SetupDeta
           <span className={st.mins}>{setup.minutes} min</span>
         </p>
 
+        {/* The screen between the card and the calendar, and the one that has
+            room to say what the price actually means. "$0 today" only ever
+            said the money is deferred; for a visitor without an account it is
+            not deferred, it is gone, and that is worth the pill saying so. */}
         <p className={st.price}>
           {SALE_ON ? <s className={st.was}>${setup.price}</s> : null}
           <span className={st.now}>${currentPrice(setup)}</span>
-          <span className={st.today}>$0 today</span>
+          <span className={st.today}>{firstFree ? 'Free on your first' : '$0 today'}</span>
         </p>
 
         <h3 className={st.head}>What you end up with</h3>
@@ -99,7 +112,11 @@ export default function SetupDetail({ setup, onBook, onAsk, onClose }: SetupDeta
       <div className={st.foot}>
         <button type="button" className={st.primary} onClick={() => onBook(setup.slug)}>
           <span className={st.primaryLabel}>Pick a time to get it set up</span>
-          <span className={st.primarySub}>{setup.minutes} min, nothing charged today</span>
+          <span className={st.primarySub}>
+            {firstFree
+              ? `${setup.minutes} min, free on your first`
+              : `${setup.minutes} min, nothing charged today`}
+          </span>
         </button>
         <button type="button" className={st.secondary} onClick={() => onAsk(setup.slug)}>
           Ask a question first
