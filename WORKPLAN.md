@@ -45,7 +45,21 @@ Save every interaction, including the ones people abandon halfway.
 `sb_publishable_...` one). Add both to `.env.example` with empty values and to
 the Vercel project.
 
-Project URL is `https://qlivmjodlhywjwywwsbc.supabase.co`.
+The project is `mzgkeorgtlazaskgnmea`, named **midsesh** in the Supabase
+dashboard. It is the one holding `accounts`, `orders`, `setup_bookings` and
+the `ob_` tables the outbound repo writes.
+
+There is a second, older project, `qlivmjodlhywjwywwsbc`, named
+`get-an-expert-website`. This file used to name it as the project URL and it
+is **not** what the deployment talks to. It still holds a stale copy of
+`sessions`, `messages`, `searches` and `leads` from July, which is what makes
+it convincing, plus three empty `match_*` tables created against it by
+mistake on 2026-08-04. Check for `accounts` before trusting a connection: the
+old project does not have it.
+
+Migrations here are applied by hand, so Supabase's own tracking table is
+empty on both projects. `supabase db push` would therefore try to replay all
+of them. Move the applied ones aside and push the single new file instead.
 
 ---
 

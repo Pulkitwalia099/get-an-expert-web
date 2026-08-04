@@ -7,6 +7,10 @@ export type Phase =
   | 'chat'
   | 'searching'
   | 'matches'
+  // The wall. Reached only after somebody has already ticked who they want,
+  // so it is the last step rather than the first, and it offers two ways
+  // through: sign in, or leave an address.
+  | 'gate'
   | 'refine'
   | 'email'
   | 'choice'
@@ -19,6 +23,7 @@ export const PLACEHOLDERS: Record<Phase, string> = {
   chat: 'Reply…',
   searching: 'One moment…',
   matches: 'Not right? Tell me…',
+  gate: 'Questions? Ask here…',
   refine: 'Describe who you need…',
   email: 'you@company.com',
   choice: 'Questions? Ask here…',
