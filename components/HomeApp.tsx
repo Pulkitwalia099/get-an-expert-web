@@ -10,6 +10,7 @@ import Overlay, { type OverlayOrigin } from '@/components/Overlay';
 import SetupBooking from '@/components/SetupBooking';
 import SetupDetail from '@/components/SetupDetail';
 import Setups from '@/components/Setups';
+import Trust from '@/components/Trust';
 import { track } from '@/lib/analytics';
 import { getSetup } from '@/lib/setups';
 
@@ -183,6 +184,11 @@ export default function HomeApp() {
         <Explainer />
         <Setups onPick={onPickSetup} />
         <Examples onPick={onPickExample} />
+        {/* Last thing before the ask. It answers "who are these people" rather
+            than making the offer, so it earns its place here and nowhere
+            higher: a visitor still deciding what we do has not asked the
+            question yet. */}
+        <Trust />
       </div>
       {/* The second ask. Someone who has read to the bottom of the examples has
           just spent a minute learning what we do, and sending them back up to
@@ -190,8 +196,8 @@ export default function HomeApp() {
       <section className="closer">
         <h2 className="closer-title">Ready when you are</h2>
         <p className="closer-sub">
-          One sentence is enough. No forms, no signup, and nothing to pay until you have a
-          name and a price.
+          Your first session is free. One sentence is enough, and there is nothing to pay
+          until you have a name and a price.
         </p>
         <button
           type="button"

@@ -77,6 +77,39 @@
   color: var(--ink-2);
 }
 
+/* ---------- Trust: what every expert goes through ---------- */
+
+/* Same rule as .step above, for the same reason: no boxes, no tinted bars, no
+   icons. Three claims about people are carried by type and space or they are
+   not believed. Single column on a phone, because these lines are longer than
+   the steps and two of them side by side at 390px would set four words a row. */
+.checks {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+  list-style: none;
+}
+
+.check {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 0 0 0 2px;
+}
+
+.checkTitle {
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.checkBody {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
 /* ---------- Examples: filters, cards, show more ---------- */
 
 /* Scrolls sideways on a narrow screen instead of wrapping to four lines. */
@@ -322,6 +355,7 @@
   .section:last-of-type { padding-bottom: 64px; }
   .title { font-size: 19px; }
   .steps { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 26px; }
+  .checks { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 26px; }
   /* An ask plus its outcome reads fine at half width, and 32 single file
      cards is a very long scroll. Held height stops the grid collapsing
      when a filter narrows the list. */

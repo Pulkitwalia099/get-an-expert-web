@@ -180,7 +180,12 @@ export const FLOWS: Record<Flow, FlowConfig> = {
   ask: {
     tag: null,
     headline: 'What do you need done?',
-    sub: 'Talk it through, then an expert who has done it many times before takes it off your plate.',
+    // The offer leads. "Free first session" was the actual promise for months
+    // and appeared on no surface, while the line spent its length on "has done
+    // it many times before", which is a vetting claim the hero cannot back up.
+    // That claim moved down to Trust, which says how the vetting works, so the
+    // hero is shorter now and says the thing that gets someone to type.
+    sub: 'Your first session is free. Talk it through, then an expert takes it off your plate.',
     // Ordered by where the demand actually is, not by what reads nicest. The
     // setups people already buy are automation and growth first, so those lead
     // and design sits further down. Label has to survive a 390px row; message
