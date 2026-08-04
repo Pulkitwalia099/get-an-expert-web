@@ -196,7 +196,7 @@ export default function ContactBlock() {
           <p className={styles.sub}>
             If you do the work rather than buy it, this is your way in. Experts join the roster we
             match against. Agent builders list what their agents do and we put them in front of
-            the briefs they fit. We take 20% of what a client pays, and nothing to join.
+            the briefs they fit. Nothing to pay to join.
           </p>
         </header>
         <Link
