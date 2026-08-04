@@ -217,6 +217,31 @@ button:active { transform: scale(0.96); }
   outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px;
 }
 
+/* Signed out. A tinted pill, not a filled button: the bar sits directly above
+   the search bar the page is actually asking you to use, and two filled
+   controls in one screen make the visitor choose instead of act. The border
+   and the tint are enough to say "press me" without competing. */
+.account-cta {
+  flex: none;
+  font: inherit;
+  font-size: 11.5px; font-weight: 600; letter-spacing: -0.005em;
+  color: var(--accent-deep);
+  background: var(--accent-tint);
+  border: 1px solid rgba(196, 89, 60, .30);
+  border-radius: 999px;
+  padding: 5px 11px;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform 160ms var(--ease-out), background 160ms var(--ease-out),
+    border-color 160ms var(--ease-out);
+}
+
+.account-cta:active { transform: scale(0.97); }
+.account-cta:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 3px;
+}
+
 /* Opens from the control, downward and to the right edge, because the bar
    sits at the top of the page and there is nothing above it to open into. */
 .account-menu {
@@ -266,6 +291,10 @@ button:active { transform: scale(0.96); }
 @media (hover: hover) and (pointer: fine) {
   .account-link:hover { color: var(--ink-2); }
   .account-out:hover { color: var(--ink); }
+  .account-cta:hover {
+    background: rgba(196, 89, 60, .16);
+    border-color: rgba(196, 89, 60, .45);
+  }
 }
 
 /* ---------- The closing ask ---------- */

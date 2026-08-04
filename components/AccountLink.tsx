@@ -40,14 +40,19 @@ export default function AccountLink() {
 
   if (!me || !me.available) return null;
 
+  // Signed out, this is an offer rather than a chore. "Sign in" describes
+  // paperwork and reads as one more nav link beside Contact and Privacy;
+  // nobody wants an account, they want the fifty dollars. The pill is tinted
+  // rather than filled because the site bar must not out-shout the search bar
+  // under it, which is the whole reason Contact is not a button either.
   if (!me.signedIn) {
     return (
       <a
-        className="account-link"
+        className="account-cta"
         href="/api/auth/google"
         onClick={() => track('signin_started', { source: 'sitebar' })}
       >
-        Sign in
+        Get $50 credit
       </a>
     );
   }
