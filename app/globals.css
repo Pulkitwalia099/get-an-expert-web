@@ -22,6 +22,15 @@
      cannot inherit its padding. Both read this instead and stay aligned. */
   --page-gutter: 16px;
 
+  /* The page's own column. The site bar, the sections and the closing ask all
+     read this, so every left and right edge down the page lines up on one
+     axis. Widened once at desktop, in one place, rather than each section
+     picking its own width and drifting out of alignment with its neighbours.
+     The chat window deliberately does NOT read this: it stays 720px wide and
+     sits centred inside the column, because it is an object on the page
+     rather than the page itself. */
+  --page-max: 720px;
+
   /* One hue per category. This is sorting colour, not decoration: 32 example
      cards are unreadable as a beige wall, and a consistent hue lets the eye
      group them before reading a word. Every value is mid saturation so it
@@ -74,6 +83,17 @@ body {
 button { font: inherit; }
 button:active { transform: scale(0.96); }
 
+/* ---------- Desktop column ---------- */
+/* The page had one breakpoint, at 561px, so a 1440px screen was served the
+   same 720px column as a tablet and left 344px empty on either side. Widened
+   once, here, because every container that matters reads --page-max: the site
+   bar, the sections and their grids all keep the same outer edges and stay on
+   one axis down the page. The chat window is deliberately left at 720px and
+   sits centred inside the wider column. */
+@media (min-width: 1024px) {
+  :root { --page-max: 1040px; }
+}
+
 /* ---------- Background: soft aurora + grain ---------- */
 .bg {
   position: fixed; inset: 0; z-index: 0;
@@ -104,7 +124,7 @@ button:active { transform: scale(0.96); }
 .sitebar {
   position: relative; z-index: 2;
   width: 100%;
-  max-width: calc(720px + var(--page-gutter) * 2);
+  max-width: calc(var(--page-max) + var(--page-gutter) * 2);
   margin: 0 auto;
   padding: 16px var(--page-gutter) 0;
   display: flex; align-items: center; justify-content: space-between;
@@ -277,7 +297,7 @@ button:active { transform: scale(0.96); }
 .below {
   position: relative; z-index: 1;
   width: 100%;
-  max-width: calc(720px + var(--page-gutter) * 2);
+  max-width: calc(var(--page-max) + var(--page-gutter) * 2);
   margin: 0 auto;
   padding: clamp(24px, 5vw, 48px) var(--page-gutter) clamp(64px, 12vw, 104px);
   display: flex; flex-direction: column;

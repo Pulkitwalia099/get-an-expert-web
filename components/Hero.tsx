@@ -56,6 +56,10 @@ export default function Hero({
 
   return (
     <section className={s.hero}>
+      {/* The headline, the bar and the chips share a 720 reading column. The
+          hero itself is the full page width so the steps below can line up
+          with the sections under it. */}
+      <div className={s.column}>
       <header className={s.head}>
         <h1 className={s.headline}>{config.headline}</h1>
         {config.sub && <p className={s.sub}>{config.sub}</p>}
@@ -98,6 +102,7 @@ export default function Hero({
           elseChip={config.elseChip}
           onElse={() => onOpen('')}
         />
+      </div>
       </div>
 
       {/* The steps belong in the hero, not under it. Someone who has only seen

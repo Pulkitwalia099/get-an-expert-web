@@ -105,7 +105,7 @@ export default function Setups({ onPick }: SetupsProps) {
                 // Spelled out so the card does not announce as one run-on
                 // string of title, outcome and price. The struck sale price
                 // stays out of it: only what you pay is read.
-                aria-label={`${setup.title}. ${setup.checklist[0]}. $${price}, ${setup.minutes} minutes. Get this.`}
+                aria-label={`${setup.title}. ${setup.checklist[0]}. $${price}${SALE_ON ? ', launch price' : ''}. Get this.`}
                 onPointerDown={() => setPressed(setup.slug)}
                 onPointerUp={release}
                 onPointerCancel={release}
@@ -122,12 +122,25 @@ export default function Setups({ onPick }: SetupsProps) {
                 )}
                 <span className={styles.cardAsk}>{setup.title}</span>
                 <span className={styles.cardOut}>{setup.checklist[0]}</span>
+                {/* No duration here. A 90 minute session beside an $11 price
+                    invites the reader to divide one by the other, and the
+                    answer to that sum is not what is being sold. The length is
+                    on the card's own page, where it is a fact about the
+                    booking rather than a rate.
+
+                    That slot now says what the number actually is. A struck
+                    price on its own leaves the reader to guess whether $11 is
+                    a discount, a deposit, or the real price. */}
                 <span className={styles.cardMeta}>
                   <span className={styles.metaPrice}>
                     {SALE_ON && <s>${setup.price}</s>} ${price}
                   </span>
-                  <span className={styles.metaDot} aria-hidden="true" />
-                  <span>{setup.minutes} min</span>
+                  {SALE_ON && (
+                    <>
+                      <span className={styles.metaDot} aria-hidden="true" />
+                      <span className={styles.metaSale}>Launch price</span>
+                    </>
+                  )}
                   <span className={styles.cardPill}>
                     Get this
                     <Arrow />

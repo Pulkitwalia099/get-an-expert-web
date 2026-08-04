@@ -11,13 +11,27 @@
   position: relative;
   z-index: 1;
   width: 100%;
-  /* Same column the chat window uses, so opening the chat does not move the
-     page sideways. .below repeats this maths for the sections underneath. */
-  max-width: calc(720px + var(--page-gutter) * 2);
+  /* The page column, so the four steps at the bottom of the hero start and end
+     on the same axis as every section below them. Before this the hero was
+     pinned to 720 while the sections widened at desktop, which put the first
+     heading on the page 160px inside all the others.
+
+     The blocks above the steps do not want this width: a headline and a search
+     bar stretched to 1040 read as a banner. They keep the 720 column through
+     .column below, which is also the chat window's width, so opening the chat
+     still does not move the page sideways. */
+  max-width: calc(var(--page-max) + var(--page-gutter) * 2);
   margin: 0 auto;
   padding: 24px var(--page-gutter) 0;
   display: flex;
   flex-direction: column;
+}
+
+/* The hero's own reading column. Everything except the steps sits in it. */
+.column {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
 }
 
 /* ---------- Headline ---------- */

@@ -8,7 +8,10 @@
 .section {
   position: relative;
   z-index: 1;
-  width: min(720px, 100%);
+  /* Reads the page token rather than repeating a number. This was a hard 720
+     and it silently outranked the wider column at desktop: .below grew, every
+     section inside it did not, and the two stopped sharing an edge. */
+  width: min(var(--page-max), 100%);
   margin: 0 auto;
   padding: 34px 14px 8px;
   display: flex;
@@ -369,6 +372,10 @@
 .metaPrice { color: var(--cat, var(--ink-2)); font-weight: 650; }
 .metaPrice s { color: var(--ink-3); font-weight: 500; margin-right: 3px; }
 
+/* Quieter than the price it explains. It is a label on the number, not a
+   second number, so it must not compete with it. */
+.metaSale { color: var(--ink-3); }
+
 .metaDot {
   width: 3px;
   height: 3px;
@@ -420,9 +427,11 @@
   .section:last-of-type { padding-bottom: 64px; }
   .title { font-size: 19px; }
   .steps { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 26px; }
-  /* Four across, same as .steps. The bodies are one short clause each so they
-     survive the narrower column; anything longer wraps to five lines here. */
-  .checks { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 26px; }
+  /* Three, because there are three. This was four while the section had four
+     items, and cutting one left an empty fourth column: the three remaining
+     bodies were squeezed to a quarter width each and the row stopped short of
+     the right edge, so it lined up with nothing else on the page. */
+  .checks { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 26px; }
   /* Already three across on a phone. Wider screens only get more air between
      the cells, so the strip does not stretch into three lonely columns. */
   .backerStrip { gap: 0 26px; justify-content: start; }
@@ -431,6 +440,33 @@
      cards is a very long scroll. Held height stops the grid collapsing
      when a filter narrows the list. */
   .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); min-height: 220px; }
+}
+
+/* ---------- Desktop ---------- */
+/* The page had one breakpoint, at 561px, so a 1440px screen was served the
+   same 720px column as a tablet and left 344px empty on either side. The
+   column widens once, in --page-max, and the card grids take the room.
+   Everything that reads that token keeps the same outer edges, so the site
+   bar, every section heading and every grid still start and end on one axis.
+
+   Three across rather than four: a fourth column at this width drops each
+   card under 250px, which is narrower than the two column layout it replaced
+   and puts the title on three lines. Both card grids use three, and so do the
+   vetting steps and the backer strip, so those four sections share their
+   inner grid lines and not only their edges. "How it works" stays on four
+   because it has exactly four items and a sequence should not wrap.
+
+   The column itself widens in globals.css, because a CSS module cannot carry
+   a bare :root rule: Next requires every selector in a module to contain a
+   local class. */
+@media (min-width: 1024px) {
+  .cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .steps, .checks, .backerStrip { gap: 0 32px; }
+  /* .below already pays the page gutter, and .section was paying it a second
+     time. That put every section 16px inside the hero's own steps, which take
+     no horizontal padding, so the first heading on the page sat on a different
+     line from all the ones under it. The gutter belongs to the column, once. */
+  .section { padding-left: 0; padding-right: 0; }
 }
 
 @media (hover: hover) and (pointer: fine) {
