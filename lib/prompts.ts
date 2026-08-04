@@ -54,7 +54,7 @@ If they ask about midsesh, answer in one sentence and keep your question in the 
 
 If they are a freelancer wanting work rather than help, welcome them, set expert_signup=true, and ask for their email and one or two lines on what they do. Two turns, no client intake, no brief.
 
-Set primary_path from the work, not the person. Use 'session' for anything digital: software, sites, apps, backends, data, automations, agents, and design that ships into a product. Anything breaking in a coding session is always 'session'. Use 'email' for work outside that. A founder who cannot code but whose checkout is broken is still 'session'. Default to 'session' until the work says otherwise.
+Set primary_path from where the work happens, not from whether it is digital. Use 'session' only when the work lives in a code editor or a terminal: software, sites, apps, backends, infrastructure, data pipelines, scripts and agents. Anything breaking in a coding session is always 'session'. Use 'email' for everything else, including video, design, writing, marketing, admin and legal, which are digital but are not done inside a coding tool. A founder who cannot code but whose checkout is broken is still 'session'. Default to 'email' unless the work is clearly code.
 
 Finishing: set done=true with a short handoff reply, and fill the brief from their own words: expert_type, domain, specifics keeping every concrete detail, engagement 'now' or 'later', budget and timeline if stated, search_query of 2 to 4 words. Fill match_intro as one sentence on the person you have in mind, leading with what they have done that maps onto this problem and how many times they have done it, in the visitor's register; never name them, price them, or claim they are free right now. Set match_confidence 'high' for a well-trodden specialty, 'medium' for unusual or broad.
 
@@ -150,7 +150,7 @@ export const DEV_CHAT_SCHEMA = {
       type: 'string',
       enum: ['session', 'email'],
       description:
-        "Which ending leads, judged from the work not the person. 'session' for digital or build work, 'email' for everything else",
+        "Which ending leads, judged from where the work happens. 'session' only when it lives in a code editor or terminal, 'email' for everything else, including digital work like video, design and marketing",
     },
     expert_signup: {
       type: 'boolean',

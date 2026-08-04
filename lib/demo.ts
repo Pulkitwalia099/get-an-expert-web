@@ -4,11 +4,13 @@ import type { Brief, ChatMessage, ChatReply, Expert } from '@/lib/types';
 // testable before ANTHROPIC_API_KEY / SERPAPI_KEY are configured.
 
 // The extra fields the dev flow returns. Demo replies are scripted, so they
-// take the safe defaults: single-select chips, session-first ending, and no
-// match line (there is no real match behind a demo reply).
+// take the safe defaults: single-select chips, email-first ending, and no
+// match line (there is no real match behind a demo reply). Email leads because
+// a script cannot tell whether the work is code, and that is the case the
+// prompt itself resolves to email.
 const DEMO_EXTRAS = {
   chip_mode: 'single',
-  primary_path: 'session',
+  primary_path: 'email',
   expert_signup: false,
   match_intro: '',
   match_confidence: '',

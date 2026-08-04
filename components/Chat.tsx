@@ -71,7 +71,7 @@ export default function Chat({
   const [signup, setSignup] = useState(false);
   const [matchIntro, setMatchIntro] = useState('');
   const [matchConfidence, setMatchConfidence] = useState<MatchConfidence>('');
-  const [primaryPath, setPrimaryPath] = useState<PrimaryPath>('session');
+  const [primaryPath, setPrimaryPath] = useState<PrimaryPath>('email');
 
   // The call sits beside the conversation. The pill is in the titlebar once
   // they have said something, and the card drops under the thread when they
@@ -498,7 +498,7 @@ export default function Chat({
     setSignup(false);
     setMatchIntro('');
     setMatchConfidence('');
-    setPrimaryPath('session');
+    setPrimaryPath('email');
     setOffered(false);
     setCard(null);
     setCallState('booking');

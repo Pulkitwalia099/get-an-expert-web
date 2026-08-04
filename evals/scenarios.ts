@@ -371,7 +371,7 @@ export const SCENARIOS: Scenario[] = [
       search_query: /checkout|payment|store|ecommerce|e-commerce|web/i,
     },
     judgeNotes:
-      'The work is digital, so the session route must lead (primary_path session) even though this person could not name a single tool. The whole test is register: every question has to be answerable by someone who only knows what their customers see, such as whether it happens to everyone or only on phones, and when it started. One acronym or unexplained technical term is a hard failure. Not knowing what the site is built on must not stall the intake.',
+      'A broken checkout gets fixed in the code behind the store, so the session route must lead (primary_path session) even though this person could not name a single tool. Digital is not the test; where the work happens is. The whole test is register: every question has to be answerable by someone who only knows what their customers see, such as whether it happens to everyone or only on phones, and when it started. One acronym or unexplained technical term is a hard failure. Not knowing what the site is built on must not stall the intake.',
   },
   {
     id: 'dev-offline-work',
@@ -397,6 +397,35 @@ export const SCENARIOS: Scenario[] = [
     },
     judgeNotes:
       'Someone has to stand in a physical kitchen, so this is the one case that must lead with email rather than a live session. Offering to drop an expert into a coding session here is a hard failure. Otherwise it is a normal intake: what the walkthrough covers, when the inspection is, what went wrong last time. The visitor must not be made to feel they landed on the wrong site.',
+  },
+  // The F2 regression. Video editing is digital, and the old rule sent
+  // anything digital to the session route, so a YouTuber who has never opened
+  // a terminal was met with an install command as the fastest way to start.
+  // Reproduced twice on production before the rule was rewritten around where
+  // the work happens rather than whether it is digital.
+  {
+    id: 'dev-video-editor',
+    flow: 'dev',
+    title: 'Digital work that is not code',
+    opening: 'I need someone to edit my YouTube videos every week',
+    facts:
+      'Runs a business channel and films talking-head videos, about 12 minutes each, one a week. Has the raw footage and wants cuts, captions and light b-roll, edited in whatever the editor prefers. Pays around 150 dollars per video and wants someone ongoing rather than a one-off. Does not write code, has never used a terminal, and would not know what to do with one.',
+    style: 'Plain and friendly, talks about the channel rather than any software.',
+    maxQuestions: 5,
+    expectDone: true,
+    maxTurns: 7,
+    forbidden: [
+      {
+        name: 'pitched the coding session route at a video editor',
+        pattern: /coding (tool|session|assistant)|claude code|codex|cursor|\bMCP\b|join your session|terminal/i,
+      },
+    ],
+    expectReply: { primary_path: 'email' },
+    brief: {
+      search_query: /video|editor|editing|youtube|post.?production/i,
+    },
+    judgeNotes:
+      'The whole point of this scenario is the ending. Editing happens in an editing app, not in a code editor, so the email intro must lead and primary_path must be email however digital the work is. Pitching a coding session, an install, or a terminal command here is a hard failure. Otherwise it is a normal intake: what the videos are, what the edit includes, how often, what they pay. The visitor must never be made to feel they landed on a site for programmers.',
   },
   {
     id: 'dev-match-line',

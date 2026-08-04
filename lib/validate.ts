@@ -114,9 +114,13 @@ export function sanitizeReply(input: unknown): ChatReply {
   // Multi-select changes what a click does, so it has to be asked for
   // explicitly. Anything unrecognised behaves like today's chips.
   const chip_mode: ChipMode = source.chip_mode === 'multi' ? 'multi' : 'single';
-  // Most visitors here are building something, so 'session' is the safe
-  // default: it leads with the faster route and still shows email below.
-  const primary_path: PrimaryPath = source.primary_path === 'email' ? 'email' : 'session';
+  // This fires when the model omits or garbles the field, which is exactly
+  // when it was least sure what the work was. 'email' is the safe guess: it
+  // leads with a route anyone can take and still shows the install below,
+  // whereas a wrong 'session' opens on a terminal command for someone who has
+  // never used one. Matches the prompt, which defaults to email unless the
+  // work is clearly code.
+  const primary_path: PrimaryPath = source.primary_path === 'session' ? 'session' : 'email';
   const expert_signup = source.expert_signup === true;
   const match_intro =
     done && typeof source.match_intro === 'string'
