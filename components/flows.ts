@@ -179,7 +179,7 @@ export const FLOWS: Record<Flow, FlowConfig> = {
   // than a chat window.
   ask: {
     tag: null,
-    headline: 'What do you need done?',
+    headline: 'What do you want done?',
     // The offer leads. "Free first session" was the actual promise for months
     // and appeared on no surface, while the line spent its length on "has done
     // it many times before", which is a vetting claim the hero cannot back up.

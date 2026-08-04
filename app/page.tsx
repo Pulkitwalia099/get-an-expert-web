@@ -7,7 +7,7 @@ import ContactLink from '@/components/ContactLink';
 // /get. Both old paths still redirect, because the setups links are already out
 // on Reddit and Instagram.
 export const metadata: Metadata = {
-  title: 'midsesh · Tell us what you need done',
+  title: 'midsesh · Tell us what you want done',
   description:
     'Say what you need in one sentence. We find someone who has done it before, send you a name and a price, and they take it off your plate.',
 };

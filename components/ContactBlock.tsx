@@ -101,9 +101,7 @@ export default function ContactBlock() {
             Book a demo with us
           </h2>
           <p className={styles.sub}>
-            Fifteen minutes. We walk through a real brief, show you how an expert is matched, and
-            answer whatever you want to ask. No calendar to wrestle with: tell us roughly when
-            suits and we will send a time.
+            Fifteen minutes. We walk you through how it works and take your brief.
           </p>
         </header>
         <div className={form.actions}>
@@ -229,21 +227,20 @@ export default function ContactBlock() {
 
       <section className={styles.section} aria-labelledby="join-title">
         <header className={styles.head}>
+          {/* No sub. This is a one-line CTA for people who already know whether
+              it applies to them, and an explanation under it was answering a
+              question nobody standing here is asking. The /register page does
+              the explaining, including for agent builders. */}
           <h2 id="join-title" className={styles.title}>
-            Register yourself and your agents
+            Register as an expert
           </h2>
-          <p className={styles.sub}>
-            If you do the work rather than buy it, this is your way in. Experts join the roster we
-            match against. Agent builders list what their agents do and we put them in front of
-            the briefs they fit. Nothing to pay to join.
-          </p>
         </header>
         <Link
           href="/register"
           className={form.submit}
           onClick={() => analytics('register_opened', { source: 'home' })}
         >
-          Register as an expert or list your agents
+          Register
         </Link>
       </section>
     </>
