@@ -120,6 +120,56 @@ one: the browser cannot see a time being picked, so an order written when the
 sheet opened would count everyone who only looked. Both paths key off a `ref`
 behind a unique index, which is what makes a Cal redelivery a no-op.
 
+## Gated matches and the dashboard
+
+A search returns 3 to 8 people instead of 3, and a signed-out browser gets
+their names, photos and profile links withheld. Pick who you want first, sign
+in second: the wall is the last step, not the first.
+
+The blur is not CSS. `/api/search` returns a payload with `name`, `photo` and
+`link` set to null, so there is nothing in the DOM to reveal. `redactExpert`
+in `lib/experts.ts` is the single place that decision is made, and
+`lib/__tests__/experts.test.ts` asserts no withheld value survives into the
+serialised response. `/api/matches/[set]` is the only route that hands a name
+back, and it checks the session cookie and ownership first.
+
+- `match_sets` and `match_profiles` hold the results. They exist because a
+  dashboard cannot show you who you picked if the cards only ever lived in
+  React state, and because `finalizeExperts` used to throw the link away.
+- An unclaimed set is claimable by whoever holds its id, which is why the id
+  is a uuid. Once `sub` is set it belongs to one account and a leaked id stops
+  working. `claimMatchSet` patches with `sub=is.null` in the filter, so two
+  requests racing to claim cannot both win.
+- The selection has to survive the trip to Google. `/api/quotes/intent` signs
+  it into a short-lived httpOnly cookie and the auth callback acts on it, so
+  somebody lands back on `/dashboard` with the request already placed rather
+  than being asked to choose again.
+- `quote_requests.ref` is derived from the sorted slots, against a unique
+  index on `(set_id, ref)`. A double tap, a retried fetch and a second pass
+  through the callback all collapse to one request.
+
+Each profile carries two text blocks and they must not be merged. `why` is
+held to what the search snippet supports. `projected` renders under the
+heading "Why this could fit" and is our read of the work, never a claim about
+the person's history. The ranking prompt in `app/api/search/route.ts` forbids
+inventing an employer, client, project, year or number, because these are real
+named people and a visitor hires on what it says. `lib/demo.ts` is the one
+place a biography may be invented, and only because nobody in it is real.
+
+Google sign in is the main way through. An email address still works and still
+gets the quotes, it just gets no dashboard. Turning away everyone without a
+Google account is a strange way to run a marketplace, and it is the same trade
+the site made before the gate.
+
+The outbound agents in `midsesh-outbound` are what make the 24 hour promise
+true. They poll `quote_requests` for `status='open'`. **Until that repo reads
+this table, requests land and nothing works them.** `/api/operator/quotes`
+moves a status by hand behind `OPERATOR_SECRET` for when it goes wrong.
+
+Nothing here touches `lib/prompts.ts`, the model, `sanitizeReply` or the
+question budget, so the eval gate does not apply to it. The ranking prompt is
+a separate prompt in the search route and is not covered by `evals/`.
+
 ## The call button
 
 A "Talk to a human" pill in the chat titlebar, shown once the visitor has

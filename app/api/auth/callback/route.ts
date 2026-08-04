@@ -9,7 +9,9 @@ import {
   stateMatches,
 } from '@/lib/auth';
 import { ensureAccount } from '@/lib/credits';
+import { claimMatchSet } from '@/lib/matches';
 import { withMetrics } from '@/lib/metrics';
+import { INTENT_COOKIE, createQuoteRequest, readIntent } from '@/lib/quotes';
 
 // Step two: Google sends the browser back here with a one time code.
 //
@@ -17,14 +19,20 @@ import { withMetrics } from '@/lib/metrics';
 // rendering an error page. A sign in that fails on someone's phone should put
 // them back on the site able to try again, not at a dead end.
 
-function home(req: NextRequest, params: Record<string, string> = {}): NextResponse {
-  const url = new URL('/', req.nextUrl.origin);
+function land(req: NextRequest, path: string, params: Record<string, string> = {}): NextResponse {
+  const url = new URL(path, req.nextUrl.origin);
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
   const res = NextResponse.redirect(url);
   // The state cookie has done its job either way, so it never outlives the
-  // request that consumed it.
+  // request that consumed it. The intent cookie is cleared here too: it is
+  // acted on below, and one left behind would be replayed on the next sign in.
   res.cookies.set(STATE_COOKIE, '', { httpOnly: true, path: '/', maxAge: 0 });
+  res.cookies.set(INTENT_COOKIE, '', { httpOnly: true, path: '/', maxAge: 0 });
   return res;
+}
+
+function home(req: NextRequest, params: Record<string, string> = {}): NextResponse {
+  return land(req, '/', params);
 }
 
 async function handleGet(req: NextRequest): Promise<NextResponse> {
@@ -52,7 +60,36 @@ async function handleGet(req: NextRequest): Promise<NextResponse> {
   // it only means their balance reads as unknown until it is back.
   await ensureAccount(user);
 
-  const res = home(req, { signin: 'ok' });
+  // Somebody who picked profiles before signing in gets their request placed
+  // here, so they come back to a request that already exists rather than to a
+  // page that has to ask them to choose all over again.
+  //
+  // Every step is allowed to fail without failing the sign in. Being signed in
+  // is what they asked for; the request is what they asked for a moment
+  // earlier, and losing it costs one button press rather than the session.
+  const intent = readIntent(req.cookies.get(INTENT_COOKIE)?.value);
+  let placed = false;
+  if (intent) {
+    const owned = await claimMatchSet(intent.setId, user.sub);
+    if (owned) {
+      placed = await createQuoteRequest({
+        setId: intent.setId,
+        slots: intent.slots,
+        sub: user.sub,
+        email: user.email,
+        name: user.name,
+      });
+    }
+  }
+
+  const res = placed
+    ? land(req, '/dashboard', { placed: '1' })
+    : intent
+      ? // The selection was there and could not be honoured. Landing on the
+        // dashboard with nothing on it would read as the request vanishing, so
+        // they go home and can ask again with their cards still in front of them.
+        home(req, { signin: 'ok', quotes: 'retry' })
+      : home(req, { signin: 'ok' });
   res.cookies.set(SESSION_COOKIE, session, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',

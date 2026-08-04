@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { demoChatReply, demoDevChatReply, demoExperts } from '../demo';
+import { MAX_EXPERTS, MIN_EXPERTS } from '../experts';
 
 describe('demoChatReply', () => {
   it('asks two questions then finishes with a brief', () => {
@@ -60,10 +61,20 @@ describe('demoDevChatReply', () => {
 });
 
 describe('demoExperts', () => {
-  it('returns three profiles with exactly one top match', () => {
+  it('returns a full set with exactly one top match', () => {
     const experts = demoExperts();
-    expect(experts).toHaveLength(3);
+    expect(experts.length).toBeGreaterThanOrEqual(MIN_EXPERTS);
+    expect(experts.length).toBeLessThanOrEqual(MAX_EXPERTS);
     expect(experts.filter((e) => e.top_match)).toHaveLength(1);
-    expect(experts.every((e) => e.photo?.startsWith('/avatars/'))).toBe(true);
+    expect(experts.map((e) => e.slot)).toEqual(experts.map((_, i) => i + 1));
+  });
+
+  // Slots are the public identity of a row and the thing a visitor selects
+  // while every name is still withheld, so a duplicate would silently merge
+  // two people into one pick.
+  it('gives every profile a link and a unique slot', () => {
+    const experts = demoExperts();
+    expect(experts.every((e) => e.link.startsWith('https://'))).toBe(true);
+    expect(new Set(experts.map((e) => e.slot)).size).toBe(experts.length);
   });
 });

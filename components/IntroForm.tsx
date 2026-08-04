@@ -60,14 +60,14 @@ export default function IntroForm({
             aria-label="Your email"
           />
           <button className="go" disabled={sending} onClick={() => void submit()}>
-            {sending ? 'Sending…' : count > 0 ? `Request ${count} intro${count === 1 ? '' : 's'}` : 'Send request'}
+            {sending ? 'Sending…' : count > 0 ? `Get ${count} quote${count === 1 ? '' : 's'}` : 'Send request'}
           </button>
         </div>
       </div>
       <div className="intro-note">
-        We reach out to {count > 0 ? 'these experts' : 'the right experts'} with your requirements.
-        The ones who can take it on, we introduce you to one to one, over email. Usually within a
-        day.
+        Our agents contact {count > 0 ? 'the people you picked' : 'the right experts'} with your
+        requirements and ask what they would charge. Every price we get back lands in your inbox
+        within 24 hours.
       </div>
     </div>
   );

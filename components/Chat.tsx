@@ -612,14 +612,21 @@ export default function Chat({
               />
             )}
 
-            {(phase === 'matches' || phase === 'email' || phase === 'done') && (
+            {(phase === 'matches' ||
+              phase === 'gate' ||
+              phase === 'email' ||
+              phase === 'done') && (
               <MatchStep
                 phase={phase}
                 experts={search.experts}
                 selected={search.selected}
                 introCount={search.introCount}
+                locked={search.locked}
+                dashboard={search.dashboard}
                 onToggle={search.toggleExpert}
-                onRequest={search.requestIntros}
+                onRequest={() => void search.requestQuotes()}
+                onSignIn={() => void search.signInToReveal()}
+                onEmailInstead={search.useEmailInstead}
                 onRefine={startRefine}
                 onSubmit={search.submitIntro}
                 onMore={startMore}

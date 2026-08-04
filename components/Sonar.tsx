@@ -61,12 +61,18 @@ export default function Sonar({
         {found.slice(0, AVATAR_SPOTS.length).map((e, i) => {
           const spot = AVATAR_SPOTS[i];
           const style = { left: spot.left, top: spot.top, animationDelay: spot.delay };
+          // A locked card carries no photo and no name, so there is nothing to
+          // draw here but the same veil the card itself uses. It reads as a
+          // person arriving without saying who, which is what has happened.
+          if (e.locked) {
+            return <div key={e.id} className="sav sav-veiled" style={style} aria-hidden="true" />;
+          }
           return e.photo ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img key={e.id} className="sav" src={e.photo} alt="" style={style} />
           ) : (
             <div key={e.id} className="sav" style={style}>
-              {initials(e.name)}
+              {initials(e.name ?? '')}
             </div>
           );
         })}

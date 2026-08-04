@@ -222,6 +222,26 @@ export default function Privacy() {
         to export or delete yours can be honoured without unpicking anything.
       </p>
 
+      <h2>Profiles we find for you</h2>
+      <p>
+        When we search for experts, we keep what the search returned about each person: the name
+        and photo on their public marketplace profile, the link to it, and their listed rating and
+        price. We keep it so that the people we found for you are still there when you come back,
+        rather than disappearing when you close the tab.
+      </p>
+      <p>
+        Alongside each one we store two short pieces of writing. The first describes what their
+        public listing says. The second, shown to you under the heading &ldquo;Why this could
+        fit&rdquo;, is our own view of how that listing lines up with what you asked for. It is our
+        opinion and it is labelled as one. It is not a statement of that person&apos;s history, and
+        we do not add facts about anyone that their public profile did not already say.
+      </p>
+      <p>
+        These records belong to the search that produced them, so deleting the search deletes them
+        too. If you are one of the people we listed and you would rather we did not, write to{' '}
+        <a href={`mailto:${CONTACT}`}>{CONTACT}</a> and we will remove you.
+      </p>
+
       <h2>How we protect it</h2>
       <p>
         Database access is closed by default and no public key can read or write any table. Every

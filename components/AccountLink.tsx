@@ -69,6 +69,11 @@ export default function AccountLink() {
           ) : (
             <span className="account-credit">Credit unavailable right now</span>
           )}
+          {/* First action in the menu, above signing out. Somebody who opens
+              this is far more often checking on a request than leaving. */}
+          <a className="account-dash" href="/dashboard">
+            Your requests
+          </a>
           <button
             type="button"
             className="account-out"

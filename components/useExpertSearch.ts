@@ -9,19 +9,26 @@ import type { Brief, Expert } from '@/lib/types';
 
 const MIN_SEARCH_MS = 4_200;
 
-function firstNames(names: string[]): string {
-  const f = names.map((n) => n.split(' ')[0]).filter(Boolean);
-  if (f.length === 0) return 'They';
+function firstNames(names: (string | null)[]): string {
+  const f = names.map((n) => n?.split(' ')[0]).filter(Boolean) as string[];
+  if (f.length === 0) return 'them';
   if (f.length === 1) return f[0];
   return `${f.slice(0, -1).join(', ')} and ${f[f.length - 1]}`;
 }
 
+function plural(n: number): string {
+  return n === 1 ? 'person' : 'people';
+}
+
 // Everything that happens once the brief is ready: the search, the sonar
-// preview, picking who to meet, and the intro request that ends the visit.
+// preview, picking who to meet, the gate, and the request that ends the visit.
 // None of this state exists while the questions are still being asked and the
-// conversation never reads it, so it lives here instead of in Chat. The hook
-// pushes its own messages and moves the phase, which keeps what it needs back
-// from Chat down to the brief and where to send its output.
+// conversation never reads it, so it lives here instead of in Chat.
+//
+// The order matters and is the whole design of the gate. Cards arrive with
+// their names withheld, the visitor picks anyway, and only then are they asked
+// who they are. Somebody who has already chosen four people will sign in;
+// somebody staring at a sign in button before they have seen anything will not.
 export function useExpertSearch({
   flow,
   sessionId,
@@ -40,12 +47,22 @@ export function useExpertSearch({
   const [preview, setPreview] = useState<Expert[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
   const [customNeed, setCustomNeed] = useState<string | null>(null);
+  // The handle on the stored set. Null when Supabase could not take the write,
+  // which is the one case where there is nothing to sign in and claim, so the
+  // gate falls back to asking for an email.
+  const [setId, setSetId] = useState<string | null>(null);
+  const [dashboard, setDashboard] = useState(false);
+
+  const locked = experts.some((e) => e.locked);
+  const chosen = experts.filter((e) => selected.includes(e.id));
 
   async function runSearch(b: Brief | null) {
     setPhase('searching');
     setSelected([]);
     setCustomNeed(null);
     setPreview([]);
+    setSetId(null);
+    setDashboard(false);
     if (config.ending === 'choice') {
       // The dev flow matches privately, so the sonar moment is pure pacing:
       // no marketplace search, straight to the install-or-email choice.
@@ -58,6 +75,7 @@ export function useExpertSearch({
     }
     const started = Date.now();
     let found: Expert[] = [];
+    let id: string | null = null;
     try {
       const res = await fetch('/api/search', {
         method: 'POST',
@@ -65,7 +83,9 @@ export function useExpertSearch({
         body: JSON.stringify({ brief: b, sessionId }),
       });
       if (res.ok) {
-        found = ((await res.json()) as { experts?: Expert[] }).experts ?? [];
+        const data = (await res.json()) as { experts?: Expert[]; setId?: string | null };
+        found = data.experts ?? [];
+        id = data.setId ?? null;
         setPreview(found.slice(0, 3));
       }
     } catch {
@@ -81,8 +101,16 @@ export function useExpertSearch({
         setPhase('refine');
       } else {
         setExperts(found);
-        push({ role: 'ai', text: config.foundText });
-        track('matches_shown', { flow, result_count: found.length });
+        setSetId(id);
+        push({
+          role: 'ai',
+          text: `Found ${found.length} ${plural(found.length)} who look right. Pick whoever you want prices from.`,
+        });
+        track('matches_shown', {
+          flow,
+          result_count: found.length,
+          locked: found.some((e) => e.locked),
+        });
         setPhase('matches');
       }
     }, remaining);
@@ -96,11 +124,77 @@ export function useExpertSearch({
     setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   }
 
-  function requestIntros() {
+  const slotsOf = (): number[] => chosen.map((e) => e.slot);
+
+  /**
+   * The button under the cards.
+   *
+   * Three endings. Already signed in, the request goes straight in and the
+   * names appear. Signed out with a stored set, they meet the gate. No stored
+   * set means Supabase could not take the write, so there is nothing to claim
+   * and the only honest option left is an address.
+   */
+  async function requestQuotes() {
     if (selected.length === 0) return;
-    setExperts((prev) => prev.filter((e) => selected.includes(e.id)));
-    push({ role: 'ai', text: 'Great. Add your email and we’ll set up the intros.' });
-    track('email_shown', { flow, path: 'intros' });
+    if (!setId) {
+      track('email_shown', { flow, path: 'no_set' });
+      push({ role: 'ai', text: 'Add your email and we’ll send you their prices.' });
+      setPhase('email');
+      return;
+    }
+    if (locked) {
+      track('gate_shown', { flow, count: selected.length });
+      setPhase('gate');
+      return;
+    }
+    await submitQuotes();
+  }
+
+  /** Signed in already, so no wall: place it and reveal the names in place. */
+  async function submitQuotes(): Promise<boolean> {
+    if (!setId) return false;
+    try {
+      const res = await fetch('/api/quotes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ setId, slots: slotsOf() }),
+      });
+      if (!res.ok) throw new Error(`quotes ${res.status}`);
+      const data = (await res.json()) as { experts?: Expert[]; dashboard?: boolean };
+      finish(data.experts ?? experts, data.dashboard === true);
+      return true;
+    } catch {
+      push({ role: 'ai', text: 'Hit a snag. Try that again.' });
+      return false;
+    }
+  }
+
+  /**
+   * Park the selection, then hand the browser to Google.
+   *
+   * The intent has to be stored before the redirect, because the trip back
+   * lands on a fresh page that knows nothing about what was ticked here.
+   */
+  async function signInToReveal() {
+    if (!setId) return;
+    track('signin_started', { source: 'gate', count: selected.length });
+    try {
+      await fetch('/api/quotes/intent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ setId, slots: slotsOf() }),
+      });
+    } catch {
+      // Parking failed, so the callback will find nothing and land them home
+      // signed in. Better than refusing to start a sign in they asked for.
+    }
+    window.location.href = '/api/auth/google';
+  }
+
+  /** The way through for somebody who will not use a Google account. */
+  function useEmailInstead() {
+    track('email_shown', { flow, path: 'gate_fallback' });
+    push({ role: 'ai', text: 'No problem. Add your email and we’ll send you their prices.' });
     setPhase('email');
   }
 
@@ -109,46 +203,77 @@ export function useExpertSearch({
     setCustomNeed(text);
     setExperts([]);
     setSelected([]);
+    setSetId(null);
     push({ role: 'ai', text: 'Got it. Add your email and we’ll take it from there.' });
     track('email_shown', { flow, path: 'custom' });
     setPhase('email');
   }
 
+  // Shared ending for both routes in. `revealed` is what the server sent back
+  // with the names filled in, so the cards a visitor stares at while reading
+  // the confirmation are the real ones.
+  function finish(revealed: Expert[], hasDashboard: boolean) {
+    setExperts(revealed);
+    setDashboard(hasDashboard);
+    const names = revealed.filter((e) => selected.includes(e.id)).map((e) => e.name);
+    push({
+      role: 'ai',
+      text: `Done. Our agents are reaching out to ${firstNames(names)} now. Prices land in your inbox within 24 hours.`,
+      avatars: revealed
+        .filter((e) => selected.includes(e.id))
+        .map((e) => ({ name: e.name ?? '', photo: e.photo })),
+    });
+    track('intro_submitted', { flow, kind: 'quotes', count: names.length });
+    setPhase('done');
+  }
+
   async function submitIntro(name: string, email: string): Promise<boolean> {
     const isCustom = customNeed !== null;
-    const chosen = experts.filter((e) => selected.includes(e.id));
-    const names = chosen.map((e) => e.name);
+
+    // The custom path never had a set behind it: there are no matches, only a
+    // description of who to go and find. It keeps the original endpoint.
+    if (isCustom || !setId) {
+      try {
+        const res = await fetch('/api/intros', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: isCustom ? 'custom' : 'intros',
+            name: name || undefined,
+            email,
+            selected: chosen.map((e) => e.name ?? ''),
+            need: customNeed ?? undefined,
+            brief,
+            sessionId,
+          }),
+        });
+        if (!res.ok) throw new Error(`intros ${res.status}`);
+        push({ role: 'user', text: name ? `${name} · ${email}` : email });
+        push({
+          role: 'ai',
+          text: 'Got it. We’ll line up the right people and email you prices, usually within a day.',
+        });
+        track('intro_submitted', { flow, kind: isCustom ? 'custom' : 'intros', count: 0 });
+        setExperts([]);
+        setSelected([]);
+        setPhase('done');
+        return true;
+      } catch {
+        push({ role: 'ai', text: 'Hit a snag. Try that again.' });
+        return false;
+      }
+    }
+
     try {
-      const res = await fetch('/api/intros', {
+      const res = await fetch('/api/quotes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: isCustom ? 'custom' : 'intros',
-          name: name || undefined,
-          email,
-          selected: names,
-          need: customNeed ?? undefined,
-          brief,
-          sessionId,
-        }),
+        body: JSON.stringify({ setId, slots: slotsOf(), email, name: name || undefined }),
       });
-      if (!res.ok) throw new Error(`intros ${res.status}`);
+      if (!res.ok) throw new Error(`quotes ${res.status}`);
+      const data = (await res.json()) as { experts?: Expert[] };
       push({ role: 'user', text: name ? `${name} · ${email}` : email });
-      push({
-        role: 'ai',
-        text: isCustom
-          ? 'Got it. We’ll line up the right people and email you intros, usually within a day.'
-          : `Got it. We’ll reach out to ${firstNames(names)} with your requirements. Whoever can take it on will introduce themselves by email, usually within a day.`,
-        avatars: isCustom ? undefined : chosen.map((e) => ({ name: e.name, photo: e.photo })),
-      });
-      track('intro_submitted', {
-        flow,
-        kind: isCustom ? 'custom' : 'intros',
-        count: names.length,
-      });
-      setExperts([]);
-      setSelected([]);
-      setPhase('done');
+      finish(data.experts ?? experts, false);
       return true;
     } catch {
       push({ role: 'ai', text: 'Hit a snag. Try that again.' });
@@ -161,6 +286,7 @@ export function useExpertSearch({
   function clearMatches() {
     setExperts([]);
     setSelected([]);
+    setSetId(null);
   }
 
   // A second intake in the same visible thread: nothing from the last search
@@ -169,17 +295,23 @@ export function useExpertSearch({
     setExperts([]);
     setSelected([]);
     setCustomNeed(null);
+    setSetId(null);
+    setDashboard(false);
   }
 
   return {
     experts,
     preview,
     selected,
+    locked,
+    dashboard,
     // How many experts the email form is requesting, or 0 for a custom need.
     introCount: customNeed !== null ? 0 : selected.length,
     runSearch,
     toggleExpert,
-    requestIntros,
+    requestQuotes,
+    signInToReveal,
+    useEmailInstead,
     submitCustom,
     submitIntro,
     clearMatches,
