@@ -98,18 +98,34 @@ describe('briefLine', () => {
     search_query: 'BaFin compliance',
   };
 
-  it('reads back as a sentence rather than an object', () => {
-    expect(briefLine(brief, 'x')).toBe(
-      'compliance consultant · fintech. BaFin licence application, Berlin',
-    );
+  it('reads back as a short recognisable line', () => {
+    expect(briefLine(brief, 'x')).toBe('compliance consultant · fintech');
+  });
+
+  // specifics is written for the expert and for the search, so it carries
+  // notes about the visitor. Handing those back turned a heading into a
+  // five line dossier that told the reader they had declined to answer.
+  it('leaves the specifics out of the heading', () => {
+    expect(briefLine(brief, 'x')).not.toContain('BaFin licence application');
+  });
+
+  it('drops fields the model filled in to mean "blank"', () => {
+    for (const blank of ['Not disclosed', 'unknown', 'N/A', 'not stated', 'None']) {
+      expect(briefLine({ ...brief, domain: blank }, 'x')).toBe('compliance consultant');
+    }
   });
 
   it('falls back to the query when there is no brief', () => {
     expect(briefLine(null, 'BaFin compliance')).toBe('BaFin compliance');
   });
 
+  it('falls back to the search query when the brief says nothing', () => {
+    const empty = { ...brief, expert_type: '', domain: 'Not disclosed', specifics: '' };
+    expect(briefLine(empty, '')).toBe('BaFin compliance');
+  });
+
   it('never renders an empty line', () => {
-    const empty = { ...brief, expert_type: '', domain: '', specifics: '' };
+    const empty = { ...brief, expert_type: '', domain: '', specifics: '', search_query: '' };
     expect(briefLine(empty, '')).toBe('Your search');
   });
 });

@@ -223,17 +223,36 @@ export async function listQuoteRequests(sub: string, limit = 20): Promise<QuoteR
   });
 }
 
+// A field the model filled in to say it had nothing to fill in. These read
+// as blanks on a form when they reach a screen, and one of them is the intake
+// talking about the visitor in the third person.
+const UNINFORMATIVE =
+  /^(not disclosed|undisclosed|unknown|none|n\/?a|unspecified|not (stated|specified|given|provided))\b/i;
+
+function informative(value: string | undefined): string {
+  const v = value?.trim() ?? '';
+  if (!v || UNINFORMATIVE.test(v)) return '';
+  return v;
+}
+
 /**
- * A brief written back as the sentence somebody would recognise.
+ * A brief written back as the line somebody would recognise their search by.
  *
- * The dashboard has to show "the query you raised", and a visitor never typed
- * a Brief: they typed prose that a model turned into seven fields. This puts
- * the useful ones back into one line rather than printing the object.
+ * Deliberately short, and deliberately not the whole brief. `specifics` is
+ * written for the expert and for the search, so it carries things a visitor
+ * should never be handed back: "Visitor declined to share what they sell",
+ * "Business/topic area not disclosed". Printing it turned a dashboard heading
+ * into a five line dossier with notes about the reader in it.
+ *
+ * What is left is what they would use to pick this search out of a list.
  */
 export function briefLine(brief: Brief | null, fallback: string): string {
-  if (!brief) return fallback;
-  const head = [brief.expert_type, brief.domain].map((s) => s?.trim()).filter(Boolean).join(' · ');
-  const specifics = brief.specifics?.trim();
-  if (head && specifics) return `${head}. ${specifics}`;
-  return head || specifics || fallback || 'Your search';
+  if (!brief) return fallback || 'Your search';
+  const head = [informative(brief.expert_type), informative(brief.domain)]
+    .filter(Boolean)
+    .join(' · ');
+  if (head) return head;
+  // Nothing usable in the brief, so fall back to the search query, which is
+  // always a few plain words because that is what it was written to be.
+  return informative(brief.search_query) || fallback || 'Your search';
 }
