@@ -27,10 +27,17 @@
 --
 -- `sub` is null until that claim happens. An anonymous visitor's set is
 -- claimable; a claimed one never changes hands.
+--
+-- No foreign key to accounts, deliberately. `sub` is Google's subject id and
+-- it is only ever written from a session cookie this server signed, so the
+-- value is already vouched for by the time it gets here. A key would add
+-- nothing to that and would tie this table to a migration that has not been
+-- applied, which is how a search stops being recorded because an unrelated
+-- feature is half deployed. Rows are read by sub, never joined through it.
 create table if not exists match_sets (
   id          uuid primary key default gen_random_uuid(),
   session_id  text,
-  sub         text references accounts (sub) on delete set null,
+  sub         text,
   brief       jsonb not null,
   query       text not null,
   demo        boolean not null default false,
@@ -95,7 +102,8 @@ alter table match_profiles enable row level security;
 create table if not exists quote_requests (
   id          uuid primary key default gen_random_uuid(),
   set_id      uuid not null references match_sets (id) on delete cascade,
-  sub         text references accounts (sub) on delete set null,
+  -- Unkeyed for the same reason as match_sets.sub above.
+  sub         text,
   email       text not null,
   name        text,
   slots       integer[] not null default '{}',
