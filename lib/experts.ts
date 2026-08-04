@@ -16,6 +16,27 @@ const MAX_WHY_CHARS = 280;
 const MAX_PROJECTED_CHARS = 400;
 
 /**
+ * A link reduced to the parts that identify the same page.
+ *
+ * Only used for matching a pick back to the result it came from; the raw link
+ * is what gets stored and clicked. Host case and a trailing slash are not
+ * differences a person would recognise, and treating them as differences was
+ * quietly costing us matches. The path is left alone otherwise, because two
+ * profiles on one marketplace differ only there.
+ */
+export function normalizeLink(link: string): string {
+  const trimmed = link.trim();
+  if (!trimmed) return '';
+  try {
+    const url = new URL(trimmed);
+    const path = url.pathname.replace(/\/+$/, '');
+    return `${url.host.toLowerCase()}${path}${url.search}`;
+  } catch {
+    return trimmed.toLowerCase().replace(/\/+$/, '');
+  }
+}
+
+/**
  * Shape the model's ranked picks into storable records.
  *
  * Drops malformed entries, attaches thumbnails from the raw results, caps at
@@ -26,23 +47,32 @@ const MAX_PROJECTED_CHARS = 400;
  */
 export function finalizeExperts(ranked: unknown, raw: SerpResult[]): ExpertRecord[] {
   if (!Array.isArray(ranked)) return [];
-  const byLink = new Map(raw.map((r) => [r.link, r]));
+  const byLink = new Map(raw.map((r) => [normalizeLink(r.link), r]));
 
   const records: ExpertRecord[] = [];
   const seen = new Set<string>();
+  let dropped = 0;
 
   for (const item of ranked) {
     if (typeof item !== 'object' || item === null) continue;
     const e = item as Record<string, unknown>;
     const name = typeof e.name === 'string' ? e.name.trim() : '';
     const why = typeof e.why === 'string' ? e.why.trim() : '';
-    const link = typeof e.link === 'string' ? e.link.trim() : '';
+    const link = typeof e.link === 'string' ? normalizeLink(e.link) : '';
     if (!name || !why) continue;
 
     // The model is told to copy a link back verbatim, so anything it returns
     // that was not in the raw results is invented and the row goes.
+    //
+    // Matched on a normalised form, not the raw string. An exact comparison
+    // threw away real people over a trailing slash or a capitalised host,
+    // and it did it silently: the search simply returned fewer, which reads
+    // as "nobody matched" rather than as a bug.
     const source = byLink.get(link);
-    if (!source) continue;
+    if (!source) {
+      dropped += 1;
+      continue;
+    }
     if (seen.has(link)) continue;
     seen.add(link);
 
@@ -64,6 +94,12 @@ export function finalizeExperts(ranked: unknown, raw: SerpResult[]): ExpertRecor
       top_match: e.top_match === true,
     });
     if (records.length === MAX_EXPERTS) break;
+  }
+
+  // Loud on purpose. A silent drop is indistinguishable from a thin search,
+  // and the only symptom is a set that is smaller than it should be.
+  if (dropped > 0) {
+    console.warn(`[midsesh:experts] dropped ${dropped} pick(s) with an unmatched link`);
   }
 
   const topCount = records.filter((r) => r.top_match).length;

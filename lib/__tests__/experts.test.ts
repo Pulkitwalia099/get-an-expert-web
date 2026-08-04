@@ -68,6 +68,25 @@ describe('finalizeExperts', () => {
     expect(records).toHaveLength(1);
   });
 
+  // These are the same page, and an exact string compare treated them as
+  // different and threw the person away. The only symptom was a set with
+  // fewer people in it, which is indistinguishable from a thin search.
+  it.each([
+    ['a trailing slash', 'https://upwork.com/1/'],
+    ['a capitalised host', 'https://UpWork.com/1'],
+    ['surrounding whitespace', '  https://upwork.com/1  '],
+  ])('still matches a link that differs only by %s', (_label, link) => {
+    const records = finalizeExperts([pick(1, { link })], RAW);
+    expect(records).toHaveLength(1);
+    // The stored link is the one from the search result, not the model's copy.
+    expect(records[0].link).toBe('https://upwork.com/1');
+  });
+
+  it('still refuses a link that points somewhere else entirely', () => {
+    const records = finalizeExperts([pick(1, { link: 'https://upwork.com/999' })], RAW);
+    expect(records).toEqual([]);
+  });
+
   it('caps at eight and forces exactly one top match', () => {
     const raw = Array.from({ length: 12 }, (_, i) => rawResult(i));
     const many = Array.from({ length: 12 }, (_, i) => pick(i, { top_match: true }));

@@ -16,10 +16,6 @@ function firstNames(names: (string | null)[]): string {
   return `${f.slice(0, -1).join(', ')} and ${f[f.length - 1]}`;
 }
 
-function plural(n: number): string {
-  return n === 1 ? 'person' : 'people';
-}
-
 // Everything that happens once the brief is ready: the search, the sonar
 // preview, picking who to meet, the gate, and the request that ends the visit.
 // None of this state exists while the questions are still being asked and the
@@ -104,7 +100,13 @@ export function useExpertSearch({
         setSetId(id);
         push({
           role: 'ai',
-          text: `Found ${found.length} ${plural(found.length)} who look right. Pick whoever you want prices from.`,
+          // Written out both ways rather than patched together from parts.
+          // "Found 1 person who look right" shipped, because a helper that
+          // pluralised the noun left the verb behind.
+          text:
+            found.length === 1
+              ? 'Found one person who looks right. Pick them and we will get you a price.'
+              : `Found ${found.length} people who look right. Pick whoever you want prices from.`,
         });
         track('matches_shown', {
           flow,
