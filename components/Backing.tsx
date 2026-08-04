@@ -53,21 +53,19 @@ const BACKERS = [
     ),
   },
   {
-    name: 'Rock Venture Catalyst',
+    // Harvard is named in full. "Rock Venture Catalyst" alone reads as an
+    // unrelated fund; the school is the part that carries any weight.
+    name: 'Harvard Rock Venture Catalyst',
     mark: (
       <Tile fill={CRIMSON}>
-        <text
-          x="20"
-          y="25.5"
-          textAnchor="middle"
-          fill="#FFFFFF"
-          fontSize="12.5"
-          fontWeight="600"
-          letterSpacing="0.4"
-          fontFamily="ui-sans-serif, -apple-system, 'Helvetica Neue', Arial, sans-serif"
-        >
-          HBS
-        </text>
+        {/* The shield, not the letters. Simplified to what survives at 36px:
+            the silhouette and the three books, two above and one below. The
+            VERITAS lettering on the real shield is illegible at this size, so
+            drawing it would only add noise. */}
+        <path d="M11.5 10h17v11.4c0 4.7-3.6 7.7-8.5 9.6-4.9-1.9-8.5-4.9-8.5-9.6z" fill="#FFFFFF" />
+        <rect x="13.8" y="13.1" width="5.1" height="3.3" rx="0.4" fill={CRIMSON} />
+        <rect x="21.1" y="13.1" width="5.1" height="3.3" rx="0.4" fill={CRIMSON} />
+        <rect x="17.4" y="18.1" width="5.1" height="3.3" rx="0.4" fill={CRIMSON} />
       </Tile>
     ),
   },
@@ -75,15 +73,19 @@ const BACKERS = [
     name: 'Founders Inc',
     mark: (
       <Tile fill={FOUNDERS}>
+        {/* An "A" laid on its side, apex to the left. The crossbar rotates with
+            it, so it runs vertically between the two legs. The previous
+            version drew it horizontally out of the apex, which turned the mark
+            into an arrow. */}
         <path
-          d="M27 10.5 L12.5 20.5 L27 30.5"
+          d="M28 10.8 L12.5 20 L28 29.2"
           fill="none"
           stroke="#FFFFFF"
-          strokeWidth="3.1"
-          strokeLinecap="square"
+          strokeWidth="3.2"
+          strokeLinecap="butt"
           strokeLinejoin="miter"
         />
-        <path d="M19.5 20.5 H27" stroke="#FFFFFF" strokeWidth="3.1" strokeLinecap="square" />
+        <path d="M22.4 15.4 V24.6" stroke="#FFFFFF" strokeWidth="3.2" strokeLinecap="butt" />
       </Tile>
     ),
   },
