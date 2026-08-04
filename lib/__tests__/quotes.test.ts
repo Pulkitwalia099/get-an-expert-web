@@ -115,6 +115,21 @@ describe('briefLine', () => {
     }
   });
 
+  // Seen live: "B2B sales and outbound (offer and target buyer not
+  // disclosed)". The field is useful, the aside is the model noting what it
+  // did not get, and only one of those belongs in a heading.
+  it('strips a parenthetical that only records what was not shared', () => {
+    const d = 'B2B sales and outbound (offer and target buyer not disclosed)';
+    expect(briefLine({ ...brief, expert_type: 'cold email specialist', domain: d }, 'x')).toBe(
+      'cold email specialist · B2B sales and outbound',
+    );
+  });
+
+  it('keeps a parenthetical that says something', () => {
+    const d = 'fintech (payments)';
+    expect(briefLine({ ...brief, domain: d }, 'x')).toBe('compliance consultant · fintech (payments)');
+  });
+
   it('falls back to the query when there is no brief', () => {
     expect(briefLine(null, 'BaFin compliance')).toBe('BaFin compliance');
   });

@@ -226,11 +226,18 @@ export async function listQuoteRequests(sub: string, limit = 20): Promise<QuoteR
 // A field the model filled in to say it had nothing to fill in. These read
 // as blanks on a form when they reach a screen, and one of them is the intake
 // talking about the visitor in the third person.
-const UNINFORMATIVE =
-  /^(not disclosed|undisclosed|unknown|none|n\/?a|unspecified|not (stated|specified|given|provided))\b/i;
+const BLANK_WORDS = String.raw`not disclosed|undisclosed|unknown|none|n\/?a|unspecified|not (stated|specified|given|provided)`;
+
+const UNINFORMATIVE = new RegExp(String.raw`^(${BLANK_WORDS})\b`, 'i');
+
+// The same admission tucked into an aside: "B2B sales and outbound (offer and
+// target buyer not disclosed)". The field is useful, the parenthetical is the
+// model noting what it did not get, and only one of those belongs in a
+// heading the visitor reads.
+const BLANK_ASIDE = new RegExp(String.raw`\s*\([^)]*\b(${BLANK_WORDS})\b[^)]*\)`, 'gi');
 
 function informative(value: string | undefined): string {
-  const v = value?.trim() ?? '';
+  const v = (value ?? '').replace(BLANK_ASIDE, '').trim().replace(/[.,;:]+$/, '');
   if (!v || UNINFORMATIVE.test(v)) return '';
   return v;
 }
