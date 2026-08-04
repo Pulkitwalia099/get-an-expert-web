@@ -208,7 +208,9 @@ export interface LeadRecord {
   name: string | null;
   // 'expert' is a freelancer applying to join, not a client asking for
   // help. Requires the migration widening the leads kind check constraint.
-  kind: 'intros' | 'custom' | 'expert';
+  // 'contact' is the contact card, 'register' is someone offering their own
+  // skills or their agents. Both require the migration widening the check.
+  kind: 'intros' | 'custom' | 'expert' | 'contact' | 'register';
   selected: string[];
   need: string | null;
   // Null for a lead that never ran the client intake, such as an expert
@@ -216,6 +218,9 @@ export interface LeadRecord {
   brief: Brief | null;
   consent: boolean;
   flow?: 'main' | 'dev';
+  // Structured answers from /register, which asks four things no column
+  // covers. Omitted for every other kind.
+  details?: Record<string, string> | null;
 }
 
 export async function recordLead(sessionId: string | null, lead: LeadRecord): Promise<void> {
@@ -230,6 +235,9 @@ export async function recordLead(sessionId: string | null, lead: LeadRecord): Pr
     consent: lead.consent,
   };
   if (lead.flow === 'dev') row.flow = 'dev';
+  // Only sent when there is something in it, so a row written before the
+  // details migration lands is still a valid insert.
+  if (lead.details) row.details = lead.details;
   await write('leads', row);
 }
 

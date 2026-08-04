@@ -1,4 +1,14 @@
-export type InsightKind = 'brief' | 'search' | 'intros' | 'custom' | 'install' | 'expert';
+export type InsightKind =
+  | 'brief'
+  | 'search'
+  | 'intros'
+  | 'custom'
+  | 'install'
+  | 'expert'
+  // The contact card and the /register form. Both are people reaching us
+  // directly rather than through the chat funnel.
+  | 'contact'
+  | 'register';
 
 const PRIVATE_HOST_PATTERNS = [
   /^localhost$/i,

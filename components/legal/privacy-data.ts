@@ -28,7 +28,12 @@ export const COLLECTED: Collected[] = [
   {
     what: 'Your email address and name',
     detail:
-      'Only when you give them to us to request an introduction, a call back or a booking. We do not ask for them to browse the site.',
+      'Only when you give them to us to request an introduction, a call back, a booking, a demo, or when you send us a message. We do not ask for them to browse the site.',
+  },
+  {
+    what: 'What you send us through a form',
+    detail:
+      'The message and subject you type into the contact form. If you register as an expert or list your agents, also what you say you do, what you want to charge, and when you are free to meet. Stored with your email in the same table as every other enquiry, so a deletion request removes it with everything else.',
   },
   {
     what: 'Session and device information',

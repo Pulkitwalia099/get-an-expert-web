@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import Backing from '@/components/Backing';
 import Chat from '@/components/Chat';
+import ContactBlock from '@/components/ContactBlock';
 import Examples from '@/components/Examples';
 import Explainer from '@/components/Explainer';
 import { FLOWS } from '@/components/flows';
@@ -197,6 +198,11 @@ export default function HomeApp() {
         <Backing />
         <Setups onPick={onPickSetup} />
         <Examples onPick={onPickExample} />
+        {/* After the offer, not before it. Someone who has not yet seen what
+            we do has nothing to ask about, and the supply side pitch is aimed
+            at a different reader entirely, so it sits at the end where it
+            cannot distract a client from the ask above. */}
+        <ContactBlock />
       </div>
       {/* The second ask. Someone who has read to the bottom of the examples has
           just spent a minute learning what we do, and sending them back up to
