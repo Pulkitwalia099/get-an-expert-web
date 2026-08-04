@@ -26,11 +26,18 @@ import { track } from '@/lib/analytics';
 // opened one: a row of prices with no control on it reads as a price list. The
 // row is now a real button carrying a "Get this" pill, painted on rather than
 // revealed on hover, because a phone has no hover to reveal it with.
+// Worded to match the example filters in components/flows.ts exactly, so the
+// site names a category one way rather than two. The keys are untouched: only
+// what a visitor reads changes.
+//
+// 'other' is deliberately empty. Every card in this section is a setup, so a
+// SETUP label carried no information and spent a fourth vocabulary saying
+// nothing. An empty string renders no label at all.
 const LABELS: Record<SetupCategory, string> = {
-  automation: 'Automation',
-  growth: 'Growth',
-  video: 'Video',
-  other: 'Setup',
+  automation: 'AI & automation',
+  growth: 'Marketing & growth',
+  video: 'Video & audio',
+  other: '',
 };
 
 export interface SetupsProps {
@@ -110,7 +117,9 @@ export default function Setups({ onPick }: SetupsProps) {
                   onPick(setup.slug, originOf(event.currentTarget));
                 }}
               >
-                <span className={styles.cardCat}>{LABELS[setup.category]}</span>
+                {LABELS[setup.category] && (
+                  <span className={styles.cardCat}>{LABELS[setup.category]}</span>
+                )}
                 <span className={styles.cardAsk}>{setup.title}</span>
                 <span className={styles.cardOut}>{setup.checklist[0]}</span>
                 <span className={styles.cardMeta}>
