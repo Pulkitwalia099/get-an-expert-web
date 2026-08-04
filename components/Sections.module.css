@@ -129,31 +129,40 @@
 /* Quieter than .checks on purpose. This answers a smaller question than the
    one above it, and three institution names set at the weight of a claim we
    made ourselves would read as leaning on them. */
-.backers {
+/* Three across at every width, including 390px. The tile is fixed and only the
+   label reflows, so the row never breaks: the narrowest cell still fits a 36px
+   mark and a two line name. */
+.backerStrip {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 14px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px 10px;
   list-style: none;
+  align-items: start;
 }
 
-.backer {
+.backerCell {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 0 0 0 2px;
+  align-items: center;
+  gap: 9px;
+  text-align: center;
+  min-width: 0;
 }
 
-.backerName {
-  font-size: 12.5px;
+.backerMark {
+  width: 36px;
+  height: 36px;
+  flex: none;
+  display: block;
+}
+
+.backerLabel {
+  font-size: 11.5px;
+  line-height: 1.35;
   font-weight: 600;
   letter-spacing: -0.005em;
-  color: var(--ink);
-}
-
-.backerBody {
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--ink-3);
+  color: var(--ink-2);
+  text-wrap: balance;
 }
 
 /* ---------- Examples: filters, cards, show more ---------- */
@@ -404,7 +413,10 @@
   /* Four across, same as .steps. The bodies are one short clause each so they
      survive the narrower column; anything longer wraps to five lines here. */
   .checks { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 26px; }
-  .backers { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 26px; }
+  /* Already three across on a phone. Wider screens only get more air between
+     the cells, so the strip does not stretch into three lonely columns. */
+  .backerStrip { gap: 0 26px; justify-content: start; }
+  .backerCell { flex-direction: row; align-items: center; gap: 11px; text-align: left; }
   /* An ask plus its outcome reads fine at half width, and 32 single file
      cards is a very long scroll. Held height stops the grid collapsing
      when a filter narrows the list. */
