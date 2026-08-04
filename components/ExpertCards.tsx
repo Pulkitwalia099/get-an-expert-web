@@ -115,22 +115,16 @@ export default function ExpertCards({
                   <p>{e.projected}</p>
                 </div>
               )}
-              <div className="c-foot">
-                {e.price && <span className="price">{e.price}</span>}
-                {e.link ? (
-                  <a
-                    className="c-link"
-                    href={e.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(ev) => ev.stopPropagation()}
-                  >
-                    {e.source || 'Profile'} ↗
-                  </a>
-                ) : (
-                  e.source && <span className="c-src">{e.source}</span>
-                )}
-              </div>
+              {/* No marketplace name and no outbound link here, on purpose.
+                  Naming the source on the card that is doing the persuading
+                  reframes the whole set as a list of profiles somebody could
+                  have found themselves. The link is the dashboard's job, once
+                  they have signed in and asked for the intro. */}
+              {e.price && (
+                <div className="c-foot">
+                  <span className="price">{e.price}</span>
+                </div>
+              )}
             </div>
           </div>
         );

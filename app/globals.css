@@ -946,13 +946,9 @@ div.sav {
 }
 .c-proj p { font-size: 12.5px; line-height: 1.5; color: var(--ink-3); margin: 0; }
 
+/* Price only. The marketplace name and the outbound link both live on the
+   dashboard now, not on the card that is doing the persuading. */
 .c-foot { margin-top: 9px; display: flex; align-items: center; gap: 10px; }
-.c-link {
-  margin-left: auto; font-size: 11.5px; font-weight: 600;
-  color: var(--accent-deep); text-decoration: none;
-}
-.c-link:hover { text-decoration: underline; }
-.c-src { margin-left: auto; font-size: 11.5px; color: var(--ink-3); }
 
 /* ---------- Veiled cards ----------
    A card whose name, photo and link were never in the payload. There is
