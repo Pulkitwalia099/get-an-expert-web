@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { CONTACT_EMAIL } from '@/lib/contact';
 
 // The bottom of the page. Everything here is a link someone goes looking for
 // rather than something we are asking them to do, which is the whole reason it
@@ -17,8 +16,10 @@ export default function SiteFooter() {
       <nav className="sitefoot-links" aria-label="Footer">
         <Link href="/register">Register as an expert</Link>
         <Link href="/get">Setups</Link>
+        {/* No email address here. A raw mailto in a footer reads as a personal
+            inbox rather than a company, and the contact form above already
+            routes to the same place with a name and a purpose attached. */}
         <Link href="/privacy">Privacy and security</Link>
-        <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
       </nav>
     </footer>
   );
