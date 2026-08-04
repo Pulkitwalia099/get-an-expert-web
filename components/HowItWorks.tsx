@@ -7,7 +7,12 @@ const STEPS = [
   {
     num: '01',
     title: 'Say what you need',
-    body: 'One sentence in the chat. No forms, no signup.',
+    // "No signup" came out when the site started offering an account. The
+    // sentence sat one screen under a control asking people to sign in, and no
+    // button wins an argument with the page's own copy. The promise that
+    // mattered is still here: nothing to fill in before you can ask. Signing
+    // in stays optional and buys you credit, which is a different offer.
+    body: 'One sentence in the chat. No forms to fill in.',
   },
   {
     num: '02',

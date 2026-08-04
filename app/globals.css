@@ -217,29 +217,77 @@ button:active { transform: scale(0.96); }
   outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px;
 }
 
-/* Signed out. A tinted pill, not a filled button: the bar sits directly above
-   the search bar the page is actually asking you to use, and two filled
-   controls in one screen make the visitor choose instead of act. The border
-   and the tint are enough to say "press me" without competing. */
+/* Signed out. A glass capsule, the way a toolbar control is built: the
+   material says "press me", not the colour. Painted in the accent it read as a
+   promo badge stapled to the bar, which is the one thing it must not be, since
+   it sits directly above the search bar the page is actually asking you to
+   use. Two filled controls in one screen make a visitor choose instead of act.
+
+   Light material rather than heavy, because a lighter surface is what draws
+   attention to something interactive; heavy materials are for separating
+   structural regions. Nothing translucent sits underneath it, so legibility
+   holds. */
 .account-cta {
   flex: none;
   font: inherit;
-  font-size: 11.5px; font-weight: 600; letter-spacing: -0.005em;
-  color: var(--accent-deep);
-  background: var(--accent-tint);
-  border: 1px solid rgba(196, 89, 60, .30);
+  font-size: 11.5px;
+  /* Vibrancy: over a translucent surface, flat grey text goes soft. Ink at 600
+     with a touch of positive tracking holds its edges. Tracking is
+     size-specific and small type wants the opposite sign to a headline, so
+     this is +0.006em where .sitemark above it is -0.012em. */
+  font-weight: 600;
+  letter-spacing: 0.006em;
+  color: var(--ink);
+  background: rgba(255, 255, 255, .62);
+  /* Prefix first, standard last, like every other blurred surface in this
+     file. Written the other way round the minifier collapsed the pair and
+     kept only the prefixed one, which shipped a capsule with no blur at all.
+     Caught on a preview deploy by reading the built stylesheet. */
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(33, 30, 26, .07);
+  /* The inset highlight is light catching the top edge of a real material.
+     The outer shadow is small because the chip is small: bigger surfaces read
+     as thicker, little ones should not pretend to float. */
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .7),
+    0 1px 2px rgba(33, 30, 26, .05);
   border-radius: 999px;
-  padding: 5px 11px;
+  padding: 6px 12px;
   text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
-  transition: transform 160ms var(--ease-out), background 160ms var(--ease-out),
-    border-color 160ms var(--ease-out);
+  /* Faster than the rest of the page on purpose. Press feedback is the one
+     place latency is felt directly, so it answers in 100ms while the colour
+     settles at the page's usual pace. */
+  transition:
+    transform 100ms ease-out,
+    background 160ms var(--ease-out),
+    box-shadow 160ms var(--ease-out);
 }
 
 .account-cta:active { transform: scale(0.97); }
 .account-cta:focus-visible {
   outline: 2px solid var(--accent); outline-offset: 3px;
+}
+
+/* Frostier and solid rather than blurred, for anyone who has asked for less
+   transparency. The control keeps its shape and its press. */
+@media (prefers-reduced-transparency: reduce) {
+  .account-cta {
+    background: #FFFDF9;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    border-color: rgba(33, 30, 26, .16);
+  }
+}
+
+@media (prefers-contrast: more) {
+  .account-cta {
+    background: #fff;
+    border-color: var(--ink);
+    box-shadow: none;
+  }
 }
 
 /* Opens from the control, downward and to the right edge, because the bar
@@ -291,9 +339,13 @@ button:active { transform: scale(0.96); }
 @media (hover: hover) and (pointer: fine) {
   .account-link:hover { color: var(--ink-2); }
   .account-out:hover { color: var(--ink); }
+  /* The material brightens, as a real surface does when it catches more
+     light. No colour change, no lift: it is a toolbar control, not a card. */
   .account-cta:hover {
-    background: rgba(196, 89, 60, .16);
-    border-color: rgba(196, 89, 60, .45);
+    background: rgba(255, 255, 255, .82);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, .85),
+      0 1px 3px rgba(33, 30, 26, .07);
   }
 }
 
