@@ -32,6 +32,7 @@ lib/__tests__/     vitest specs
 supabase/          plain SQL migrations in migrations/
 design/mockup.html approved static mockup, 5 states, keys 1-5
 SECURITY.md        Phase 2 security review: findings, fixes, tests
+SOURCING.md        source packs, Exa, enrichment: state and remaining phases
 ```
 
 ## Environment
@@ -208,3 +209,8 @@ Run `npm install` then `npm run dev` (port 3000) or `npm test`.
 Before opening a PR: `npm test` and `npm run build` both pass.
 
 Read `WORKPLAN.md` for the current phases and pick up from there.
+
+Sourcing and enrichment work has its own plan in `SOURCING.md`: what has
+already shipped on the `sourcing-packs` branch, the decisions not to
+relitigate, and phases 3 to 5 with enough detail to execute. Read it before
+touching `lib/sourcePacks.ts`, `lib/exa.ts` or the search route.
