@@ -4,7 +4,7 @@ import type { GithubProfile } from '@/lib/github';
 import { scrubUntrusted } from '@/lib/sanitize';
 import { normalizeLink } from '@/lib/experts';
 import { classifyPack, packQueries } from '@/lib/sourcePacks';
-import type { SourceQuery } from '@/lib/sourcePacks';
+import type { PackKey, SourceQuery } from '@/lib/sourcePacks';
 import type { Brief } from '@/lib/types';
 
 export interface SerpResult {
@@ -57,8 +57,67 @@ export function fallbackKeywords(brief: Brief): string {
   return short || primaryKeywords(brief);
 }
 
+/**
+ * Every query one search runs: the pack's hosts and the generic hosts.
+ *
+ * The pack used to replace the generic hosts, and measured on production that
+ * meant one host produced the entire set. A video brief came back 7 of 7 from
+ * behance.net with vimeo and the open web contributing nothing; a generic brief
+ * came back 8 of 8 from fiverr.com with upwork contributing nothing. So a pack
+ * was never three sources. It was whichever single host survived ranking, and
+ * that host silently decided the whole answer.
+ *
+ * Running both and letting the ranker choose from the union fixes that without
+ * having to be right about which host is best for a given brief, which is the
+ * judgement that was wrong in the first place.
+ *
+ * Deduped by the query string, because the web pack and the generic pack ask
+ * upwork.com/freelancers the same question. Issuing it twice is one SerpAPI
+ * query paid for twice for one answer.
+ */
 export function buildQueries(brief: Brief): SerpQuery[] {
-  return packQueries(classifyPack(brief), primaryKeywords(brief));
+  const kw = primaryKeywords(brief);
+  const pack = classifyPack(brief);
+  const packed = packQueries(pack, kw);
+  // No pack means generic already is the search, so there is nothing to add.
+  if (pack === null) return packed;
+
+  const seen = new Set(packed.map((q) => q.q));
+  return [...packed, ...packQueries(null, kw).filter((q) => !seen.has(q.q))];
+}
+
+/**
+ * Share the ranker's slots between hosts instead of first come first served.
+ *
+ * Running the pack beside generic is only half the fix. Behance returning
+ * thirty results and Fiverr returning five would still hand Behance every slot
+ * under the old `slice`, which reproduces the bug through the back door: the
+ * cap, not the retrieval, would decide who the ranker ever sees.
+ *
+ * Round robin across sources, keeping each host's own order, so a host with
+ * more results gets more slots only once every other host has been served.
+ */
+export function balanceBySource(results: SerpResult[], cap: number): SerpResult[] {
+  const bySource = new Map<string, SerpResult[]>();
+  for (const r of results) {
+    const queue = bySource.get(r.source);
+    if (queue) queue.push(r);
+    else bySource.set(r.source, [r]);
+  }
+
+  const queues = [...bySource.values()];
+  const out: SerpResult[] = [];
+  for (let round = 0; out.length < cap; round += 1) {
+    let took = false;
+    for (const queue of queues) {
+      if (round >= queue.length) continue;
+      out.push(queue[round]);
+      took = true;
+      if (out.length === cap) return out;
+    }
+    if (!took) break;
+  }
+  return out;
 }
 
 export function parseSerpResults(json: unknown, source: string): SerpResult[] {
@@ -176,28 +235,47 @@ export async function searchProfiles(brief: Brief): Promise<ProfileSearch> {
   if (!key && !exaKey()) return { results: [], queriesRun: 0 };
 
   const pack = classifyPack(brief);
-  const primaryQueries = packQueries(pack, primaryKeywords(brief));
+  const primaryQueries = buildQueries(brief);
   // Only SerpAPI queries count. `queriesRun` feeds the SerpAPI monthly cap in
   // lib/usage.ts, and Exa has its own budget on its own dashboard: folding the
   // two together would trip a quota nobody is actually near.
   const serpQueriesRun = key ? primaryQueries.length : 0;
   const primary = await runBothEngines(primaryQueries);
+  logSources(pack, primary);
   if (primary.length >= MIN_BEFORE_FALLBACK) {
-    return { results: primary.slice(0, MAX_TOTAL), queriesRun: serpQueriesRun };
+    return { results: balanceBySource(primary, MAX_TOTAL), queriesRun: serpQueriesRun };
   }
 
-  // Broaden by widening the sources, not just the words. A thin video search
-  // means Behance and Vimeo had nothing, and asking them again with a shorter
-  // phrase mostly asks the same question twice. The generic pack is a
-  // different set of hosts for the same cost in queries, so the second pass
-  // drops to it. For a brief with no pack this is exactly today's behaviour.
+  // Still thin after both the pack and the generic hosts, so the words are the
+  // problem rather than the places. This pass keeps the generic hosts and
+  // shortens the phrase, which is the only lever left.
   console.log(
     `[midsesh:serp] thin primary results (${primary.length}) for pack ${pack ?? 'generic'}, broadening to "${fallbackKeywords(brief)}"`,
   );
   const fallbackQueries = packQueries(null, fallbackKeywords(brief));
   const broader = await runBothEngines(fallbackQueries);
   return {
-    results: mergeResults([...primary, ...broader]).slice(0, MAX_TOTAL),
+    results: balanceBySource(mergeResults([...primary, ...broader]), MAX_TOTAL),
     queriesRun: serpQueriesRun + (key ? fallbackQueries.length : 0),
   };
+}
+
+/**
+ * What each host actually contributed, before ranking sees any of it.
+ *
+ * Without this the only way to answer "why is every result from Behance" was to
+ * run the same search against production twice and diff the sources, which is
+ * how the bug was found in the first place. It also separates the two failures
+ * that look identical from outside: a host that returned nothing, and a host
+ * that returned plenty and then lost every one of them at ranking.
+ */
+function logSources(pack: PackKey | null, results: SerpResult[]): void {
+  if (results.length === 0) return;
+  const counts = new Map<string, number>();
+  for (const r of results) counts.set(r.source, (counts.get(r.source) ?? 0) + 1);
+  const summary = [...counts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([source, n]) => `${source}=${n}`)
+    .join(' ');
+  console.log(`[midsesh:serp] pack ${pack ?? 'generic'} raw ${results.length}: ${summary}`);
 }

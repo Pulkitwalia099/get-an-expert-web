@@ -42,6 +42,37 @@ describe('classifyPack', () => {
     expect(classifyPack(brief({ expert_type: 'startup lawyer for a SAFE round' }))).toBeNull();
   });
 
+  // The real search that went wrong. A UGC creator films themselves holding a
+  // product for paid social. That is not the same job as cutting a showreel,
+  // and it is not found in the same places: the video pack's first query is
+  // site:behance.net, which is a design portfolio site, and it returned seven
+  // AI video artists and no UGC creators.
+  it('routes a UGC brief to the ugc pack rather than to video', () => {
+    expect(classifyPack(brief({ expert_type: 'UGC content creator' }))).toBe('ugc');
+  });
+
+  // The exact brief from the failed search. One broad word, "AI", used to tie
+  // with the specific one and win on list order alone, which sent a search for
+  // a UGC creator to github.com and huggingface.co.
+  it('is not derailed by a broad word sitting next to a specific one', () => {
+    expect(
+      classifyPack(
+        brief({ expert_type: 'UGC AI content creator', search_query: 'UGC content creator' }),
+      ),
+    ).toBe('ugc');
+  });
+
+  it('still routes a genuine AI brief to the ai pack', () => {
+    expect(classifyPack(brief({ expert_type: 'AI engineer for a RAG chatbot' }))).toBe('ai');
+  });
+
+  // Two broad words from two packs and nothing specific. Picking one silently
+  // is how a video brief ended up searching GitHub, and generic is the honest
+  // answer: it means "nothing here is decisive", not "no idea".
+  it('falls through to generic when two packs tie on broad words alone', () => {
+    expect(classifyPack(brief({ expert_type: 'video automation' }))).toBeNull();
+  });
+
   it('returns null for an empty brief', () => {
     expect(classifyPack(brief())).toBeNull();
   });
@@ -84,6 +115,19 @@ describe('packQueries', () => {
 
   it('falls back to the current three queries when no pack matches', () => {
     expect(hosts(null)).toEqual(['upwork.com', 'fiverr.com', 'web']);
+  });
+
+  // Proven on production: the generic pack returned eight real UGC creators
+  // from Fiverr for this brief while the video pack returned seven Behance
+  // portfolios and none. So the ugc pack is built on the hosts that worked.
+  it('sends a ugc brief to the marketplaces those creators actually sell on', () => {
+    expect(hosts('ugc', 'UGC creator')).toEqual(
+      expect.arrayContaining(['fiverr.com', 'upwork.com']),
+    );
+  });
+
+  it('does not send a ugc brief to a design portfolio site', () => {
+    expect(hosts('ugc', 'UGC creator')).not.toContain('behance.net');
   });
 
   it('puts the keywords into every query it builds', () => {

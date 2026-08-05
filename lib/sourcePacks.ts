@@ -16,17 +16,32 @@ import type { Brief } from '@/lib/types';
  * `specifics` is excluded for the same reason it never reaches a query: it is
  * a paragraph of context that drags in words from the whole conversation.
  */
-export type PackKey = Extract<CategoryKey, 'marketing' | 'ai' | 'video' | 'web'>;
+// No longer tied to CategoryKey. A pack answers "where do we look", which is
+// not the same question as "what does the site sell": 'ugc' is not a category
+// on the homepage and is very much its own place to search, while Security and
+// Data are categories with no pack yet. Keeping the two in one union forced
+// them to move together, which is how UGC ended up filed under Video.
+export type PackKey = 'marketing' | 'ai' | 'ugc' | 'video' | 'web';
 
 interface Pack {
   key: PackKey;
+  /** Terms that name this work and little else. Worth two points. */
   keywords: string[];
+  /**
+   * Terms that point here but are common enough to appear anywhere. One point.
+   *
+   * This split exists because of a real failed search. "UGC AI content creator"
+   * scored 1 for ugc and 1 for ai, tied, and the tie went to whichever pack was
+   * listed first. A search for somebody who films product videos was one word
+   * away from running against github.com. One broad word must not cancel one
+   * precise one.
+   */
+  weak?: string[];
 }
 
-// Order is the tiebreak, and it follows CATEGORIES in components/flows.ts
-// rather than being sorted here. That list is already ordered by the work that
-// still needs a person, and having two different orders for the same eight
-// categories is how they drift apart.
+const STRONG = 2;
+const WEAK = 1;
+
 const PACKS: Pack[] = [
   {
     key: 'marketing',
@@ -50,15 +65,12 @@ const PACKS: Pack[] = [
       'crm',
       'hubspot',
     ],
+    weak: ['growth', 'lifecycle', 'outbound'],
   },
   {
     key: 'ai',
     keywords: [
-      'ai',
       'llm',
-      'agent',
-      'automation',
-      'automate',
       'n8n',
       'zapier',
       'make.com',
@@ -71,15 +83,32 @@ const PACKS: Pack[] = [
       'fine-tune',
       'fine tune',
       'machine learning',
-      'workflow',
     ],
+    // 'ai' is the word half the internet uses about itself now. On its own it
+    // says the visitor works in this decade, not that the job is AI
+    // engineering, so it must not outweigh a term that names an actual trade.
+    weak: ['ai', 'agent', 'automation', 'automate', 'workflow'],
+  },
+  {
+    // Somebody who films themselves holding a product for paid social. Not a
+    // post-production job, which is why sharing a pack with Video sent a real
+    // search to behance.net and returned seven AI video artists and no UGC.
+    key: 'ugc',
+    keywords: [
+      'ugc',
+      'user generated content',
+      'user-generated content',
+      'testimonial video',
+      'spokesperson',
+      'influencer',
+      'product demo video',
+      'unboxing',
+    ],
+    weak: ['creator', 'testimonial'],
   },
   {
     key: 'video',
     keywords: [
-      'video',
-      'editor',
-      'editing',
       'youtube',
       'shorts',
       'reel',
@@ -93,18 +122,13 @@ const PACKS: Pack[] = [
       'color grade',
       'color grading',
       'podcast',
-      'ugc',
-      'animation',
       'vfx',
     ],
+    weak: ['video', 'editor', 'editing', 'animation'],
   },
   {
     key: 'web',
     keywords: [
-      'api',
-      'apis',
-      'integration',
-      'integrations',
       'webhook',
       'stripe',
       'backend',
@@ -112,16 +136,13 @@ const PACKS: Pack[] = [
       'full stack',
       'fullstack',
       'devops',
-      'cloud',
-      'deployment',
-      'database',
       'postgres',
       'supabase',
       'react',
       'next.js',
       'mobile app',
-      'website',
     ],
+    weak: ['api', 'apis', 'integration', 'integrations', 'cloud', 'deployment', 'database', 'website'],
   },
 ];
 
@@ -134,7 +155,9 @@ function hasKeyword(haystack: string, keyword: string): boolean {
 }
 
 function scorePack(pack: Pack, text: string): number {
-  return pack.keywords.reduce((total, k) => (hasKeyword(text, k) ? total + 1 : total), 0);
+  const strong = pack.keywords.reduce((t, k) => (hasKeyword(text, k) ? t + STRONG : t), 0);
+  const weak = (pack.weak ?? []).reduce((t, k) => (hasKeyword(text, k) ? t + WEAK : t), 0);
+  return strong + weak;
 }
 
 export interface SourceQuery {
@@ -177,6 +200,17 @@ const TEMPLATES: Record<PackKey, Template[]> = {
     { build: (kw) => `site:huggingface.co ${kw}`, source: 'huggingface.co' },
     { build: (kw) => `${kw} freelance engineer portfolio`, source: 'web' },
   ],
+  // Measured, not guessed. On the search that went wrong, the generic pack
+  // returned eight real UGC creators from Fiverr ("British male UGC video ads
+  // for TikTok", "on camera spokesperson and UGC ad delivery") while the video
+  // pack returned seven Behance portfolios and no UGC at all. So this is built
+  // on the two marketplaces that worked, plus Instagram, where these creators
+  // keep the reel that gets them hired and whose profile pages carry a name.
+  ugc: [
+    { build: (kw) => `site:fiverr.com ${kw}`, source: 'fiverr.com' },
+    { build: (kw) => `site:upwork.com/freelancers ${kw}`, source: 'upwork.com' },
+    { build: (kw) => `site:instagram.com ${kw}`, source: 'instagram.com' },
+  ],
   // The work is the portfolio, and editors keep theirs in two places.
   video: [
     { build: (kw) => `site:behance.net ${kw}`, source: 'behance.net' },
@@ -210,13 +244,23 @@ export function packQueries(pack: PackKey | null, keywords: string): SourceQuery
 export function classifyPack(brief: Brief): PackKey | null {
   const text = `${brief.expert_type} ${brief.search_query}`.toLowerCase();
   let winner: { key: PackKey; score: number } | null = null;
+  let tied = false;
 
   for (const pack of PACKS) {
     const score = scorePack(pack, text);
-    if (score > 0 && (winner === null || score > winner.score)) {
+    if (score === 0) continue;
+    if (winner === null || score > winner.score) {
       winner = { key: pack.key, score };
+      tied = false;
+    } else if (score === winner.score) {
+      tied = true;
     }
   }
 
+  // A tie is not a decision, and it used to be resolved by list order without
+  // saying so. Falling through to generic is the honest answer: it means
+  // nothing here was decisive, and generic runs on every search now anyway, so
+  // a tie costs the extra hosts rather than sending the search somewhere wrong.
+  if (tied) return null;
   return winner?.key ?? null;
 }
