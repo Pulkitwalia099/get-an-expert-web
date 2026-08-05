@@ -1,5 +1,5 @@
 import { exaKey, serpapiKey } from '@/lib/env';
-import { searchExa } from '@/lib/exa';
+import { searchExa, semanticQuery } from '@/lib/exa';
 import type { GithubProfile } from '@/lib/github';
 import { scrubUntrusted } from '@/lib/sanitize';
 import { normalizeLink } from '@/lib/experts';
@@ -220,12 +220,16 @@ export interface ProfileSearch {
  * search still works, which is what makes the second engine safe to add to
  * production before anyone has decided whether to keep it.
  */
-async function runBothEngines(queries: SerpQuery[]): Promise<SerpResult[]> {
+async function runBothEngines(queries: SerpQuery[], semantic = ''): Promise<SerpResult[]> {
   const serp = serpapiKey();
   const exa = exaKey();
+  // Two engines, two question shapes, one set of hosts. SerpAPI keeps the four
+  // keyword phrase because a Google query longer than that finds articles.
+  // Exa gets the brief as a sentence, because matching on meaning is the only
+  // reason it is here and keywords waste it.
   const [fromSerp, fromExa] = await Promise.all([
     serp ? runQueries(queries, serp) : Promise.resolve<SerpResult[]>([]),
-    exa ? searchExa(queries, exa) : Promise.resolve<SerpResult[]>([]),
+    exa ? searchExa(queries, exa, semantic) : Promise.resolve<SerpResult[]>([]),
   ]);
   return mergeResults([...fromSerp, ...fromExa]);
 }
@@ -240,7 +244,7 @@ export async function searchProfiles(brief: Brief): Promise<ProfileSearch> {
   // lib/usage.ts, and Exa has its own budget on its own dashboard: folding the
   // two together would trip a quota nobody is actually near.
   const serpQueriesRun = key ? primaryQueries.length : 0;
-  const primary = await runBothEngines(primaryQueries);
+  const primary = await runBothEngines(primaryQueries, semanticQuery(brief));
   logSources(pack, primary);
   if (primary.length >= MIN_BEFORE_FALLBACK) {
     return { results: balanceBySource(primary, MAX_TOTAL), queriesRun: serpQueriesRun };
@@ -253,7 +257,7 @@ export async function searchProfiles(brief: Brief): Promise<ProfileSearch> {
     `[midsesh:serp] thin primary results (${primary.length}) for pack ${pack ?? 'generic'}, broadening to "${fallbackKeywords(brief)}"`,
   );
   const fallbackQueries = packQueries(null, fallbackKeywords(brief));
-  const broader = await runBothEngines(fallbackQueries);
+  const broader = await runBothEngines(fallbackQueries, semanticQuery(brief));
   return {
     results: balanceBySource(mergeResults([...primary, ...broader]), MAX_TOTAL),
     queriesRun: serpQueriesRun + (key ? fallbackQueries.length : 0),
@@ -272,10 +276,21 @@ export async function searchProfiles(brief: Brief): Promise<ProfileSearch> {
 function logSources(pack: PackKey | null, results: SerpResult[]): void {
   if (results.length === 0) return;
   const counts = new Map<string, number>();
-  for (const r of results) counts.set(r.source, (counts.get(r.source) ?? 0) + 1);
-  const summary = [...counts.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .map(([source, n]) => `${source}=${n}`)
-    .join(' ');
-  console.log(`[midsesh:serp] pack ${pack ?? 'generic'} raw ${results.length}: ${summary}`);
+  const engines = new Map<string, number>();
+  for (const r of results) {
+    counts.set(r.source, (counts.get(r.source) ?? 0) + 1);
+    engines.set(r.engine, (engines.get(r.engine) ?? 0) + 1);
+  }
+  const tally = (m: Map<string, number>) =>
+    [...m.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(([k, n]) => `${k}=${n}`)
+      .join(' ');
+  // Engines as well as hosts. Exa now gets a different question from SerpAPI,
+  // and "did the semantic query survive the domain filter" is not answerable
+  // from the response a browser sees, because `engine` is deliberately absent
+  // from it. This line is the only place that comparison can be settled.
+  console.log(
+    `[midsesh:serp] pack ${pack ?? 'generic'} raw ${results.length}: ${tally(counts)} | engines ${tally(engines)}`,
+  );
 }

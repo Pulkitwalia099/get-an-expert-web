@@ -1,6 +1,7 @@
 import { scrubUntrusted } from '@/lib/sanitize';
 import type { SerpResult } from '@/lib/serp';
 import type { SourceQuery } from '@/lib/sourcePacks';
+import type { Brief } from '@/lib/types';
 
 // A second retrieval engine, running beside SerpAPI rather than instead of it.
 //
@@ -25,11 +26,53 @@ import type { SourceQuery } from '@/lib/sourcePacks';
  */
 export const EXA_TEXT_CHARS = 800;
 
+/**
+ * How much of the brief is allowed to become the query.
+ *
+ * Long enough to carry the constraints that actually decide who can do a job,
+ * short enough that one rambling brief cannot turn the request into a wall of
+ * text with no centre of gravity.
+ */
+export const EXA_QUERY_CHARS = 400;
+
 export interface ExaRequest {
   query: string;
   numResults: number;
   contents: { text: { maxCharacters: number } };
   includeDomains?: string[];
+}
+
+/**
+ * The brief as a sentence, for the engine that reads sentences.
+ *
+ * SerpAPI is a Google wrapper and wants four keywords, because a long query
+ * there finds articles rather than people. Exa is the opposite: it matches on
+ * what a description means, which is the entire reason it was added, and it was
+ * being handed the same four keywords.
+ *
+ * Traced on a real production brief, that cost almost everything the visitor
+ * said. The chat captured 463 characters across seven fields and retrieval used
+ * 26 of them, so Zendesk, customer PII, self hosted, AWS and Postgres never
+ * reached an engine, and those were the constraints that decided who could
+ * actually do the job.
+ *
+ * Budget and timeline are deliberately left out. Neither describes the person,
+ * and a number in a semantic query drags the match toward pricing pages.
+ */
+export function semanticQuery(brief: Brief): string {
+  const parts = [
+    brief.expert_type.trim() ? `Freelance ${brief.expert_type.trim()} available for hire.` : '',
+    brief.specifics.trim(),
+    brief.domain.trim() ? `Industry: ${brief.domain.trim()}.` : '',
+  ].filter(Boolean);
+
+  // Nothing rich to say, so this is a keyword brief after all and the phrase
+  // SerpAPI uses is the honest query rather than an empty one.
+  if (parts.length === 0) return brief.search_query.trim().slice(0, EXA_QUERY_CHARS);
+
+  // Scrub before slicing, exactly as parseExaResults does. Scrubbing shortens
+  // the string, so slicing first would let the cap drift.
+  return scrubUntrusted(parts.join(' ')).slice(0, EXA_QUERY_CHARS);
 }
 
 const RESULTS_PER_QUERY = 20;
@@ -49,17 +92,20 @@ const SITE_PREFIX = /^site:([a-z0-9.-]+)(?:\/\S*)?\s*/i;
  * and marketing packs worse on one engine and better on the other, and poison
  * the comparison those packs exist to run.
  */
-export function exaRequest(q: string): ExaRequest {
+export function exaRequest(q: string, semantic = ''): ExaRequest {
   const match = q.match(SITE_PREFIX);
   const stripped = match ? q.slice(match[0].length).trim() : q.trim();
 
   // A pack template with nothing but a site: prefix would leave an empty
   // query, which Exa rejects. Falling back to the host keeps the call valid
   // and still means roughly the right thing.
-  const query = stripped || match?.[1] || q;
+  const keywords = stripped || match?.[1] || q;
 
+  // The pack still decides the host. Only the question changes: the `site:`
+  // prefix becomes the domain filter as before, and the words after it are
+  // replaced by the brief in full where there is a brief to use.
   return {
-    query,
+    query: semantic.trim() || keywords,
     numResults: RESULTS_PER_QUERY,
     contents: { text: { maxCharacters: EXA_TEXT_CHARS } },
     ...(match ? { includeDomains: [match[1]] } : {}),
@@ -113,13 +159,17 @@ const QUERY_TIMEOUT_MS = 10_000;
  * fail the search. A rejected query is logged and skipped, so a visitor whose
  * Exa call times out still gets the SerpAPI half rather than an error card.
  */
-export async function searchExa(queries: SourceQuery[], key: string): Promise<SerpResult[]> {
+export async function searchExa(
+  queries: SourceQuery[],
+  key: string,
+  semantic = '',
+): Promise<SerpResult[]> {
   const settled = await Promise.allSettled(
     queries.map(async ({ q, source }) => {
       const res = await fetch('https://api.exa.ai/search', {
         method: 'POST',
         headers: { 'x-api-key': key, 'content-type': 'application/json' },
-        body: JSON.stringify(exaRequest(q)),
+        body: JSON.stringify(exaRequest(q, semantic)),
         signal: AbortSignal.timeout(QUERY_TIMEOUT_MS),
       });
       if (!res.ok) throw new Error(`Exa ${res.status}`);
