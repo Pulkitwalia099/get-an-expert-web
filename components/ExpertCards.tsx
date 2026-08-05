@@ -99,10 +99,35 @@ export default function ExpertCards({
                   </span>
                 </span>
               </div>
-              {e.rating != null && (
+              {/* Facts, as opposed to the two text blocks below. A rating is
+                  copied off the listing; "Code verified" is the only line on
+                  this card that was checked against something other than what
+                  the person wrote about themselves, which is why it sits here
+                  rather than as a second pill beside "Top match". It carries no
+                  count and no handle on purpose: either would be a search term
+                  that undoes the redaction on a locked card. */}
+              {(e.rating != null || e.code_verified) && (
                 <div className="c-meta">
-                  <span className="star">★</span> {e.rating}
-                  {e.reviews ? ` · ${e.reviews} reviews` : ''}
+                  {e.rating != null && (
+                    <span>
+                      <span className="star">★</span> {e.rating}
+                      {e.reviews ? ` · ${e.reviews} reviews` : ''}
+                    </span>
+                  )}
+                  {e.code_verified && (
+                    <span className="c-verified">
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                        <path
+                          d="M2.2 6.3 4.7 8.6 9.8 3.4"
+                          stroke="currentColor"
+                          strokeWidth="1.9"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                      Code verified
+                    </span>
+                  )}
                 </div>
               )}
               <div className="c-why">{e.why}</div>

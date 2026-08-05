@@ -5,6 +5,7 @@ import { demoExperts } from '@/lib/demo';
 import { exaKey, serpapiKey } from '@/lib/env';
 import { redact } from '@/lib/redact';
 import { MIN_EXPERTS, finalizeExperts, redactExperts } from '@/lib/experts';
+import { describeGithub, enrichWithGithub } from '@/lib/github';
 import { recordInsight } from '@/lib/insights';
 import { storeMatchSet } from '@/lib/matches';
 import { withMetrics } from '@/lib/metrics';
@@ -38,6 +39,8 @@ const RANK_SYSTEM = `You turn raw web search results into expert matches for mid
 You get a hiring brief and search results (title, snippet, link) from freelance marketplaces. Pick up to 8 results that are most likely a real, individual professional who fits the brief, best fit first. Aim for at least 3. Return fewer when fewer qualify, and skip any result with no discernible person.
 
 THE MOST IMPORTANT RULE: these are real, named, identifiable people, and a customer will decide whether to hire them from what you write. You may never state a fact about a person that is not in the search result you were given. No invented employer, client, project, qualification, year, or number. No "she ran", "he built", "worked at", "spent eight years at". If the snippet does not say it, it did not happen.
+
+That rule has exactly one exception. Some results carry a line beginning "GitHub:". That line is not snippet text and is not something the person wrote about themselves: it was read from the GitHub API for the account this result links to, and that account was already checked to belong to a person rather than to a company. The repo count, the star count, the languages and how recently they pushed are therefore verified, and you may state them directly and rank on them. Everything else is unchanged. You may not infer an employer, a client, a project, a year or a seniority from those figures, you may not treat a repo name as a client project, and the counts describe only their recently updated public repos rather than everything they have written. A result with no GitHub line is unmeasured rather than weaker, so never write that somebody has no public code.
 
 You are not writing a biography. You are writing an assessment, and there are two separate fields for the two halves of one.
 
@@ -201,7 +204,7 @@ async function handleSearch(req: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    const { results: raw, queriesRun } = await searchProfiles(brief);
+    const { results: found, queriesRun } = await searchProfiles(brief);
     if (queriesRun > 0) {
       const total = await bumpUsage(monthKey('serp'), queriesRun);
       if (total !== null && total >= cap * 0.7) {
@@ -209,15 +212,37 @@ async function handleSearch(req: NextRequest): Promise<NextResponse> {
         console.warn(`[midsesh:serp] monthly quota past ${level}: ${total}/${cap}`);
       }
     }
-    if (raw.length === 0) {
+    if (found.length === 0) {
       await recordInsight('search', { brief, results: 0, matched: 0 });
       await persist(0, false);
       // No matches at all, so there is nothing to gate and nothing to store.
       return NextResponse.json({ setId: null, locked: false, experts: [] });
     }
 
+    // Before the ranking call, not beside it.
+    //
+    // Running the lookups concurrently with the ranking would cost nothing in
+    // wall clock, and would also waste the better half of this: the figures
+    // could then only feed a badge, because a prompt cannot be handed data that
+    // arrives after the call using it has already started. In the prompt they
+    // let Sonnet rank an ai or web brief on languages, stars and push recency
+    // instead of on a self-written snippet, which is the whole point.
+    //
+    // The lookups run in parallel with each other behind a 2.5 second timeout,
+    // so the worst case this adds to a search that already takes about twenty
+    // seconds is bounded and small, and a slow GitHub degrades to no badge
+    // rather than to a slow search.
+    const raw = await enrichWithGithub(found);
+    const checked = raw.filter((r) => r.github).length;
+    if (checked > 0) console.log(`[midsesh:search] ${checked} result(s) with checked GitHub data`);
+
     const prompt = `Brief:\n${JSON.stringify(brief, null, 2)}\n\nSearch results:\n${raw
-      .map((r, i) => `${i + 1}. [${r.source}] ${r.title}\n   ${r.snippet}\n   ${r.link}`)
+      .map(
+        (r, i) =>
+          `${i + 1}. [${r.source}] ${r.title}\n   ${r.snippet}\n   ${r.link}${
+            r.github ? `\n   GitHub: ${describeGithub(r.github)}` : ''
+          }`,
+      )
       .join('\n\n')}`;
 
     const ranked = await askClaude<{ experts: unknown }>({

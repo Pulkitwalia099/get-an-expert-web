@@ -131,6 +131,11 @@ function toRecord(row: ProfileRow): ExpertRecord {
     // Null for every set written before the column existed, which is most of
     // them. An empty string reads as "we did not record this", which is true.
     engine: row.engine ?? '',
+    // Not persisted, so a set read back from Postgres never claims a check it
+    // cannot show. The badge is computed during a search and lives on that
+    // response only; the column belongs with the other enrichment columns in
+    // the next phase's migration rather than in a schema change of its own.
+    code_verified: false,
     photo: row.photo,
     link: row.link,
     top_match: row.top_match,

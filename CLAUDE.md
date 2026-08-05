@@ -49,6 +49,11 @@ instead of crashing.
   with the engine that found it so the two can be compared on picks rather
   than on opinion. Exa also returns page text, which is why its results carry
   800 characters where a SerpAPI snippet carries about 160.
+- `GITHUB_TOKEN` checks the public repos behind any `github.com` link already
+  in the results. It is the one fact on a card that is not self-reported, so
+  the ranking prompt is allowed to state those figures directly. Issue it with
+  no scopes; it is there for the rate limit, not for access. Without it the
+  lookup is skipped and nothing else changes.
 - `INSIGHTS_WEBHOOK_URL` optional. Briefs and intro requests are POSTed here.
 - `SUPABASE_URL` and `SUPABASE_SECRET_KEY` persist sessions, messages,
   searches and leads. Without them nothing is stored. Server routes only;
@@ -161,6 +166,18 @@ the person's history. The ranking prompt in `app/api/search/route.ts` forbids
 inventing an employer, client, project, year or number, because these are real
 named people and a visitor hires on what it says. `lib/demo.ts` is the one
 place a biography may be invented, and only because nobody in it is real.
+
+That prompt has exactly one exception, and `lib/github.ts` is it. A result that
+already links to a `github.com` account gets its public repos read, and the
+repo count, stars, languages and push recency go into the prompt as figures
+Sonnet may state directly. Three rules hold it in place. Only a link already in
+the results is used, never a search by name, because attaching a stranger's
+repos to a real named person is the worst bug this could ship. An account whose
+owner is an organisation is dropped, for the same reason. And what reaches a
+browser is the boolean `code_verified` and nothing else: a star count or a
+handle on a locked card is a search term that would undo `redactExpert`, which
+is what `lib/__tests__/experts.test.ts` asserts. Nothing is persisted, so a set
+read back from Postgres never claims the badge.
 
 Google sign in is the main way through. An email address still works and still
 gets the quotes, it just gets no dashboard. Turning away everyone without a

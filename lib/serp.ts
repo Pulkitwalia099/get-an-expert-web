@@ -1,5 +1,6 @@
 import { exaKey, serpapiKey } from '@/lib/env';
 import { searchExa } from '@/lib/exa';
+import type { GithubProfile } from '@/lib/github';
 import { scrubUntrusted } from '@/lib/sanitize';
 import { normalizeLink } from '@/lib/experts';
 import { classifyPack, packQueries } from '@/lib/sourcePacks';
@@ -12,8 +13,16 @@ export interface SerpResult {
   snippet: string;
   thumbnail: string | null;
   source: string;
-  /** Which engine produced this. Only 'serpapi' today; Exa lands next. */
+  /** Which engine found this: 'serpapi', 'exa', or 'both'. */
   engine: string;
+  /**
+   * Checked GitHub data for the account this result links to.
+   *
+   * Absent on almost every result, and absent rather than null on purpose: it
+   * is added by `enrichWithGithub` after retrieval, so neither parser sets it
+   * and nothing downstream may assume it was attempted.
+   */
+  github?: GithubProfile;
 }
 
 type SerpQuery = SourceQuery;

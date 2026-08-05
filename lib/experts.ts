@@ -93,6 +93,10 @@ export function finalizeExperts(ranked: unknown, raw: SerpResult[]): ExpertRecor
       // for this and must not be able to set it, or the attribution it feeds
       // would be the model's guess rather than a record of what happened.
       engine: source.engine.slice(0, 20),
+      // Same rule as `engine`, and for a sharper reason. This one is rendered,
+      // so a model that could set it could award itself a verification badge
+      // for somebody who has no GitHub account at all.
+      code_verified: source.github !== undefined,
       photo: source.thumbnail,
       link: source.link,
       top_match: e.top_match === true,
@@ -135,6 +139,7 @@ export function redactExpert(record: ExpertRecord, locked: boolean): Expert {
     why: record.why,
     projected: record.projected,
     source: record.source,
+    code_verified: record.code_verified,
     photo: locked ? null : record.photo,
     link: locked ? null : record.link,
     top_match: record.top_match,

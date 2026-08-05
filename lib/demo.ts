@@ -97,7 +97,7 @@ export function demoDevChatReply(messages: ChatMessage[]): ChatReply {
 // here is real: the names, the links and the histories are all fiction, which
 // is exactly what the live path is forbidden from producing.
 export function demoExperts(): ExpertRecord[] {
-  const people: Omit<ExpertRecord, 'engine'>[] = [
+  const people: Omit<ExpertRecord, 'engine' | 'code_verified'>[] = [
     {
       slot: 1,
       name: 'Amira Hassan',
@@ -193,5 +193,10 @@ export function demoExperts(): ExpertRecord[] {
   // 'demo' is not a retrieval engine, and that is the point. Tagging these
   // explicitly keeps scripted profiles out of any comparison between the real
   // engines, where they would otherwise land under whichever name was default.
-  return people.map((p) => ({ ...p, engine: 'demo' }));
+  //
+  // The verification badge stays off for the same reason the biographies are
+  // allowed to be fiction: these accounts do not exist, so there is nothing to
+  // have checked. A demo card that claimed verified code would be the one
+  // invented detail here that a visitor could act on.
+  return people.map((p) => ({ ...p, engine: 'demo', code_verified: false }));
 }

@@ -66,6 +66,15 @@ export interface ExpertRecord {
    * would let a reader infer how a withheld person was found.
    */
   engine: string;
+  /**
+   * A GitHub account linked from this result was read and belongs to a person.
+   *
+   * A boolean and nothing more, deliberately. The figures behind it go into the
+   * ranking prompt and stop there: a star count or a handle on a locked card is
+   * a search term anybody could paste into GitHub to read off the name the card
+   * is withholding.
+   */
+  code_verified: boolean;
   photo: string | null;
   link: string;
   top_match: boolean;
@@ -91,6 +100,8 @@ export interface Expert {
   why: string;
   projected: string;
   source: string;
+  /** Safe on a locked card: it says a check happened, never who passed it. */
+  code_verified: boolean;
   photo: string | null;
   link: string | null;
   top_match: boolean;
