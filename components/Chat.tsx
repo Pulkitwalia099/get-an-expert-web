@@ -265,44 +265,18 @@ export default function Chat({
         void search.runSearch(data.brief);
       }
 
-      // The offer to talk to a human, made by the agent in the thread rather
-      // than parked in the chrome. A finished brief always earns one, because
-      // that is the moment someone is choosing how to proceed. Otherwise the
-      // trigger is engagement or distress. An expert applying for work never
-      // gets it: they are not here to hire anyone.
-      const finished = data.done && !data.expert_signup;
-      // Mid-intake offers are for the flows that end on the choice between a
-      // call and an email, where interrupting is the whole point. A flow that
-      // ends in cards asks two or three questions and then shows people, and
-      // an offer landing on top of an unanswered question buries it: the
-      // visitor gets asked their budget and then two more messages before
-      // they can reply to any of them. Here it waits for the brief.
-      const interruptible = config.ending !== 'cards';
-      const wanted =
-        !data.expert_signup &&
-        (finished ||
-          (interruptible &&
-            shouldOfferHuman({
-              text,
-              userTurns: userTurns.current,
-              alreadyOffered: offered,
-            })));
-
-      if (wanted && !offered) {
-        setOffered(true);
-        // Two moments, two lines. Mid-intake nobody has been promised anything
-        // yet, so a question is the right shape. On a finished brief the
-        // message immediately before this one already said we are looking, and
-        // asking whether they want help there reads as if we forgot: it
-        // reopens a decision the handoff just made for them. Same offer,
-        // stated rather than asked, and framed around the wait it fills.
-        say(
-          finished
-            ? 'While I look, you can talk it through with someone who has done this before.'
-            : 'Want to talk it through with someone who has done this before?',
-        );
-        void openCall();
-      }
+      // No offer to talk to a human here, on purpose.
+      //
+      // The chat's whole job right now is to capture what somebody wants and
+      // show them who could do it. A live call was a second thing to decide in
+      // the middle of that, and it arrived at the worst moment: directly under
+      // "On it. Give me about 20 seconds", where it reopened a choice the
+      // handoff had just made. It also put two named people in front of a
+      // visitor who came looking for an expert, not for us.
+      //
+      // The machinery behind it is untouched and unreachable: /api/presence,
+      // /api/call and /operator all still work, and nothing in the visitor's
+      // path calls them. Turning it back on is restoring this trigger.
     } catch {
       if (run !== runRef.current) return;
       setTyping(false);
@@ -657,18 +631,6 @@ export default function Chat({
               />
             )}
 
-            {card && prefill && (
-              <CallCard
-                card={card}
-                state={callState}
-                secondsLeft={secondsLeft}
-                prefill={prefill}
-                roomUrl={roomUrl}
-                onCall={() => void startRing()}
-                onLeave={endCall}
-                onRemoteJoined={remoteJoined}
-              />
-            )}
           </div>
         )}
       </div>
