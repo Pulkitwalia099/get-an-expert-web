@@ -38,8 +38,11 @@ describe('classifyPack', () => {
     expect(classifyPack(brief({ expert_type: 'Stripe API integration engineer' }))).toBe('web');
   });
 
-  it('returns null for a category with no pack yet', () => {
-    expect(classifyPack(brief({ expert_type: 'startup lawyer for a SAFE round' }))).toBeNull();
+  // Architecture and the physical trades are the honest edge of the taxonomy:
+  // Upwork lists them, this site does not search for them, and generic is the
+  // right answer rather than a pack invented to look complete.
+  it('returns null for work no pack covers', () => {
+    expect(classifyPack(brief({ expert_type: 'structural engineer for a house extension' }))).toBeNull();
   });
 
   // The real search that went wrong. A UGC creator films themselves holding a
@@ -149,6 +152,78 @@ describe('packQueries', () => {
   it('returns at least one query for every pack', () => {
     for (const pack of ['marketing', 'ai', 'video', 'web', null] as const) {
       expect(packQueries(pack, 'anything').length).toBeGreaterThan(0);
+    }
+  });
+});
+
+// Coverage across the categories people actually hire for on Upwork and
+// Fiverr. "No pack" was designed as the honest answer for work nobody had
+// mapped yet, and it had quietly become the answer for most of the market:
+// four packs against roughly a dozen top-level categories on both
+// marketplaces. A pack now runs beside the generic hosts rather than instead
+// of them, so adding one can only add places to look, which is what makes it
+// safe to cover the whole taxonomy rather than waiting for each one to fail.
+describe('pack coverage across the marketplaces', () => {
+  it.each([
+    ['logo and brand identity designer', 'design'],
+    ['UI and UX designer', 'design'],
+    ['technical writer for developer documentation', 'writing'],
+    ['SEO blog content writer', 'writing'],
+    ['English to Spanish translator', 'writing'],
+    ['data analyst building Looker dashboards', 'data'],
+    ['data annotation and labelling specialist', 'data'],
+    ['podcast audio engineer', 'audio'],
+    ['voiceover artist', 'audio'],
+    ['penetration tester for a web app', 'security'],
+    ['SOC 2 compliance engineer', 'security'],
+    ['fractional CFO', 'professional'],
+    ['startup lawyer for a SAFE round', 'professional'],
+    ['bookkeeper for monthly close', 'professional'],
+    ['virtual assistant for inbox and calendar', 'admin'],
+    ['customer support agent for Zendesk', 'admin'],
+  ])('routes "%s" to the %s pack', (expert_type, pack) => {
+    expect(classifyPack(brief({ expert_type }))).toBe(pack);
+  });
+
+  // The packs that already existed must not be pulled apart by the new ones.
+  it.each([
+    ['n8n automation engineer', 'ai'],
+    ['RAG pipeline and LLM deployment', 'ai'],
+    ['YouTube video editor', 'video'],
+    ['go to market and demand gen lead', 'marketing'],
+    ['Stripe API integration engineer', 'web'],
+    ['UGC content creator', 'ugc'],
+  ])('still routes "%s" to the %s pack', (expert_type, pack) => {
+    expect(classifyPack(brief({ expert_type }))).toBe(pack);
+  });
+});
+
+describe('where each pack looks', () => {
+  function hostsFor(pack: Parameters<typeof packQueries>[0]): string[] {
+    return packQueries(pack, 'anything').map((q) => q.source);
+  }
+
+  it.each([
+    ['design', 'dribbble.com'],
+    ['writing', 'substack.com'],
+    ['data', 'kaggle.com'],
+    ['audio', 'soundbetter.com'],
+    ['security', 'github.com'],
+    ['professional', 'linkedin.com'],
+    ['admin', 'linkedin.com'],
+  ] as const)('sends a %s brief to %s', (pack, host) => {
+    expect(hostsFor(pack)).toContain(host);
+  });
+
+  it('gives every pack at least one query and no empty source', () => {
+    const packs = [
+      'marketing', 'writing', 'ai', 'data', 'ugc', 'video',
+      'audio', 'design', 'web', 'security', 'professional', 'admin', null,
+    ] as const;
+    for (const pack of packs) {
+      const qs = packQueries(pack, 'freelance expert');
+      expect(qs.length).toBeGreaterThan(0);
+      for (const q of qs) expect(q.source.length).toBeGreaterThan(0);
     }
   });
 });

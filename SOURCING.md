@@ -52,10 +52,23 @@ run one.
 
 ## Decisions already made. Do not relitigate these.
 
-- **Four packs only:** `marketing`, `ai`, `video`, `web`. Security, Data,
-  Design and Admin fall through to the previous generic queries. New packs get
-  added when demand shows up, as an entry in `TEMPLATES` in
-  `lib/sourcePacks.ts`.
+- **Twelve packs, covering both marketplaces' taxonomies.** `marketing`,
+  `writing`, `ai`, `data`, `ugc`, `video`, `audio`, `design`, `web`,
+  `security`, `professional`, `admin`. Measured at 98% on a 61 brief sample
+  drawn from Upwork's and Fiverr's own category pages.
+
+  This replaces the earlier "four packs only, add one when demand shows up"
+  rule, and the reason it replaces it is that waiting for demand meant waiting
+  for a customer to get a bad answer. UGC was the demand signal, and it arrived
+  as seven Behance portfolios sent to somebody who wanted UGC creators.
+
+  What made it safe to cover everything at once is the change underneath: a
+  pack now runs *beside* the generic marketplaces rather than instead of them,
+  so a pack can only add places to look. A badly chosen host adds noise that
+  ranking filters; it can no longer replace the search. That was not true when
+  the four pack rule was written.
+
+  Packs live in `lib/packs.ts` (data) and are scored in `lib/sourcePacks.ts`.
 - **No geographic filter.** India was considered and dropped.
 - **Contact finding is out of scope.** No Hunter, Findymail or Apollo.
 - **No Batch API.** Half price but up to an hour, and the latency rule is
