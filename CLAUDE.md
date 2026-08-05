@@ -32,6 +32,7 @@ lib/__tests__/     vitest specs
 supabase/          plain SQL migrations in migrations/
 design/mockup.html approved static mockup, 5 states, keys 1-5
 SECURITY.md        Phase 2 security review: findings, fixes, tests
+SOURCING.md        source packs, Exa, enrichment: state and remaining phases
 ```
 
 ## Environment
@@ -43,6 +44,16 @@ instead of crashing.
   scripted demo flow from `lib/demo.ts`.
 - `SERPAPI_KEY` powers live profile search. Without it `lib/demo.ts` returns
   three sample profiles.
+- `EXA_API_KEY` adds a second retrieval engine beside SerpAPI. Either key
+  alone serves a search; both is the point, because every result is tagged
+  with the engine that found it so the two can be compared on picks rather
+  than on opinion. Exa also returns page text, which is why its results carry
+  800 characters where a SerpAPI snippet carries about 160.
+- `GITHUB_TOKEN` checks the public repos behind any `github.com` link already
+  in the results. It is the one fact on a card that is not self-reported, so
+  the ranking prompt is allowed to state those figures directly. Issue it with
+  no scopes; it is there for the rate limit, not for access. Without it the
+  lookup is skipped and nothing else changes.
 - `INSIGHTS_WEBHOOK_URL` optional. Briefs and intro requests are POSTed here.
 - `SUPABASE_URL` and `SUPABASE_SECRET_KEY` persist sessions, messages,
   searches and leads. Without them nothing is stored. Server routes only;
@@ -156,6 +167,18 @@ inventing an employer, client, project, year or number, because these are real
 named people and a visitor hires on what it says. `lib/demo.ts` is the one
 place a biography may be invented, and only because nobody in it is real.
 
+That prompt has exactly one exception, and `lib/github.ts` is it. A result that
+already links to a `github.com` account gets its public repos read, and the
+repo count, stars, languages and push recency go into the prompt as figures
+Sonnet may state directly. Three rules hold it in place. Only a link already in
+the results is used, never a search by name, because attaching a stranger's
+repos to a real named person is the worst bug this could ship. An account whose
+owner is an organisation is dropped, for the same reason. And what reaches a
+browser is the boolean `code_verified` and nothing else: a star count or a
+handle on a locked card is a search term that would undo `redactExpert`, which
+is what `lib/__tests__/experts.test.ts` asserts. Nothing is persisted, so a set
+read back from Postgres never claims the badge.
+
 Google sign in is the main way through. An email address still works and still
 gets the quotes, it just gets no dashboard. Turning away everyone without a
 Google account is a strange way to run a marketplace, and it is the same trade
@@ -203,3 +226,8 @@ Run `npm install` then `npm run dev` (port 3000) or `npm test`.
 Before opening a PR: `npm test` and `npm run build` both pass.
 
 Read `WORKPLAN.md` for the current phases and pick up from there.
+
+Sourcing and enrichment work has its own plan in `SOURCING.md`: what has
+already shipped on the `sourcing-packs` branch, the decisions not to
+relitigate, and phases 3 to 5 with enough detail to execute. Read it before
+touching `lib/sourcePacks.ts`, `lib/exa.ts` or the search route.

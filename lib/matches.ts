@@ -28,6 +28,8 @@ export interface StoreInput {
   sub: string | null;
   brief: Brief;
   query: string;
+  /** Which source pack the brief routed to, or null when none matched. */
+  pack: string | null;
   demo: boolean;
   records: ExpertRecord[];
 }
@@ -55,6 +57,7 @@ export async function storeMatchSet(input: StoreInput): Promise<string | null> {
     claimed_at: input.sub ? new Date().toISOString() : null,
     brief: input.brief,
     query: input.query.slice(0, 200),
+    pack: input.pack,
     demo: input.demo,
   });
   if (!set.ok) return null;
@@ -68,6 +71,7 @@ export async function storeMatchSet(input: StoreInput): Promise<string | null> {
       link: r.link,
       photo: r.photo,
       source: r.source,
+      engine: r.engine,
       country: r.country,
       flag: r.flag,
       rating: r.rating,
@@ -91,6 +95,7 @@ interface ProfileRow {
   link: string;
   photo: string | null;
   source: string;
+  engine: string | null;
   country: string;
   flag: string;
   rating: number | string | null;
@@ -123,6 +128,14 @@ function toRecord(row: ProfileRow): ExpertRecord {
     why: row.why,
     projected: row.projected ?? '',
     source: row.source ?? '',
+    // Null for every set written before the column existed, which is most of
+    // them. An empty string reads as "we did not record this", which is true.
+    engine: row.engine ?? '',
+    // Not persisted, so a set read back from Postgres never claims a check it
+    // cannot show. The badge is computed during a search and lives on that
+    // response only; the column belongs with the other enrichment columns in
+    // the next phase's migration rather than in a schema change of its own.
+    code_verified: false,
     photo: row.photo,
     link: row.link,
     top_match: row.top_match,
@@ -149,7 +162,7 @@ export async function readMatchSet(setId: string): Promise<MatchSet | null> {
 
   const rows = await selectRows<ProfileRow>(
     'match_profiles',
-    `set_id=eq.${encodeURIComponent(setId)}&select=slot,name,link,photo,source,country,flag,rating,reviews,price,why,projected,top_match&order=slot.asc`,
+    `set_id=eq.${encodeURIComponent(setId)}&select=slot,name,link,photo,source,engine,country,flag,rating,reviews,price,why,projected,top_match&order=slot.asc`,
   );
 
   return {

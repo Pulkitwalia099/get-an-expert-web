@@ -963,8 +963,16 @@ div.sav {
 .card.selected .sel-box { background: var(--accent); border-color: var(--accent); }
 .card.selected .sel-box svg { opacity: 1; }
 
-.c-meta { margin-top: 3px; font-size: 12px; color: var(--ink-2); }
+.c-meta {
+  margin-top: 3px; font-size: 12px; color: var(--ink-2);
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
 .c-meta .star { color: var(--amber); }
+/* Deliberately not a filled pill. "Top match" is our opinion and is allowed to
+   shout; this is a checked fact and reads better stated quietly next to the
+   rating than competing with the badge for the same corner. */
+.c-verified { display: inline-flex; align-items: center; gap: 4px; font-weight: 600; }
+.c-verified svg { flex: none; color: var(--accent); }
 .c-why { margin-top: 6px; font-size: 13px; line-height: 1.5; color: var(--ink-2); }
 
 /* "Why this could fit". Set apart from .c-why by a rule and a label because

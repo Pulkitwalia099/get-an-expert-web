@@ -56,7 +56,25 @@ export interface ExpertRecord {
   why: string;
   /** The "Why this could fit" block. Our read of the work, not their history. */
   projected: string;
+  /** The marketplace or host the profile lives on. Shown to the visitor. */
   source: string;
+  /**
+   * Which retrieval engine found this person. Telemetry, never rendered.
+   *
+   * Copied from the raw result, never from the model, and deliberately absent
+   * from `Expert`: a browser has no use for it and it is the one field that
+   * would let a reader infer how a withheld person was found.
+   */
+  engine: string;
+  /**
+   * A GitHub account linked from this result was read and belongs to a person.
+   *
+   * A boolean and nothing more, deliberately. The figures behind it go into the
+   * ranking prompt and stop there: a star count or a handle on a locked card is
+   * a search term anybody could paste into GitHub to read off the name the card
+   * is withholding.
+   */
+  code_verified: boolean;
   photo: string | null;
   link: string;
   top_match: boolean;
@@ -82,6 +100,8 @@ export interface Expert {
   why: string;
   projected: string;
   source: string;
+  /** Safe on a locked card: it says a check happened, never who passed it. */
+  code_verified: boolean;
   photo: string | null;
   link: string | null;
   top_match: boolean;

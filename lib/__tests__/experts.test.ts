@@ -9,10 +9,22 @@ function rawResult(n: number): SerpResult {
     snippet: '',
     thumbnail: `https://img/${n}.jpg`,
     source: 'upwork.com',
+    engine: 'serpapi',
   };
 }
 
 const RAW: SerpResult[] = [rawResult(1)];
+
+// Deliberately distinctive numbers. The point of the payload test below is that
+// none of them survives into a locked card, and asserting on "6" would pass by
+// accident against a slot number.
+const GH = {
+  login: 'mara-o',
+  languages: ['Python'],
+  stars: 4127,
+  repos: 9931,
+  lastPush: '2026-07-23T09:00:00Z',
+};
 
 function pick(n: number, extra: Record<string, unknown> = {}): Record<string, unknown> {
   return {
@@ -53,6 +65,38 @@ describe('finalizeExperts', () => {
       RAW,
     );
     expect(records).toEqual([]);
+  });
+
+  // Attribution. Which engine found the people somebody actually picked is the
+  // only honest way to judge one retrieval source against another, and the
+  // model never sees or chooses this: it is copied from the raw result the
+  // pick was matched back to.
+  it('carries the engine through from the raw result it matched', () => {
+    const raw: SerpResult[] = [
+      { ...rawResult(1), engine: 'exa' },
+      { ...rawResult(2), engine: 'serpapi' },
+    ];
+    const records = finalizeExperts([pick(2), pick(1)], raw);
+    expect(records.map((r) => r.engine)).toEqual(['serpapi', 'exa']);
+  });
+
+  it('cannot have its engine set by the model', () => {
+    const records = finalizeExperts([pick(1, { engine: 'exa' })], RAW);
+    expect(records[0].engine).toBe('serpapi');
+  });
+
+  it('marks a pick as code verified when its raw result carries a GitHub profile', () => {
+    const records = finalizeExperts([pick(1)], [{ ...rawResult(1), github: GH }]);
+    expect(records[0].code_verified).toBe(true);
+  });
+
+  it('leaves code verified false when nothing was checked', () => {
+    expect(finalizeExperts([pick(1)], RAW)[0].code_verified).toBe(false);
+  });
+
+  it('cannot have code verified set by the model', () => {
+    const records = finalizeExperts([pick(1, { code_verified: true })], RAW);
+    expect(records[0].code_verified).toBe(false);
   });
 
   // The model is told to copy a link back verbatim. Anything it returns that
@@ -146,5 +190,21 @@ describe('redactExpert', () => {
     expect(json).not.toContain('Person 1');
     expect(json).not.toContain('https://upwork.com/1');
     expect(json).not.toContain('https://img/1.jpg');
+  });
+
+  // The badge is a boolean and it has to stay one. A star count, a repo count
+  // or a handle on a locked card is a search term: anybody could paste it into
+  // GitHub and read off the name the card is withholding, which defeats the
+  // gate through the one field that was added to strengthen it.
+  it('says code was verified without saying anything that identifies the account', () => {
+    const [verified] = finalizeExperts([pick(1)], [{ ...rawResult(1), github: GH }]);
+    const card = redactExpert(verified, true);
+    expect(card.code_verified).toBe(true);
+
+    const json = JSON.stringify(card);
+    expect(json).not.toContain('mara-o');
+    expect(json).not.toContain('4127');
+    expect(json).not.toContain('9931');
+    expect(json).not.toContain('Python');
   });
 });
