@@ -290,7 +290,17 @@ export default function Chat({
 
       if (wanted && !offered) {
         setOffered(true);
-        say('Want to talk it through with someone who has done this before?');
+        // Two moments, two lines. Mid-intake nobody has been promised anything
+        // yet, so a question is the right shape. On a finished brief the
+        // message immediately before this one already said we are looking, and
+        // asking whether they want help there reads as if we forgot: it
+        // reopens a decision the handoff just made for them. Same offer,
+        // stated rather than asked, and framed around the wait it fills.
+        say(
+          finished
+            ? 'While I look, you can talk it through with someone who has done this before.'
+            : 'Want to talk it through with someone who has done this before?',
+        );
         void openCall();
       }
     } catch {
