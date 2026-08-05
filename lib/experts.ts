@@ -89,6 +89,10 @@ export function finalizeExperts(ranked: unknown, raw: SerpResult[]): ExpertRecor
       why: stripEmDashes(why.slice(0, MAX_WHY_CHARS)),
       projected: stripEmDashes(projected.slice(0, MAX_PROJECTED_CHARS)),
       source: source.source.slice(0, 40),
+      // From the matched raw result, never from `e`. The model is not asked
+      // for this and must not be able to set it, or the attribution it feeds
+      // would be the model's guess rather than a record of what happened.
+      engine: source.engine.slice(0, 20),
       photo: source.thumbnail,
       link: source.link,
       top_match: e.top_match === true,

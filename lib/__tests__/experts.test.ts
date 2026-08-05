@@ -9,6 +9,7 @@ function rawResult(n: number): SerpResult {
     snippet: '',
     thumbnail: `https://img/${n}.jpg`,
     source: 'upwork.com',
+    engine: 'serpapi',
   };
 }
 
@@ -53,6 +54,24 @@ describe('finalizeExperts', () => {
       RAW,
     );
     expect(records).toEqual([]);
+  });
+
+  // Attribution. Which engine found the people somebody actually picked is the
+  // only honest way to judge one retrieval source against another, and the
+  // model never sees or chooses this: it is copied from the raw result the
+  // pick was matched back to.
+  it('carries the engine through from the raw result it matched', () => {
+    const raw: SerpResult[] = [
+      { ...rawResult(1), engine: 'exa' },
+      { ...rawResult(2), engine: 'serpapi' },
+    ];
+    const records = finalizeExperts([pick(2), pick(1)], raw);
+    expect(records.map((r) => r.engine)).toEqual(['serpapi', 'exa']);
+  });
+
+  it('cannot have its engine set by the model', () => {
+    const records = finalizeExperts([pick(1, { engine: 'exa' })], RAW);
+    expect(records[0].engine).toBe('serpapi');
   });
 
   // The model is told to copy a link back verbatim. Anything it returns that

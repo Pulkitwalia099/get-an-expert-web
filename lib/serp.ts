@@ -1,5 +1,7 @@
 import { serpapiKey } from '@/lib/env';
 import { scrubUntrusted } from '@/lib/sanitize';
+import { classifyPack, packQueries } from '@/lib/sourcePacks';
+import type { SourceQuery } from '@/lib/sourcePacks';
 import type { Brief } from '@/lib/types';
 
 export interface SerpResult {
@@ -8,12 +10,11 @@ export interface SerpResult {
   snippet: string;
   thumbnail: string | null;
   source: string;
+  /** Which engine produced this. Only 'serpapi' today; Exa lands next. */
+  engine: string;
 }
 
-interface SerpQuery {
-  q: string;
-  source: string;
-}
+type SerpQuery = SourceQuery;
 
 // Ranking eight people needs a bigger pool than ranking three did. None of
 // these numbers costs another SerpAPI call: a search is billed per query, not
@@ -45,16 +46,8 @@ export function fallbackKeywords(brief: Brief): string {
   return short || primaryKeywords(brief);
 }
 
-function queriesFor(kw: string): SerpQuery[] {
-  return [
-    { q: `site:upwork.com/freelancers ${kw}`, source: 'upwork.com' },
-    { q: `site:fiverr.com ${kw}`, source: 'fiverr.com' },
-    { q: `${kw} freelance consultant profile`, source: 'web' },
-  ];
-}
-
 export function buildQueries(brief: Brief): SerpQuery[] {
-  return queriesFor(primaryKeywords(brief));
+  return packQueries(classifyPack(brief), primaryKeywords(brief));
 }
 
 export function parseSerpResults(json: unknown, source: string): SerpResult[] {
@@ -74,6 +67,7 @@ export function parseSerpResults(json: unknown, source: string): SerpResult[] {
             ? r.thumbnail
             : null,
         source,
+        engine: 'serpapi',
       };
     })
     .filter((r) => r.title.length > 0 && r.link.length > 0);
@@ -120,16 +114,22 @@ export async function searchProfiles(brief: Brief): Promise<ProfileSearch> {
   const key = serpapiKey();
   if (!key) return { results: [], queriesRun: 0 };
 
-  const primaryQueries = buildQueries(brief);
+  const pack = classifyPack(brief);
+  const primaryQueries = packQueries(pack, primaryKeywords(brief));
   const primary = dedupe(await runQueries(primaryQueries, key));
   if (primary.length >= MIN_BEFORE_FALLBACK) {
     return { results: primary.slice(0, MAX_TOTAL), queriesRun: primaryQueries.length };
   }
 
+  // Broaden by widening the sources, not just the words. A thin video search
+  // means Behance and Vimeo had nothing, and asking them again with a shorter
+  // phrase mostly asks the same question twice. The generic pack is a
+  // different set of hosts for the same cost in queries, so the second pass
+  // drops to it. For a brief with no pack this is exactly today's behaviour.
   console.log(
-    `[midsesh:serp] thin primary results (${primary.length}), broadening to "${fallbackKeywords(brief)}"`,
+    `[midsesh:serp] thin primary results (${primary.length}) for pack ${pack ?? 'generic'}, broadening to "${fallbackKeywords(brief)}"`,
   );
-  const fallbackQueries = queriesFor(fallbackKeywords(brief));
+  const fallbackQueries = packQueries(null, fallbackKeywords(brief));
   const broader = await runQueries(fallbackQueries, key);
   return {
     results: dedupe([...primary, ...broader]).slice(0, MAX_TOTAL),

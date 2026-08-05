@@ -11,6 +11,7 @@ import { withMetrics } from '@/lib/metrics';
 import { clientId, rateLimit } from '@/lib/ratelimit';
 import { matchesOrigin } from '@/lib/sanitize';
 import { primaryKeywords, searchProfiles } from '@/lib/serp';
+import { classifyPack } from '@/lib/sourcePacks';
 import { recordSearch, recordSession } from '@/lib/supabase';
 import type { ExpertRecord } from '@/lib/types';
 import { bumpUsage, durableLimit, monthKey, serpMonthlyCap } from '@/lib/usage';
@@ -134,6 +135,10 @@ async function handleSearch(req: NextRequest): Promise<NextResponse> {
       sub: user?.sub ?? null,
       brief,
       query: primaryKeywords(brief),
+      // Recomputed rather than threaded down from searchProfiles. It is a pure
+      // function of the brief, and passing it through two call sites to save
+      // one keyword scan would couple the store to the search internals.
+      pack: classifyPack(brief),
       demo,
       records,
     });

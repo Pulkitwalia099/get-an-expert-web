@@ -56,7 +56,16 @@ export interface ExpertRecord {
   why: string;
   /** The "Why this could fit" block. Our read of the work, not their history. */
   projected: string;
+  /** The marketplace or host the profile lives on. Shown to the visitor. */
   source: string;
+  /**
+   * Which retrieval engine found this person. Telemetry, never rendered.
+   *
+   * Copied from the raw result, never from the model, and deliberately absent
+   * from `Expert`: a browser has no use for it and it is the one field that
+   * would let a reader infer how a withheld person was found.
+   */
+  engine: string;
   photo: string | null;
   link: string;
   top_match: boolean;
