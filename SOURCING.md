@@ -23,15 +23,20 @@ no key was available to run one.
 | 4. Enrichment pipeline | not started | |
 | 5. Dashboard progress + email | not started | |
 
-### Two things gate the deploy
+### Deploy gates
 
-1. **Apply `supabase/migrations/20260804020000_source_attribution.sql` before
-   this ships.** Without those columns the insert fails, `storeMatchSet`
-   returns null, and `locked` computes to false in `app/api/search/route.ts`.
-   Anonymous visitors would see the withheld names. The gate turns itself off.
-2. **Set `EXA_API_KEY`** in Vercel. Absent, the search runs on SerpAPI alone
-   and behaves exactly as it did before this branch, so this one is safe to
-   defer.
+1. ~~Apply `supabase/migrations/20260804020000_source_attribution.sql`.~~
+   **Applied 2026-08-04** to the midsesh project (`mzgkeorgtlazaskgnmea`).
+   `match_sets.pack` and `match_profiles.engine` both confirmed present. This
+   was the blocking one: without those columns the insert fails,
+   `storeMatchSet` returns null, `locked` computes to false in
+   `app/api/search/route.ts`, and anonymous visitors see the withheld names.
+   Nothing to do here now, but do not deploy a further schema change to this
+   branch without applying it first for the same reason.
+2. **Set `EXA_API_KEY`** in Vercel. Still outstanding, and not blocking.
+   Absent, the search runs on SerpAPI alone and behaves exactly as it did
+   before this branch. The source packs work either way; only the second
+   engine and its page text wait on this key.
 
 ---
 
