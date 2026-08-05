@@ -43,6 +43,11 @@ instead of crashing.
   scripted demo flow from `lib/demo.ts`.
 - `SERPAPI_KEY` powers live profile search. Without it `lib/demo.ts` returns
   three sample profiles.
+- `EXA_API_KEY` adds a second retrieval engine beside SerpAPI. Either key
+  alone serves a search; both is the point, because every result is tagged
+  with the engine that found it so the two can be compared on picks rather
+  than on opinion. Exa also returns page text, which is why its results carry
+  800 characters where a SerpAPI snippet carries about 160.
 - `INSIGHTS_WEBHOOK_URL` optional. Briefs and intro requests are POSTed here.
 - `SUPABASE_URL` and `SUPABASE_SECRET_KEY` persist sessions, messages,
   searches and leads. Without them nothing is stored. Server routes only;

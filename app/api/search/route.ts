@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { askClaude, hasAnthropicKey } from '@/lib/anthropic';
 import { SESSION_COOKIE, readSession } from '@/lib/auth';
 import { demoExperts } from '@/lib/demo';
-import { serpapiKey } from '@/lib/env';
+import { exaKey, serpapiKey } from '@/lib/env';
 import { redact } from '@/lib/redact';
 import { MIN_EXPERTS, finalizeExperts, redactExperts } from '@/lib/experts';
 import { recordInsight } from '@/lib/insights';
@@ -182,9 +182,15 @@ async function handleSearch(req: NextRequest): Promise<NextResponse> {
   // demo profiles instead of erroring; the quota read fails open.
   const cap = serpMonthlyCap();
   const used = (await bumpUsage(monthKey('serp'), 0)) ?? 0;
+  // Either engine is enough. `used < cap` still applies even when only Exa is
+  // configured, which is stricter than it needs to be: an exhausted SerpAPI
+  // quota drops the whole search to demo rather than letting Exa carry it
+  // alone. Deliberate for now, because failing to the scripted profiles is the
+  // behaviour this route already degrades to everywhere else, and spending on
+  // a path nobody has measured yet is the worse of the two mistakes.
   const live =
     hasAnthropicKey() &&
-    Boolean(serpapiKey()) &&
+    (Boolean(serpapiKey()) || Boolean(exaKey())) &&
     verdict === 'ok' &&
     used < cap;
   if (!live) {

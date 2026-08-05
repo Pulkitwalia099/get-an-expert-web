@@ -13,3 +13,9 @@ export function anthropicKey(): string | undefined {
 export function serpapiKey(): string | undefined {
   return process.env.SERPAPI_KEY ?? process.env.Serp_search;
 }
+
+// The second retrieval engine. Optional like every other key here: without it
+// the search runs on SerpAPI alone, which is exactly what it does today.
+export function exaKey(): string | undefined {
+  return process.env.EXA_API_KEY;
+}
