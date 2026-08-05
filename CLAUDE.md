@@ -87,6 +87,32 @@ visitors with an LLM judge (see `evals/README.md`).
   Supabase transcripts), and ends with a new scenario in
   `evals/scenarios.ts` that reproduces it.
 
+## Retrieval is eval-gated too
+
+Same reasoning, different failure. Search cannot be unit tested against what
+the engines actually return, and every retrieval bug so far was found by a
+person reading bad output: a UGC brief answered with seven Behance portfolios,
+one host quietly producing every person in a set twice over, an ai brief tying
+with web and falling through to generic, and a named stack scoring nothing.
+
+`evals/search.eval.ts` runs one probe per pack against the deployed site.
+
+```
+EVAL_TARGET=https://midsesh.com npm run eval
+```
+
+- Run it after touching `lib/packs.ts`, `lib/sourcePacks.ts`, `lib/serp.ts` or
+  `lib/exa.ts`. Without `EVAL_TARGET` it skips, so `npm test` is unaffected.
+- It asserts at least 3 people and **at least 2 distinct hosts** per probe. The
+  host check is the important one: a single host producing a whole set looks
+  completely normal in the response and shipped twice.
+- The trade-match judge needs an Anthropic key and skips without one, so the
+  structural half still runs on a machine that has none. Production stores its
+  key as a Vercel "sensitive" variable, which `vercel env pull` cannot read
+  back, so a pulled `.env.local` will 401. Use your own key.
+- Each probe spends 4 to 6 SerpAPI queries, so a full run is about 30 against a
+  monthly cap that defaults to 250.
+
 ## Sign in and credits
 
 Google sign in, written by hand in `lib/auth.ts` with no SDK. This repo has
