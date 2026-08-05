@@ -69,6 +69,23 @@ describe('classifyPack', () => {
     expect(classifyPack(brief({ expert_type: 'AI engineer for a RAG chatbot' }))).toBe('ai');
   });
 
+  // A real brief captured from production. Splitting keywords into strong and
+  // weak fixed UGC and broke this: "ai" and "agent" are both weak, "developer"
+  // and "integration" are both weak, so a self hosted Bedrock agent build tied
+  // 2 against 2 with the web pack and fell through to the marketplaces. The
+  // named technology is the specific thing in that sentence and has to score
+  // like it.
+  it('routes a named AI stack to the ai pack rather than tying with web', () => {
+    expect(
+      classifyPack(
+        brief({
+          expert_type: 'AI agent engineer to build and own the integration end to end',
+          search_query: 'AI agent developer Bedrock',
+        }),
+      ),
+    ).toBe('ai');
+  });
+
   // Two broad words from two packs and nothing specific. Picking one silently
   // is how a video brief ended up searching GitHub, and generic is the honest
   // answer: it means "nothing here is decisive", not "no idea".

@@ -67,6 +67,11 @@ export const PACKS: Pack[] = [
     keywords: [
       'llm', 'n8n', 'zapier', 'make.com', 'rag', 'prompt', 'openai', 'claude',
       'chatbot', 'mlops', 'fine-tune', 'fine tune', 'machine learning',
+      // A named stack is the specific thing in an otherwise broad sentence.
+      // Without these, "AI agent developer Bedrock" scored two weak points and
+      // tied with the web pack on "developer" and "integration".
+      'ai agent', 'ai engineer', 'bedrock', 'langchain', 'llamaindex',
+      'vector database', 'embeddings', 'hugging face', 'pytorch',
     ],
     // 'ai' is the word half the internet uses about itself now. On its own it
     // says the visitor works in this decade, not that the job is AI engineering.
