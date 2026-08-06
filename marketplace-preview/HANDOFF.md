@@ -58,12 +58,41 @@ live Next.js app. Read the progress log below, then continue from
 
 ### Sessions 1 and 2
 
-- **HARD RULE (user, locked 2026-08-06, applies everywhere):** the design
-  system is FROZEN to the original site. Fonts stay the system sans stack
-  exactly as the current website. Theme, tokens, colours, and tile/card
-  skeletons stay ours. No session (AI or human) changes fonts, theme, or
-  component skeletons unless the user explicitly decides to. Copy for tiles
+- **HARD RULE (user, locked 2026-08-06, restated and sharpened the same day,
+  applies everywhere):** the design system is FROZEN to the original site. It
+  was built by an expensive brand designer and is a fixed inheritance, not a
+  starting point. New work means new elements **composed from** the system,
+  never new values **in** it. No session (AI or human) changes it unless the
+  user explicitly decides to.
+
+  Frozen, specifically:
+  - The `:root` token block, verbatim. Do not add a token, not even to name a
+    colour that already exists as a literal elsewhere. Violated once in
+    session 3 (`--green: #2F7A3D`, already used in index/ugc/linkedin) and
+    backed out.
+  - The type scale, **including headline font size**:
+    `.dhead h1 { font-size: clamp(30px,5vw,42px) }` on every detail page.
+  - The system sans stack. Fraunces serif was tried and rejected.
+  - No italics anywhere.
+  - Section rhythm, wrap width, grid columns and gaps, card radius, padding,
+    border and shadow conventions.
+
+  Home vs detail pages legitimately differ, and that is NOT drift:
+  `index.html` runs wrap 1060 (detail 880), section padding
+  `clamp(48px,8vh,88px)` (detail `clamp(36px,6vh,64px)`), and section h2
+  `clamp(23px,3.6vw,30px)` (detail `clamp(21px,3.4vw,27px)`).
+
+  Before claiming a new page matches, **diff the shared declarations against
+  the template**. Drift is invisible at a glance and compounds. Copy for tiles
   and pages comes from Rohit where Rohit has written it; design stays ours.
+- **Known pre-existing drift between the two approved detail pages, needs a
+  decision:** `ugc.html` and `linkedin.html` disagree on two paragraph
+  max-widths. `.dhead .promise` is 520px in ugc, 540px in linkedin.
+  `.guarantee h2` is 560px in ugc, 580px in linkedin. No font size, weight or
+  letter-spacing differs. The four session-3 pages followed `linkedin.html` as
+  the more recently approved page, so it is now five pages at 540/580 and ugc
+  alone at 520/560. Two lines to normalise either way. Ask before touching an
+  approved file.
 - **Font revert (done):** the Direction A serif experiment (Fraunces) was
   REJECTED by the user and removed from index.html and ugc.html. All pages
   use the original system sans stack only. Direction A survives only as
