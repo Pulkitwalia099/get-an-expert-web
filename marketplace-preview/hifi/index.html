@@ -63,7 +63,7 @@
 
   /* ---------- SKU tiles ---------- */
   .skus { display:grid; gap:14px; grid-template-columns:1fr; }
-  @media (min-width:721px) { .skus { grid-template-columns:repeat(3,1fr); } }
+  @media (min-width:721px) { .skus { grid-template-columns:repeat(3,1fr); grid-auto-flow:dense; } }
   .sku {
     background:var(--glass-strong); border:1px solid rgba(33,30,26,.09);
     border-radius:var(--radius-card); padding:20px;
@@ -102,6 +102,30 @@
     box-shadow:0 8px 20px rgba(0,0,0,.35); }
   .vthumb .cap { position:absolute; left:10px; bottom:10px; font-size:10.5px; color:rgba(246,243,237,.85);
     background:rgba(33,30,26,.55); border-radius:999px; padding:3px 9px; }
+
+  /* Post screenshot slot. Same footprint as .vthumb, light instead of dark.
+     To drop the real post in: <img class="postimg" src="shots/linkedin-post.png" alt="">
+     inside .pthumb, and delete the .pk-* skeleton nodes. */
+  .pthumb { flex:none; width:100%; margin-top:4px; aspect-ratio:4/3; border-radius:12px;
+    position:relative; overflow:hidden; background:#fff; border:1px solid rgba(33,30,26,.12);
+    padding:13px; display:flex; flex-direction:column; gap:8px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.9); }
+  @media (min-width:721px) { .pthumb { width:240px; aspect-ratio:9/12; margin-top:0; align-self:stretch; } }
+  .pthumb .postimg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  .pk-head { display:flex; align-items:center; gap:9px; }
+  .pk-av { flex:none; width:28px; height:28px; border-radius:50%;
+    background:radial-gradient(circle at 34% 30%, #E8C9B0, #A87B5A 70%, #6B4A33); }
+  .pk-name { height:6px; width:62px; border-radius:3px; background:rgba(33,30,26,.17); }
+  .pk-sub { height:5px; width:48px; border-radius:3px; background:rgba(33,30,26,.09); margin-top:5px; }
+  .pk-line { height:5px; border-radius:3px; background:rgba(33,30,26,.10); }
+  .pk-media { flex:1; min-height:46px; border-radius:8px; margin-top:2px;
+    background:rgba(33,30,26,.045); border:1px solid rgba(33,30,26,.06); }
+  .pk-bar { margin-top:auto; display:flex; gap:6px; align-items:center;
+    border-top:1px solid rgba(33,30,26,.08); padding-top:10px; }
+  .pk-pill { height:7px; width:26px; border-radius:4px; background:rgba(33,30,26,.09); }
+  .pk-tbd { position:absolute; right:9px; top:9px; font-size:9.5px; font-weight:650; color:var(--amber);
+    background:rgba(185,122,26,.10); border:1px solid rgba(185,122,26,.3);
+    border-radius:999px; padding:3px 8px; }
 
   .livedemo { margin-top:2px; display:flex; align-items:center; gap:8px; width:fit-content;
     font-size:12px; font-weight:600; color:var(--ink);
@@ -172,13 +196,29 @@
         </a>
 
         <!-- 2 · LinkedIn Marketeer -->
-        <a class="sku" href="#">
-          <div class="toprow"><span class="badge b-ha">Human + Agent</span></div>
-          <h3>LinkedIn Marketeer</h3>
-          <p>Your LinkedIn, run for you. Posts, comments, and outreach in your voice, reviewed by a human before anything ships.</p>
-          <div class="foot">
-            <span class="price">Price TBD</span>
-            <span class="get">See details →</span>
+        <a class="sku flagship" href="#">
+          <div class="fbody">
+            <div class="toprow">
+              <span class="badge b-ha">Human + Agent</span>
+            </div>
+            <h3>LinkedIn Marketeer</h3>
+            <p>Your LinkedIn all handled by our agents. Posts, comments, and engagements all reviewed by a human before anything ships.</p>
+            <div class="foot">
+              <span class="price">Pay per 10k impressions<small>$100 per 10k in your relevant audience</small></span>
+              <span class="get">See details →</span>
+            </div>
+          </div>
+          <div class="pthumb">
+            <span class="pk-tbd">Screenshot TBD</span>
+            <div class="pk-head">
+              <div class="pk-av"></div>
+              <div><div class="pk-name"></div><div class="pk-sub"></div></div>
+            </div>
+            <div class="pk-line"></div>
+            <div class="pk-line"></div>
+            <div class="pk-line" style="width:68%;"></div>
+            <div class="pk-media"></div>
+            <div class="pk-bar"><span class="pk-pill"></span><span class="pk-pill"></span><span class="pk-pill"></span></div>
           </div>
         </a>
 
