@@ -1,7 +1,12 @@
 # Get-an-Expert Web — Marketplace Pivot: Session Handoff
 
-**Last updated:** 2026-08-05 (session 2, end)
+**Last updated:** 2026-08-06 (session 2 close-out, commit 0508869+)
 **Read this first in any new session. It is the single source of truth.**
+
+**New session?** Clone/pull https://github.com/Pulkitwalia099/get-an-expert-web
+and work inside `marketplace-preview/` ONLY. Do not deploy, do not touch the
+live Next.js app. Read the progress log below, then continue from
+"Next session starts at".
 
 ## 0. Progress log
 
@@ -47,8 +52,13 @@
   (user explicitly asked for emoji here, overriding the no-emoji copy rule
   for this section only); section H2 is "You review, then you pay."
 - **Screenshot backlog:** Bash approvals expire repeatedly, so only
-  hifi/shots/index-desktop.png (pre-revision) exists. Re-shoot hifi/index.html
-  and hifi/ugc.html (desktop + mobile) at next opportunity.
+  hifi/shots/index-desktop.png (pre-revision) exists. Re-shoot hifi/index.html,
+  hifi/ugc.html, and hifi/linkedin.html (desktop + mobile) at next opportunity.
+- **Next session starts at:** remaining 4 detail pages (RateMyWipe suggested
+  first, then Voice Outbound, Video Editing, Explainer Videos) using ugc.html
+  as the template; home tiles for those SKUs still link "#". Open questions
+  in section 7 still need user answers (UGC single price, Voice pricing,
+  Video Editing pricing, explainer template prices, RateMyWipe repo URL).
 - **LinkedIn tile (done, session 2):** Rohit's commit b48a3a5 built the
   LinkedIn Marketeer flagship tile (2-span, post-screenshot skeleton,
   $100 per 10k impressions pricing). Taste pass in commit 5a7e4d1: copy
