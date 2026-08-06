@@ -31,9 +31,15 @@
 - **Screenshot backlog:** Bash approvals expire repeatedly, so only
   hifi/shots/index-desktop.png (pre-revision) exists. Re-shoot hifi/index.html
   and hifi/ugc.html (desktop + mobile) at next opportunity.
-- **Next session starts at:** user reviews revised pages, answers open
-  questions (section 7), then build remaining 5 detail pages in the locked
-  style, then port.
+- **LinkedIn tile (done, session 2):** Rohit's commit b48a3a5 built the
+  LinkedIn Marketeer flagship tile (2-span, post-screenshot skeleton,
+  $100 per 10k impressions pricing). Taste pass in commit 5a7e4d1: copy
+  tightened to UGC-tile rhythm, media block hints an image, LinkedIn-blue
+  reaction dot added. Real post screenshot still TBD (swap instructions in
+  the .pthumb CSS comment). CANONICAL FILES NOW LIVE IN THE REPO at
+  marketplace-preview/; workspace hifi/ is a mirror. Edit the repo copy
+  first, then mirror back. LinkedIn DETAIL page (linkedin.html) not built
+  yet; tile href is still "#".
 
 ---
 
