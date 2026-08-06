@@ -5,9 +5,10 @@ Paste this as your first message in the new session:
 ---
 
 Read HANDOFF.md in this folder and continue the get-an-expert marketplace
-work. Current state: Phase A wireframe approved, Direction A brand locked
-(serif headlines, NO italics), home tiles + UGC detail page built in hifi/.
-Next up: my review of the revised pages, then the remaining 5 detail pages.
+work. Current state: all 6 SKU detail pages are built in hifi/ and every home
+tile links to a real page. Screenshots of all 7 pages, desktop and mobile, are
+in hifi/shots/. Next up: my review, then answering the open prices in
+section 7, then real content into the placeholders.
 
 ---
 
@@ -17,8 +18,13 @@ Next up: my review of the revised pages, then the remaining 5 detail pages.
   progress log, locked decisions, open questions, build phases, copy rules.
 - `hifi/index.html` — marketplace home, hero + 6 SKU tiles (Direction A).
 - `hifi/ugc.html` — complete UGC Ads detail page (the template for all SKUs).
+- `hifi/linkedin.html` — LinkedIn Marketeer detail page.
+- `hifi/ratemywipe.html` — RateMyWipe, the free open-source one.
+- `hifi/voice.html` — Voice Outbound, with the talk-to-the-agent demo strip.
+- `hifi/video-editing.html` — Video Editing.
+- `hifi/explainer.html` — Product Explainer Videos, with the template gallery.
 - `hifi/directions.html` — the 3 brand directions explored (A chosen).
-- `hifi/shots/` — screenshots taken so far.
+- `hifi/shots/` — all 7 pages, desktop (1440) and mobile (390).
 - `wireframe/` — Phase A low-fi wireframes (home + UGC) and their shots.
 - `marketplace-tiles-plan.md` — session-1 plan, historical context only.
 

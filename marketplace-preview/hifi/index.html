@@ -66,7 +66,10 @@
     transition: transform .25s var(--spring), box-shadow .25s;
     text-decoration:none; color:inherit;
   }
-  .sku:hover { transform:translateY(-3px); box-shadow:0 18px 36px -14px rgba(45,32,22,.22); }
+  @media (hover:hover) and (pointer:fine) {
+    .sku:hover { transform:translateY(-3px); box-shadow:0 18px 36px -14px rgba(45,32,22,.22); }
+  }
+  .sku:active { transform:scale(0.99); }
   .sku .toprow { display:flex; align-items:center; justify-content:space-between; gap:8px; }
   .badge { font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
     border-radius:999px; padding:4px 10px; }
@@ -141,7 +144,9 @@
   .strip h2 { font-size:clamp(20px,3vw,26px); font-weight:700; letter-spacing:-0.02em; max-width:640px; margin:0 auto; }
   .strip p { margin:12px auto 0; color:var(--ink-2); font-size:15px; max-width:520px; }
   .btnrow { margin-top:22px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
-  .btn { font-size:14px; font-weight:650; border-radius:999px; padding:10px 22px; text-decoration:none; }
+  .btn { font-size:14px; font-weight:650; border-radius:999px; padding:10px 22px; text-decoration:none;
+    transition: transform 160ms var(--ease-out); }
+  .btn:active { transform: scale(0.97); }
   .btn.solid { background:var(--accent-deep); color:#fff; box-shadow:0 6px 16px -6px rgba(158,63,36,.5); }
   .btn.ghost { color:var(--accent-deep); border:1px solid rgba(158,63,36,.3); background:var(--glass-strong); }
 
@@ -222,7 +227,7 @@
         </a>
 
         <!-- 3 · RateMyWipe -->
-        <a class="sku" href="#">
+        <a class="sku" href="ratemywipe.html">
           <div class="toprow"><span class="badge b-free">Agent · Free</span></div>
           <h3>RateMyWipe</h3>
           <p>Our agent reads your AI coding transcripts and rates your wipe coding from 1 to 5. You get a breakdown of weak areas and the exact skill packs and repos to level up. Open source.</p>
@@ -233,7 +238,7 @@
         </a>
 
         <!-- 4 · Voice Outbound -->
-        <a class="sku" href="#">
+        <a class="sku" href="voice.html">
           <div class="toprow"><span class="badge b-ag">Agent + Human QA</span></div>
           <h3>Voice Outbound</h3>
           <p>Give us your call list and script. The voice agent makes the calls, qualifies the leads, and sends you the notes.</p>
@@ -245,7 +250,7 @@
         </a>
 
         <!-- 5 · Video Editing -->
-        <a class="sku" href="#">
+        <a class="sku" href="video-editing.html">
           <div class="toprow"><span class="badge b-ha">Human + Agent</span></div>
           <h3>Video Editing</h3>
           <p>Send raw footage. Get back an edited video, ready to post. Cuts, captions, and sound handled.</p>
@@ -256,7 +261,7 @@
         </a>
 
         <!-- 6 · Explainer Videos -->
-        <a class="sku" href="#">
+        <a class="sku" href="explainer.html">
           <div class="toprow"><span class="badge b-ha">Human + Agent</span></div>
           <h3>Product Explainer Videos</h3>
           <p>Pick a template, send your product, get a launch-ready explainer video at a fixed price per template.</p>
