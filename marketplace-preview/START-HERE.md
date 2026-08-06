@@ -33,6 +33,9 @@ Next up: my review of the revised pages, then the remaining 5 detail pages.
 
 1. Read HANDOFF.md first. Update its progress log before ending the session.
 2. All artifacts stay in this folder.
-3. Copy rules: terse, no em dashes, no exclamation marks, no hype words,
+3. DESIGN SYSTEM IS FROZEN: fonts stay the original site font (system sans
+   stack), theme/tokens/skeletons stay as they are. Do not change them unless
+   the user explicitly decides. Copy comes from Rohit where he has written it.
+4. Copy rules: terse, no em dashes, no exclamation marks, no hype words,
    NO italics. Emoji only where the user explicitly asked (UGC How-it-works).
-4. Prices/copy marked TBD must stay visibly marked until the user decides.
+5. Prices/copy marked TBD must stay visibly marked until the user decides.

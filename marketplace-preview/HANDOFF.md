@@ -5,6 +5,25 @@
 
 ## 0. Progress log
 
+- **HARD RULE (user, locked 2026-08-06, applies everywhere):** the design
+  system is FROZEN to the original site. Fonts stay the system sans stack
+  exactly as the current website. Theme, tokens, colours, and tile/card
+  skeletons stay ours. No session (AI or human) changes fonts, theme, or
+  component skeletons unless the user explicitly decides to. Copy for tiles
+  and pages comes from Rohit where Rohit has written it; design stays ours.
+- **Font revert (done):** the Direction A serif experiment (Fraunces) was
+  REJECTED by the user and removed from index.html and ugc.html. All pages
+  use the original system sans stack only. Direction A survives only as
+  layout/tile structure, not typography.
+- **LinkedIn tile (user correction):** copy restored verbatim to Rohit's
+  text; my earlier copy tightening was reverted per the rule above.
+- **UGC promo video (done):** midsesh-promo.mp4 embedded in the UGC flagship
+  tile as autoplay muted loop; file at hifi/assets/midsesh-promo.mp4
+  (~10.7 MB in git).
+- **LinkedIn detail page (done):** hifi/linkedin.html built from the UGC
+  template with Rohit's copy and pricing ($100 per 10k impressions in your
+  relevant audience). Home tile now links to it. FAQ items marked TBD.
+
 - **Phase A (done, session 2):** this HANDOFF.md + low-fi wireframe in
   `wireframe/` (home + UGC detail), screenshots in `wireframe/shots/`.
   User reviewed: "this looks good, go ahead".
@@ -17,11 +36,10 @@
   approvals expired mid-session; re-run the Chrome headless commands).
 - **Name correction (user, session 2):** it is RateMyWipe / "wipe coding",
   never "vibe". Already applied everywhere.
-- **Brand direction LOCKED (user, session 2):** Direction A (Warm Editorial).
-  Hard rule from user: NO italics anywhere ("delivered" must not be italic,
-  no "AI slop" feel). Serif display (Fraunces) headlines + sans body is
-  applied in hifi/. Directions B and C are rejected as full directions; the
-  numbered-SKU idea may still be borrowed later, undecided.
+- **Brand direction (corrected 2026-08-06):** Direction A survives as layout
+  and tile structure ONLY. Its typography (Fraunces serif) was rejected and
+  reverted. NO italics anywhere. Fonts remain the original site font; see
+  the HARD RULE at the top of this log. Directions B and C rejected.
 - **UGC page revisions (done, session 2):** input/output section rebuilt as a
   visual flow (mini product-site thumb + reference-ad thumb + model photo →
   big output video card, less text); How it works simplified to 4 emoji-led

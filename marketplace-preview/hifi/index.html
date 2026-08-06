@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
 <title>Hi-fi · Marketplace home + tiles</title>
 <style>
   :root {
@@ -51,11 +50,6 @@
 
   section.block { padding: clamp(48px,8vh,88px) 16px; }
   .wrap { width: min(1060px,100%); margin:0 auto; }
-  /* Direction A: serif display headlines, no italics, sans body */
-  .hero h1, .shead h2, .strip h2, .sku h3 {
-    font-family:"Fraunces","Iowan Old Style",Georgia,serif;
-    font-weight:600; letter-spacing:-0.015em;
-  }
   .shead { text-align:center; margin-bottom:36px; }
   .eyebrow { display:block; font-size:11.5px; font-weight:650; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); }
   .shead h2 { margin-top:10px; font-size:clamp(23px,3.6vw,30px); font-weight:700; letter-spacing:-0.02em; }
@@ -96,6 +90,7 @@
     border-radius:999px; padding:4px 10px; }
   .vthumb { flex:none; width:100%; margin-top:4px; aspect-ratio:16/9; border-radius:12px; position:relative; overflow:hidden;
     background: linear-gradient(150deg,#3A2E26,#211E1A 55%, #4A2E20); display:grid; place-items:center; }
+  .vthumb video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
   @media (min-width:721px) { .vthumb { width:240px; aspect-ratio:9/12; margin-top:0; align-self:stretch; } }
   .vthumb .play { width:46px; height:46px; border-radius:50%; background:rgba(246,243,237,.92);
     display:grid; place-items:center; color:var(--accent-deep); font-size:15px;
@@ -194,17 +189,19 @@
               <span class="get">Start a sample →</span>
             </div>
           </div>
-          <div class="vthumb"><span class="play">▶</span><span class="cap">Sample · 0:31</span></div>
+          <div class="vthumb">
+            <video src="assets/midsesh-promo.mp4" autoplay muted loop playsinline></video>
+          </div>
         </a>
 
         <!-- 2 · LinkedIn Marketeer -->
-        <a class="sku flagship" href="#">
+        <a class="sku flagship" href="linkedin.html">
           <div class="fbody">
             <div class="toprow">
               <span class="badge b-ha">Human + Agent</span>
             </div>
             <h3>LinkedIn Marketeer</h3>
-            <p>Your LinkedIn, run for you. Posts, comments, and engagement in your voice, each one reviewed by a human before it ships.</p>
+            <p>Your LinkedIn all handled by our agents. Posts, comments, and engagements all reviewed by a human before anything ships.</p>
             <div class="foot">
               <span class="price">Pay per 10k impressions<small>$100 per 10k in your relevant audience</small></span>
               <span class="get">See details →</span>
