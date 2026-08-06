@@ -1,0 +1,154 @@
+# Get-an-Expert Web — Marketplace Pivot: Session Handoff
+
+**Last updated:** 2026-08-05 (session 2, end)
+**Read this first in any new session. It is the single source of truth.**
+
+## 0. Progress log
+
+- **Phase A (done, session 2):** this HANDOFF.md + low-fi wireframe in
+  `wireframe/` (home + UGC detail), screenshots in `wireframe/shots/`.
+  User reviewed: "this looks good, go ahead".
+- **Phase C hi-fi (built, pending user review):** `hifi/index.html`
+  (marketplace home: hero "Work, delivered." + 6 SKU tiles, UGC flagship tile
+  spans 2 cols with video thumb), `hifi/ugc.html` (full branded UGC detail
+  page, real copy, prices marked TBD where undecided), `hifi/directions.html`
+  (3 premium brand directions). Verified shot: `hifi/shots/index-desktop.png`.
+  REMAINING: screenshots of ugc.html + directions.html + mobile (Bash
+  approvals expired mid-session; re-run the Chrome headless commands).
+- **Name correction (user, session 2):** it is RateMyWipe / "wipe coding",
+  never "vibe". Already applied everywhere.
+- **Brand direction LOCKED (user, session 2):** Direction A (Warm Editorial).
+  Hard rule from user: NO italics anywhere ("delivered" must not be italic,
+  no "AI slop" feel). Serif display (Fraunces) headlines + sans body is
+  applied in hifi/. Directions B and C are rejected as full directions; the
+  numbered-SKU idea may still be borrowed later, undecided.
+- **UGC page revisions (done, session 2):** input/output section rebuilt as a
+  visual flow (mini product-site thumb + reference-ad thumb + model photo →
+  big output video card, less text); How it works simplified to 4 emoji-led
+  cards (🔍 ✍️ 🎬 ✅) with "You review and pay" as the emphasized main card
+  (user explicitly asked for emoji here, overriding the no-emoji copy rule
+  for this section only); section H2 is "You review, then you pay."
+- **Screenshot backlog:** Bash approvals expire repeatedly, so only
+  hifi/shots/index-desktop.png (pre-revision) exists. Re-shoot hifi/index.html
+  and hifi/ugc.html (desktop + mobile) at next opportunity.
+- **Next session starts at:** user reviews revised pages, answers open
+  questions (section 7), then build remaining 5 detail pages in the locked
+  style, then port.
+
+---
+
+## 1. The pivot (locked by user, session 2)
+
+The site is becoming an **AI + human agent marketplace**:
+
+- Agents deliver the work. Human experts stay in the loop and take
+  accountability for the outcome.
+- It is NOT a self-serve platform. The pitch: "You do your work best,
+  we handle the rest." Pay for outcomes and outputs, not subscriptions to
+  figure things out.
+- Everything is input -> output: user gives defined inputs, gets a defined
+  deliverable back, at a stated price.
+- The existing search bar / "find an AI expert" flow REMAINS as a separate,
+  secondary product ("Looking for a human AI expert instead?").
+
+Supersedes session-1 framing of "five tiles, expert-first". Earlier plan file
+`marketplace-tiles-plan.md` in this folder is historical context only.
+
+## 2. SKU catalog (session 2 state)
+
+Six SKUs named so far. User earlier said "five tiles", then listed six —
+six it is, grid handles any count.
+
+| # | SKU | Badge | Input | Output | Price | Sample hook |
+|---|-----|-------|-------|--------|-------|-------------|
+| 1 | **UGC Ads** (flagship, build first) | HUMAN + AGENT | Product link, a UGC ad you like, optional model photo/brief | Research, script, finished UGC video | Single price TBD; subscription $15/video at 3/week, $10/video at 10/week | Sample first: pay only if you like it |
+| 2 | **LinkedIn Marketeer** | HUMAN + AGENT (assumed) | TBD | TBD | TBD | TBD |
+| 3 | **RateMyWipe** | AGENT | Your Claude session transcripts (open-source tool on GitHub, user runs it on their cloud session) | Wipe-coding level 1-5, breakdown by skill area (planning, reviewing, running tools, etc.), prescribed skill packs/repos to level up | **FREE** | It IS the free sample/lead magnet |
+| 4 | **Voice Outbound** ("voice port") | AGENT + HUMAN QA (assumed) | Call list + script/transcript | Outbound calls done: leads generated and qualified | TBD | On-site voice agent you can talk to, to judge quality |
+| 5 | **Video Editing** | HUMAN + AGENT (assumed) | Raw videos | Edited video | TBD; no content/data yet | TBD |
+| 6 | **Product Explainer Videos** | HUMAN + AGENT (assumed) | Product + launch context | Explainer video from fixed templates | Fixed price per template type | Template gallery |
+
+Notes:
+- "Lead Man" from session 1 appears folded into SKU 4 (voice outbound lead
+  gen/qualification). Confirm, then delete the old name.
+- RateMyWipe details: open-source GitHub project; analyzes your AI coding
+  ("wipe coding") transcripts, scores 1-5, identifies weak areas, recommends
+  skill packs/repos/git records to unlock productivity. Free tier of the
+  marketplace and the credibility play.
+
+## 3. Information architecture
+
+**Home page (new order):**
+1. Sitebar (wordmark, Contact, Privacy, Sign in)
+2. Hero — marketplace positioning line + sub + search bar (search still works,
+   routes to expert flow)
+3. **Services grid — the 6 SKU tiles** (the core of the page)
+4. How it works — Pick a service / Give the input / Agent + expert deliver /
+   Approve and pay
+5. Why this is not self-serve (positioning strip)
+6. Proof/examples (existing "What done looks like", labeled Examples)
+7. Secondary path: "Looking for a human AI expert instead?" -> expert search
+8. Footer
+
+**Detail pages:** one route per SKU, `/services/<slug>`. Shared template:
+header (badge, promise, price, CTA) -> You give / You get -> How it works ->
+sample gallery -> pricing -> guarantee strip -> intake form -> FAQ.
+UGC Ads is the first detail page to be fully built.
+
+## 4. Build plan — iterative, not one-shot
+
+- **Phase A (this session):** HANDOFF.md + low-fi grayscale wireframe of home
+  and UGC detail (`wireframe/`), desktop + mobile screenshots, user review.
+  NO brand styling, NO copy polish. Structure only.
+- **Phase B (next session):** user feedback into wireframe v2; lock tile order,
+  section order, and the UGC detail blocks; fill TBD prices/inputs where user
+  decides; start real copy pass (copy rules below).
+- **Phase C:** hi-fi — apply brand system (cream #F6F3ED, ink #211E1A,
+  terracotta #9E3F24, aurora bg, existing card style) to home tiles + UGC
+  detail in `design/app/index.html` preview; desktop + mobile screenshots.
+- **Phase D:** remaining 5 detail pages; voice-agent demo embed for SKU 4;
+  RateMyWipe flow page (GitHub instructions + results view).
+- **Phase E:** port to the Next.js repo (`repo/`, cloned from
+  github.com/Pulkitwalia099/get-an-expert-web): new `/services/*` routes,
+  tiles component on `app/page.tsx`. `npm test && npm run build` must pass;
+  repo guardrails in section 6.
+
+## 5. Session / context-window strategy
+
+- This HANDOFF.md is updated at the END of every session before anything else.
+- New session opening message: "Read get-an-expert/HANDOFF.md and continue
+  from Phase X."
+- One phase per session max. Phases B/C may split if feedback is heavy.
+- All artifacts stay in `/Users/pulkitwalia/Documents/kimi/workspace/get-an-expert/`:
+  - `design/` — Kimi v3 homepage preview + shots (from session 1 zip)
+  - `repo/` — the real Next.js site (cloned)
+  - `wireframe/` — Phase A output
+  - `marketplace-tiles-plan.md` — superseded, historical
+
+## 6. Standing rules (from repo CLAUDE.md + session 1)
+
+- Copy: terse, no em dashes, no emoji, no exclamation marks, no hype words
+  (seamless, cutting-edge, robust, leverage).
+- Badges `AGENT` / `HUMAN + AGENT` are mandatory honesty labels. Sample-first
+  and Examples labels stay visible. No fake social proof without a label.
+- Backing story, when used: idea started at Harvard Innovation Labs, grant
+  from Rock Venture Catalyst, building out of Founders Inc SF. Never "backed
+  by Harvard".
+- Pending from session 1 (still unapplied to preview): match headline fix,
+  outcome card price/time cuts, restore "Supported and backed by" logo section.
+  These are homepage-edit tasks that now merge into Phase C.
+- Repo port guardrails: files < 400 lines, `npm test` + `npm run build` green,
+  eval gate only if touching prompts/chat route.
+
+## 7. Open questions for user
+
+1. Single UGC video price (post-sample one-time price)?
+2. LinkedIn Marketeer: input, output, price?
+3. Voice Outbound: price model (per call? per qualified lead? monthly?)
+   and is the on-site demo agent real or recorded?
+4. Video Editing: price per video or per minute? Any sample content?
+5. Explainer Videos: how many templates and what price points?
+6. Confirm "Lead Man" = Voice Outbound, or a separate SKU?
+7. Hero positioning line options: "Work, delivered." / "Agents do the work.
+   Experts own the outcome." — pick or propose.
+8. RateMyWipe: exact GitHub repo URL and product name spelling?

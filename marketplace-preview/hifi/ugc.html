@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<title>Hi-fi · UGC Ads detail</title>
+<style>
+  :root {
+    --bg: #F6F3ED; --ink: #211E1A; --ink-2: #5F594E; --ink-3: #8B8375;
+    --line: rgba(33,30,26,.08);
+    --glass: rgba(255,255,255,.55); --glass-strong: rgba(255,255,255,.78);
+    --accent: #C4593C; --accent-deep: #9E3F24; --accent-tint: rgba(196,89,60,.09);
+    --amber: #B97A1A;
+    --ease-out: cubic-bezier(0.23,1,0.32,1); --spring: cubic-bezier(0.34,1.56,0.64,1);
+    --radius-card: 16px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
+    color: var(--ink); background: var(--bg);
+    -webkit-font-smoothing: antialiased; letter-spacing: -0.004em;
+  }
+  .bg { position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(52vw 44vh at 16% 8%,  rgba(255,196,156,.52), transparent 68%),
+      radial-gradient(46vw 42vh at 86% 12%, rgba(206,190,255,.46), transparent 70%),
+      radial-gradient(58vw 50vh at 50% 104%, rgba(168,206,255,.42), transparent 70%);
+  }
+  .page { position: relative; z-index: 1; }
+  .sitebar { display:flex; align-items:center; justify-content:space-between; padding:18px clamp(18px,4vw,40px); }
+  .sitemark { display:flex; align-items:center; gap:7px; font-size:15px; font-weight:700; text-decoration:none; color:inherit; }
+  .worb { width:17px; height:17px; border-radius:50%; background:linear-gradient(140deg,#E8A184,var(--accent));
+    color:#fff; font-size:9px; display:inline-grid; place-items:center; }
+  .sitenav { display:flex; gap:18px; font-size:13.5px; }
+  .sitenav a { color:var(--ink-2); text-decoration:none; }
+
+  section.block { padding: clamp(36px,6vh,64px) 16px; }
+  .wrap { width: min(880px,100%); margin:0 auto; }
+  /* Direction A: serif display headlines, no italics, sans body */
+  .dhead h1, .shead h2, .guarantee h2 {
+    font-family:"Fraunces","Iowan Old Style",Georgia,serif;
+    font-weight:600; letter-spacing:-0.015em;
+  }
+  .eyebrow { display:block; font-size:11.5px; font-weight:650; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); }
+
+  /* Header */
+  .dhead { text-align:center; padding-top: clamp(28px,5vh,56px); }
+  .badge { display:inline-block; font-size:10.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--accent-deep); background:var(--accent-tint); border:1px solid rgba(158,63,36,.28);
+    border-radius:999px; padding:4px 12px; }
+  .samplechip { display:inline-block; margin-left:6px; font-size:10.5px; font-weight:650; color:var(--amber);
+    background:rgba(185,122,26,.09); border:1px solid rgba(185,122,26,.3); border-radius:999px; padding:4px 12px; }
+  .dhead h1 { margin-top:16px; font-size:clamp(30px,5vw,42px); font-weight:750; letter-spacing:-0.03em; }
+  .dhead .promise { margin:12px auto 0; max-width:520px; font-size:clamp(15px,2.2vw,17px); color:var(--ink-2); line-height:1.5; }
+  .priceline { margin-top:16px; font-size:14px; font-weight:700; }
+  .priceline span { color:var(--ink-3); font-weight:400; }
+  .btn { display:inline-block; font-size:15px; font-weight:650; border-radius:999px; padding:13px 30px; text-decoration:none; }
+  .btn.solid { background:var(--accent-deep); color:#fff; box-shadow:0 8px 20px -6px rgba(158,63,36,.5);
+    transition: transform .2s var(--spring); }
+  .btn.solid:hover { transform: translateY(-2px) scale(1.02); }
+  .btn.ghost { color:var(--accent-deep); border:1px solid rgba(158,63,36,.3); background:var(--glass-strong); }
+  .btnrow { margin-top:22px; display:flex; gap:10px; justify-content:center; align-items:center; flex-wrap:wrap; }
+  .nocard { font-size:12.5px; color:var(--ink-3); }
+
+  .shead { text-align:center; margin-bottom:28px; }
+  .shead h2 { margin-top:10px; font-size:clamp(21px,3.4vw,27px); font-weight:700; letter-spacing:-0.02em; }
+
+  /* You give / You get — visual flow */
+  .io-flow { display:grid; gap:16px; grid-template-columns:1fr; align-items:center; }
+  @media (min-width:721px){ .io-flow { grid-template-columns:1fr 44px 1fr; } }
+  .instack { display:flex; flex-direction:column; gap:10px; }
+  .incard { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:14px;
+    padding:11px 13px; display:flex; gap:12px; align-items:center;
+    box-shadow:0 8px 20px -10px rgba(45,32,22,.15); }
+  .incard .meta { min-width:0; }
+  .incard .t1 { font-size:13px; font-weight:650; }
+  .incard .t2 { font-size:11.5px; color:var(--ink-3); margin-top:1px; }
+  /* mini artifact thumbs */
+  .th { flex:none; border-radius:9px; overflow:hidden; position:relative; }
+  .th-site { width:64px; height:44px; background:#fff; border:1px solid rgba(33,30,26,.14); }
+  .th-site .urlbar { height:9px; background:rgba(33,30,26,.06); border-bottom:1px solid rgba(33,30,26,.1);
+    display:flex; align-items:center; padding:0 4px; }
+  .th-site .urlbar i { width:26px; height:3px; border-radius:2px; background:rgba(33,30,26,.25); }
+  .th-site .heroimg { margin:5px 6px 0; height:16px; border-radius:4px;
+    background:linear-gradient(120deg,#C4593C,#E8A184); }
+  .th-site .txtline { margin:4px 6px 0; height:3px; border-radius:2px; background:rgba(33,30,26,.14); }
+  .th-ad { width:38px; height:56px; background:linear-gradient(160deg,#31404E,#211E1A 65%,#2E4A5E);
+    display:grid; place-items:center; color:rgba(246,243,237,.9); font-size:11px; }
+  .th-model { width:44px; height:44px; border-radius:50%;
+    background:radial-gradient(circle at 34% 30%, #E8C9B0, #A87B5A 70%, #6B4A33);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.4); }
+  .io-arrow { text-align:center; font-size:20px; color:var(--accent-deep); font-weight:700; }
+  @media (max-width:720px){ .io-arrow { transform:rotate(90deg); } }
+  .outcard { position:relative; aspect-ratio:9/11; max-width:300px; margin:0 auto; width:100%;
+    border-radius:18px; overflow:hidden; display:grid; place-items:center;
+    background:linear-gradient(160deg,#4A3B30,#211E1A 60%,#5A3423);
+    box-shadow:0 22px 44px -16px rgba(45,32,22,.4); }
+  .outcard .play { width:56px; height:56px; border-radius:50%; background:rgba(246,243,237,.94);
+    display:grid; place-items:center; color:var(--accent-deep); font-size:17px;
+    box-shadow:0 10px 26px rgba(0,0,0,.4); }
+  .outcard .cap { position:absolute; left:12px; bottom:12px; font-size:11.5px; color:rgba(246,243,237,.92);
+    background:rgba(33,30,26,.55); border-radius:999px; padding:4px 11px; }
+  .outcard .ready { position:absolute; right:12px; top:12px; font-size:10px; font-weight:700;
+    letter-spacing:.08em; color:#2F7A3D; background:rgba(246,243,237,.92); border-radius:999px; padding:4px 9px; }
+
+  /* Steps — simplified, emoji-led, step 4 is the hero */
+  .how2 { display:grid; gap:12px; grid-template-columns:1fr; align-items:stretch; }
+  @media (min-width:560px){ .how2 { grid-template-columns:1fr 1fr; } }
+  @media (min-width:900px){ .how2 { grid-template-columns:repeat(4,1fr); } }
+  .h2c { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:14px;
+    padding:18px 14px; text-align:center; box-shadow:0 8px 20px -10px rgba(45,32,22,.14); }
+  .h2c .em { font-size:26px; line-height:1; }
+  .h2c h3 { margin-top:9px; font-size:15px; font-weight:700; }
+  .h2c p { margin-top:4px; font-size:12.5px; color:var(--ink-2); line-height:1.4; }
+  .h2c.main { background:var(--accent-tint); border:1.5px solid rgba(158,63,36,.45); }
+  .h2c.main h3 { color:var(--accent-deep); }
+
+  /* Samples */
+  .samples { display:grid; gap:14px; grid-template-columns:1fr; }
+  @media (min-width:721px){ .samples { grid-template-columns:repeat(3,1fr); } }
+  .vid { aspect-ratio:9/14; border-radius:var(--radius-card); position:relative; overflow:hidden;
+    display:grid; place-items:center; box-shadow:0 16px 34px -14px rgba(45,32,22,.3); }
+  .v1 { background: linear-gradient(160deg,#4A3B30,#211E1A 60%,#5A3423); }
+  .v2 { background: linear-gradient(160deg,#31404E,#211E1A 60%,#2E4A5E); }
+  .v3 { background: linear-gradient(160deg,#4A3A52,#211E1A 60%,#5E2E4A); }
+  .vid .play { width:52px; height:52px; border-radius:50%; background:rgba(246,243,237,.92);
+    display:grid; place-items:center; color:var(--accent-deep); font-size:16px;
+    box-shadow:0 10px 24px rgba(0,0,0,.35); }
+  .vid .cap { position:absolute; left:12px; bottom:12px; font-size:11px; color:rgba(246,243,237,.9);
+    background:rgba(33,30,26,.55); border-radius:999px; padding:4px 10px; }
+  .vid .dur { position:absolute; right:12px; top:12px; font-size:11px; color:rgba(246,243,237,.9);
+    background:rgba(33,30,26,.55); border-radius:999px; padding:3px 9px; }
+
+  /* Pricing */
+  .tiers { display:grid; gap:14px; grid-template-columns:1fr; }
+  @media (min-width:721px){ .tiers { grid-template-columns:repeat(3,1fr); } }
+  .tier { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:var(--radius-card);
+    padding:22px; box-shadow:0 10px 26px -12px rgba(45,32,22,.15); display:flex; flex-direction:column; gap:8px; }
+  .tier.hot { border:1.5px solid rgba(158,63,36,.45); }
+  .tier .tname { font-size:13px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--ink-2); }
+  .tier .tprice { font-size:24px; font-weight:750; letter-spacing:-0.02em; }
+  .tier .tprice small { font-size:13px; font-weight:400; color:var(--ink-3); }
+  .tier p { font-size:13.5px; color:var(--ink-2); line-height:1.45; flex:1; }
+  .tier .tcta { margin-top:6px; text-align:center; font-size:13.5px; font-weight:650; color:var(--accent-deep);
+    border:1px solid rgba(158,63,36,.3); border-radius:999px; padding:9px; text-decoration:none; }
+  .tier .tcta.solid { background:var(--accent-deep); color:#fff; }
+
+  /* Guarantee */
+  .guarantee { text-align:center; background:var(--glass); border:1px solid var(--line);
+    border-radius:var(--radius-card); padding:30px 22px; }
+  .guarantee h2 { font-size:clamp(19px,3vw,24px); font-weight:700; letter-spacing:-0.02em; max-width:560px; margin:0 auto; }
+  .guarantee p { margin-top:10px; color:var(--ink-2); font-size:14.5px; }
+
+  /* Intake */
+  .form { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:var(--radius-card);
+    padding:24px; box-shadow:0 10px 26px -12px rgba(45,32,22,.15); }
+  .field { margin-bottom:16px; }
+  .field label { display:block; font-size:13px; font-weight:650; margin-bottom:6px; }
+  .field label small { color:var(--ink-3); font-weight:400; }
+  .field input, .field textarea {
+    width:100%; border:1px solid rgba(33,30,26,.14); border-radius:10px; background:#fff;
+    font:inherit; font-size:14px; padding:11px 13px; color:var(--ink); outline:none; }
+  .field input:focus, .field textarea:focus { border-color:rgba(158,63,36,.5); }
+  .field textarea { min-height:84px; resize:vertical; }
+  .upload { border:1.5px dashed rgba(33,30,26,.2); border-radius:10px; padding:16px; text-align:center;
+    font-size:13px; color:var(--ink-2); background:rgba(255,255,255,.6); }
+  .formnote { text-align:center; font-size:12.5px; color:var(--ink-3); margin-top:12px; }
+
+  /* FAQ */
+  .faq details { border-bottom:1px solid var(--line); padding:14px 2px; }
+  .faq summary { font-size:14.5px; font-weight:650; cursor:pointer; list-style:none; }
+  .faq summary::after { content:"+"; float:right; color:var(--ink-3); }
+  .faq details[open] summary::after { content:"–"; }
+  .faq details p { margin-top:8px; font-size:13.5px; color:var(--ink-2); line-height:1.5; }
+  .tbd { color:var(--amber); font-size:12px; font-weight:650; }
+
+  .cross { text-align:center; }
+  .foot { text-align:center; color:var(--ink-3); font-size:12.5px; padding:26px 16px 40px; }
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="page">
+
+  <header class="sitebar">
+    <a class="sitemark" href="index.html"><span class="worb">✳︎</span>midsesh</a>
+    <nav class="sitenav"><a href="index.html">All services</a><a href="#">Contact</a><a href="#">Sign in</a></nav>
+  </header>
+
+  <!-- 1 · Header -->
+  <section class="block dhead">
+    <div class="wrap">
+      <span class="badge">Human + Agent</span><span class="samplechip">Sample first</span>
+      <h1>UGC Ads</h1>
+      <p class="promise">Send your product link and an ad you like. We research it, script it, and send back a finished UGC video.</p>
+      <div class="priceline">Pay only if you like it <span>· subscriptions from $10 per video</span></div>
+      <div class="btnrow">
+        <a class="btn solid" href="#start">Start a sample</a>
+        <span class="nocard">No card needed</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 · You give / You get -->
+  <section class="block">
+    <div class="wrap">
+      <div class="shead"><span class="eyebrow">Input, output</span><h2>Three things in. One video out.</h2></div>
+      <div class="io-flow">
+        <div class="instack">
+          <div class="incard">
+            <div class="th th-site">
+              <div class="urlbar"><i></i></div>
+              <div class="heroimg"></div>
+              <div class="txtline"></div>
+              <div class="txtline" style="width:60%;"></div>
+            </div>
+            <div class="meta">
+              <div class="t1">Your product link</div>
+              <div class="t2">yourproduct.com</div>
+            </div>
+          </div>
+          <div class="incard">
+            <div class="th th-ad">▶</div>
+            <div class="meta">
+              <div class="t1">A UGC ad you like</div>
+              <div class="t2">the reference we study</div>
+            </div>
+          </div>
+          <div class="incard">
+            <div class="th th-model"></div>
+            <div class="meta">
+              <div class="t1">Model preference</div>
+              <div class="t2">photo or short brief, optional</div>
+            </div>
+          </div>
+        </div>
+        <div class="io-arrow">→</div>
+        <div class="outcard">
+          <span class="ready">READY TO RUN</span>
+          <span class="play">▶</span>
+          <span class="cap">Your UGC video · 0:31</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 · How it works -->
+  <section class="block">
+    <div class="wrap">
+      <div class="shead"><span class="eyebrow">How it works</span><h2>You review, then you pay.</h2></div>
+      <div class="how2">
+        <div class="h2c"><div class="em">🔍</div><h3>We research</h3><p>Your product and the ad you sent.</p></div>
+        <div class="h2c"><div class="em">✍️</div><h3>We script</h3><p>Written for your product.</p></div>
+        <div class="h2c"><div class="em">🎬</div><h3>We make the video</h3><p>Agent drafts, human expert finishes.</p></div>
+        <div class="h2c main"><div class="em">✅</div><h3>You review and pay</h3><p>Only if you like it. If not, you walk away.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 · Samples -->
+  <section class="block">
+    <div class="wrap">
+      <div class="shead"><span class="eyebrow">Samples</span><h2>What comes back</h2></div>
+      <div class="samples">
+        <div class="vid v1"><span class="dur">0:31</span><span class="play">▶</span><span class="cap">Skincare · founder voice</span></div>
+        <div class="vid v2"><span class="dur">0:24</span><span class="play">▶</span><span class="cap">SaaS · problem first</span></div>
+        <div class="vid v3"><span class="dur">0:38</span><span class="play">▶</span><span class="cap">Food · unboxing style</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 · Pricing -->
+  <section class="block">
+    <div class="wrap">
+      <div class="shead"><span class="eyebrow">Pricing</span><h2>Start with one. Stay for the week.</h2></div>
+      <div class="tiers">
+        <div class="tier">
+          <div class="tname">Single video</div>
+          <div class="tprice">$ — <small><span class="tbd">price TBD</span></small></div>
+          <p>One sample video. Watch it first. Pay only if you want it.</p>
+          <a class="tcta" href="#start">Start a sample</a>
+        </div>
+        <div class="tier hot">
+          <div class="tname">Starter · weekly</div>
+          <div class="tprice">$15 <small>per video · 3 videos a week</small></div>
+          <p>$45 a week. A steady flow of fresh creatives. Pause or cancel anytime.</p>
+          <a class="tcta solid" href="#start">Subscribe</a>
+        </div>
+        <div class="tier hot">
+          <div class="tname">Volume · weekly</div>
+          <div class="tprice">$10 <small>per video · 10 videos a week</small></div>
+          <p>$100 a week. For teams testing angles at scale. Pause or cancel anytime.</p>
+          <a class="tcta solid" href="#start">Subscribe</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 · Guarantee -->
+  <section class="block">
+    <div class="wrap">
+      <div class="guarantee">
+        <h2>Watch the sample. If you like it, you pay. If you don't, you don't.</h2>
+        <p>No card needed to start. The decision happens after you see the work.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 · Intake form -->
+  <section class="block" id="start">
+    <div class="wrap">
+      <div class="shead"><span class="eyebrow">Start a sample</span><h2>Two minutes of input</h2></div>
+      <div class="form">
+        <div class="field">
+          <label>Product link</label>
+          <input type="url" placeholder="https://yourproduct.com">
+        </div>
+        <div class="field">
+          <label>A UGC ad you like</label>
+          <input type="url" placeholder="Link to the TikTok, Reel, or Short">
+        </div>
+        <div class="field">
+          <label>Model preference <small>optional</small></label>
+          <div class="upload">Drop a photo of the model you want, or describe them below</div>
+        </div>
+        <div class="field">
+          <label>Anything else we should know <small>optional</small></label>
+          <textarea placeholder="Tone, audience, words to avoid"></textarea>
+        </div>
+        <div class="btnrow"><a class="btn solid" href="#">Start a sample</a></div>
+        <div class="formnote">No payment step. We confirm and research starts within 48 hours. <span class="tbd">SLA TBD</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 · FAQ -->
+  <section class="block">
+    <div class="wrap">
+      <div class="shead"><span class="eyebrow">FAQ</span><h2>The fine print, plainly</h2></div>
+      <div class="faq">
+        <details><summary>How long does a sample take?</summary><p>Working target is 48 hours from a complete brief. <span class="tbd">TBD</span></p></details>
+        <details><summary>How many revisions do I get?</summary><p><span class="tbd">TBD</span> Working proposal: one revision round on a paid video.</p></details>
+        <details><summary>Do I own the video?</summary><p>Once paid, full usage rights are yours. Unpaid samples stay ours and are never run. <span class="tbd">TBD</span></p></details>
+        <details><summary>Who actually makes it?</summary><p>The agent does the research, script, and draft. A human expert reviews, finishes, and is accountable for what you receive.</p></details>
+        <details><summary>Who are the models? Can I pick one?</summary><p><span class="tbd">TBD</span> You can send a photo or describe the person you want in the intake form.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9 · Cross-sell -->
+  <section class="block cross">
+    <div class="wrap">
+      <div class="btnrow">
+        <a class="btn ghost" href="index.html">Browse all services</a>
+        <a class="btn ghost" href="#">Ask for something custom</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="foot">midsesh · Contact · Privacy</div>
+
+</div>
+</body>
+</html>
