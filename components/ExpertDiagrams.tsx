@@ -28,7 +28,7 @@ export function ChatVsAgentsDiagram() {
     <svg
       viewBox="0 0 900 320"
       role="img"
-      aria-label="Two panels. Left, the AI you know: a chat window answering one message at a time. Right, the AI we build you: a network of agents working together on a whole job, ending at you for approval."
+      aria-label="Two panels. Left, the AI you use today: a chat window answering one message at a time. Right, where it can go: a network of agents running the whole job, ending at you for sign off."
     >
       <defs>
         <marker id="cva-a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
@@ -45,8 +45,8 @@ export function ChatVsAgentsDiagram() {
       <rect x="44" y="112" width="250" height="30" rx="13" fill="#F1EDE4" />
       <rect x="150" y="154" width="246" height="30" rx="13" fill="#262019" />
       <rect x="44" y="196" width="190" height="30" rx="13" fill="#F1EDE4" />
-      <text x="220" y="290" textAnchor="middle" fontSize="14.5" fontWeight="650" fill="#211E1A">The AI you know</text>
-      <text x="220" y="309" textAnchor="middle" fontSize="12" fill="#8B8375">one message at a time</text>
+      <text x="220" y="290" textAnchor="middle" fontSize="14.5" fontWeight="650" fill="#211E1A">Your AI today</text>
+      <text x="220" y="309" textAnchor="middle" fontSize="12" fill="#8B8375">answers one message at a time</text>
 
       {/* Right: the agent network we build */}
       <rect x="480" y="24" width="400" height="236" rx="16" fill="#FFFFFF" stroke="#DAD3C7" strokeWidth="1.5" />
@@ -69,8 +69,8 @@ export function ChatVsAgentsDiagram() {
       <line x1="756" y1="150" x2="806" y2="150" stroke="#C4593C" strokeWidth="1.7" markerEnd="url(#cva-a)" />
       <circle cx="828" cy="150" r="18" fill="#C4593C" />
       <text x="828" y="154" textAnchor="middle" fontSize="10.5" fontWeight="700" fill="#FFFFFF">you</text>
-      <text x="680" y="290" textAnchor="middle" fontSize="14.5" fontWeight="650" fill="#211E1A">The AI we build you</text>
-      <text x="680" y="309" textAnchor="middle" fontSize="12" fill="#8B8375">runs the whole job, you approve</text>
+      <text x="680" y="290" textAnchor="middle" fontSize="14.5" fontWeight="650" fill="#211E1A">Your AI, agentized</text>
+      <text x="680" y="309" textAnchor="middle" fontSize="12" fill="#8B8375">runs the whole job, you sign off</text>
     </svg>
   );
 }
@@ -104,7 +104,7 @@ export function WorkflowLoopDiagram() {
 
       <rect x="248" y="40" width="180" height="74" rx="14" fill="#FFFFFF" stroke="#DAD3C7" strokeWidth="1.5" />
       <text x="338" y="72" textAnchor="middle" fontSize="15.5" fontWeight="650" fill="#211E1A">Your workflow</text>
-      <text x="338" y="94" textAnchor="middle" fontSize="12.5" fill="#5F594E">built with you</text>
+      <text x="338" y="94" textAnchor="middle" fontSize="12.5" fill="#5F594E">agents run it end to end</text>
 
       <rect x="484" y="40" width="180" height="74" rx="14" fill="#F7E7E0" stroke="#C4593C" strokeWidth="1.5" />
       <text x="574" y="72" textAnchor="middle" fontSize="15.5" fontWeight="650" fill="#211E1A">You review</text>

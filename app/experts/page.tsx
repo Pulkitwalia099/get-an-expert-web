@@ -7,7 +7,7 @@ import ExpertMachineDiagram from '@/components/ExpertMachineDiagram';
 export const metadata: Metadata = {
   title: 'Become an expert · Get An Expert',
   description:
-    'You are already the expert. We turn the way you work into an agent you own, so you do ten times the work and keep the part only you can do.',
+    'Almost everything you deliver can be agentized. Agents run the work, you make the final call, and your judgment goes ten times further.',
 };
 
 export default function Experts() {
@@ -20,60 +20,57 @@ export default function Experts() {
           Back to Get An Expert
         </Link>
 
-        {/* 1. Context: the 10x value prop, one line each */}
+        {/* 1. The hook: their judgment is the scarce thing, agents multiply it.
+            No CTA yet, nothing is earned this early. */}
         <header className="exp-hero">
           <span className="exp-tag">For experts</span>
-          <h1>You are the expert. Let agents do the other 80 percent.</h1>
+          <h1>Your work can run without you. Your judgment cannot.</h1>
           <p className="exp-lead">
-            Agents take the repetitive 80 percent. You keep the creative 20 percent, and serve ten
-            times the clients.
+            Almost everything you deliver can be agentized. Agents run the work end to end. You
+            review, tweak and sign off. Ten times the output, the same you.
           </p>
-          <div className="exp-hero-cta">
-            <a href="#join" className="cta">
-              Join as an expert
-            </a>
-            <span className="exp-hero-note">Free to join. You keep 90 percent of every sale.</span>
-          </div>
         </header>
 
-        {/* The reframe, drawn instead of written */}
+        {/* The lift, drawn instead of written: what they do with AI today is
+            good, and it can carry far more. */}
         <section className="exp-section">
-          <h2>You already use AI. You have only seen the edge of it.</h2>
+          <h2>You already use AI well. It can carry far more of your work.</h2>
           <figure className="exp-figure">
             <ChatVsAgentsDiagram />
           </figure>
           <p className="exp-figcap">
-            People are quietly agentizing whole workflows. We build that for you, around the thing
-            you are already great at.
+            Experts everywhere are turning their craft into agents. This is the new way work ships.
+            We build it with you.
           </p>
         </section>
 
-        {/* 2. How it works: four short beats, then the deal in one picture */}
+        {/* 2. How it works: humans learn your workflow, agents run it,
+            you keep the final say, it improves on your feedback. */}
         <section className="exp-section">
           <h2>How it works</h2>
           <ol className="exp-steps">
             <li className="exp-step">
               <span className="n">1</span>
               <span className="t">
-                <b>You talk.</b> Our AI interviews you like a sharp apprentice.
+                <b>You talk.</b> Our AI engineers sit with you and learn exactly how you work.
               </span>
             </li>
             <li className="exp-step">
               <span className="n">2</span>
               <span className="t">
-                <b>We build.</b> Agents take over every repetitive step.
+                <b>We agentize it.</b> Your process becomes agents that run it end to end.
               </span>
             </li>
             <li className="exp-step">
               <span className="n">3</span>
               <span className="t">
-                <b>You approve.</b> Nothing ships without your final say.
+                <b>You review and tweak.</b> Every result waits for your final say.
               </span>
             </li>
             <li className="exp-step">
               <span className="n">4</span>
               <span className="t">
-                <b>It learns.</b> Every note you give makes it sharper.
+                <b>It improves.</b> Each review you give feeds back and sharpens it.
               </span>
             </li>
           </ol>
@@ -81,17 +78,17 @@ export default function Experts() {
             <WorkflowLoopDiagram />
           </figure>
 
-          <h3>One LinkedIn post, under the hood</h3>
+          <h3>What agentized work looks like</h3>
           <p>
-            Twelve agents research, write and check, in parallel. Then everything stops and waits
-            for you.
+            One example from many. If you write LinkedIn posts, your work agentized looks like
+            this. Cold email, video, Reddit, enrichment, yours will have its own shape.
           </p>
           <figure className="exp-figure wide">
             <ExpertMachineDiagram />
           </figure>
           <p className="exp-figcap">
-            12 agents · 3 checks · 1 you. Looks like a lot. It is. We build it, it runs in minutes,
-            and nothing goes live until you say so.
+            10 agents · 2 checks · 1 you. We build this for you. It runs in minutes and waits for
+            your sign off.
           </p>
         </section>
 
@@ -119,8 +116,8 @@ export default function Experts() {
             <div>
               <div className="exp-q">Will this replace me?</div>
               <div className="exp-a">
-                No. Agents do the grunt work. Every final call is yours, and that judgment is what
-                clients pay for.
+                No. Agents run the work, but nothing ships without your review, and that judgment is
+                what clients pay for.
               </div>
             </div>
             <div>
@@ -144,11 +141,11 @@ export default function Experts() {
           </div>
         </section>
 
-        {/* CTA */}
+        {/* CTA: earned by now. Email plus what they are great at. */}
         <section className="exp-section" id="join">
           <h2>Join as an expert</h2>
           <div className="exp-join">
-            <p>Tell us what you are great at. We build your first agent with you.</p>
+            <p>Pick what you are great at. We reach out and build your first agent with you.</p>
             <ExpertSignup />
           </div>
         </section>

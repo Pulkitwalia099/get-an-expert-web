@@ -741,10 +741,14 @@ div.sav {
    machine, ending at YOU, is visible without scrolling on desktop. Phones
    still scroll it sideways inside the card. */
 .exp-figure.wide {
-  width: min(1160px, calc(100vw - 32px));
+  width: min(1000px, calc(100vw - 32px));
   position: relative; left: 50%; transform: translateX(-50%);
 }
-.exp-figure.wide svg { min-width: 1040px; }
+.exp-figure.wide svg { min-width: 860px; }
+
+/* Join form: category chips above the email row. */
+.exp-cats { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 12px; }
+.exp-other { width: 100%; margin-bottom: 10px; }
 .exp-figcap { font-size: 13px; color: var(--ink-3); line-height: 1.55; margin-top: 8px; }
 
 .exp-earn { list-style: none; margin: 18px 0 0; display: flex; flex-direction: column; gap: 10px; }

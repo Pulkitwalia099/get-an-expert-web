@@ -1,8 +1,9 @@
-// The "wow" diagram: one LinkedIn post under the hood. Deliberately dense,
-// twelve agents in parallel lanes with checks, memory and learning loops, so
-// an expert feels this is a serious machine they could not build alone. The
-// spine stays readable left to right: topic in, research, write, check, YOU,
-// live. Palette matches globals.css.
+// The "wow" diagram: one expert's work, agentized. Shown as a LinkedIn
+// example on the page, with copy making clear it is one shape of many.
+// Dense enough to feel like a serious machine, trimmed enough to survive a
+// phone screen: three research agents in parallel, competing hooks with a
+// judge, drafting and voice, two checks, then everything stops at YOU.
+// Palette matches globals.css.
 
 type Kind = 'end' | 'agent' | 'gate' | 'you' | 'mem';
 
@@ -17,32 +18,28 @@ interface Node {
 }
 
 const N: Record<string, Node> = {
-  topic: { x: 70, y: 300, w: 104, h: 56, label: 'Topic in', kind: 'end' },
-  planner: { x: 225, y: 300, w: 118, h: 56, label: 'Planner', sub: 'agent', kind: 'agent' },
+  topic: { x: 62, y: 280, w: 96, h: 52, label: 'Topic in', kind: 'end' },
 
-  trend: { x: 395, y: 80, w: 130, h: 50, label: 'Trend scan', sub: 'agent', kind: 'agent' },
-  rival: { x: 395, y: 175, w: 130, h: 50, label: 'Rival scan', sub: 'agent', kind: 'agent' },
-  audience: { x: 395, y: 270, w: 130, h: 50, label: 'Audience mine', sub: 'agent', kind: 'agent' },
-  deep: { x: 395, y: 365, w: 130, h: 50, label: 'Deep research', sub: 'agent', kind: 'agent' },
-  merge: { x: 560, y: 220, w: 126, h: 52, label: 'Insight merge', sub: 'agent', kind: 'agent' },
+  trend: { x: 215, y: 110, w: 128, h: 50, label: 'Trend scan', sub: 'agent', kind: 'agent' },
+  audience: { x: 215, y: 230, w: 128, h: 50, label: 'Audience mine', sub: 'agent', kind: 'agent' },
+  deep: { x: 215, y: 350, w: 128, h: 50, label: 'Deep research', sub: 'agent', kind: 'agent' },
+  merge: { x: 380, y: 230, w: 122, h: 52, label: 'Insight merge', sub: 'agent', kind: 'agent' },
 
-  hookA: { x: 720, y: 80, w: 104, h: 44, label: 'Hook A', sub: 'agent', kind: 'agent' },
-  hookB: { x: 720, y: 160, w: 104, h: 44, label: 'Hook B', sub: 'agent', kind: 'agent' },
-  hookC: { x: 720, y: 240, w: 104, h: 44, label: 'Hook C', sub: 'agent', kind: 'agent' },
-  judge: { x: 860, y: 160, w: 112, h: 48, label: 'Hook judge', sub: 'agent', kind: 'agent' },
-  draft: { x: 720, y: 350, w: 104, h: 50, label: 'Draft', sub: 'agent', kind: 'agent' },
-  voice: { x: 860, y: 350, w: 116, h: 50, label: 'Voice match', sub: 'agent', kind: 'agent' },
+  hookA: { x: 540, y: 90, w: 100, h: 44, label: 'Hook A', sub: 'agent', kind: 'agent' },
+  hookB: { x: 540, y: 170, w: 100, h: 44, label: 'Hook B', sub: 'agent', kind: 'agent' },
+  hookC: { x: 540, y: 250, w: 100, h: 44, label: 'Hook C', sub: 'agent', kind: 'agent' },
+  judge: { x: 670, y: 170, w: 108, h: 48, label: 'Hook judge', sub: 'agent', kind: 'agent' },
+  draft: { x: 540, y: 360, w: 100, h: 48, label: 'Draft', sub: 'agent', kind: 'agent' },
+  voice: { x: 670, y: 360, w: 112, h: 48, label: 'Voice match', sub: 'agent', kind: 'agent' },
 
-  fact: { x: 1000, y: 160, w: 114, h: 46, label: 'Fact check', kind: 'gate' },
-  tone: { x: 1000, y: 250, w: 114, h: 46, label: 'Tone check', kind: 'gate' },
-  format: { x: 1000, y: 340, w: 114, h: 46, label: 'Format check', kind: 'gate' },
+  fact: { x: 810, y: 180, w: 110, h: 44, label: 'Fact check', kind: 'gate' },
+  tone: { x: 810, y: 300, w: 110, h: 44, label: 'Tone check', kind: 'gate' },
 
-  you: { x: 1142, y: 250, w: 150, h: 84, label: 'YOU', sub: 'final say', kind: 'you' },
-  live: { x: 1142, y: 80, w: 110, h: 52, label: 'Post live', kind: 'end' },
+  you: { x: 945, y: 240, w: 130, h: 80, label: 'YOU', sub: 'final say', kind: 'you' },
+  live: { x: 945, y: 80, w: 104, h: 50, label: 'Post live', kind: 'end' },
 
-  winners: { x: 560, y: 560, w: 130, h: 50, label: 'Past winners', sub: 'memory', kind: 'mem' },
-  voiceMem: { x: 720, y: 560, w: 130, h: 50, label: 'Voice memory', sub: 'memory', kind: 'mem' },
-  engage: { x: 1000, y: 560, w: 142, h: 50, label: 'Engagement data', sub: 'memory', kind: 'mem' },
+  voiceMem: { x: 540, y: 510, w: 126, h: 48, label: 'Voice memory', sub: 'memory', kind: 'mem' },
+  engage: { x: 810, y: 510, w: 140, h: 48, label: 'Engagement data', sub: 'memory', kind: 'mem' },
 };
 
 const FILL: Record<Kind, string> = {
@@ -78,13 +75,10 @@ function anchor(a: Node, b: Node) {
 }
 
 const FLOW: Array<[string, string]> = [
-  ['topic', 'planner'],
-  ['planner', 'trend'],
-  ['planner', 'rival'],
-  ['planner', 'audience'],
-  ['planner', 'deep'],
+  ['topic', 'trend'],
+  ['topic', 'audience'],
+  ['topic', 'deep'],
   ['trend', 'merge'],
-  ['rival', 'merge'],
   ['audience', 'merge'],
   ['deep', 'merge'],
   ['merge', 'hookA'],
@@ -98,26 +92,24 @@ const FLOW: Array<[string, string]> = [
   ['draft', 'voice'],
   ['voice', 'fact'],
   ['voice', 'tone'],
-  ['voice', 'format'],
   ['fact', 'you'],
   ['tone', 'you'],
-  ['format', 'you'],
   ['you', 'live'],
 ];
 
 const LANES = [
-  { x: 395, label: '1 · Research' },
-  { x: 790, label: '2 · Write' },
-  { x: 1000, label: '3 · Check' },
-  { x: 1142, label: '4 · You' },
+  { x: 215, label: '1 · Research' },
+  { x: 605, label: '2 · Write' },
+  { x: 810, label: '3 · Check' },
+  { x: 945, label: '4 · You' },
 ];
 
 export default function ExpertMachineDiagram() {
   return (
     <svg
-      viewBox="0 0 1240 650"
+      viewBox="0 0 1020 600"
       role="img"
-      aria-label="One LinkedIn post under the hood. A topic goes to a planner agent, which fans out to four research agents in parallel. Their findings merge, three hook agents compete and a judge picks the winner, a draft agent writes, a voice match agent applies your voice, and three checks run for facts, tone and format. Then everything stops at you, the final say, before the post goes live. Below, memory of past winners, your voice and engagement data feeds back, so the whole machine learns from your edits."
+      aria-label="One expert's work, agentized, using a LinkedIn post as the example. A topic fans out to three research agents in parallel. Their findings merge, three hook agents compete and a judge picks the winner, a draft agent writes and a voice match agent applies your voice, then fact and tone checks run. Everything stops at you, the final say, before the post goes live. Below, voice memory and engagement data feed back, so the machine learns from your edits."
     >
       <defs>
         <marker id="m-a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
@@ -142,15 +134,14 @@ export default function ExpertMachineDiagram() {
         );
       })}
 
-      {/* Learning loops, dashed grey: you to memory, live to engagement, and back up into the machine */}
-      <path d="M1142 292 Q1142 560 790 560" fill="none" stroke="#8B8375" strokeWidth="1.7" strokeDasharray="5 5" markerEnd="url(#m-d)" />
-      <path d="M745 535 Q790 450 848 378" fill="none" stroke="#8B8375" strokeWidth="1.7" strokeDasharray="5 5" markerEnd="url(#m-d)" />
-      <path d="M1197 80 Q1240 340 1075 552 " fill="none" stroke="#8B8375" strokeWidth="1.7" strokeDasharray="5 5" markerEnd="url(#m-d)" />
-      <path d="M929 572 Q780 622 629 572" fill="none" stroke="#8B8375" strokeWidth="1.7" strokeDasharray="5 5" markerEnd="url(#m-d)" />
-      <path d="M560 535 L560 250" stroke="#8B8375" strokeWidth="1.7" strokeDasharray="5 5" markerEnd="url(#m-d)" />
+      {/* Learning loops, dashed grey: your edits and live results feed back in */}
+      <path d="M945 282 Q945 512 608 512" fill="none" stroke="#8B8375" strokeWidth="1.7" strokeDasharray="5 5" markerEnd="url(#m-d)" />
+      <path d="M565 486 Q610 440 650 388" fill="none" stroke="#8B8375" strokeWidth="1.7" strokeDasharray="5 5" markerEnd="url(#m-d)" />
+      <path d="M997 82 Q1030 320 883 500" fill="none" stroke="#8B8375" strokeWidth="1.7" strokeDasharray="5 5" markerEnd="url(#m-d)" />
+      <path d="M740 522 Q400 570 378 260" fill="none" stroke="#8B8375" strokeWidth="1.7" strokeDasharray="5 5" markerEnd="url(#m-d)" />
 
-      <text x="1120" y="455" fontSize="11.5" fontWeight="600" fill="#8B8375">your edits teach it</text>
-      <text x="779" y="618" textAnchor="middle" fontSize="11.5" fontWeight="600" fill="#8B8375">what worked comes back</text>
+      <text x="925" y="368" textAnchor="end" fontSize="11.5" fontWeight="600" fill="#8B8375">your edits teach it</text>
+      <text x="620" y="576" textAnchor="middle" fontSize="11.5" fontWeight="600" fill="#8B8375">what worked comes back</text>
 
       {Object.entries(N).map(([key, n]) => (
         <g key={key}>
