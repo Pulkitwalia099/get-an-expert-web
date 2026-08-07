@@ -9,7 +9,8 @@ import BookingSheet, { type BookingSource } from './BookingSheet';
 import DetailSheet from './DetailSheet';
 import Included from './Included';
 import ReelCard from './ReelCard';
-import { ArrowDown, LogoMark } from './icons';
+import { ArrowDown } from './icons';
+import SeamMark from '@/components/SeamMark';
 import s from './setups.module.css';
 
 // The first screen used to open straight into the grid, which on a phone put
@@ -77,7 +78,7 @@ export default function SetupsApp() {
       <div className={s.frame}>
         <nav className={s.nav}>
           <div className={s.brand}>
-            <LogoMark />
+            <SeamMark size={22} />
             midsesh
           </div>
           <button type="button" className={s.navBtn} onClick={() => setAsking(true)}>
@@ -126,7 +127,7 @@ export default function SetupsApp() {
 
         <footer className={s.foot}>
           <div className={s.brand}>
-            <LogoMark size={21} />
+            <SeamMark size={19} />
             midsesh
           </div>
           <span>© 2026</span>
