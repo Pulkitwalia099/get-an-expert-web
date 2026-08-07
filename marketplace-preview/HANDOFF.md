@@ -104,10 +104,42 @@ live Next.js app. Read the progress log below, then continue from
   explainer.html until the user decides whether both SKUs stay. Shots:
   launch-desktop and launch-mobile added, explainer shots restored to
   their session 3 captures.
-- **Still open:** the launch1 to launch5 mp4s (user supplies), captions
-  read off that footage, the Get the first cut submit target, whether the
-  restored explainer SKU keeps a home tile, and the prices hold only
-  until the user reviews them.
+- **Fourth pass, same session, after user review. All of it on
+  launch.html; the restored explainer.html stays untouched.**
+  - **The page sells on the brief now.** Hero reads "Send us a brief",
+    the priceline, the watch-before-pay line, and the Watch it get made
+    button are gone; one See samples button remains. Inputs are two:
+    your brief and your product link. The animated beat player is
+    replaced by the real output slot, wired to `assets/launch1.mp4`.
+  - **Pricing is $200 for the launch video** (up to 60s, delivered
+    within 3 days) **and $500 for the launch kit** (three videos, first
+    cut in 72 hours). No revision row, no pay-when-you-take-it row, no
+    snote under the cards. The pay-related FAQ entries went with them.
+  - **Get started is two fields**, product link and email, button "Get
+    started". We reach out from there; the brief is collected in that
+    conversation, not the form.
+  - **Every tool node in the machine carries a logo chip** in the
+    tool's brand colour. The proxy blocks favicon and GitHub avatar
+    downloads from this sandbox, so the chips are DRAWN stand-ins
+    (flame for Firecrawl, the p5 asterisk, the ElevenLabs bars, brand
+    initials for the rest). The user holds rights to the real logos:
+    drop files in assets/logos/ and set `LOGOS[key] = {img: '...'}` in
+    launch.html to swap any chip for the official mark.
+  - **The launch mp4s are still not in the repo.** The user reports
+    adding them to the assets folder, but no branch on either remote
+    and no upload mount carries them, so the cards and the output slot
+    quietly show their labels. Every card heals the moment
+    `assets/launch1.mp4` to `launch5.mp4` land. **Check each clip end
+    to end on arrival** (ground rule 7).
+  - **Re-verified:** 0px overflow at 320 to 1440 on launch.html and
+    index.html; 22 nodes, 34 edges, 10 chips, all inside their boxes;
+    machine animates; all six video slots degrade quietly; zero em
+    dashes and zero exclamation marks. Shots: launch 1440x4520 and
+    390x4354, index re-taken.
+- **Still open:** the launch1 to launch5 mp4s (user supplies), official
+  logo files for the machine chips, the Get started submit target,
+  whether the restored explainer SKU keeps a home tile, and the prices
+  hold only until the user reviews them.
 
 ### Session 4 (2026-08-06): UGC offer redraft
 
