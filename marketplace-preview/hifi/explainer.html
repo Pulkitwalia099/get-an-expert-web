@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Hi-fi · Product Launch Videos detail</title>
+<title>Hi-fi · Product Explainer Videos detail</title>
 <style>
   :root {
     --bg: #F6F3ED; --ink: #211E1A; --ink-2: #5F594E; --ink-3: #8B8375;
@@ -58,15 +58,15 @@
   }
   .btn:active { transform: scale(0.97); }
   .btnrow { margin-top:22px; display:flex; gap:10px; justify-content:center; align-items:center; flex-wrap:wrap; }
+  .nocard { font-size:12.5px; color:var(--ink-3); }
 
   .shead { text-align:center; margin-bottom:28px; }
   .shead h2 { margin-top:10px; font-size:clamp(21px,3.4vw,27px); font-weight:700; letter-spacing:-0.02em; }
   .shead p { margin-top:8px; color:var(--ink-2); font-size:14.5px; max-width:520px; margin-left:auto; margin-right:auto; }
-  .snote { text-align:center; font-size:13px; color:var(--ink-3); margin-top:16px; }
 
   /* You give / You get */
   .io-flow { display:grid; gap:16px; grid-template-columns:1fr; align-items:center; }
-  @media (min-width:721px){ .io-flow { grid-template-columns:1fr 44px 1.15fr; } }
+  @media (min-width:721px){ .io-flow { grid-template-columns:1fr 44px 1fr; } }
   .instack { display:flex; flex-direction:column; gap:10px; }
   .incard { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:14px;
     padding:11px 13px; display:flex; gap:12px; align-items:center;
@@ -75,6 +75,11 @@
   .incard .t1 { font-size:13px; font-weight:650; }
   .incard .t2 { font-size:11.5px; color:var(--ink-3); margin-top:1px; }
   .th { flex:none; border-radius:9px; overflow:hidden; position:relative; }
+  /* template pick thumb */
+  .th-tpl { width:44px; height:44px; border-radius:10px; background:#fff; border:1px solid rgba(33,30,26,.14);
+    display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; gap:3px; padding:6px; }
+  .th-tpl i { border-radius:3px; background:rgba(33,30,26,.12); }
+  .th-tpl i:first-child { background:var(--accent); }
   /* product site thumb */
   .th-site { width:64px; height:44px; background:#fff; border:1px solid rgba(33,30,26,.14); }
   .th-site .urlbar { height:9px; background:rgba(33,30,26,.06); border-bottom:1px solid rgba(33,30,26,.1);
@@ -83,126 +88,76 @@
   .th-site .heroimg { margin:5px 6px 0; height:16px; border-radius:4px;
     background:linear-gradient(120deg,#C4593C,#E8A184); }
   .th-site .txtline { margin:4px 6px 0; height:3px; border-radius:2px; background:rgba(33,30,26,.14); }
-  /* launch day thumb */
+  /* launch context thumb */
   .th-cal { width:44px; height:44px; border-radius:10px; background:#fff; border:1px solid rgba(33,30,26,.14);
     display:flex; flex-direction:column; overflow:hidden; }
   .th-cal .cm { height:12px; background:var(--accent-deep); }
   .th-cal .cd { flex:1; display:grid; place-items:center; font-size:14px; font-weight:750; color:var(--ink-2); }
-  /* the one thing thumb */
-  .th-line { width:44px; height:44px; border-radius:10px; background:#fff; border:1px solid rgba(33,30,26,.14);
-    display:flex; flex-direction:column; gap:4px; justify-content:center; padding:0 8px; }
-  .th-line i { height:3px; border-radius:2px; background:rgba(33,30,26,.18); }
-  .th-line i:first-child { background:var(--accent); height:4px; }
-  .th-line i:last-child { width:60%; }
   .io-arrow { text-align:center; font-size:20px; color:var(--accent-deep); font-weight:700; }
   @media (max-width:720px){ .io-arrow { transform:rotate(90deg); } }
 
-  /* The animated player that comes out the other side. To swap in a real
-     video later: replace .p-screen's children with
-     <video src="assets/launch1.mp4" autoplay muted loop playsinline>
-     and delete the player script block at the bottom of the file. */
-  .player { position:relative; max-width:340px; margin:0 auto; width:100%;
-    border-radius:16px; overflow:hidden; background:#211E1A;
-    border:1px solid rgba(33,30,26,.12);
+  .outcard { position:relative; aspect-ratio:16/10; max-width:320px; margin:0 auto; width:100%;
+    border-radius:16px; overflow:hidden; display:grid; place-items:center;
+    background:linear-gradient(160deg,#3A3B52,#211E1A 60%,#4A2E20);
     box-shadow:0 22px 44px -16px rgba(45,32,22,.4); }
-  .p-ready { position:absolute; right:12px; top:12px; z-index:2; font-size:9.5px; font-weight:700;
+  .outcard .play { width:50px; height:50px; border-radius:50%; background:rgba(246,243,237,.94);
+    display:grid; place-items:center; color:var(--accent-deep); font-size:16px;
+    box-shadow:0 10px 26px rgba(0,0,0,.4); }
+  .outcard .cap { position:absolute; left:12px; bottom:12px; font-size:11px; color:rgba(246,243,237,.92);
+    background:rgba(33,30,26,.55); border-radius:999px; padding:4px 11px; }
+  .outcard .ready { position:absolute; right:12px; top:12px; font-size:9.5px; font-weight:700;
     letter-spacing:.08em; color:#2F7A3D; background:rgba(246,243,237,.94); border-radius:999px; padding:3px 9px; }
-  .p-screen { aspect-ratio:16/10; display:grid; place-content:center; text-align:center; gap:7px;
-    padding:0 18px; transition: background 600ms ease;
-    background:linear-gradient(160deg,#3A3B52,#211E1A 70%); }
-  .p-screen.b1 { background:linear-gradient(160deg,#4A3B30,#211E1A 70%); }
-  .p-screen.b2 { background:linear-gradient(160deg,#3A3B52,#211E1A 70%); }
-  .p-screen.b3 { background:linear-gradient(160deg,#5A3423,#211E1A 70%); }
-  .p-screen.b4 { background:linear-gradient(160deg,#4A2E20,#211E1A 70%); }
-  .p-beat { font-size:21px; font-weight:750; letter-spacing:.1em; color:rgba(246,243,237,.95); }
-  .p-cap { font-size:11.5px; color:rgba(246,243,237,.72); }
-  .p-chrome { display:flex; align-items:center; gap:10px; padding:10px 14px;
-    background:rgba(33,30,26,.92); border-top:1px solid rgba(246,243,237,.08); }
-  .p-glyph { flex:none; font-size:11px; color:rgba(246,243,237,.9); }
-  .p-bar { flex:1; position:relative; height:4px; border-radius:2px; background:rgba(246,243,237,.18); }
-  .p-fill { position:absolute; left:0; top:0; bottom:0; width:0%; border-radius:2px; background:var(--accent); }
-  .p-tick { position:absolute; top:-2px; width:1.5px; height:8px; background:rgba(246,243,237,.4); }
-  .p-time { flex:none; font-size:10.5px; color:rgba(246,243,237,.75); font-variant-numeric:tabular-nums; }
 
-  /* The results, horizontal carousel of launch videos. Files are the user's
-     own launches, committed as assets/launch1.mp4 through launch5.mp4. A card
-     whose file is not there yet shows its drop label instead of a black box,
-     and the amber note below the carousel appears only while any is missing. */
-  .samples { position:relative; display:flex; gap:14px; overflow-x:auto; scroll-snap-type:x mandatory;
-    padding:6px 0 28px; -webkit-overflow-scrolling:touch; scrollbar-width:thin; }
-  .samples::-webkit-scrollbar { height:6px; }
-  .samples::-webkit-scrollbar-track { background:transparent; }
-  .samples::-webkit-scrollbar-thumb { background:rgba(33,30,26,.18); border-radius:999px; }
-  .vid { flex:0 0 auto; width:84%; scroll-snap-align:center;
-    aspect-ratio:16/9; border-radius:var(--radius-card); position:relative; overflow:hidden;
-    background:#211E1A; display:grid; place-items:center; box-shadow:0 16px 34px -14px rgba(45,32,22,.3);
-    transition: transform 260ms var(--ease-out), opacity 260ms var(--ease-out); }
-  /* Mobile: the centred card is the focused one, neighbours sit back and peek.
-     The script only writes --focus-scale and --focus-op; whether they are used
-     at all is decided here, so the desktop layout cannot inherit stale values
-     if a repaint is missed. */
-  @media (max-width:720px){
-    .samples { padding-inline:8%; }
-    .vid { transform:scale(var(--focus-scale,1)); opacity:var(--focus-op,1); }
-  }
-  @media (min-width:721px){
-    .samples { padding-inline:0; }
-    .vid { width:calc((100% - 14px)/2); scroll-snap-align:start; }
-  }
-  @media (prefers-reduced-motion: reduce){
-    .vid { transition:opacity 260ms ease; transform:none; }
-  }
-  .vid video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; }
-  .vid .cap { position:absolute; left:12px; bottom:12px; z-index:2; font-size:11px; color:rgba(246,243,237,.9);
-    background:rgba(33,30,26,.55); border-radius:999px; padding:4px 10px; }
-  .snd { position:absolute; right:12px; top:12px; z-index:2; border:0; cursor:pointer;
-    font:inherit; font-size:11px; font-weight:650; color:rgba(246,243,237,.92);
-    background:rgba(33,30,26,.55); border-radius:999px; padding:5px 11px;
-    transition: transform 160ms var(--ease-out); }
-  .snd:active { transform: scale(0.97); }
-  @media (hover:hover) and (pointer:fine){ .snd:hover { background:rgba(33,30,26,.75); } }
-  .vid .drop { display:none; text-align:center; font-size:12px; color:var(--ink-3); line-height:1.5; padding:0 16px; }
-  .vid .drop b { display:block; font-size:12.5px; font-weight:650; color:var(--ink-2); }
-  .vid.missing { background:linear-gradient(160deg, rgba(33,30,26,.08), rgba(33,30,26,.03));
-    border:1px dashed rgba(33,30,26,.22); box-shadow:none; }
-  .vid.missing video, .vid.missing .snd, .vid.missing .cap { display:none; }
-  .vid.missing .drop { display:block; }
-  .emptynote { display:none; text-align:center; font-size:12.5px; color:var(--ink-3); margin-top:2px; }
-  .emptynote.show { display:block; }
-  .tbd { color:var(--amber); font-size:12px; font-weight:650; }
-  .ctarow { text-align:center; margin-top:24px; }
-  .ctarow .sub { display:block; margin-top:10px; font-size:12.5px; color:var(--ink-3); }
+  /* Steps */
+  .how2 { display:grid; gap:12px; grid-template-columns:1fr; align-items:stretch; }
+  @media (min-width:560px){ .how2 { grid-template-columns:1fr 1fr; } }
+  @media (min-width:900px){ .how2 { grid-template-columns:repeat(4,1fr); } }
+  .h2c { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:14px;
+    padding:18px 14px; text-align:center; box-shadow:0 8px 20px -10px rgba(45,32,22,.14); }
+  .h2c .em { font-size:26px; line-height:1; }
+  .h2c h3 { margin-top:9px; font-size:15px; font-weight:700; }
+  .h2c p { margin-top:4px; font-size:12.5px; color:var(--ink-2); line-height:1.4; }
+  .h2c.main { background:var(--accent-tint); border:1.5px solid rgba(158,63,36,.45); }
+  .h2c.main h3 { color:var(--accent-deep); }
 
-  /* The machine */
-  .machine { background:var(--glass); border:1px solid var(--line); border-radius:var(--radius-card); padding:22px 10px 14px; }
-  .machine svg { width:100%; max-width:560px; height:auto; display:block; margin:0 auto; }
-  .m-edge { opacity:.22; transition: opacity 420ms ease; }
-  .m-edge.on { opacity:1; }
-  .m-node { opacity:.5; transition: opacity 420ms ease, transform 420ms var(--spring);
-    transform-box:fill-box; transform-origin:center; }
-  .m-node.on { opacity:1; transform:scale(1.03); }
-  @media (prefers-reduced-motion: reduce){ .m-edge, .m-node { transition:none; transform:none; } }
+  /* Template gallery */
+  .tmpls { display:grid; gap:14px; grid-template-columns:1fr; }
+  @media (min-width:640px){ .tmpls { grid-template-columns:1fr 1fr; } }
+  .tmpl { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:var(--radius-card);
+    padding:18px; box-shadow:0 10px 26px -12px rgba(45,32,22,.15);
+    display:flex; flex-direction:column; gap:12px; }
+  /* Fixed board height so cards align across the row whatever the panel count */
+  .board { display:flex; gap:6px; height:78px; }
+  .panel { flex:1; height:100%; border-radius:8px; position:relative; overflow:hidden;
+    background:linear-gradient(160deg,#3A3B52,#211E1A); display:grid; place-items:end start; padding:6px; }
+  .panel span { font-size:8.5px; letter-spacing:.04em; color:rgba(246,243,237,.8); }
+  .panel.p-alt { background:linear-gradient(160deg,#4A3B30,#211E1A); }
+  .panel.p-acc { background:linear-gradient(160deg,#5A3423,#211E1A); }
+  .tmpl .tname { font-size:15px; font-weight:700; }
+  .tmpl .tdesc { font-size:13px; color:var(--ink-2); line-height:1.45; flex:1; }
+  .tmpl .trow { display:flex; align-items:center; justify-content:space-between; gap:8px;
+    border-top:1px solid var(--line); padding-top:11px; }
+  .tmpl .tlen { font-size:12px; color:var(--ink-3); }
+  .tmpl .tprice { font-size:13.5px; font-weight:750; }
 
-  /* Pricing */
-  .tiers { display:grid; gap:14px; grid-template-columns:1fr; }
-  @media (min-width:721px){ .tiers.two { grid-template-columns:repeat(2,1fr); } }
-  .tier { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:var(--radius-card);
-    padding:22px; box-shadow:0 10px 26px -12px rgba(45,32,22,.15); display:flex; flex-direction:column; gap:8px; }
-  .tier.hot { border:1.5px solid rgba(158,63,36,.45); }
-  .tier .tname { font-size:13px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--ink-2); }
-  .tier .tprice { font-size:24px; font-weight:750; letter-spacing:-0.02em; }
-  .tier .tprice small { font-size:13px; font-weight:400; color:var(--ink-3); }
-  .tier .spec { flex:1; margin:6px 0 2px; }
-  .tier .spec div { display:flex; justify-content:space-between; align-items:baseline; gap:10px;
-    font-size:12.5px; padding:7px 0; border-bottom:1px solid var(--line); }
-  .tier .spec div:last-child { border-bottom:0; }
-  .tier .spec i { font-style:normal; color:var(--ink-3); }
-  .tier .spec b { font-weight:650; text-align:right; }
-  .tier .tcta { margin-top:6px; text-align:center; font-size:13.5px; font-weight:650; color:var(--accent-deep);
-    border:1px solid rgba(158,63,36,.3); border-radius:999px; padding:9px; text-decoration:none;
-    transition: transform 160ms var(--ease-out); }
-  .tier .tcta:active { transform: scale(0.97); }
-  .tier .tcta.solid { background:var(--accent-deep); color:#fff; }
+  /* Price table */
+  .ptable { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:var(--radius-card);
+    overflow:hidden; box-shadow:0 10px 26px -12px rgba(45,32,22,.15); }
+  .prow { display:flex; align-items:center; gap:12px; padding:15px 18px;
+    border-bottom:1px solid var(--line); }
+  .prow:last-child { border-bottom:none; }
+  .prow .pn { flex:1; font-size:14px; font-weight:650; min-width:0; }
+  .prow .pl { flex:none; font-size:12.5px; color:var(--ink-3); width:64px; text-align:right; }
+  .prow .pp { flex:none; font-size:15px; font-weight:750; width:96px; text-align:right; }
+  .prow.head { background:rgba(33,30,26,.03); }
+  .prow.head .pn, .prow.head .pl, .prow.head .pp {
+    font-size:10.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); }
+
+  /* Guarantee */
+  .guarantee { text-align:center; background:var(--glass); border:1px solid var(--line);
+    border-radius:var(--radius-card); padding:30px 22px; }
+  .guarantee h2 { font-size:clamp(19px,3vw,24px); font-weight:700; letter-spacing:-0.02em; max-width:580px; margin:0 auto; }
+  .guarantee p { margin-top:10px; color:var(--ink-2); font-size:14.5px; }
 
   /* Intake */
   .form { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:var(--radius-card);
@@ -215,6 +170,7 @@
     font:inherit; font-size:14px; padding:11px 13px; color:var(--ink); outline:none; }
   .field input:focus, .field textarea:focus { border-color:rgba(158,63,36,.5); }
   .field textarea { min-height:84px; resize:vertical; }
+  /* template picker chips */
   .picks { display:flex; gap:8px; flex-wrap:wrap; }
   .pick input { position:absolute; opacity:0; width:0; height:0; }
   .pick { cursor:pointer; }
@@ -234,6 +190,7 @@
   .faq summary::after { content:"+"; float:right; color:var(--ink-3); }
   .faq details[open] summary::after { content:"–"; }
   .faq details p { margin-top:8px; font-size:13.5px; color:var(--ink-2); line-height:1.5; }
+  .tbd { color:var(--amber); font-size:12px; font-weight:650; }
 
   .cross { text-align:center; }
   .foot { text-align:center; color:var(--ink-3); font-size:12.5px; padding:26px 16px 40px; }
@@ -252,12 +209,12 @@
   <section class="block dhead">
     <div class="wrap">
       <span class="badge">Human + Agent</span><span class="fixedchip">Fixed price</span>
-      <h1>Product Launch Videos</h1>
-      <p class="promise">Send a link. Fifteen agents research your product, script it, storyboard it, and cut it. A human editor finishes every launch video. You watch it before you pay.</p>
-      <div class="priceline">From $499 <span>· first cut in 72 hours</span></div>
+      <h1>Product Explainer Videos</h1>
+      <p class="promise">Pick a template, send your product, get a launch-ready explainer video at a fixed price per template.</p>
+      <div class="priceline">Fixed price per template <span>· amounts <span class="tbd">TBD</span></span></div>
       <div class="btnrow">
-        <a class="btn solid" href="#samples">See the launches</a>
-        <a class="btn ghost" href="#machine-sec">Watch it get made</a>
+        <a class="btn solid" href="#templates">Pick a template</a>
+        <span class="nocard">You know the price before we start</span>
       </div>
     </div>
   </section>
@@ -265,9 +222,16 @@
   <!-- 2 · You give / You get -->
   <section class="block">
     <div class="wrap">
-      <div class="shead"><span class="eyebrow">Input, output</span><h2>A link in. A launch video out.</h2></div>
+      <div class="shead"><span class="eyebrow">Input, output</span><h2>A template and a product. One video.</h2></div>
       <div class="io-flow">
         <div class="instack">
+          <div class="incard">
+            <div class="th th-tpl"><i></i><i></i><i></i><i></i></div>
+            <div class="meta">
+              <div class="t1">A template</div>
+              <div class="t2">picked from the gallery below</div>
+            </div>
+          </div>
           <div class="incard">
             <div class="th th-site">
               <div class="urlbar"><i></i></div>
@@ -277,137 +241,136 @@
             </div>
             <div class="meta">
               <div class="t1">Your product</div>
-              <div class="t2">a link, and a demo login if it needs one</div>
+              <div class="t2">a link, and access if it needs a login</div>
             </div>
           </div>
           <div class="incard">
             <div class="th th-cal"><div class="cm"></div><div class="cd">21</div></div>
             <div class="meta">
-              <div class="t1">Your launch day</div>
-              <div class="t2">the date the video has to be ready</div>
-            </div>
-          </div>
-          <div class="incard">
-            <div class="th th-line"><i></i><i></i><i></i></div>
-            <div class="meta">
-              <div class="t1">The one thing</div>
-              <div class="t2">what a viewer must walk away knowing</div>
+              <div class="t1">Your launch context</div>
+              <div class="t2">the date, and what it has to say</div>
             </div>
           </div>
         </div>
         <div class="io-arrow">→</div>
-        <div class="player" id="outplayer">
-          <span class="p-ready">READY TO LAUNCH</span>
-          <div class="p-screen" id="pscreen">
-            <div class="p-beat" id="pbeat">HOOK</div>
-            <div class="p-cap" id="pcap">The pain, in one line</div>
-          </div>
-          <div class="p-chrome">
-            <span class="p-glyph">▶</span>
-            <span class="p-bar" id="pbar"><span class="p-fill" id="pfill"></span></span>
-            <span class="p-time"><span id="ptime">0:00</span> / 1:02</span>
-          </div>
+        <div class="outcard">
+          <span class="ready">READY TO LAUNCH</span>
+          <span class="play">▶</span>
+          <span class="cap">Your explainer · 1:02</span>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- 3 · The results -->
-  <section class="block" id="samples">
+  <!-- 3 · How it works -->
+  <section class="block">
     <div class="wrap">
-      <div class="shead"><span class="eyebrow">The results</span><h2>Launch videos we made</h2></div>
-      <div class="samples">
-        <div class="vid">
-          <video src="assets/launch1.mp4" autoplay muted loop playsinline preload="metadata"></video>
-          <button class="snd" type="button">Sound on</button>
-          <span class="cap">Launch 1</span>
-          <div class="drop"><b>Launch 1</b>drops in as assets/launch1.mp4</div>
-        </div>
-        <div class="vid">
-          <video src="assets/launch2.mp4" autoplay muted loop playsinline preload="metadata"></video>
-          <button class="snd" type="button">Sound on</button>
-          <span class="cap">Launch 2</span>
-          <div class="drop"><b>Launch 2</b>drops in as assets/launch2.mp4</div>
-        </div>
-        <div class="vid">
-          <video src="assets/launch3.mp4" autoplay muted loop playsinline preload="metadata"></video>
-          <button class="snd" type="button">Sound on</button>
-          <span class="cap">Launch 3</span>
-          <div class="drop"><b>Launch 3</b>drops in as assets/launch3.mp4</div>
-        </div>
-        <div class="vid">
-          <video src="assets/launch4.mp4" autoplay muted loop playsinline preload="none"></video>
-          <button class="snd" type="button">Sound on</button>
-          <span class="cap">Launch 4</span>
-          <div class="drop"><b>Launch 4</b>drops in as assets/launch4.mp4</div>
-        </div>
-        <div class="vid">
-          <video src="assets/launch5.mp4" autoplay muted loop playsinline preload="none"></video>
-          <button class="snd" type="button">Sound on</button>
-          <span class="cap">Launch 5</span>
-          <div class="drop"><b>Launch 5</b>drops in as assets/launch5.mp4</div>
-        </div>
-      </div>
-      <div class="emptynote" id="samplenote">Five of our launch videos land here: commit them as assets/launch1.mp4 to launch5.mp4. <span class="tbd">Awaiting upload</span></div>
-      <div class="ctarow">
-        <a class="btn solid" href="#start">Get the first cut</a>
-        <span class="sub">First cut in 72 hours. You pay when you take it.</span>
+      <div class="shead"><span class="eyebrow">How it works</span><h2>Fixed shape, fixed price.</h2></div>
+      <div class="how2">
+        <div class="h2c"><div class="em">🗂</div><h3>Pick a template</h3><p>You see the beats and the price before you start.</p></div>
+        <div class="h2c"><div class="em">🔗</div><h3>Send your product</h3><p>A link, and access if it needs a login.</p></div>
+        <div class="h2c"><div class="em">🎬</div><h3>We build it</h3><p>Agent drafts the script and screens, an expert finishes.</p></div>
+        <div class="h2c main"><div class="em">✅</div><h3>You review before launch</h3><p>You see the video before it goes anywhere.</p></div>
       </div>
     </div>
   </section>
 
-  <!-- 4 · How it works: the machine -->
-  <section class="block" id="machine-sec">
+  <!-- 4 · Template gallery -->
+  <section class="block" id="templates">
     <div class="wrap">
-      <div class="shead"><span class="eyebrow">How it works</span><h2>One link starts the machine.</h2>
-        <p>Fifteen agents research, script, storyboard, and cut in parallel, each on its own tool. Three checks gate the edit. One human editor signs it before you see it.</p></div>
-      <div class="machine" id="machine"></div>
+      <div class="shead">
+        <span class="eyebrow">Templates</span>
+        <h2>Pick the shape first</h2>
+        <p>Each template is a fixed set of beats and a fixed length. The price follows the template, so it does not move once you have picked.</p>
+      </div>
+      <div class="tmpls">
+
+        <div class="tmpl">
+          <div class="board">
+            <div class="panel"><span>PROBLEM</span></div>
+            <div class="panel p-alt"><span>PRODUCT</span></div>
+            <div class="panel p-acc"><span>PROOF</span></div>
+          </div>
+          <div class="tname">Problem, then product</div>
+          <div class="tdesc">Opens on the thing that is broken, then shows your product fixing it. The default for a cold audience.</div>
+          <div class="trow"><span class="tlen">About 60s</span><span class="tprice">$ — <span class="tbd">TBD</span></span></div>
+        </div>
+
+        <div class="tmpl">
+          <div class="board">
+            <div class="panel p-alt"><span>OPEN</span></div>
+            <div class="panel"><span>FEATURE</span></div>
+            <div class="panel"><span>FEATURE</span></div>
+            <div class="panel p-acc"><span>CTA</span></div>
+          </div>
+          <div class="tname">Feature tour</div>
+          <div class="tdesc">Screen recording through the three or four things the product does, narrated. For an audience that already knows the problem.</div>
+          <div class="trow"><span class="tlen">About 90s</span><span class="tprice">$ — <span class="tbd">TBD</span></span></div>
+        </div>
+
+        <div class="tmpl">
+          <div class="board">
+            <div class="panel p-acc"><span>TO CAMERA</span></div>
+            <div class="panel"><span>SCREEN</span></div>
+            <div class="panel p-alt"><span>ASK</span></div>
+          </div>
+          <div class="tname">Founder to camera</div>
+          <div class="tdesc">You talking, cut with product screens. Needs footage of you. The one that works on a launch day post.</div>
+          <div class="trow"><span class="tlen">About 45s</span><span class="tprice">$ — <span class="tbd">TBD</span></span></div>
+        </div>
+
+        <div class="tmpl">
+          <div class="board">
+            <div class="panel p-alt"><span>HOOK</span></div>
+            <div class="panel p-acc"><span>REVEAL</span></div>
+          </div>
+          <div class="tname">Launch teaser</div>
+          <div class="tdesc">Short, no narration, built to autoplay on a feed. Two beats and a date.</div>
+          <div class="trow"><span class="tlen">About 20s</span><span class="tprice">$ — <span class="tbd">TBD</span></span></div>
+        </div>
+
+      </div>
+      <div class="formnote">Four templates shown. How many ship at launch, and what each costs, is not decided. <span class="tbd">Open question</span></div>
     </div>
   </section>
 
   <!-- 5 · Pricing -->
   <section class="block">
     <div class="wrap">
-      <div class="shead"><span class="eyebrow">Pricing</span><h2>One video, or the whole launch</h2></div>
-      <div class="tiers two">
-        <div class="tier">
-          <div class="tname">The launch video</div>
-          <div class="tprice">$499 <small>one video</small></div>
-          <div class="spec">
-            <div><i>Length</i><b>Up to 60s</b></div>
-            <div><i>First cut</i><b>72 hours</b></div>
-            <div><i>Revision round</i><b>One, in 24 hours</b></div>
-            <div><i>You pay</i><b>When you take it</b></div>
-          </div>
-          <a class="tcta" href="#start">Start one video</a>
-        </div>
-        <div class="tier hot">
-          <div class="tname">The launch kit</div>
-          <div class="tprice">$799 <small>one launch, covered</small></div>
-          <div class="spec">
-            <div><i>Hero launch video</i><b>60s</b></div>
-            <div><i>Launch teaser</i><b>20s</b></div>
-            <div><i>Vertical cutdowns</i><b>Three, 15s each</b></div>
-            <div><i>First cuts</i><b>72 hours</b></div>
-            <div><i>Your approval</i><b>Every video</b></div>
-          </div>
-          <a class="tcta solid" href="#start">Start the kit</a>
-        </div>
+      <div class="shead"><span class="eyebrow">Pricing</span><h2>One price per template</h2></div>
+      <div class="ptable">
+        <div class="prow head"><span class="pn">Template</span><span class="pl">Length</span><span class="pp">Price</span></div>
+        <div class="prow"><span class="pn">Problem, then product</span><span class="pl">60s</span><span class="pp">$ —</span></div>
+        <div class="prow"><span class="pn">Feature tour</span><span class="pl">90s</span><span class="pp">$ —</span></div>
+        <div class="prow"><span class="pn">Founder to camera</span><span class="pl">45s</span><span class="pp">$ —</span></div>
+        <div class="prow"><span class="pn">Launch teaser</span><span class="pl">20s</span><span class="pp">$ —</span></div>
       </div>
-      <p class="snote">Every price is the whole price. You watch each video before you pay.</p>
+      <div class="formnote">Every price on this table is undecided. <span class="tbd">TBD</span></div>
     </div>
   </section>
 
-  <!-- 6 · Intake form -->
+  <!-- 6 · Guarantee -->
+  <section class="block">
+    <div class="wrap">
+      <div class="guarantee">
+        <h2>You know the shape and the price before we start.</h2>
+        <p>The template fixes the beats, the length, and the cost. Nothing about the quote moves once you have picked one.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 · Intake form -->
   <section class="block" id="start">
     <div class="wrap">
-      <div class="shead"><h2>Get started</h2></div>
+      <div class="shead"><span class="eyebrow">Get started</span><h2>Two minutes of input</h2></div>
       <div class="form">
         <div class="field">
-          <label>Which one</label>
+          <label>Which template</label>
           <div class="picks">
-            <label class="pick"><input type="radio" name="pkg" checked><span>The launch video</span></label>
-            <label class="pick"><input type="radio" name="pkg"><span>The launch kit</span></label>
+            <label class="pick"><input type="radio" name="tpl" checked><span>Problem, then product</span></label>
+            <label class="pick"><input type="radio" name="tpl"><span>Feature tour</span></label>
+            <label class="pick"><input type="radio" name="tpl"><span>Founder to camera</span></label>
+            <label class="pick"><input type="radio" name="tpl"><span>Launch teaser</span></label>
           </div>
         </div>
         <div class="field">
@@ -415,7 +378,7 @@
           <input type="url" placeholder="https://yourproduct.com">
         </div>
         <div class="field">
-          <label>Launch day <small>optional</small></label>
+          <label>Launch date <small>optional</small></label>
           <input type="text" placeholder="e.g. Product Hunt on the 21st">
         </div>
         <div class="field">
@@ -424,36 +387,30 @@
         </div>
         <div class="field">
           <label>Anything else we should know <small>optional</small></label>
-          <textarea placeholder="Demo login, brand files, words to avoid"></textarea>
+          <textarea placeholder="Login for a demo account, brand files, words to avoid"></textarea>
         </div>
-        <div class="field">
-          <label>Email</label>
-          <input type="email" placeholder="you@company.com">
-        </div>
-        <div class="btnrow"><a class="btn solid" href="#">Get the first cut</a></div>
-        <div class="formnote">First cut in 72 hours, watermarked. The clean master follows your yes, and that is when you pay.</div>
+        <div class="btnrow"><a class="btn solid" href="#">Get started</a></div>
+        <div class="formnote">We confirm the template and the date before work starts. <span class="tbd">Turnaround TBD</span></div>
       </div>
     </div>
   </section>
 
-  <!-- 7 · FAQ -->
+  <!-- 8 · FAQ -->
   <section class="block">
     <div class="wrap">
       <div class="shead"><span class="eyebrow">FAQ</span><h2>The fine print, plainly</h2></div>
       <div class="faq">
-        <details><summary>When do I pay?</summary><p>After you watch. The first cut arrives watermarked inside 72 hours. Say yes and the clean master comes over with the invoice. Say no and that is the end of it.</p></details>
-        <details><summary>How many revisions do I get?</summary><p>One round inside the price, returned within 24 hours. Most notes are voice, pacing, or a scene swap, and the agents re-cut those fast.</p></details>
-        <details><summary>Do I need to be on camera?</summary><p>No. The video is built from your product on screen, generated b-roll, and a narrated script. If you want yourself in it, send phone footage and we cut it in.</p></details>
-        <details><summary>Where does the voice come from?</summary><p>The narration is generated, and you hear it in the first cut. If it reads wrong, the revision round covers a re-record. Want a specific human voice, say so in the notes and we quote it.</p></details>
-        <details><summary>My product needs a login.</summary><p>Send a demo account in the form. Agents record against that, never your own credentials.</p></details>
-        <details><summary>What does the claim check do?</summary><p>Every line in the script has to trace to something your product shows on screen. If we cannot show it, the video does not say it.</p></details>
-        <details><summary>Who actually makes it?</summary><p>Fifteen agents research, script, storyboard, and cut, on tools like Firecrawl, Unipile, LTX Studio, Runway, and Remotion. Claim, sync, and brand checks gate the edit. A human editor finishes the cut and answers for what you receive.</p></details>
-        <details><summary>Who owns the video?</summary><p>You do. The master file and captions are yours to run anywhere. It appears in our results row only with your written yes.</p></details>
+        <details><summary>Can I get something outside the templates?</summary><p>That is a custom job, not this service. The fixed price works because the shape is fixed. Ask for something custom and we will quote it separately.</p></details>
+        <details><summary>How long does it take?</summary><p><span class="tbd">TBD</span> Tell us your launch date in the intake form and we will confirm whether it is possible before you commit.</p></details>
+        <details><summary>How many revisions do I get?</summary><p><span class="tbd">TBD</span> Working proposal is one round inside the template. Changing the template is a new video.</p></details>
+        <details><summary>Do I need to be on camera?</summary><p>Only for Founder to camera. The other three are built from your product and a voiceover. <span class="tbd">Voiceover source TBD</span></p></details>
+        <details><summary>What if my product needs a login to demo?</summary><p>Send a demo account in the intake form. We record against that rather than asking for your own credentials.</p></details>
+        <details><summary>Who actually makes it?</summary><p>The agent drafts the script and captures the screens. A human expert finishes it and is accountable for what you receive.</p></details>
       </div>
     </div>
   </section>
 
-  <!-- 8 · Cross-sell -->
+  <!-- 9 · Cross-sell -->
   <section class="block cross">
     <div class="wrap">
       <div class="btnrow">
@@ -466,273 +423,5 @@
   <div class="foot">midsesh · Contact · Privacy</div>
 
 </div>
-<script>
-  /* The output player scrubs through the launch video's beats on a loop. The
-     scrub is the point: the shape of the video is the product. Runs only
-     while the card is on screen; reduced motion gets the final frame. */
-  (function () {
-    var screen = document.getElementById('pscreen');
-    if (!screen) return;
-    var beatEl = document.getElementById('pbeat'), capEl = document.getElementById('pcap');
-    var fill = document.getElementById('pfill'), timeEl = document.getElementById('ptime');
-    var bar = document.getElementById('pbar');
-    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
-
-    var LEN = 62; /* the virtual video is 1:02 long */
-    var BEATS = [
-      { at: 0,  label: 'HOOK',    cap: 'The pain, in one line' },
-      { at: 6,  label: 'PROBLEM', cap: 'What it costs them today' },
-      { at: 14, label: 'PRODUCT', cap: 'Your product on screen, fixing it' },
-      { at: 44, label: 'PROOF',   cap: 'The number that makes it real' },
-      { at: 55, label: 'ASK',     cap: 'One thing to do next' }
-    ];
-
-    BEATS.forEach(function (b, i) {
-      if (i === 0) return;
-      var t = document.createElement('span');
-      t.className = 'p-tick';
-      t.style.left = (b.at / LEN * 100) + '%';
-      bar.appendChild(t);
-    });
-
-    function fmt(s) { s = Math.floor(s); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
-    function show(t) {
-      var beat = 0;
-      for (var i = 0; i < BEATS.length; i++) if (t >= BEATS[i].at) beat = i;
-      beatEl.textContent = BEATS[beat].label;
-      capEl.textContent = BEATS[beat].cap;
-      screen.className = 'p-screen b' + beat;
-      fill.style.width = (t / LEN * 100) + '%';
-      timeEl.textContent = fmt(t);
-    }
-    if (reduce.matches) { show(LEN); return; }
-
-    /* Time-based on an interval rather than requestAnimationFrame, for the
-       same reason as the LinkedIn counter: intervals keep ticking where rAF
-       is throttled, and a scrub reads fine at 20fps. */
-    var PLAY = 12000, HOLD = 1800, CYCLE = PLAY + HOLD;
-    var epoch = performance.now(), visible = true;
-    setInterval(function () {
-      if (!visible) return;
-      var t = (performance.now() - epoch) % CYCLE;
-      show(Math.min(t / PLAY, 1) * LEN);
-    }, 50);
-
-    if ('IntersectionObserver' in window) {
-      new IntersectionObserver(function (entries) {
-        visible = entries[0].isIntersecting;
-      }, { threshold: 0.3 }).observe(screen);
-    }
-  })();
-
-  /* Sample cards degrade to labelled drop slots until their files exist, and
-     the amber note shows only while at least one is missing. The page heals
-     itself the moment the mp4s are committed; nothing else needs editing. */
-  (function () {
-    var note = document.getElementById('samplenote');
-    var missing = 0;
-    document.querySelectorAll('.samples video').forEach(function (v) {
-      function bad() {
-        if (v.parentElement.classList.contains('missing')) return;
-        v.parentElement.classList.add('missing');
-        missing++;
-        if (note) note.classList.add('show');
-      }
-      v.addEventListener('error', bad);
-      if (v.error) bad();
-    });
-  })();
-
-  /* Carousel: centre-focus scaling on mobile, gentle auto-advance as a scroll
-     cue. Same behaviour as the UGC and LinkedIn pages. */
-  (function () {
-    var scroller = document.querySelector('.samples');
-    if (!scroller) return;
-    var cards = Array.prototype.slice.call(scroller.querySelectorAll('.vid'));
-    if (!cards.length) return;
-
-    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
-    var isMobile = window.matchMedia('(max-width: 720px)');
-    var queued = false;
-
-    function paint() {
-      queued = false;
-      var mid = scroller.scrollLeft + scroller.clientWidth / 2;
-      cards.forEach(function (c) {
-        var d = Math.min(Math.abs((c.offsetLeft + c.offsetWidth / 2) - mid) / c.offsetWidth, 1);
-        c.style.setProperty('--focus-scale', (1 - d * 0.1).toFixed(3));
-        c.style.setProperty('--focus-op', (1 - d * 0.4).toFixed(3));
-      });
-    }
-    function onScroll() { if (!queued) { queued = true; requestAnimationFrame(paint); } }
-
-    scroller.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
-    window.addEventListener('load', onScroll);
-    if (isMobile.addEventListener) isMobile.addEventListener('change', onScroll);
-    paint();
-
-    if (reduce.matches) return;
-
-    var i = 0, stopped = false, hovering = false;
-    var timer = setInterval(function () {
-      if (stopped || hovering || document.hidden) return;
-      i = (i + 1) % cards.length;
-      var t = cards[i];
-      var left = isMobile.matches
-        ? t.offsetLeft - (scroller.clientWidth - t.offsetWidth) / 2
-        : t.offsetLeft;
-      scroller.scrollTo({ left: Math.max(0, left), behavior: 'smooth' });
-    }, 3200);
-
-    function stop() { stopped = true; clearInterval(timer); }
-    ['pointerdown', 'wheel', 'touchstart', 'keydown'].forEach(function (e) {
-      scroller.addEventListener(e, stop, { passive: true, once: true });
-    });
-    scroller.addEventListener('mouseenter', function () { hovering = true; });
-    scroller.addEventListener('mouseleave', function () { hovering = false; });
-    if (isMobile.matches) setTimeout(stop, 20000);
-  })();
-
-  /* One card with sound at a time, same as the UGC page. */
-  document.querySelectorAll('.snd').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      var v = btn.parentElement.querySelector('video');
-      if (!v) return;
-      var on = v.muted;
-      document.querySelectorAll('.samples video').forEach(function (o) { o.muted = true; });
-      document.querySelectorAll('.snd').forEach(function (o) { o.textContent = 'Sound on'; });
-      v.muted = !on;
-      btn.textContent = on ? 'Sound off' : 'Sound on';
-      if (on) v.play();
-    });
-  });
-
-  /* The machine. Same mechanics as the LinkedIn page: one top-to-bottom
-     layout at every width, stages lighting in sequence from the two inputs
-     down to the first cut, then a reset and another run. Each agent carries
-     the tool it works on. */
-  (function () {
-    var host = document.getElementById('machine');
-    if (!host) return;
-
-    var FILL = { end: '#F7E7E0', agent: '#FFFFFF', gate: '#FBF3E2' };
-    var STROKE = { end: '#C4593C', agent: '#DAD3C7', gate: '#D98E28' };
-
-    var NODES = {
-      link:  { x: 135, y: 40,   w: 130, h: 48, label: 'Product link in', kind: 'end', stage: 0 },
-      brief: { x: 345, y: 40,   w: 130, h: 48, label: 'Launch brief in', kind: 'end', stage: 0 },
-      crawl: { x: 90,  y: 150,  w: 122, h: 48, label: 'Product crawl', sub: 'agent · Firecrawl', kind: 'agent', stage: 1 },
-      aud:   { x: 240, y: 150,  w: 120, h: 48, label: 'Audience pull', sub: 'agent · Unipile', kind: 'agent', stage: 1 },
-      comp:  { x: 390, y: 150,  w: 134, h: 48, label: 'Competitor scan', sub: 'agent · Apify', kind: 'agent', stage: 1 },
-      angle: { x: 240, y: 255,  w: 118, h: 50, label: 'Angle lock', sub: 'agent', kind: 'agent', stage: 2 },
-      scrA:  { x: 90,  y: 360,  w: 96, h: 44, label: 'Script A', sub: 'agent', kind: 'agent', stage: 3 },
-      scrB:  { x: 240, y: 360,  w: 96, h: 44, label: 'Script B', sub: 'agent', kind: 'agent', stage: 3 },
-      scrC:  { x: 390, y: 360,  w: 96, h: 44, label: 'Script C', sub: 'agent', kind: 'agent', stage: 3 },
-      judge: { x: 240, y: 455,  w: 136, h: 46, label: 'Retention judge', sub: 'agent', kind: 'agent', stage: 4 },
-      story: { x: 240, y: 550,  w: 124, h: 48, label: 'Storyboard', sub: 'agent · LTX Studio', kind: 'agent', stage: 5 },
-      shots: { x: 90,  y: 650,  w: 126, h: 46, label: 'Screen capture', sub: 'agent · Playwright', kind: 'agent', stage: 6 },
-      broll: { x: 240, y: 650,  w: 112, h: 46, label: 'B-roll gen', sub: 'agent · Runway', kind: 'agent', stage: 6 },
-      moGfx: { x: 390, y: 650,  w: 116, h: 46, label: 'Motion gfx', sub: 'agent · p5.js', kind: 'agent', stage: 6 },
-      cut:   { x: 240, y: 750,  w: 124, h: 48, label: 'Cut assembly', sub: 'agent · Remotion', kind: 'agent', stage: 7 },
-      voice: { x: 150, y: 845,  w: 118, h: 46, label: 'Voice track', sub: 'agent · ElevenLabs', kind: 'agent', stage: 8 },
-      music: { x: 330, y: 845,  w: 106, h: 46, label: 'Music bed', sub: 'agent · Suno', kind: 'agent', stage: 8 },
-      claim: { x: 90,  y: 945,  w: 106, h: 44, label: 'Claim check', kind: 'gate', stage: 9 },
-      sync:  { x: 240, y: 945,  w: 104, h: 44, label: 'Sync check', kind: 'gate', stage: 9 },
-      brand: { x: 390, y: 945,  w: 108, h: 44, label: 'Brand check', kind: 'gate', stage: 9 },
-      edit:  { x: 240, y: 1043, w: 128, h: 50, label: 'Editor finish', sub: 'human', kind: 'end', stage: 10 },
-      out:   { x: 240, y: 1140, w: 156, h: 56, label: 'First cut to you', sub: '72 hours in', kind: 'end', stage: 11 }
-    };
-
-    var FLOW = [
-      ['link', 'crawl'], ['link', 'aud'], ['link', 'comp'],
-      ['brief', 'crawl'], ['brief', 'aud'], ['brief', 'comp'],
-      ['crawl', 'angle'], ['aud', 'angle'], ['comp', 'angle'],
-      ['angle', 'scrA'], ['angle', 'scrB'], ['angle', 'scrC'],
-      ['scrA', 'judge'], ['scrB', 'judge'], ['scrC', 'judge'],
-      ['judge', 'story'],
-      ['story', 'shots'], ['story', 'broll'], ['story', 'moGfx'],
-      ['shots', 'cut'], ['broll', 'cut'], ['moGfx', 'cut'],
-      ['cut', 'voice'], ['cut', 'music'],
-      ['voice', 'claim'], ['voice', 'sync'], ['voice', 'brand'],
-      ['music', 'claim'], ['music', 'sync'], ['music', 'brand'],
-      ['claim', 'edit'], ['sync', 'edit'], ['brand', 'edit'],
-      ['edit', 'out']
-    ];
-
-    var NS = 'http://www.w3.org/2000/svg';
-    function el(tag, attrs, text) {
-      var n = document.createElementNS(NS, tag);
-      for (var k in attrs) n.setAttribute(k, attrs[k]);
-      if (text) n.textContent = text;
-      return n;
-    }
-    function anchorPt(a, b) {
-      var dx = b.x - a.x, dy = b.y - a.y;
-      var sx = dx === 0 ? Infinity : (a.w / 2) / Math.abs(dx);
-      var sy = dy === 0 ? Infinity : (a.h / 2) / Math.abs(dy);
-      var t = Math.min(sx, sy);
-      return { x: a.x + dx * t, y: a.y + dy * t };
-    }
-
-    var svg = el('svg', { viewBox: '0 0 480 1195', role: 'img' });
-    svg.setAttribute('aria-label', 'Your product link and launch brief fan out to three research agents on Firecrawl, Unipile, and Apify. Their findings lock the angle, three script agents compete and a retention judge picks one, a storyboard agent draws the shots in LTX Studio, then screen capture, b-roll, and motion graphics agents build the visuals on Playwright, Runway, and p5.js. A cut assembly agent edits the picture in Remotion, voice and music agents lay the sound with ElevenLabs and Suno, claim, sync, and brand checks gate the edit, and a human editor finishes the cut before the watermarked first cut reaches you inside 72 hours.');
-
-    var defs = el('defs', {});
-    var mk = el('marker', { id: 'mm-a', viewBox: '0 0 10 10', refX: 8, refY: 5,
-      markerWidth: 6.5, markerHeight: 6.5, orient: 'auto-start-reverse' });
-    mk.appendChild(el('path', { d: 'M0 0 L10 5 L0 10 z', fill: '#C4593C' }));
-    defs.appendChild(mk);
-    svg.appendChild(defs);
-
-    FLOW.forEach(function (pair) {
-      var a = NODES[pair[0]], b = NODES[pair[1]];
-      var p1 = anchorPt(a, b), p2 = anchorPt(b, a);
-      svg.appendChild(el('line', { x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y,
-        stroke: '#C4593C', 'stroke-width': 1.7, 'marker-end': 'url(#mm-a)',
-        'class': 'm-edge', 'data-stage': b.stage }));
-    });
-
-    Object.keys(NODES).forEach(function (key) {
-      var n = NODES[key];
-      var g = el('g', { 'class': 'm-node', 'data-stage': n.stage });
-      g.appendChild(el('rect', { x: n.x - n.w / 2, y: n.y - n.h / 2, width: n.w, height: n.h,
-        rx: 12, fill: FILL[n.kind], stroke: STROKE[n.kind], 'stroke-width': 1.4 }));
-      g.appendChild(el('text', { x: n.x, y: n.sub ? n.y - 1 : n.y + 4.5, 'text-anchor': 'middle',
-        'font-size': 13, 'font-weight': 650, fill: '#211E1A' }, n.label));
-      if (n.sub) {
-        g.appendChild(el('text', { x: n.x, y: n.y + 16, 'text-anchor': 'middle', 'font-size': 10,
-          fill: '#8B8375' }, n.sub));
-      }
-      svg.appendChild(g);
-    });
-
-    host.appendChild(svg);
-
-    var parts = Array.prototype.slice.call(svg.querySelectorAll('[data-stage]'));
-    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
-    if (reduce.matches) {
-      parts.forEach(function (p) { p.classList.add('on'); });
-      return;
-    }
-
-    /* One stage lights per tick, holds a beat once the first cut is out,
-       then the whole machine dims and runs again. */
-    var STAGES = 12, HOLD = 3, stage = -2;
-    setInterval(function () {
-      stage++;
-      if (stage >= STAGES + HOLD) {
-        stage = -2;
-        parts.forEach(function (p) { p.classList.remove('on'); });
-        return;
-      }
-      if (stage >= 0 && stage < STAGES) {
-        parts.forEach(function (p) {
-          if (Number(p.getAttribute('data-stage')) === stage) p.classList.add('on');
-        });
-      }
-    }, 620);
-  })();
-</script>
 </body>
 </html>

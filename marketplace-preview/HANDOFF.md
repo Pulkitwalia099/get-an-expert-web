@@ -96,9 +96,18 @@ live Next.js app. Read the progress log below, then continue from
     sample cards degrade to drop slots and the amber note shows; zero em
     dashes and zero exclamation marks. Shots re-taken at exact height:
     explainer 1440x5338 and 390x5434, index 1440x2391 and 390x3957.
+- **Third pass, same session:** the launch page is its own file now.
+  `hifi/launch.html` carries everything the second pass built, and
+  `hifi/explainer.html` is restored byte for byte to its session 3 state,
+  per the user: launch videos are a separate page, not a rewrite of the
+  explainer. The home tile points at launch.html; nothing links to
+  explainer.html until the user decides whether both SKUs stay. Shots:
+  launch-desktop and launch-mobile added, explainer shots restored to
+  their session 3 captures.
 - **Still open:** the launch1 to launch5 mp4s (user supplies), captions
-  read off that footage, the Get the first cut submit target, and the
-  prices hold only until the user reviews them.
+  read off that footage, the Get the first cut submit target, whether the
+  restored explainer SKU keeps a home tile, and the prices hold only
+  until the user reviews them.
 
 ### Session 4 (2026-08-06): UGC offer redraft
 
@@ -574,7 +583,7 @@ harden into a fake number by accident.
 | 2 | LinkedIn Marketeer input and output detail | mostly answered by Rohit; price is $100 per 10k | linkedin.html |
 | 3 | Voice Outbound price model, and is the demo real or recorded? | open, **three options now written out with their trade-offs** | voice.html pricing + demo strip |
 | 4 | Video Editing: per video or per finished minute? Sample content? | open, **two options now written out**; no samples exist | video-editing.html pricing + samples |
-| 5 | Product Launch Videos (was Explainer): price points and samples | **priced by session 5, awaiting user review**: $499 one video, $799 launch kit, first cut in 72 hours. **launch1 to launch5 mp4s awaiting upload** | explainer.html pricing + results |
+| 5 | Product Launch Videos (was Explainer): price points and samples | **priced by session 5, awaiting user review**: $499 one video, $799 launch kit, first cut in 72 hours. **launch1 to launch5 mp4s awaiting upload** | launch.html pricing + results |
 | 6 | Confirm "Lead Man" = Voice Outbound, or a separate SKU? | open | not on any page yet |
 | 7 | Hero line: "Work, delivered." vs "Agents do the work. Experts own the outcome." | "Work, delivered." is live | index.html hero |
 | 8 | RateMyWipe: exact GitHub repo URL | open | ratemywipe.html run block |
