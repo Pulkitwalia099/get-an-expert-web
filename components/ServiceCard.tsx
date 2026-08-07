@@ -21,14 +21,27 @@ export default function ServiceCard({ service, dim = false }: { service: Service
       {service.media === 'video' && (
         <div className={`${styles.thumb} ${styles.thumbVideo}`}>
           {/* muted + playsInline or iOS refuses to autoplay and shows a poster
-              frame instead. No controls: it is a thumbnail, not a player. */}
-          <video src="/media/ugc-sample.mp4" autoPlay muted loop playsInline />
+              frame instead. No controls: it is a thumbnail, not a player.
+
+              A 16:10 cut, not the 9:16 reel. The thumb is `aspect-ratio: 16/10`
+              with `object-fit: cover`, so a portrait file shows the middle 35%
+              of its own height, which on that clip is a torso and a shoe with
+              the head cropped off. The landscape cut lays the same equation out
+              sideways instead, and matches the box exactly, so cover crops
+              nothing. It is rendered from the Tile composition in the
+              midsesh-promo project and carries no audio, because this autoplays
+              muted and an audio track here is weight nobody hears. */}
+          <video src="/media/ugc-tile.mp4" autoPlay muted loop playsInline />
         </div>
       )}
 
       {service.media === 'post' && (
         <div className={`${styles.thumb} ${styles.thumbPost}`}>
-          <span className={styles.tbdTag}>Screenshot TBD</span>
+          {/* A drawn post, not a missing screenshot. It shares its skeleton
+              language with the post card on the LinkedIn page, so it reads as
+              the same designed motif in both places rather than as an image
+              that failed to load. Swapping in a real screenshot later is one
+              element, and nothing around it has to change. */}
           <div className={styles.pkHead}>
             <div className={styles.pkAv} />
             <div>
@@ -49,7 +62,6 @@ export default function ServiceCard({ service, dim = false }: { service: Service
 
       {service.media === 'timeline' && (
         <div className={`${styles.thumb} ${styles.thumbTimeline}`}>
-          <span className={styles.tbdTag}>Samples TBD</span>
           <div className={styles.track}>
             <i style={{ width: '38%' }} />
             <i style={{ width: '24%' }} />

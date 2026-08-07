@@ -66,9 +66,15 @@ export const SERVICES: Service[] = [
     status: 'beta',
     blurb:
       'Send raw footage. Get back an edited video, ready to post. Cuts, captions, and sound handled.',
-    price: 'Price TBD',
-    priceNote: null,
-    priceOpen: true,
+    // Not a number, because there is not one yet, and "Price TBD" on a card a
+    // customer can see reads as an internal note left in by accident. This is
+    // what the page already promises further down: a quote and a turnaround
+    // come back before any editing starts. The service stays orderable, the
+    // intake form still works, and the price is set from real briefs rather
+    // than guessed before the first one arrives.
+    price: 'Quoted per project',
+    priceNote: 'Quote before any editing starts',
+    priceOpen: false,
     cta: 'View more',
     media: 'timeline',
   },
@@ -79,9 +85,13 @@ export const SERVICES: Service[] = [
     status: 'soon',
     blurb:
       'Outbound calls that convert. The voice agent works your list, qualifies the leads, and sends you the notes.',
+    // The rate is undecided, and the card says nothing about it rather than
+    // announcing the gap. Launching soon plus Get notified already tells a
+    // visitor this is not buyable yet, so a second line admitting the price is
+    // missing adds no information and costs confidence.
     price: 'Per qualified lead',
-    priceNote: 'Rate TBD',
-    priceOpen: true,
+    priceNote: null,
+    priceOpen: false,
     cta: 'Get notified',
     media: null,
   },
@@ -92,9 +102,10 @@ export const SERVICES: Service[] = [
     status: 'soon',
     blurb:
       'Pick a template, send your product, get a launch-ready explainer video at a fixed price per template.',
+    // Same reasoning as Voice Outbound above.
     price: 'Fixed price per template',
-    priceNote: 'Prices TBD',
-    priceOpen: true,
+    priceNote: null,
+    priceOpen: false,
     cta: 'Get notified',
     media: null,
   },

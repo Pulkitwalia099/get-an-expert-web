@@ -56,6 +56,15 @@ export default function Home() {
           <span className="worb">✳︎</span>midsesh
         </span>
         <nav className="sitenav">
+          {/* Supply side. A marketplace that only ever addresses buyers has to
+              recruit everyone who delivers the work somewhere else, and
+              /register already exists for exactly this. It reads a step louder
+              than Contact and Privacy beside it, and stays a text link rather
+              than a second pill: Sign in is the one filled control up here,
+              and two of them make a visitor choose instead of act. */}
+          <a className="partner-link" href="/register">
+            Partner with us
+          </a>
           <ContactLink />
           <a className="privacy-link" href="/privacy">
             Privacy

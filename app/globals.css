@@ -197,7 +197,21 @@ a.sitemark { text-decoration: none; }
 @media (hover: hover) and (pointer: fine) {
   .contact-link:hover { color: var(--ink-2); }
 }
-.contact-link:focus-visible, .privacy-link:focus-visible {
+/* One step louder than Contact and Privacy: same size and tracking, ink-2
+   rather than ink-3. It is asking for something, where the other two are
+   answering a question, and that is the smallest change that says so without
+   reaching for a second filled control beside the Sign in pill. */
+.partner-link {
+  position: relative; z-index: 1;
+  font-size: 11px; font-weight: 550; letter-spacing: 0.01em;
+  color: var(--ink-2); text-decoration: none;
+  transition: color .2s var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .partner-link:hover { color: var(--ink); }
+}
+
+.contact-link:focus-visible, .privacy-link:focus-visible, .partner-link:focus-visible {
   outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px;
 }
 
