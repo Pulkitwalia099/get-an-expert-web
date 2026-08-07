@@ -1839,3 +1839,224 @@ a.cta { text-decoration: none; display: inline-block; }
   box-shadow: 0 12px 30px rgba(45, 32, 22, .06);
 }
 .exp-join p { margin-bottom: 14px; }
+
+/* ---------- Experts hero demo (ExpertHeroDemo) ---------- */
+/* Two looping panels on one 15s CSS cycle split into five 3s phases.
+   Chat items (.xa1-.xa5) pop in at their phase and hold until the loop
+   clears; graph parts (.xg1-.xg5) brighten the same way but dim instead of
+   vanishing; one caption line (.ca1-.ca5, .cb1-.cb5) narrates the phase. */
+.xd {
+  margin-top: 30px;
+  display: grid; gap: 16px; grid-template-columns: 1fr 1fr; align-items: stretch;
+}
+@media (max-width: 720px) { .xd { grid-template-columns: 1fr; } }
+.xd-panel {
+  display: flex; flex-direction: column;
+  padding: 18px 18px 16px;
+  background: rgba(255, 255, 255, .5);
+  border: 1px solid rgba(255, 255, 255, .7);
+  outline: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  box-shadow: 0 12px 30px rgba(45, 32, 22, .06);
+}
+.xd-head { margin-bottom: 14px; }
+.xd-title { display: block; font-size: 15px; font-weight: 650; color: var(--ink); }
+.xd-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--ink-3); line-height: 1.45; }
+
+.xd-win {
+  flex: 1; min-height: 296px;
+  background: #fff; border: 1px solid #DAD3C7; border-radius: 14px;
+  padding: 13px 14px 12px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.xd-lights { display: flex; gap: 5px; margin-bottom: 3px; }
+.xd-lights i { width: 9px; height: 9px; border-radius: 50%; }
+.xd-lights i:nth-child(1) { background: #FF5F57; }
+.xd-lights i:nth-child(2) { background: #FEBC2E; }
+.xd-lights i:nth-child(3) { background: #28C840; }
+
+.xd-bub { max-width: 86%; font-size: 12.5px; line-height: 1.45; padding: 8px 11px; border-radius: 13px; }
+.xd-you { align-self: flex-end; background: #262019; color: #F6F3ED; border-bottom-right-radius: 4px; }
+.xd-ai {
+  align-self: flex-start; width: 78%; padding: 11px;
+  background: #F1EDE4; border-bottom-left-radius: 4px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.xd-ai i { height: 5px; border-radius: 3px; background: rgba(33, 30, 26, .16); }
+.xd-ai i:nth-child(2) { width: 92%; }
+.xd-ai i:nth-child(3) { width: 84%; }
+.xd-ai i:nth-child(4) { width: 58%; }
+.xd-chip {
+  align-self: flex-start;
+  font-size: 11px; font-weight: 600; color: var(--accent-deep);
+  background: var(--accent-tint);
+  border: 1px dashed rgba(158, 63, 36, .42);
+  border-radius: 999px; padding: 4px 11px;
+}
+
+.xd-win-graph { justify-content: center; }
+.xd-graph { display: block; width: 100%; height: auto; }
+
+.xd-cap { position: relative; margin-top: 12px; min-height: 40px; }
+.xd-cap span {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; gap: 9px;
+  font-size: 13px; font-weight: 600; color: var(--ink); line-height: 1.3;
+  opacity: 0;
+}
+.xd-cap span i {
+  flex: none; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--accent); color: #fff;
+  font-size: 11px; font-style: normal; font-weight: 700;
+  display: grid; place-items: center;
+}
+
+/* Chat items: pop at the phase start, hold, clear at the loop end. */
+@keyframes xd-pop-1 { 0% { opacity: 0; transform: translateY(5px); } 2.5%, 96% { opacity: 1; transform: none; } 99.5%, 100% { opacity: 0; } }
+@keyframes xd-pop-2 { 0%, 20% { opacity: 0; transform: translateY(5px); } 22.5%, 96% { opacity: 1; transform: none; } 99.5%, 100% { opacity: 0; } }
+@keyframes xd-pop-3 { 0%, 40% { opacity: 0; transform: translateY(5px); } 42.5%, 96% { opacity: 1; transform: none; } 99.5%, 100% { opacity: 0; } }
+@keyframes xd-pop-4 { 0%, 60% { opacity: 0; transform: translateY(5px); } 62.5%, 96% { opacity: 1; transform: none; } 99.5%, 100% { opacity: 0; } }
+@keyframes xd-pop-5 { 0%, 80% { opacity: 0; transform: translateY(5px); } 82.5%, 96% { opacity: 1; transform: none; } 99.5%, 100% { opacity: 0; } }
+.xa1 { animation: xd-pop-1 15s infinite; }
+.xa2 { animation: xd-pop-2 15s infinite; }
+.xa3 { animation: xd-pop-3 15s infinite; }
+.xa4 { animation: xd-pop-4 15s infinite; }
+.xa5 { animation: xd-pop-5 15s infinite; }
+
+/* Graph parts: same staging, but the machine stays faintly visible. */
+@keyframes xd-dim-1 { 0% { opacity: .28; } 2.5%, 96% { opacity: 1; } 100% { opacity: .28; } }
+@keyframes xd-dim-2 { 0%, 20% { opacity: .28; } 22.5%, 96% { opacity: 1; } 100% { opacity: .28; } }
+@keyframes xd-dim-3 { 0%, 40% { opacity: .28; } 42.5%, 96% { opacity: 1; } 100% { opacity: .28; } }
+@keyframes xd-dim-4 { 0%, 60% { opacity: .28; } 62.5%, 96% { opacity: 1; } 100% { opacity: .28; } }
+@keyframes xd-dim-5 { 0%, 80% { opacity: .28; } 82.5%, 96% { opacity: 1; } 100% { opacity: .28; } }
+.xg1 { animation: xd-dim-1 15s infinite; }
+.xg2 { animation: xd-dim-2 15s infinite; }
+.xg3 { animation: xd-dim-3 15s infinite; }
+.xg4 { animation: xd-dim-4 15s infinite; }
+.xg5 { animation: xd-dim-5 15s infinite; }
+
+/* The YOU node breathes twice during the review phase. */
+@keyframes xd-you-pulse {
+  0%, 60% { transform: scale(1); }
+  64% { transform: scale(1.07); }
+  68% { transform: scale(1); }
+  72% { transform: scale(1.07); }
+  76%, 100% { transform: scale(1); }
+}
+.xd-youc { animation: xd-you-pulse 15s infinite; transform-origin: center; transform-box: fill-box; }
+
+/* Captions: only the current phase shows. */
+@keyframes xd-cap-1 { 0%, 18% { opacity: 1; } 21%, 100% { opacity: 0; } }
+@keyframes xd-cap-2 { 0%, 19% { opacity: 0; } 22%, 38% { opacity: 1; } 41%, 100% { opacity: 0; } }
+@keyframes xd-cap-3 { 0%, 39% { opacity: 0; } 42%, 58% { opacity: 1; } 61%, 100% { opacity: 0; } }
+@keyframes xd-cap-4 { 0%, 59% { opacity: 0; } 62%, 78% { opacity: 1; } 81%, 100% { opacity: 0; } }
+@keyframes xd-cap-5 { 0%, 79% { opacity: 0; } 82%, 98% { opacity: 1; } 100% { opacity: 0; } }
+.ca1, .cb1 { animation: xd-cap-1 15s infinite; }
+.ca2, .cb2 { animation: xd-cap-2 15s infinite; }
+.ca3, .cb3 { animation: xd-cap-3 15s infinite; }
+.ca4, .cb4 { animation: xd-cap-4 15s infinite; }
+.ca5, .cb5 { animation: xd-cap-5 15s infinite; }
+
+/* ---------- Experts example flow (ExpertExampleFlow) ---------- */
+/* The LinkedIn Marketeer input-to-output flow, on a 9s loop: cards pop in,
+   the arrow pulses, the post assembles and goes live. */
+.xio {
+  margin: 24px 0 20px;
+  display: grid; gap: 16px; grid-template-columns: 1fr 44px 1fr; align-items: center;
+}
+@media (max-width: 720px) {
+  .xio { grid-template-columns: 1fr; }
+  .xio-arrow { transform: rotate(90deg); }
+}
+.xio-in { display: flex; flex-direction: column; gap: 10px; }
+.xio-card {
+  display: flex; gap: 12px; align-items: center;
+  padding: 11px 13px;
+  background: rgba(255, 255, 255, .78);
+  border: 1px solid rgba(33, 30, 26, .09);
+  border-radius: 14px;
+  box-shadow: 0 8px 20px -10px rgba(45, 32, 22, .15);
+}
+.xio-meta { min-width: 0; display: flex; flex-direction: column; }
+.xio-meta b { font-size: 13px; font-weight: 650; color: var(--ink); }
+.xio-meta i { font-size: 11.5px; font-style: normal; color: var(--ink-3); margin-top: 1px; }
+.xio-th { flex: none; }
+.xio-li {
+  width: 44px; height: 44px; border-radius: 10px;
+  background: #0A66C2; color: #fff;
+  font-size: 15px; font-weight: 800;
+  display: grid; place-items: center;
+}
+.xio-aud {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: radial-gradient(circle at 34% 30%, #B8C9D9, #4A6582 75%, #2E4256);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .4);
+}
+.xio-voice {
+  width: 44px; height: 44px; border-radius: 10px;
+  background: #fff; border: 1px solid rgba(33, 30, 26, .14);
+  display: flex; flex-direction: column; gap: 4px; justify-content: center; padding: 0 8px;
+}
+.xio-voice i { height: 3px; border-radius: 2px; background: rgba(33, 30, 26, .18); }
+.xio-voice i:last-child { width: 60%; }
+.xio-arrow { text-align: center; font-size: 20px; font-weight: 700; color: var(--accent-deep); }
+
+.xio-post {
+  position: relative; width: 100%; max-width: 300px; margin: 0 auto;
+  background: #fff; border: 1px solid rgba(33, 30, 26, .12); border-radius: 14px;
+  padding: 14px; display: flex; flex-direction: column; gap: 8px;
+  box-shadow: 0 18px 38px -16px rgba(45, 32, 22, .3);
+}
+.xio-live {
+  position: absolute; right: 10px; top: 10px;
+  font-size: 10px; font-weight: 700; letter-spacing: .08em;
+  color: #2F7A3D; background: rgba(62, 155, 79, .12);
+  border: 1px solid rgba(62, 155, 79, .3);
+  border-radius: 999px; padding: 3px 9px;
+}
+.xio-pk-head { display: flex; align-items: center; gap: 9px; }
+.xio-pk-av {
+  flex: none; width: 30px; height: 30px; border-radius: 50%;
+  background: radial-gradient(circle at 34% 30%, #E8C9B0, #A87B5A 70%, #6B4A33);
+}
+.xio-pk-name { display: block; height: 6px; width: 66px; border-radius: 3px; background: rgba(33, 30, 26, .17); }
+.xio-pk-sub { display: block; height: 5px; width: 50px; border-radius: 3px; background: rgba(33, 30, 26, .09); margin-top: 5px; }
+.xio-pk-line { height: 5px; border-radius: 3px; background: rgba(33, 30, 26, .10); }
+.xio-pk-short { width: 68%; }
+.xio-pk-media {
+  min-height: 74px; border-radius: 8px; margin-top: 2px;
+  background: linear-gradient(140deg, rgba(33, 30, 26, .07), rgba(33, 30, 26, .03));
+  border: 1px solid rgba(33, 30, 26, .06);
+}
+.xio-pk-bar {
+  display: flex; gap: 6px; align-items: center;
+  border-top: 1px solid rgba(33, 30, 26, .08); padding-top: 10px;
+}
+.xio-pk-dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: #0A66C2; opacity: .85; }
+.xio-pk-pill { height: 7px; width: 26px; border-radius: 4px; background: rgba(33, 30, 26, .09); }
+
+@keyframes xio-card-1 { 0% { opacity: 0; transform: translateY(6px); } 5%, 94% { opacity: 1; transform: none; } 99%, 100% { opacity: 0; } }
+@keyframes xio-card-2 { 0%, 7% { opacity: 0; transform: translateY(6px); } 12%, 94% { opacity: 1; transform: none; } 99%, 100% { opacity: 0; } }
+@keyframes xio-card-3 { 0%, 14% { opacity: 0; transform: translateY(6px); } 19%, 94% { opacity: 1; transform: none; } 99%, 100% { opacity: 0; } }
+@keyframes xio-go { 0%, 24% { opacity: .25; } 34%, 94% { opacity: 1; } 100% { opacity: .25; } }
+@keyframes xio-out { 0%, 38% { opacity: 0; transform: translateY(8px) scale(.98); } 46%, 94% { opacity: 1; transform: none; } 99%, 100% { opacity: 0; } }
+@keyframes xio-badge { 0%, 62% { opacity: 0; transform: scale(.6); } 66% { opacity: 1; transform: scale(1.12); } 70%, 94% { opacity: 1; transform: scale(1); } 99%, 100% { opacity: 0; } }
+.xio-c1 { animation: xio-card-1 9s infinite; }
+.xio-c2 { animation: xio-card-2 9s infinite; }
+.xio-c3 { animation: xio-card-3 9s infinite; }
+.xio-arrow { animation: xio-go 9s infinite; }
+@media (max-width: 720px) {
+  .xio-arrow { animation: none; opacity: 1; }
+}
+.xio-post { animation: xio-out 9s infinite; }
+.xio-live { animation: xio-badge 9s infinite; }
+
+/* Reduced motion: no loops, show the finished frame of every animation. */
+@media (prefers-reduced-motion: reduce) {
+  .xd-bub, .xd-chip, .xd-g, .xd-youc, .xd-cap span,
+  .xio-c1, .xio-c2, .xio-c3, .xio-arrow, .xio-post, .xio-live { animation: none !important; }
+  .xd-bub, .xd-chip, .xd-g, .xio-c1, .xio-c2, .xio-c3, .xio-arrow, .xio-post, .xio-live { opacity: 1; }
+  .xd-cap { min-height: 0; }
+  .xd-cap span { position: static; opacity: 1; }
+  .xd-cap { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+}

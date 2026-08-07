@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import ExpertJoinForm from '@/components/ExpertJoinForm';
-import { ChatVsAgentsDiagram, WorkflowLoopDiagram } from '@/components/ExpertDiagrams';
+import { WorkflowLoopDiagram } from '@/components/ExpertDiagrams';
+import ExpertHeroDemo from '@/components/ExpertHeroDemo';
+import ExpertExampleFlow from '@/components/ExpertExampleFlow';
 import ExpertMachineDiagram from '@/components/ExpertMachineDiagram';
 
 export const metadata: Metadata = {
@@ -20,43 +22,53 @@ export default function Experts() {
           Back to Get An Expert
         </Link>
 
-        {/* 1. The hook, then the picture. One line, no CTA, nothing is
-            earned this early. The panel labels explain the diagram. */}
+        {/* 1. The hook, then the reframe in plain words, then the two
+            looping panels that act it out. No CTA, nothing is earned this
+            early. */}
         <header className="exp-hero">
           <span className="exp-tag">For experts</span>
           <h1>Experts everywhere are turning their craft into agents. We help you do that.</h1>
-          <figure className="exp-figure">
-            <ChatVsAgentsDiagram />
-          </figure>
+          <p className="exp-lead">
+            The AI you use today is a chat. You ask for research or a draft, you get an answer,
+            and every step in between is still yours: the reading, the picking, the rewriting,
+            the checking. Agentized work is different. A team of small sub-agents runs each step
+            of your workflow, and your job becomes giving feedback at a few review points. Here
+            is the same LinkedIn post, both ways:
+          </p>
+          <ExpertHeroDemo />
         </header>
 
-        {/* 2. How it works: humans learn your workflow, agents run it,
-            you keep the final say, it improves on your feedback. */}
+        {/* 2. How it works. Four steps, written so no sentence leans on an
+            unexplained pronoun: every "it" from the old copy is now named. */}
         <section className="exp-section">
           <h2>How it works</h2>
           <ol className="exp-steps">
             <li className="exp-step">
               <span className="n">1</span>
               <span className="t">
-                <b>You talk.</b> Our AI engineers sit with you and learn exactly how you work.
+                <b>You explain your craft.</b> You sit with our AI engineers and walk them through
+                how you do the work, step by step.
               </span>
             </li>
             <li className="exp-step">
               <span className="n">2</span>
               <span className="t">
-                <b>We agentize it.</b> Your process becomes agents that run it end to end.
+                <b>We turn your steps into agents.</b> Each step of your process becomes a small
+                agent, and together the agents run your workflow end to end.
               </span>
             </li>
             <li className="exp-step">
               <span className="n">3</span>
               <span className="t">
-                <b>You review and tweak.</b> Every result waits for your final say.
+                <b>You review the results.</b> Every run ends on your desk, and nothing goes to a
+                client until you approve the work.
               </span>
             </li>
             <li className="exp-step">
               <span className="n">4</span>
               <span className="t">
-                <b>It improves.</b> Each review you give feeds back and sharpens it.
+                <b>Your agents get sharper.</b> Every correction you make is saved, so the next
+                run comes back closer to how you would have done the work yourself.
               </span>
             </li>
           </ol>
@@ -66,16 +78,19 @@ export default function Experts() {
 
           <h3>What agentized work looks like</h3>
           <p>
-            One example from many. If you write LinkedIn posts, your work agentized looks like
-            this. Cold email, video, Reddit, enrichment, yours will have its own shape.
+            One example from many. If you write LinkedIn posts for clients, your work agentized
+            starts as three inputs and ends as a post that goes live:
+          </p>
+          <ExpertExampleFlow />
+          <p>
+            Between the inputs and the live post sits a machine like this one. Every white box is
+            a sub-agent built from your process. Every box marked expert review is a place where
+            you, the expert, check the work before the work moves on. Cold email, video, Reddit,
+            enrichment: your craft will have its own shape.
           </p>
           <figure className="exp-figure wide">
             <ExpertMachineDiagram />
           </figure>
-          <p className="exp-figcap">
-            10 agents · 2 checks · 1 you. We build this for you. It runs in minutes and waits for
-            your sign off.
-          </p>
         </section>
 
         {/* 3. The details: pricing in one line */}
