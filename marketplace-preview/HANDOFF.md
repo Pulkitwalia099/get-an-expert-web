@@ -1,6 +1,6 @@
 # Get-an-Expert Web — Marketplace Pivot: Session Handoff
 
-**Last updated:** 2026-08-07 (session 5 close-out, Explainer offer priced and animated)
+**Last updated:** 2026-08-07 (session 5 close-out, Launch Videos repositioned and priced)
 **Read this first in any new session. It is the single source of truth.**
 
 **New session?** Clone/pull https://github.com/Pulkitwalia099/get-an-expert-web
@@ -58,9 +58,47 @@ live Next.js app. Read the progress log below, then continue from
   rendered text; the spec-row `i` elements compute font-style normal. Shots
   re-taken at exact height: explainer 1440x5999 and 390x7449, index
   1440x2384 and 390x3970.
-- **Still open:** sample videos and any hero mp4 (user supplies), the Get
-  the first cut submit target, and the prices hold only until the user
-  reviews them.
+- **Second pass, same session, after user review:**
+  - **The SKU is now Product Launch Videos.** The user narrowed the offer:
+    launch videos are the product, and the page and home tile follow. The
+    template gallery and the guarantee strip are deleted on request, and
+    the intake heading is plain "Get started". The file stays
+    `explainer.html` so links and this log keep working; rename it at the
+    Next.js port if wanted.
+  - **Pricing collapsed to two tiers with the templates gone:** the launch
+    video $499, the launch kit $799 (60s hero, 20s teaser, three 15s
+    verticals). The $149 / $299 / $649 per-template ladder went with the
+    gallery. Watch before you pay, the 72 hour first cut, and the single
+    24 hour revision round all stay.
+  - **Samples are a five-card video carousel wired to the user's own
+    launches**, `assets/launch1.mp4` to `launch5.mp4`, with the UGC
+    carousel's centre focus, auto-advance, and one-at-a-time sound
+    toggles. **The files are on the user's desktop and could not reach
+    this cloud session**, so each card degrades to a labelled drop slot
+    and an amber Awaiting upload note shows while any file is missing.
+    The page heals itself when the mp4s are committed; nothing else needs
+    editing.
+  - **Check each launch clip end to end on arrival** (ground rule 7):
+    third party marks, brand names, resolution. Captions are numbered
+    Launch 1 to 5 until the footage can actually be read; rewrite them
+    off the footage, not from memory.
+  - **The machine grew to 22 nodes, 34 edges, and 12 stages, and every
+    agent now carries its real tool**: Firecrawl, Unipile, and Apify on
+    research (Unipile and p5 were the user's own asks), LTX Studio on
+    storyboard, Playwright on screen capture, Runway on b-roll, p5.js on
+    motion graphics, Remotion on cut assembly, ElevenLabs and Suno on
+    sound. Tool names sanity-checked by web search this session. The
+    sound lanes sit after picture lock, which is editorially true and
+    keeps every edge clear of every node box.
+  - **Re-verified:** 0px overflow at 320, 390, 721, 1024, and 1440 on
+    both pages; 22 nodes and 34 edges render with no label wider than its
+    box; the player and the machine animate in live playback; all five
+    sample cards degrade to drop slots and the amber note shows; zero em
+    dashes and zero exclamation marks. Shots re-taken at exact height:
+    explainer 1440x5338 and 390x5434, index 1440x2391 and 390x3957.
+- **Still open:** the launch1 to launch5 mp4s (user supplies), captions
+  read off that footage, the Get the first cut submit target, and the
+  prices hold only until the user reviews them.
 
 ### Session 4 (2026-08-06): UGC offer redraft
 
@@ -536,7 +574,7 @@ harden into a fake number by accident.
 | 2 | LinkedIn Marketeer input and output detail | mostly answered by Rohit; price is $100 per 10k | linkedin.html |
 | 3 | Voice Outbound price model, and is the demo real or recorded? | open, **three options now written out with their trade-offs** | voice.html pricing + demo strip |
 | 4 | Video Editing: per video or per finished minute? Sample content? | open, **two options now written out**; no samples exist | video-editing.html pricing + samples |
-| 5 | Explainer Videos: how many templates, what price points? | **proposed by session 5, awaiting user review**: 4 templates at $149 / $299 / $499 / $649, launch kit $799, first cut in 72 hours | explainer.html templates + pricing |
+| 5 | Product Launch Videos (was Explainer): price points and samples | **priced by session 5, awaiting user review**: $499 one video, $799 launch kit, first cut in 72 hours. **launch1 to launch5 mp4s awaiting upload** | explainer.html pricing + results |
 | 6 | Confirm "Lead Man" = Voice Outbound, or a separate SKU? | open | not on any page yet |
 | 7 | Hero line: "Work, delivered." vs "Agents do the work. Experts own the outcome." | "Work, delivered." is live | index.html hero |
 | 8 | RateMyWipe: exact GitHub repo URL | open | ratemywipe.html run block |

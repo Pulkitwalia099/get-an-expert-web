@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Hi-fi · Product Explainer Videos detail</title>
+<title>Hi-fi · Product Launch Videos detail</title>
 <style>
   :root {
     --bg: #F6F3ED; --ink: #211E1A; --ink-2: #5F594E; --ink-3: #8B8375;
@@ -58,7 +58,6 @@
   }
   .btn:active { transform: scale(0.97); }
   .btnrow { margin-top:22px; display:flex; gap:10px; justify-content:center; align-items:center; flex-wrap:wrap; }
-  .nocard { font-size:12.5px; color:var(--ink-3); }
 
   .shead { text-align:center; margin-bottom:28px; }
   .shead h2 { margin-top:10px; font-size:clamp(21px,3.4vw,27px); font-weight:700; letter-spacing:-0.02em; }
@@ -84,11 +83,11 @@
   .th-site .heroimg { margin:5px 6px 0; height:16px; border-radius:4px;
     background:linear-gradient(120deg,#C4593C,#E8A184); }
   .th-site .txtline { margin:4px 6px 0; height:3px; border-radius:2px; background:rgba(33,30,26,.14); }
-  /* template pick thumb */
-  .th-tpl { width:44px; height:44px; border-radius:10px; background:#fff; border:1px solid rgba(33,30,26,.14);
-    display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; gap:3px; padding:6px; }
-  .th-tpl i { border-radius:3px; background:rgba(33,30,26,.12); }
-  .th-tpl i:first-child { background:var(--accent); }
+  /* launch day thumb */
+  .th-cal { width:44px; height:44px; border-radius:10px; background:#fff; border:1px solid rgba(33,30,26,.14);
+    display:flex; flex-direction:column; overflow:hidden; }
+  .th-cal .cm { height:12px; background:var(--accent-deep); }
+  .th-cal .cd { flex:1; display:grid; place-items:center; font-size:14px; font-weight:750; color:var(--ink-2); }
   /* the one thing thumb */
   .th-line { width:44px; height:44px; border-radius:10px; background:#fff; border:1px solid rgba(33,30,26,.14);
     display:flex; flex-direction:column; gap:4px; justify-content:center; padding:0 8px; }
@@ -100,7 +99,7 @@
 
   /* The animated player that comes out the other side. To swap in a real
      video later: replace .p-screen's children with
-     <video src="assets/explainer-hero.mp4" autoplay muted loop playsinline>
+     <video src="assets/launch1.mp4" autoplay muted loop playsinline>
      and delete the player script block at the bottom of the file. */
   .player { position:relative; max-width:340px; margin:0 auto; width:100%;
     border-radius:16px; overflow:hidden; background:#211E1A;
@@ -125,18 +124,54 @@
   .p-tick { position:absolute; top:-2px; width:1.5px; height:8px; background:rgba(246,243,237,.4); }
   .p-time { flex:none; font-size:10.5px; color:rgba(246,243,237,.75); font-variant-numeric:tabular-nums; }
 
-  /* Sample slots. Held empty on purpose until they hold our own delivered
-     work. To fill one: replace the .slot's children with
-     <video src="assets/…" muted loop playsinline> plus its caption. */
-  .slots { display:grid; gap:14px; grid-template-columns:1fr; }
-  @media (min-width:640px){ .slots { grid-template-columns:repeat(3,1fr); } }
-  .slot { aspect-ratio:16/10; border-radius:14px; position:relative; overflow:hidden;
-    background:linear-gradient(160deg, rgba(33,30,26,.08), rgba(33,30,26,.03));
-    border:1px dashed rgba(33,30,26,.22); display:grid; place-items:center; padding:14px; }
-  .slot .sn { text-align:center; font-size:12px; color:var(--ink-3); line-height:1.5; }
-  .slot .sn b { display:block; font-size:12.5px; font-weight:650; color:var(--ink-2); }
-  .emptynote { text-align:center; font-size:12.5px; color:var(--ink-3); margin-top:14px; }
+  /* The results, horizontal carousel of launch videos. Files are the user's
+     own launches, committed as assets/launch1.mp4 through launch5.mp4. A card
+     whose file is not there yet shows its drop label instead of a black box,
+     and the amber note below the carousel appears only while any is missing. */
+  .samples { position:relative; display:flex; gap:14px; overflow-x:auto; scroll-snap-type:x mandatory;
+    padding:6px 0 28px; -webkit-overflow-scrolling:touch; scrollbar-width:thin; }
+  .samples::-webkit-scrollbar { height:6px; }
+  .samples::-webkit-scrollbar-track { background:transparent; }
+  .samples::-webkit-scrollbar-thumb { background:rgba(33,30,26,.18); border-radius:999px; }
+  .vid { flex:0 0 auto; width:84%; scroll-snap-align:center;
+    aspect-ratio:16/9; border-radius:var(--radius-card); position:relative; overflow:hidden;
+    background:#211E1A; display:grid; place-items:center; box-shadow:0 16px 34px -14px rgba(45,32,22,.3);
+    transition: transform 260ms var(--ease-out), opacity 260ms var(--ease-out); }
+  /* Mobile: the centred card is the focused one, neighbours sit back and peek.
+     The script only writes --focus-scale and --focus-op; whether they are used
+     at all is decided here, so the desktop layout cannot inherit stale values
+     if a repaint is missed. */
+  @media (max-width:720px){
+    .samples { padding-inline:8%; }
+    .vid { transform:scale(var(--focus-scale,1)); opacity:var(--focus-op,1); }
+  }
+  @media (min-width:721px){
+    .samples { padding-inline:0; }
+    .vid { width:calc((100% - 14px)/2); scroll-snap-align:start; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .vid { transition:opacity 260ms ease; transform:none; }
+  }
+  .vid video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; }
+  .vid .cap { position:absolute; left:12px; bottom:12px; z-index:2; font-size:11px; color:rgba(246,243,237,.9);
+    background:rgba(33,30,26,.55); border-radius:999px; padding:4px 10px; }
+  .snd { position:absolute; right:12px; top:12px; z-index:2; border:0; cursor:pointer;
+    font:inherit; font-size:11px; font-weight:650; color:rgba(246,243,237,.92);
+    background:rgba(33,30,26,.55); border-radius:999px; padding:5px 11px;
+    transition: transform 160ms var(--ease-out); }
+  .snd:active { transform: scale(0.97); }
+  @media (hover:hover) and (pointer:fine){ .snd:hover { background:rgba(33,30,26,.75); } }
+  .vid .drop { display:none; text-align:center; font-size:12px; color:var(--ink-3); line-height:1.5; padding:0 16px; }
+  .vid .drop b { display:block; font-size:12.5px; font-weight:650; color:var(--ink-2); }
+  .vid.missing { background:linear-gradient(160deg, rgba(33,30,26,.08), rgba(33,30,26,.03));
+    border:1px dashed rgba(33,30,26,.22); box-shadow:none; }
+  .vid.missing video, .vid.missing .snd, .vid.missing .cap { display:none; }
+  .vid.missing .drop { display:block; }
+  .emptynote { display:none; text-align:center; font-size:12.5px; color:var(--ink-3); margin-top:2px; }
+  .emptynote.show { display:block; }
   .tbd { color:var(--amber); font-size:12px; font-weight:650; }
+  .ctarow { text-align:center; margin-top:24px; }
+  .ctarow .sub { display:block; margin-top:10px; font-size:12.5px; color:var(--ink-3); }
 
   /* The machine */
   .machine { background:var(--glass); border:1px solid var(--line); border-radius:var(--radius-card); padding:22px 10px 14px; }
@@ -147,26 +182,6 @@
     transform-box:fill-box; transform-origin:center; }
   .m-node.on { opacity:1; transform:scale(1.03); }
   @media (prefers-reduced-motion: reduce){ .m-edge, .m-node { transition:none; transform:none; } }
-
-  /* Template gallery */
-  .tmpls { display:grid; gap:14px; grid-template-columns:1fr; }
-  @media (min-width:640px){ .tmpls { grid-template-columns:1fr 1fr; } }
-  .tmpl { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:var(--radius-card);
-    padding:18px; box-shadow:0 10px 26px -12px rgba(45,32,22,.15);
-    display:flex; flex-direction:column; gap:12px; }
-  /* Fixed board height so cards align across the row whatever the panel count */
-  .board { display:flex; gap:6px; height:78px; }
-  .panel { flex:1; height:100%; border-radius:8px; position:relative; overflow:hidden;
-    background:linear-gradient(160deg,#3A3B52,#211E1A); display:grid; place-items:end start; padding:6px; }
-  .panel span { font-size:8.5px; letter-spacing:.04em; color:rgba(246,243,237,.8); }
-  .panel.p-alt { background:linear-gradient(160deg,#4A3B30,#211E1A); }
-  .panel.p-acc { background:linear-gradient(160deg,#5A3423,#211E1A); }
-  .tmpl .tname { font-size:15px; font-weight:700; }
-  .tmpl .tdesc { font-size:13px; color:var(--ink-2); line-height:1.45; flex:1; }
-  .tmpl .trow { display:flex; align-items:center; justify-content:space-between; gap:8px;
-    border-top:1px solid var(--line); padding-top:11px; }
-  .tmpl .tlen { font-size:12px; color:var(--ink-3); }
-  .tmpl .tprice { font-size:13.5px; font-weight:750; }
 
   /* Pricing */
   .tiers { display:grid; gap:14px; grid-template-columns:1fr; }
@@ -189,12 +204,6 @@
   .tier .tcta:active { transform: scale(0.97); }
   .tier .tcta.solid { background:var(--accent-deep); color:#fff; }
 
-  /* Guarantee */
-  .guarantee { text-align:center; background:var(--glass); border:1px solid var(--line);
-    border-radius:var(--radius-card); padding:30px 22px; }
-  .guarantee h2 { font-size:clamp(19px,3vw,24px); font-weight:700; letter-spacing:-0.02em; max-width:580px; margin:0 auto; }
-  .guarantee p { margin-top:10px; color:var(--ink-2); font-size:14.5px; max-width:560px; margin-left:auto; margin-right:auto; }
-
   /* Intake */
   .form { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:var(--radius-card);
     padding:24px; box-shadow:0 10px 26px -12px rgba(45,32,22,.15); }
@@ -206,7 +215,6 @@
     font:inherit; font-size:14px; padding:11px 13px; color:var(--ink); outline:none; }
   .field input:focus, .field textarea:focus { border-color:rgba(158,63,36,.5); }
   .field textarea { min-height:84px; resize:vertical; }
-  /* template picker chips */
   .picks { display:flex; gap:8px; flex-wrap:wrap; }
   .pick input { position:absolute; opacity:0; width:0; height:0; }
   .pick { cursor:pointer; }
@@ -244,11 +252,11 @@
   <section class="block dhead">
     <div class="wrap">
       <span class="badge">Human + Agent</span><span class="fixedchip">Fixed price</span>
-      <h1>Product Explainer Videos</h1>
-      <p class="promise">Send a link. Twelve agents research your product, script it, record it, and cut it. A human editor finishes the cut. You watch the video before you pay.</p>
-      <div class="priceline">From $149 <span>· first cut in 72 hours</span></div>
+      <h1>Product Launch Videos</h1>
+      <p class="promise">Send a link. Fifteen agents research your product, script it, storyboard it, and cut it. A human editor finishes every launch video. You watch it before you pay.</p>
+      <div class="priceline">From $499 <span>· first cut in 72 hours</span></div>
       <div class="btnrow">
-        <a class="btn solid" href="#templates">Pick a template</a>
+        <a class="btn solid" href="#samples">See the launches</a>
         <a class="btn ghost" href="#machine-sec">Watch it get made</a>
       </div>
     </div>
@@ -273,10 +281,10 @@
             </div>
           </div>
           <div class="incard">
-            <div class="th th-tpl"><i></i><i></i><i></i><i></i></div>
+            <div class="th th-cal"><div class="cm"></div><div class="cd">21</div></div>
             <div class="meta">
-              <div class="t1">A template</div>
-              <div class="t2">the shape, picked from four below</div>
+              <div class="t1">Your launch day</div>
+              <div class="t2">the date the video has to be ready</div>
             </div>
           </div>
           <div class="incard">
@@ -304,17 +312,47 @@
     </div>
   </section>
 
-  <!-- 3 · Samples, held for our own work -->
+  <!-- 3 · The results -->
   <section class="block" id="samples">
     <div class="wrap">
-      <div class="shead"><span class="eyebrow">Samples</span><h2>Three slots, reserved</h2>
-        <p>No borrowed work and no stock reel. These fill with videos we made, as clients take them.</p></div>
-      <div class="slots">
-        <div class="slot"><div class="sn"><b>Problem, then product</b>60 seconds, narrated</div></div>
-        <div class="slot"><div class="sn"><b>Feature tour</b>90 seconds, screen recorded</div></div>
-        <div class="slot"><div class="sn"><b>Launch teaser</b>20 seconds, built for a feed</div></div>
+      <div class="shead"><span class="eyebrow">The results</span><h2>Launch videos we made</h2></div>
+      <div class="samples">
+        <div class="vid">
+          <video src="assets/launch1.mp4" autoplay muted loop playsinline preload="metadata"></video>
+          <button class="snd" type="button">Sound on</button>
+          <span class="cap">Launch 1</span>
+          <div class="drop"><b>Launch 1</b>drops in as assets/launch1.mp4</div>
+        </div>
+        <div class="vid">
+          <video src="assets/launch2.mp4" autoplay muted loop playsinline preload="metadata"></video>
+          <button class="snd" type="button">Sound on</button>
+          <span class="cap">Launch 2</span>
+          <div class="drop"><b>Launch 2</b>drops in as assets/launch2.mp4</div>
+        </div>
+        <div class="vid">
+          <video src="assets/launch3.mp4" autoplay muted loop playsinline preload="metadata"></video>
+          <button class="snd" type="button">Sound on</button>
+          <span class="cap">Launch 3</span>
+          <div class="drop"><b>Launch 3</b>drops in as assets/launch3.mp4</div>
+        </div>
+        <div class="vid">
+          <video src="assets/launch4.mp4" autoplay muted loop playsinline preload="none"></video>
+          <button class="snd" type="button">Sound on</button>
+          <span class="cap">Launch 4</span>
+          <div class="drop"><b>Launch 4</b>drops in as assets/launch4.mp4</div>
+        </div>
+        <div class="vid">
+          <video src="assets/launch5.mp4" autoplay muted loop playsinline preload="none"></video>
+          <button class="snd" type="button">Sound on</button>
+          <span class="cap">Launch 5</span>
+          <div class="drop"><b>Launch 5</b>drops in as assets/launch5.mp4</div>
+        </div>
       </div>
-      <div class="emptynote">First deliveries land here with their owners' written yes. <span class="tbd">Samples TBD</span></div>
+      <div class="emptynote" id="samplenote">Five of our launch videos land here: commit them as assets/launch1.mp4 to launch5.mp4. <span class="tbd">Awaiting upload</span></div>
+      <div class="ctarow">
+        <a class="btn solid" href="#start">Get the first cut</a>
+        <span class="sub">First cut in 72 hours. You pay when you take it.</span>
+      </div>
     </div>
   </section>
 
@@ -322,90 +360,32 @@
   <section class="block" id="machine-sec">
     <div class="wrap">
       <div class="shead"><span class="eyebrow">How it works</span><h2>One link starts the machine.</h2>
-        <p>Twelve agents research, script, record, and cut in parallel. Three checks gate the edit. One human editor signs it before you see it.</p></div>
+        <p>Fifteen agents research, script, storyboard, and cut in parallel, each on its own tool. Three checks gate the edit. One human editor signs it before you see it.</p></div>
       <div class="machine" id="machine"></div>
     </div>
   </section>
 
-  <!-- 5 · Template gallery -->
-  <section class="block" id="templates">
-    <div class="wrap">
-      <div class="shead">
-        <span class="eyebrow">Templates</span>
-        <h2>Pick the shape first</h2>
-        <p>Each template is a fixed set of beats, a fixed length, and a fixed price. Nothing about the quote moves once you have picked.</p>
-      </div>
-      <div class="tmpls">
-
-        <div class="tmpl">
-          <div class="board">
-            <div class="panel"><span>PROBLEM</span></div>
-            <div class="panel p-alt"><span>PRODUCT</span></div>
-            <div class="panel p-acc"><span>PROOF</span></div>
-          </div>
-          <div class="tname">Problem, then product</div>
-          <div class="tdesc">Opens on the thing that is broken, then your product fixing it. The default for a cold audience.</div>
-          <div class="trow"><span class="tlen">About 60s</span><span class="tprice">$499</span></div>
-        </div>
-
-        <div class="tmpl">
-          <div class="board">
-            <div class="panel p-alt"><span>OPEN</span></div>
-            <div class="panel"><span>FEATURE</span></div>
-            <div class="panel"><span>FEATURE</span></div>
-            <div class="panel p-acc"><span>CTA</span></div>
-          </div>
-          <div class="tname">Feature tour</div>
-          <div class="tdesc">A guided run through the three or four things your product does best, narrated. For an audience that already knows the problem.</div>
-          <div class="trow"><span class="tlen">About 90s</span><span class="tprice">$649</span></div>
-        </div>
-
-        <div class="tmpl">
-          <div class="board">
-            <div class="panel p-acc"><span>TO CAMERA</span></div>
-            <div class="panel"><span>SCREEN</span></div>
-            <div class="panel p-alt"><span>ASK</span></div>
-          </div>
-          <div class="tname">Founder to camera</div>
-          <div class="tdesc">You talking, cut with product screens. Ten minutes of phone footage is enough. The one that works on launch day.</div>
-          <div class="trow"><span class="tlen">About 45s</span><span class="tprice">$299</span></div>
-        </div>
-
-        <div class="tmpl">
-          <div class="board">
-            <div class="panel p-alt"><span>HOOK</span></div>
-            <div class="panel p-acc"><span>REVEAL</span></div>
-          </div>
-          <div class="tname">Launch teaser</div>
-          <div class="tdesc">Short, no narration, built to autoplay on a feed. Two beats and a date.</div>
-          <div class="trow"><span class="tlen">About 20s</span><span class="tprice">$149</span></div>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- 6 · Pricing -->
+  <!-- 5 · Pricing -->
   <section class="block">
     <div class="wrap">
       <div class="shead"><span class="eyebrow">Pricing</span><h2>One video, or the whole launch</h2></div>
       <div class="tiers two">
         <div class="tier">
-          <div class="tname">One template</div>
-          <div class="tprice">From $149 <small>fixed per template</small></div>
+          <div class="tname">The launch video</div>
+          <div class="tprice">$499 <small>one video</small></div>
           <div class="spec">
-            <div><i>Launch teaser · 20s</i><b>$149</b></div>
-            <div><i>Founder to camera · 45s</i><b>$299</b></div>
-            <div><i>Problem, then product · 60s</i><b>$499</b></div>
-            <div><i>Feature tour · 90s</i><b>$649</b></div>
+            <div><i>Length</i><b>Up to 60s</b></div>
+            <div><i>First cut</i><b>72 hours</b></div>
+            <div><i>Revision round</i><b>One, in 24 hours</b></div>
+            <div><i>You pay</i><b>When you take it</b></div>
           </div>
-          <a class="tcta" href="#templates">Pick a template</a>
+          <a class="tcta" href="#start">Start one video</a>
         </div>
         <div class="tier hot">
           <div class="tname">The launch kit</div>
           <div class="tprice">$799 <small>one launch, covered</small></div>
           <div class="spec">
-            <div><i>Hero explainer</i><b>60s</b></div>
+            <div><i>Hero launch video</i><b>60s</b></div>
             <div><i>Launch teaser</i><b>20s</b></div>
             <div><i>Vertical cutdowns</i><b>Three, 15s each</b></div>
             <div><i>First cuts</i><b>72 hours</b></div>
@@ -418,29 +398,16 @@
     </div>
   </section>
 
-  <!-- 7 · Guarantee -->
-  <section class="block">
-    <div class="wrap">
-      <div class="guarantee">
-        <h2>You watch the finished video before you pay.</h2>
-        <p>The first cut lands in 72 hours, watermarked. Take it and pay, use your revision round, or walk away and owe nothing. The template fixed the price before we started.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- 8 · Intake form -->
+  <!-- 6 · Intake form -->
   <section class="block" id="start">
     <div class="wrap">
-      <div class="shead"><span class="eyebrow">Get started</span><h2>Two minutes of input</h2></div>
+      <div class="shead"><h2>Get started</h2></div>
       <div class="form">
         <div class="field">
-          <label>Which template</label>
+          <label>Which one</label>
           <div class="picks">
-            <label class="pick"><input type="radio" name="tpl" checked><span>Problem, then product</span></label>
-            <label class="pick"><input type="radio" name="tpl"><span>Feature tour</span></label>
-            <label class="pick"><input type="radio" name="tpl"><span>Founder to camera</span></label>
-            <label class="pick"><input type="radio" name="tpl"><span>Launch teaser</span></label>
-            <label class="pick"><input type="radio" name="tpl"><span>The launch kit</span></label>
+            <label class="pick"><input type="radio" name="pkg" checked><span>The launch video</span></label>
+            <label class="pick"><input type="radio" name="pkg"><span>The launch kit</span></label>
           </div>
         </div>
         <div class="field">
@@ -448,7 +415,7 @@
           <input type="url" placeholder="https://yourproduct.com">
         </div>
         <div class="field">
-          <label>Launch date <small>optional</small></label>
+          <label>Launch day <small>optional</small></label>
           <input type="text" placeholder="e.g. Product Hunt on the 21st">
         </div>
         <div class="field">
@@ -469,24 +436,24 @@
     </div>
   </section>
 
-  <!-- 9 · FAQ -->
+  <!-- 7 · FAQ -->
   <section class="block">
     <div class="wrap">
       <div class="shead"><span class="eyebrow">FAQ</span><h2>The fine print, plainly</h2></div>
       <div class="faq">
         <details><summary>When do I pay?</summary><p>After you watch. The first cut arrives watermarked inside 72 hours. Say yes and the clean master comes over with the invoice. Say no and that is the end of it.</p></details>
-        <details><summary>How many revisions do I get?</summary><p>One round inside the template, returned within 24 hours. Changing the template is a new video at that template's price.</p></details>
-        <details><summary>Do I need to be on camera?</summary><p>Only for Founder to camera. We send a shot list and ten minutes on your phone covers it. The other three templates need nothing filmed.</p></details>
+        <details><summary>How many revisions do I get?</summary><p>One round inside the price, returned within 24 hours. Most notes are voice, pacing, or a scene swap, and the agents re-cut those fast.</p></details>
+        <details><summary>Do I need to be on camera?</summary><p>No. The video is built from your product on screen, generated b-roll, and a narrated script. If you want yourself in it, send phone footage and we cut it in.</p></details>
         <details><summary>Where does the voice come from?</summary><p>The narration is generated, and you hear it in the first cut. If it reads wrong, the revision round covers a re-record. Want a specific human voice, say so in the notes and we quote it.</p></details>
         <details><summary>My product needs a login.</summary><p>Send a demo account in the form. Agents record against that, never your own credentials.</p></details>
         <details><summary>What does the claim check do?</summary><p>Every line in the script has to trace to something your product shows on screen. If we cannot show it, the video does not say it.</p></details>
-        <details><summary>Who actually makes it?</summary><p>Twelve agents research, script, record, and cut. Claim, sync, and brand checks gate the edit. A human editor finishes the cut and answers for what you receive.</p></details>
-        <details><summary>Who owns the video?</summary><p>You do. The master file and captions are yours to run anywhere. It appears in our samples row only with your written yes.</p></details>
+        <details><summary>Who actually makes it?</summary><p>Fifteen agents research, script, storyboard, and cut, on tools like Firecrawl, Unipile, LTX Studio, Runway, and Remotion. Claim, sync, and brand checks gate the edit. A human editor finishes the cut and answers for what you receive.</p></details>
+        <details><summary>Who owns the video?</summary><p>You do. The master file and captions are yours to run anywhere. It appears in our results row only with your written yes.</p></details>
       </div>
     </div>
   </section>
 
-  <!-- 10 · Cross-sell -->
+  <!-- 8 · Cross-sell -->
   <section class="block cross">
     <div class="wrap">
       <div class="btnrow">
@@ -500,7 +467,7 @@
 
 </div>
 <script>
-  /* The output player scrubs through the template's beats on a loop. The
+  /* The output player scrubs through the launch video's beats on a loop. The
      scrub is the point: the shape of the video is the product. Runs only
      while the card is on screen; reduced motion gets the final frame. */
   (function () {
@@ -558,9 +525,93 @@
     }
   })();
 
+  /* Sample cards degrade to labelled drop slots until their files exist, and
+     the amber note shows only while at least one is missing. The page heals
+     itself the moment the mp4s are committed; nothing else needs editing. */
+  (function () {
+    var note = document.getElementById('samplenote');
+    var missing = 0;
+    document.querySelectorAll('.samples video').forEach(function (v) {
+      function bad() {
+        if (v.parentElement.classList.contains('missing')) return;
+        v.parentElement.classList.add('missing');
+        missing++;
+        if (note) note.classList.add('show');
+      }
+      v.addEventListener('error', bad);
+      if (v.error) bad();
+    });
+  })();
+
+  /* Carousel: centre-focus scaling on mobile, gentle auto-advance as a scroll
+     cue. Same behaviour as the UGC and LinkedIn pages. */
+  (function () {
+    var scroller = document.querySelector('.samples');
+    if (!scroller) return;
+    var cards = Array.prototype.slice.call(scroller.querySelectorAll('.vid'));
+    if (!cards.length) return;
+
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+    var isMobile = window.matchMedia('(max-width: 720px)');
+    var queued = false;
+
+    function paint() {
+      queued = false;
+      var mid = scroller.scrollLeft + scroller.clientWidth / 2;
+      cards.forEach(function (c) {
+        var d = Math.min(Math.abs((c.offsetLeft + c.offsetWidth / 2) - mid) / c.offsetWidth, 1);
+        c.style.setProperty('--focus-scale', (1 - d * 0.1).toFixed(3));
+        c.style.setProperty('--focus-op', (1 - d * 0.4).toFixed(3));
+      });
+    }
+    function onScroll() { if (!queued) { queued = true; requestAnimationFrame(paint); } }
+
+    scroller.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    window.addEventListener('load', onScroll);
+    if (isMobile.addEventListener) isMobile.addEventListener('change', onScroll);
+    paint();
+
+    if (reduce.matches) return;
+
+    var i = 0, stopped = false, hovering = false;
+    var timer = setInterval(function () {
+      if (stopped || hovering || document.hidden) return;
+      i = (i + 1) % cards.length;
+      var t = cards[i];
+      var left = isMobile.matches
+        ? t.offsetLeft - (scroller.clientWidth - t.offsetWidth) / 2
+        : t.offsetLeft;
+      scroller.scrollTo({ left: Math.max(0, left), behavior: 'smooth' });
+    }, 3200);
+
+    function stop() { stopped = true; clearInterval(timer); }
+    ['pointerdown', 'wheel', 'touchstart', 'keydown'].forEach(function (e) {
+      scroller.addEventListener(e, stop, { passive: true, once: true });
+    });
+    scroller.addEventListener('mouseenter', function () { hovering = true; });
+    scroller.addEventListener('mouseleave', function () { hovering = false; });
+    if (isMobile.matches) setTimeout(stop, 20000);
+  })();
+
+  /* One card with sound at a time, same as the UGC page. */
+  document.querySelectorAll('.snd').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var v = btn.parentElement.querySelector('video');
+      if (!v) return;
+      var on = v.muted;
+      document.querySelectorAll('.samples video').forEach(function (o) { o.muted = true; });
+      document.querySelectorAll('.snd').forEach(function (o) { o.textContent = 'Sound on'; });
+      v.muted = !on;
+      btn.textContent = on ? 'Sound off' : 'Sound on';
+      if (on) v.play();
+    });
+  });
+
   /* The machine. Same mechanics as the LinkedIn page: one top-to-bottom
      layout at every width, stages lighting in sequence from the two inputs
-     down to the first cut, then a reset and another run. */
+     down to the first cut, then a reset and another run. Each agent carries
+     the tool it works on. */
   (function () {
     var host = document.getElementById('machine');
     if (!host) return;
@@ -569,36 +620,42 @@
     var STROKE = { end: '#C4593C', agent: '#DAD3C7', gate: '#D98E28' };
 
     var NODES = {
-      link:  { x: 135, y: 40,  w: 130, h: 48, label: 'Product link in', kind: 'end', stage: 0 },
-      brief: { x: 345, y: 40,  w: 100, h: 48, label: 'Brief in', kind: 'end', stage: 0 },
-      crawl: { x: 90,  y: 150, w: 122, h: 48, label: 'Product crawl', sub: 'agent', kind: 'agent', stage: 1 },
-      revs:  { x: 240, y: 150, w: 116, h: 48, label: 'Review mine', sub: 'agent', kind: 'agent', stage: 1 },
-      comp:  { x: 390, y: 150, w: 134, h: 48, label: 'Competitor scan', sub: 'agent', kind: 'agent', stage: 1 },
-      angle: { x: 240, y: 255, w: 118, h: 50, label: 'Angle lock', sub: 'agent', kind: 'agent', stage: 2 },
-      scrA:  { x: 90,  y: 360, w: 96, h: 44, label: 'Script A', sub: 'agent', kind: 'agent', stage: 3 },
-      scrB:  { x: 240, y: 360, w: 96, h: 44, label: 'Script B', sub: 'agent', kind: 'agent', stage: 3 },
-      scrC:  { x: 390, y: 360, w: 96, h: 44, label: 'Script C', sub: 'agent', kind: 'agent', stage: 3 },
-      judge: { x: 240, y: 455, w: 136, h: 46, label: 'Retention judge', sub: 'agent', kind: 'agent', stage: 4 },
-      shots: { x: 90,  y: 555, w: 126, h: 46, label: 'Screen capture', sub: 'agent', kind: 'agent', stage: 5 },
-      voice: { x: 240, y: 555, w: 110, h: 46, label: 'Voice track', sub: 'agent', kind: 'agent', stage: 5 },
-      moGfx: { x: 390, y: 555, w: 134, h: 46, label: 'Motion graphics', sub: 'agent', kind: 'agent', stage: 5 },
-      cut:   { x: 240, y: 660, w: 124, h: 48, label: 'Cut assembly', sub: 'agent', kind: 'agent', stage: 6 },
-      claim: { x: 90,  y: 760, w: 106, h: 44, label: 'Claim check', kind: 'gate', stage: 7 },
-      sync:  { x: 240, y: 760, w: 104, h: 44, label: 'Sync check', kind: 'gate', stage: 7 },
-      brand: { x: 390, y: 760, w: 108, h: 44, label: 'Brand check', kind: 'gate', stage: 7 },
-      edit:  { x: 240, y: 858, w: 128, h: 50, label: 'Editor finish', sub: 'human', kind: 'end', stage: 8 },
-      out:   { x: 240, y: 955, w: 156, h: 56, label: 'First cut to you', sub: '72 hours in', kind: 'end', stage: 9 }
+      link:  { x: 135, y: 40,   w: 130, h: 48, label: 'Product link in', kind: 'end', stage: 0 },
+      brief: { x: 345, y: 40,   w: 130, h: 48, label: 'Launch brief in', kind: 'end', stage: 0 },
+      crawl: { x: 90,  y: 150,  w: 122, h: 48, label: 'Product crawl', sub: 'agent · Firecrawl', kind: 'agent', stage: 1 },
+      aud:   { x: 240, y: 150,  w: 120, h: 48, label: 'Audience pull', sub: 'agent · Unipile', kind: 'agent', stage: 1 },
+      comp:  { x: 390, y: 150,  w: 134, h: 48, label: 'Competitor scan', sub: 'agent · Apify', kind: 'agent', stage: 1 },
+      angle: { x: 240, y: 255,  w: 118, h: 50, label: 'Angle lock', sub: 'agent', kind: 'agent', stage: 2 },
+      scrA:  { x: 90,  y: 360,  w: 96, h: 44, label: 'Script A', sub: 'agent', kind: 'agent', stage: 3 },
+      scrB:  { x: 240, y: 360,  w: 96, h: 44, label: 'Script B', sub: 'agent', kind: 'agent', stage: 3 },
+      scrC:  { x: 390, y: 360,  w: 96, h: 44, label: 'Script C', sub: 'agent', kind: 'agent', stage: 3 },
+      judge: { x: 240, y: 455,  w: 136, h: 46, label: 'Retention judge', sub: 'agent', kind: 'agent', stage: 4 },
+      story: { x: 240, y: 550,  w: 124, h: 48, label: 'Storyboard', sub: 'agent · LTX Studio', kind: 'agent', stage: 5 },
+      shots: { x: 90,  y: 650,  w: 126, h: 46, label: 'Screen capture', sub: 'agent · Playwright', kind: 'agent', stage: 6 },
+      broll: { x: 240, y: 650,  w: 112, h: 46, label: 'B-roll gen', sub: 'agent · Runway', kind: 'agent', stage: 6 },
+      moGfx: { x: 390, y: 650,  w: 116, h: 46, label: 'Motion gfx', sub: 'agent · p5.js', kind: 'agent', stage: 6 },
+      cut:   { x: 240, y: 750,  w: 124, h: 48, label: 'Cut assembly', sub: 'agent · Remotion', kind: 'agent', stage: 7 },
+      voice: { x: 150, y: 845,  w: 118, h: 46, label: 'Voice track', sub: 'agent · ElevenLabs', kind: 'agent', stage: 8 },
+      music: { x: 330, y: 845,  w: 106, h: 46, label: 'Music bed', sub: 'agent · Suno', kind: 'agent', stage: 8 },
+      claim: { x: 90,  y: 945,  w: 106, h: 44, label: 'Claim check', kind: 'gate', stage: 9 },
+      sync:  { x: 240, y: 945,  w: 104, h: 44, label: 'Sync check', kind: 'gate', stage: 9 },
+      brand: { x: 390, y: 945,  w: 108, h: 44, label: 'Brand check', kind: 'gate', stage: 9 },
+      edit:  { x: 240, y: 1043, w: 128, h: 50, label: 'Editor finish', sub: 'human', kind: 'end', stage: 10 },
+      out:   { x: 240, y: 1140, w: 156, h: 56, label: 'First cut to you', sub: '72 hours in', kind: 'end', stage: 11 }
     };
 
     var FLOW = [
-      ['link', 'crawl'], ['link', 'revs'], ['link', 'comp'],
-      ['brief', 'crawl'], ['brief', 'revs'], ['brief', 'comp'],
-      ['crawl', 'angle'], ['revs', 'angle'], ['comp', 'angle'],
+      ['link', 'crawl'], ['link', 'aud'], ['link', 'comp'],
+      ['brief', 'crawl'], ['brief', 'aud'], ['brief', 'comp'],
+      ['crawl', 'angle'], ['aud', 'angle'], ['comp', 'angle'],
       ['angle', 'scrA'], ['angle', 'scrB'], ['angle', 'scrC'],
       ['scrA', 'judge'], ['scrB', 'judge'], ['scrC', 'judge'],
-      ['judge', 'shots'], ['judge', 'voice'], ['judge', 'moGfx'],
-      ['shots', 'cut'], ['voice', 'cut'], ['moGfx', 'cut'],
-      ['cut', 'claim'], ['cut', 'sync'], ['cut', 'brand'],
+      ['judge', 'story'],
+      ['story', 'shots'], ['story', 'broll'], ['story', 'moGfx'],
+      ['shots', 'cut'], ['broll', 'cut'], ['moGfx', 'cut'],
+      ['cut', 'voice'], ['cut', 'music'],
+      ['voice', 'claim'], ['voice', 'sync'], ['voice', 'brand'],
+      ['music', 'claim'], ['music', 'sync'], ['music', 'brand'],
       ['claim', 'edit'], ['sync', 'edit'], ['brand', 'edit'],
       ['edit', 'out']
     ];
@@ -618,8 +675,8 @@
       return { x: a.x + dx * t, y: a.y + dy * t };
     }
 
-    var svg = el('svg', { viewBox: '0 0 480 1010', role: 'img' });
-    svg.setAttribute('aria-label', 'Your product link and brief fan out to three research agents. Their findings lock the angle, three script agents compete and a retention judge picks one, then screen capture, voice, and motion graphics agents build the pieces in parallel. A cut assembly agent edits them together, claim, sync, and brand checks gate the edit, and a human editor finishes the cut before the watermarked first cut reaches you inside 72 hours.');
+    var svg = el('svg', { viewBox: '0 0 480 1195', role: 'img' });
+    svg.setAttribute('aria-label', 'Your product link and launch brief fan out to three research agents on Firecrawl, Unipile, and Apify. Their findings lock the angle, three script agents compete and a retention judge picks one, a storyboard agent draws the shots in LTX Studio, then screen capture, b-roll, and motion graphics agents build the visuals on Playwright, Runway, and p5.js. A cut assembly agent edits the picture in Remotion, voice and music agents lay the sound with ElevenLabs and Suno, claim, sync, and brand checks gate the edit, and a human editor finishes the cut before the watermarked first cut reaches you inside 72 hours.');
 
     var defs = el('defs', {});
     var mk = el('marker', { id: 'mm-a', viewBox: '0 0 10 10', refX: 8, refY: 5,
@@ -661,7 +718,7 @@
 
     /* One stage lights per tick, holds a beat once the first cut is out,
        then the whole machine dims and runs again. */
-    var STAGES = 10, HOLD = 3, stage = -2;
+    var STAGES = 12, HOLD = 3, stage = -2;
     setInterval(function () {
       stage++;
       if (stage >= STAGES + HOLD) {
