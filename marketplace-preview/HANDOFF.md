@@ -10,6 +10,216 @@ live Next.js app. Read the progress log below, then continue from
 
 ## 0. Progress log
 
+### Session 4 (2026-08-06) — UGC offer redraft
+
+- **`hifi/ugc.html` fully redrafted around a new offer.** The old pricing said
+  HUMAN + AGENT while charging $10 to $15 a video, which is at or below what a
+  pure-AI tool charges with no human at all. That made the badge unpayable, and
+  the badge is the whole marketplace positioning. Everything below follows from
+  fixing that.
+- **The offer now:** $29 first ad, credited to the first month. Three monthly
+  packs sized to the buyer's ad spend, $395 / $890 / $1,690 for 8 / 24 / 60 ads.
+  Volumes follow the working benchmark of 20 to 30 creatives a week per $100k
+  of monthly spend, so the buyer can self-select a tier.
+- **Guarantee replaced.** Was "pay only if you like it". Now: any ad under a 30%
+  hook rate gets replaced free until it clears. Chosen because hook rate is the
+  only metric the creative dominates, it is self-reported from their own ads
+  manager so it needs no account access, and a replacement costs one
+  regeneration rather than a refunded month. The page states plainly that we do
+  not promise CPA or ROAS.
+- **Benchmarks verified 2026-08-06, not assumed.** Meta hook rate median is 28%,
+  top 10% is 40%+, and ecommerce benchmarks about 12% above cross-industry,
+  so ~31%. **Our 30% floor is therefore slightly under the DTC median**, which
+  is why the page calls it a floor and not a target and shows the whole scale.
+  Do not quietly raise this to 35% without re-checking the replacement cost.
+- **Arcads pricing could NOT be verified from source.** `arcads.ai/pricing`
+  returns 404. The $110 / $220 figures circulating in the strategy docs come
+  from third-party review sites and may be stale or affiliate-driven. No
+  competitor price appears anywhere on the page, so there is no exposure, but
+  do not put one there without checking the vendor's own page first.
+- **Objective picker added**, 4 options not 5. Prospecting was dropped because
+  it is the same funnel stage as Awareness under a media-buying name, and
+  showing both reads as not knowing the difference. Order is Awareness,
+  Consideration, Conversion, Re-engagement.
+- **"How it works" rebuilt as the monthly cycle**, still 4 emoji cards so the
+  frozen 4-column grid is untouched. The hero card moved from "You review and
+  pay" to "We make four, ship one", because reassurance now lives in the
+  guarantee section and the differentiator needed the emphasis. Card 4 is the
+  loop, which is what makes it a subscription.
+- **Team section added.** The AI video lead is real (instagram.com/blurred_ai)
+  and his credentials are on the page as chips: Kaggle Master, NVIDIA, Z by HP
+  Ambassador, Sr. Data Scientist. **His name is `Name TBD` in amber**, because
+  the user supplied a handle and not a name, and inventing one was refused.
+  Positioned as AI video lead and deliberately NOT as a media buyer: his public
+  feed is AI tooling and career content, not DTC ad accounts, and the link is
+  right there on the page. Strategy is credited to Pulkit and Rohit.
+- **Prose cut to tables per user instruction.** Tier bodies became 5-row spec
+  lists, credentials became chips, the hook rate benchmark became a 4-cell
+  scale. Audience is seed to Series A founders who skim.
+- **Deliberate deviation, needs your call:** normalised the two known drift
+  values to match the other five pages, `.dhead .promise` 520 to 540 and
+  `.guarantee h2` 560 to 580. Session 3 flagged these and said to ask first.
+  Two lines to revert if you want ugc.html left alone.
+- **Verified, not assumed:** 0px horizontal overflow at every width from 320 to
+  1440. Zero em dashes, zero italics, zero exclamation marks in copy. Six TBD
+  markers still visible. Shots re-taken at exact page height, desktop 1440x5090
+  and mobile 390x8380.
+- **Second pass, same session, after user review:**
+  - **Real sample videos are in.** Three user-supplied clips transcoded to
+    `hifi/assets/sample-1..3.mp4` (1.86 / 1.26 / 1.76 MB, h264, faststart).
+    Autoplay muted loop with a per-card sound toggle; only one can be unmuted
+    at a time. The gradient placeholders are gone.
+  - **PROVENANCE IS UNRESOLVED AND MARKED TBD ON THE PAGE.** The source
+    filenames read like social downloads ("This UGC Ad Is 100% AI", "I Created
+    an AI UGC Ad in Seconds", and one naming the real brand Dot & Key). Session
+    3 set the precedent that we do not fill a gallery with someone else's work.
+    Do not ship publicly until the user confirms these are ours, or they are
+    relabelled as references rather than output.
+  - **sample-2 is only 360x640**, which is soft in a 284px card on a retina
+    screen. Replace with a higher-resolution source when possible.
+  - **CTA moved out of the hero.** The header now carries a ghost "See what
+    comes back" that jumps to samples. The first money ask sits directly under
+    the sample gallery, where the visitor has just seen the work. User called
+    the old hero CTA premature and the "$395 a month / Start for $29" pairing
+    confusing, which it was.
+  - **Pricing restructured to trial plus one pack.** Two cards visible, the $29
+    trial and the $395 monthly, with $890 and $1,690 behind a `<details>`
+    expander. The trial card now spells out what $29 buys, which is what the
+    confusion was.
+  - **Subscription starts with a call, not the form.** Tier CTAs say "Book a
+    call". The three-field form is explicitly labelled as the $29 path only,
+    with a note above it and a new FAQ entry.
+  - **Model preference removed** from both the input flow and the form. Input
+    is now three things: product link, an ad you like, objective. Section
+    heading is "Three things in. One ad out."
+  - **Re-verified:** 0px overflow at 320/390/721/1024/1440. All three videos
+    reach readyState 4 and autoplay. Sound toggle exclusivity tested. Expander
+    opens. Zero em dashes. Six TBD markers.
+- **Third pass, same session:**
+  - **Samples are now five of our own, in a carousel.** Provenance was queried
+    because the first batch had social-post filenames; the user confirmed all
+    of it is our work and asked only for the **Dot & Key** clip to be dropped,
+    since it named a real brand. That one is deleted. The surviving five are
+    `assets/sample-1..5.mp4`, 1.26 to 1.84 MB each, four at 720x1280 and
+    sample-4 at 360x640 which stays visibly soft. **Client permission to show
+    this work publicly has not been confirmed in writing.**
+  - The 3-up grid became a horizontal scroll-snap carousel, since five vertical
+    videos will not sit in a row. Cards are 74% width on mobile and one third
+    on desktop, so the next one always peeks and the affordance is obvious
+    without adding arrows. `.samples` carries 28px bottom padding because
+    `overflow-x` clips the card shadow otherwise.
+  - **Second provenance catch:** the original sample-2, a golden retriever and
+    a "Buddy" dog-walking app, was NOT our work either. Found by stepping
+    through frames rather than trusting the single-frame check that missed it
+    the first time. Replaced with the user's `hf_*db30.mp4`, a MyFutureSelf app
+    walkthrough. **Check every clip end to end before publishing, not one
+    frame.**
+  - Carousel order set by the user: street app, at home captioned, app
+    walkthrough, street interview, footwear last, because footwear already
+    appears elsewhere on the site.
+  - Captions are format-descriptive and read off the footage, not guessed.
+    Deliberately NOT labelled by objective, and no client is named. Note two
+    clips both show an app on a phone, so the captions distinguish them by
+    setting rather than by subject.
+  - **sample-4 is 360x640 and now sits in slot 2**, the most prominent position
+    after the lead. It is the only soft clip in the set. Re-export at 1080x1920
+    or move it further back.
+  - **Byline moved out of the samples section** at the user's request and now
+    sits under the How it works cycle, reading "Ads by @blurred_ai". The word
+    "Led by" was rejected. Note this is now a direct authorship claim over the
+    clips, which is the user's call and not one to soften back without asking.
+  - **Worked example section added**, sitting directly under the abstract input
+    diagram so the diagram gets an immediate concrete instance. Two panels only:
+    the reference the client sent, and the ad we made from it. The user floated
+    a four-part version (reference, product, uploaded sample, outcome) and it
+    was cut to two, because the product and the upload are already covered by
+    the diagram above and four things dilute the read.
+  - It works because the poses match. @valerii.murr's styling video and our
+    footwear ad both open on the leg-up shoe pose, so the before and after is
+    legible with no explanation. **The footwear clip was pulled out of the
+    carousel** to avoid showing it twice; the carousel is now four.
+  - **The like count is 143.7K, not the 240K quoted in conversation.** Verified
+    off the public post on 2026-08-06 along with 703 comments. View count is not
+    publicly visible. Do not restore 240K without a source.
+  - **`reference-1.mp4` is a third party's work**, self-hosted here. It carries a
+    visible credit and a link to the original post, and the label says plainly
+    that it is someone else's post used as the brief. **Before this goes public,
+    either get @valerii.murr's permission or swap to Instagram's official embed**,
+    which attributes and links natively. Self-hosting someone's Reel on a
+    commercial page is the same class of problem as the Dot & Key clip.
+  - **The two example clips are cut to a shared beat.** The hook is the outfit
+    change on the leg-up pose. Scene detection put it at 6.60s in the reference
+    and 4.88s in ours, so both were re-cut to a 4.40s window with 3.00s of held
+    pose before the change and 1.40s after. The reference window stops at 8.00s
+    because its next cut is at 8.17s and would otherwise intrude.
+  - Both are forced to **30fps CFR, 132 frames, 4.400s, beat at 3.000s**. The
+    first attempt left them 25ms apart in duration, which drifts the beat apart
+    over a few loops. Identical frame counts mean the loop holds structurally
+    rather than depending on the script.
+  - `loop` was removed and both are driven from JS: whichever hits the end sends
+    both back to zero, with a 120ms drift correction. That is now a safety net,
+    not the mechanism. Files are `reference-sync.mp4` and `outcome-sync.mp4`;
+    the untrimmed `reference-1` and `outcome-1` are kept as sources.
+  - **Verification limit, read before changing the timing.** Live playback sync
+    could not be observed anywhere in this environment: the Browser pane runs
+    hidden so media stays paused, and headless `--virtual-time-budget` does not
+    advance media decoding, so successive budgets render identical frames.
+    Alignment was proven at file level instead, by pulling frames at 2.60, 2.93,
+    3.07 and 3.40s from both and confirming they flip outfits in the same
+    window. Anyone changing these cuts should eyeball the result in a real
+    browser rather than trusting a screenshot.
+  - **Carousel now has centre-focus and auto-advance.** On mobile the centred
+    card sits at scale 1 while neighbours drop to 0.9 and 60% opacity, driven by
+    a scroll handler on rAF. On desktop the 3-up layout is untouched and only
+    auto-advance runs, per the user's call that desktop already worked.
+    Auto-advance steps every 3.2s, pauses on hover and when the tab is hidden,
+    stops permanently on the first real interaction, and on mobile also stops
+    itself after 20s so nothing keeps moving under a reader.
+  - **The script writes `--focus-scale` and `--focus-op`, never `transform`
+    directly.** The media query decides whether those variables are consumed, so
+    the desktop layout cannot end up wearing stale mobile scaling if a repaint
+    is missed. An earlier direct-transform version had exactly that bug.
+  - Motion follows the house rules: transform and opacity only, the existing
+    `--ease-out` curve, 260ms, hover gated behind `(hover:hover) and
+    (pointer:fine)`, and `prefers-reduced-motion` drops both the scaling and the
+    auto-advance while keeping the opacity cue.
+  - **Verification note for the next session.** The Browser pane runs with
+    `document.hidden === true`, which freezes CSS transitions and rAF, so
+    `getComputedStyle` there reports pre-transition values and reads as "the
+    transform is not applying". It is. Verify motion with headless Chrome and
+    `--virtual-time-budget` at two different values and compare the frames, or
+    set `transition:none` first. Several confident wrong readings came from this.
+  - **Copy trimmed on request.** The long paragraph under the hook rate
+    guarantee is gone and the benchmark scale now speaks for itself. **The
+    "we do not promise sales, CPA or ROAS" disclaimer was NOT deleted, it moved
+    into the hook rate FAQ answer**, because it is the sentence that keeps the
+    guarantee from reading as a performance promise. Do not drop it from there.
+    The pricing note lost the creatives-per-$100k benchmark and keeps only
+    "Pause or cancel anytime".
+  - **Team section deleted.** User wanted the credit subtle rather than a block.
+    Replaced with a one-line byline under the samples: avatar, "Led by
+    @blurred_ai", 246K followers (verified from the public profile 2026-08-06),
+    linking out. Pulkit and Rohit removed entirely, along with every credential
+    chip on both sides.
+  - Wording is "Led by" and not "Made by", because the samples are company work
+    and he leads the video side. Do not change this to a personal authorship
+    claim without checking who actually cut each one.
+  - **SLA is now 24 hours, not 48**, everywhere: trial card, CTA subline, form
+    note, FAQ. The SLA TBD marker is retired.
+  - **Watermark step added.** The $29 ad arrives watermarked; the clean file
+    follows once they say yes, and the $29 credits to the first month. In the
+    form note and a new FAQ entry.
+  - "Two minutes of input" is now "60 seconds of input".
+  - **Re-verified:** 0px overflow at 320/390/721/1024/1440. All three videos
+    readyState 4 and autoplaying. Zero em dashes. Three TBD markers left.
+    Desktop 1440x4830, mobile 390x7430. `assets/` is now 16MB, which is worth
+    watching before the Next.js port.
+- **Still open:** creator photo for the byline, the Book a call link target,
+  revisions and ownership policy, whether the actor is selectable, written
+  client sign-off on showing their ads, and **there is no payment path for the
+  $29 at all** (per repo CLAUDE.md, orders carry no payment and nothing touches
+  Stripe).
+
 ### Session 3 (2026-08-06)
 
 - **All six detail pages now exist.** Built `hifi/ratemywipe.html`,

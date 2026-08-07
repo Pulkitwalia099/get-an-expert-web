@@ -46,7 +46,7 @@
   .samplechip { display:inline-block; margin-left:6px; font-size:10.5px; font-weight:650; color:var(--amber);
     background:rgba(185,122,26,.09); border:1px solid rgba(185,122,26,.3); border-radius:999px; padding:4px 12px; }
   .dhead h1 { margin-top:16px; font-size:clamp(30px,5vw,42px); font-weight:750; letter-spacing:-0.03em; }
-  .dhead .promise { margin:12px auto 0; max-width:520px; font-size:clamp(15px,2.2vw,17px); color:var(--ink-2); line-height:1.5; }
+  .dhead .promise { margin:12px auto 0; max-width:540px; font-size:clamp(15px,2.2vw,17px); color:var(--ink-2); line-height:1.5; }
   .priceline { margin-top:16px; font-size:14px; font-weight:700; }
   .priceline span { color:var(--ink-3); font-weight:400; }
   .btn { display:inline-block; font-size:15px; font-weight:650; border-radius:999px; padding:13px 30px; text-decoration:none; }
@@ -62,8 +62,9 @@
 
   .shead { text-align:center; margin-bottom:28px; }
   .shead h2 { margin-top:10px; font-size:clamp(21px,3.4vw,27px); font-weight:700; letter-spacing:-0.02em; }
+  .snote { text-align:center; font-size:13px; color:var(--ink-3); margin-top:16px; }
 
-  /* You give / You get — visual flow */
+  /* You give / You get, visual flow */
   .io-flow { display:grid; gap:16px; grid-template-columns:1fr; align-items:center; }
   @media (min-width:721px){ .io-flow { grid-template-columns:1fr 44px 1fr; } }
   .instack { display:flex; flex-direction:column; gap:10px; }
@@ -87,6 +88,9 @@
   .th-model { width:44px; height:44px; border-radius:50%;
     background:radial-gradient(circle at 34% 30%, #E8C9B0, #A87B5A 70%, #6B4A33);
     box-shadow:inset 0 1px 0 rgba(255,255,255,.4); }
+  .th-goal { width:44px; height:44px; border-radius:9px; background:var(--accent-tint);
+    border:1px solid rgba(158,63,36,.28); display:grid; place-items:center;
+    color:var(--accent-deep); font-size:16px; font-weight:750; }
   .io-arrow { text-align:center; font-size:20px; color:var(--accent-deep); font-weight:700; }
   @media (max-width:720px){ .io-arrow { transform:rotate(90deg); } }
   .outcard { position:relative; aspect-ratio:9/11; max-width:300px; margin:0 auto; width:100%;
@@ -101,7 +105,7 @@
   .outcard .ready { position:absolute; right:12px; top:12px; font-size:10px; font-weight:700;
     letter-spacing:.08em; color:#2F7A3D; background:rgba(246,243,237,.92); border-radius:999px; padding:4px 9px; }
 
-  /* Steps — simplified, emoji-led, step 4 is the hero */
+  /* Steps: simplified, emoji-led, step 3 is the hero */
   .how2 { display:grid; gap:12px; grid-template-columns:1fr; align-items:stretch; }
   @media (min-width:560px){ .how2 { grid-template-columns:1fr 1fr; } }
   @media (min-width:900px){ .how2 { grid-template-columns:repeat(4,1fr); } }
@@ -113,14 +117,47 @@
   .h2c.main { background:var(--accent-tint); border:1.5px solid rgba(158,63,36,.45); }
   .h2c.main h3 { color:var(--accent-deep); }
 
-  /* Samples */
-  .samples { display:grid; gap:14px; grid-template-columns:1fr; }
-  @media (min-width:721px){ .samples { grid-template-columns:repeat(3,1fr); } }
-  .vid { aspect-ratio:9/14; border-radius:var(--radius-card); position:relative; overflow:hidden;
-    display:grid; place-items:center; box-shadow:0 16px 34px -14px rgba(45,32,22,.3); }
-  .v1 { background: linear-gradient(160deg,#4A3B30,#211E1A 60%,#5A3423); }
-  .v2 { background: linear-gradient(160deg,#31404E,#211E1A 60%,#2E4A5E); }
-  .v3 { background: linear-gradient(160deg,#4A3A52,#211E1A 60%,#5E2E4A); }
+  /* Worked example: the reference they sent, and what came back */
+  .compare { display:grid; gap:16px; grid-template-columns:1fr; align-items:center; }
+  @media (min-width:721px){ .compare { grid-template-columns:1fr 44px 1fr; } }
+  .cpanel { display:flex; flex-direction:column; gap:10px; }
+  .cpanel .lab { font-size:11.5px; font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--ink-3); text-align:center; }
+  .cvid { aspect-ratio:9/14; max-width:270px; width:100%; margin:0 auto; position:relative;
+    border-radius:var(--radius-card); overflow:hidden; background:#211E1A;
+    box-shadow:0 16px 34px -14px rgba(45,32,22,.3); }
+  .cvid video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; }
+  .cvid .metric { position:absolute; left:12px; top:12px; font-size:11px; font-weight:650;
+    color:rgba(246,243,237,.95); background:rgba(33,30,26,.62); border-radius:999px; padding:4px 10px; }
+  .credit { font-size:12px; color:var(--ink-3); text-align:center; }
+  .credit a { color:var(--accent-deep); font-weight:650; text-decoration:none;
+    border-bottom:1px solid rgba(158,63,36,.35); }
+
+  /* Samples, horizontal carousel */
+  .samples { position:relative; display:flex; gap:14px; overflow-x:auto; scroll-snap-type:x mandatory;
+    padding:6px 0 28px; -webkit-overflow-scrolling:touch; scrollbar-width:thin; }
+  .samples::-webkit-scrollbar { height:6px; }
+  .samples::-webkit-scrollbar-track { background:transparent; }
+  .samples::-webkit-scrollbar-thumb { background:rgba(33,30,26,.18); border-radius:999px; }
+  .vid { flex:0 0 auto; width:72%; scroll-snap-align:center;
+    aspect-ratio:9/14; border-radius:var(--radius-card); position:relative; overflow:hidden;
+    background:#211E1A; display:grid; place-items:center; box-shadow:0 16px 34px -14px rgba(45,32,22,.3);
+    transition: transform 260ms var(--ease-out), opacity 260ms var(--ease-out); }
+  /* Mobile: the centred card is the focused one, neighbours sit back and peek.
+     The script only writes --focus-scale and --focus-op; whether they are used
+     at all is decided here, so the desktop layout cannot inherit stale values
+     if a repaint is missed. */
+  @media (max-width:720px){
+    .samples { padding-inline:14%; }
+    .vid { transform:scale(var(--focus-scale,1)); opacity:var(--focus-op,1); }
+  }
+  @media (min-width:721px){
+    .samples { padding-inline:0; }
+    .vid { width:calc((100% - 28px)/3); scroll-snap-align:start; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .vid { transition:opacity 260ms ease; transform:none; }
+  }
   .vid .play { width:52px; height:52px; border-radius:50%; background:rgba(246,243,237,.92);
     display:grid; place-items:center; color:var(--accent-deep); font-size:16px;
     box-shadow:0 10px 24px rgba(0,0,0,.35); }
@@ -128,6 +165,46 @@
     background:rgba(33,30,26,.55); border-radius:999px; padding:4px 10px; }
   .vid .dur { position:absolute; right:12px; top:12px; font-size:11px; color:rgba(246,243,237,.9);
     background:rgba(33,30,26,.55); border-radius:999px; padding:3px 9px; }
+  .vid video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; }
+  .snd { position:absolute; right:12px; top:12px; z-index:2; border:0; cursor:pointer;
+    font:inherit; font-size:11px; font-weight:650; color:rgba(246,243,237,.92);
+    background:rgba(33,30,26,.55); border-radius:999px; padding:5px 11px;
+    transition: transform 160ms var(--ease-out); }
+  .snd:active { transform: scale(0.97); }
+  @media (hover:hover) and (pointer:fine){ .snd:hover { background:rgba(33,30,26,.75); } }
+
+  /* Pricing expander */
+  .tiers.two { grid-template-columns:1fr; }
+  @media (min-width:721px){ .tiers.two { grid-template-columns:repeat(2,1fr); } }
+  .more { margin-top:14px; }
+  .more summary { list-style:none; cursor:pointer; text-align:center; font-size:13.5px; font-weight:650;
+    color:var(--accent-deep); border:1px solid rgba(158,63,36,.3); background:var(--glass-strong);
+    border-radius:999px; padding:11px; transition: transform 160ms var(--ease-out); }
+  .more summary::-webkit-details-marker { display:none; }
+  .more summary::after { content:" ▾"; }
+  .more[open] summary::after { content:" ▴"; }
+  .more summary:active { transform: scale(0.97); }
+  .more .tiers { margin-top:14px; }
+  .ctarow { text-align:center; margin-top:30px; }
+  .ctarow .sub { display:block; margin-top:10px; font-size:12.5px; color:var(--ink-3); }
+
+  /* Creator byline */
+  .byline { display:flex; align-items:center; justify-content:center; gap:10px; margin-top:18px; }
+  .byline .av { width:32px; height:32px; border-radius:50%; flex:none;
+    background:radial-gradient(circle at 34% 30%, #E8C9B0, #A87B5A 70%, #6B4A33);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.4); }
+  .byline .bt { font-size:13px; color:var(--ink-2); }
+  .byline .bt a { color:var(--accent-deep); font-weight:650; text-decoration:none;
+    border-bottom:1px solid rgba(158,63,36,.35); }
+
+  /* Hook rate scale */
+  .scale { display:grid; gap:8px; grid-template-columns:repeat(2,1fr); margin-top:20px; }
+  @media (min-width:560px){ .scale { grid-template-columns:repeat(4,1fr); } }
+  .sc { background:rgba(255,255,255,.7); border:1px solid rgba(33,30,26,.12); border-radius:12px; padding:12px 10px; }
+  .sc b { display:block; font-size:20px; font-weight:750; letter-spacing:-0.02em; }
+  .sc span { display:block; font-size:11.5px; color:var(--ink-3); margin-top:2px; line-height:1.3; }
+  .sc.us { background:var(--accent-tint); border:1.5px solid rgba(158,63,36,.45); }
+  .sc.us b { color:var(--accent-deep); }
 
   /* Pricing */
   .tiers { display:grid; gap:14px; grid-template-columns:1fr; }
@@ -139,6 +216,12 @@
   .tier .tprice { font-size:24px; font-weight:750; letter-spacing:-0.02em; }
   .tier .tprice small { font-size:13px; font-weight:400; color:var(--ink-3); }
   .tier p { font-size:13.5px; color:var(--ink-2); line-height:1.45; flex:1; }
+  .tier .spec { flex:1; margin:6px 0 2px; }
+  .tier .spec div { display:flex; justify-content:space-between; align-items:baseline; gap:10px;
+    font-size:12.5px; padding:7px 0; border-bottom:1px solid var(--line); }
+  .tier .spec div:last-child { border-bottom:0; }
+  .tier .spec i { font-style:normal; color:var(--ink-3); }
+  .tier .spec b { font-weight:650; text-align:right; }
   .tier .tcta { margin-top:6px; text-align:center; font-size:13.5px; font-weight:650; color:var(--accent-deep);
     border:1px solid rgba(158,63,36,.3); border-radius:999px; padding:9px; text-decoration:none; }
   .tier .tcta.solid { background:var(--accent-deep); color:#fff; }
@@ -146,8 +229,9 @@
   /* Guarantee */
   .guarantee { text-align:center; background:var(--glass); border:1px solid var(--line);
     border-radius:var(--radius-card); padding:30px 22px; }
-  .guarantee h2 { font-size:clamp(19px,3vw,24px); font-weight:700; letter-spacing:-0.02em; max-width:560px; margin:0 auto; }
+  .guarantee h2 { font-size:clamp(19px,3vw,24px); font-weight:700; letter-spacing:-0.02em; max-width:580px; margin:0 auto; }
   .guarantee p { margin-top:10px; color:var(--ink-2); font-size:14.5px; }
+  .guarantee .limit { margin-top:14px; font-size:13px; color:var(--ink-3); max-width:520px; margin-left:auto; margin-right:auto; }
 
   /* Intake */
   .form { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:var(--radius-card);
@@ -163,6 +247,19 @@
   .upload { border:1.5px dashed rgba(33,30,26,.2); border-radius:10px; padding:16px; text-align:center;
     font-size:13px; color:var(--ink-2); background:rgba(255,255,255,.6); }
   .formnote { text-align:center; font-size:12.5px; color:var(--ink-3); margin-top:12px; }
+  /* objective picker, composed from field/input conventions */
+  .objs { display:grid; gap:8px; grid-template-columns:1fr 1fr; }
+  @media (min-width:560px){ .objs { grid-template-columns:repeat(4,1fr); } }
+  .obj { position:relative; display:block; cursor:pointer; background:#fff;
+    border:1px solid rgba(33,30,26,.14); border-radius:10px; padding:11px 12px;
+    transition: transform 160ms var(--ease-out), border-color 160ms var(--ease-out); }
+  .obj input { position:absolute; opacity:0; width:0; height:0; }
+  .obj .on { font-size:13px; font-weight:650; }
+  .obj .od { font-size:11.5px; color:var(--ink-3); margin-top:2px; line-height:1.35; }
+  .obj:active { transform: scale(0.97); }
+  @media (hover:hover) and (pointer:fine) { .obj:hover { border-color:rgba(158,63,36,.35); } }
+  .obj:has(input:checked) { border-color:rgba(158,63,36,.55); background:var(--accent-tint); }
+  .obj:has(input:checked) .on { color:var(--accent-deep); }
 
   /* FAQ */
   .faq details { border-bottom:1px solid var(--line); padding:14px 2px; }
@@ -190,11 +287,9 @@
     <div class="wrap">
       <span class="badge">Human + Agent</span><span class="samplechip">Sample first</span>
       <h1>UGC Ads</h1>
-      <p class="promise">Send your product link and an ad you like. We research it, script it, and send back a finished UGC video.</p>
-      <div class="priceline">Pay only if you like it <span>· subscriptions from $10 per video</span></div>
+      <p class="promise">Send your product link, an ad you like, and what you want the ad to do. We research your category, script it, and send back a finished UGC ad.</p>
       <div class="btnrow">
-        <a class="btn solid" href="#start">Start a sample</a>
-        <span class="nocard">No card needed</span>
+        <a class="btn ghost" href="#samples">See what comes back</a>
       </div>
     </div>
   </section>
@@ -202,7 +297,7 @@
   <!-- 2 · You give / You get -->
   <section class="block">
     <div class="wrap">
-      <div class="shead"><span class="eyebrow">Input, output</span><h2>Three things in. One video out.</h2></div>
+      <div class="shead"><span class="eyebrow">Input, output</span><h2>Three things in. One ad out.</h2></div>
       <div class="io-flow">
         <div class="instack">
           <div class="incard">
@@ -225,10 +320,10 @@
             </div>
           </div>
           <div class="incard">
-            <div class="th th-model"></div>
+            <div class="th th-goal">◎</div>
             <div class="meta">
-              <div class="t1">Model preference</div>
-              <div class="t2">photo or short brief, optional</div>
+              <div class="t1">What the ad is for</div>
+              <div class="t2">awareness, consideration, conversion, or re-engagement</div>
             </div>
           </div>
         </div>
@@ -236,7 +331,33 @@
         <div class="outcard">
           <span class="ready">READY TO RUN</span>
           <span class="play">▶</span>
-          <span class="cap">Your UGC video · 0:31</span>
+          <span class="cap">Your UGC ad · 0:31</span>
+        </div>
+      </div>
+      <p class="snote">The objective changes the ad. An awareness cut opens on the problem and holds your brand name back. A conversion cut opens on the offer.</p>
+    </div>
+  </section>
+
+  <!-- 2b · Worked example -->
+  <section class="block">
+    <div class="wrap">
+      <div class="shead"><span class="eyebrow">A real one</span><h2>The ad they sent. The ad they got.</h2></div>
+      <div class="compare">
+        <div class="cpanel">
+          <span class="lab">What they sent us</span>
+          <div class="cvid">
+            <video class="sync" src="assets/reference-sync.mp4" autoplay muted playsinline preload="auto"></video>
+            <span class="metric">143.7K likes</span>
+          </div>
+          <p class="credit">Someone else's post, used as the brief. Original by <a href="https://www.instagram.com/p/DbOGyXlNIed/" target="_blank" rel="noopener">@valerii.murr</a></p>
+        </div>
+        <div class="io-arrow">→</div>
+        <div class="cpanel">
+          <span class="lab">What we made</span>
+          <div class="cvid">
+            <video class="sync" src="assets/outcome-sync.mp4" autoplay muted playsinline preload="auto"></video>
+          </div>
+          <p class="credit">Same format, their product, their model.</p>
         </div>
       </div>
     </div>
@@ -245,24 +366,49 @@
   <!-- 3 · How it works -->
   <section class="block">
     <div class="wrap">
-      <div class="shead"><span class="eyebrow">How it works</span><h2>You review, then you pay.</h2></div>
+      <div class="shead"><span class="eyebrow">How it works</span><h2>The same loop, every month.</h2></div>
       <div class="how2">
-        <div class="h2c"><div class="em">🔍</div><h3>We research</h3><p>Your product and the ad you sent.</p></div>
-        <div class="h2c"><div class="em">✍️</div><h3>We script</h3><p>Written for your product.</p></div>
-        <div class="h2c"><div class="em">🎬</div><h3>We make the video</h3><p>Agent drafts, human expert finishes.</p></div>
-        <div class="h2c main"><div class="em">✅</div><h3>You review and pay</h3><p>Only if you like it. If not, you walk away.</p></div>
+        <div class="h2c"><div class="em">🔍</div><h3>We research</h3><p>What is running in your category. What is worn out.</p></div>
+        <div class="h2c"><div class="em">✍️</div><h3>We script and direct</h3><p>Hook, actor and pacing, set by your objective.</p></div>
+        <div class="h2c main"><div class="em">🎬</div><h3>We make four, ship one</h3><p>Binning three is the point. Credits make that unaffordable.</p></div>
+        <div class="h2c"><div class="em">🔁</div><h3>Next month builds on the winner</h3><p>You tell us what performed. We build around it.</p></div>
+      </div>
+      <div class="byline">
+        <span class="av" title="photo TBD"></span>
+        <span class="bt">Ads by <a href="https://www.instagram.com/blurred_ai/" target="_blank" rel="noopener">@blurred_ai</a> · 246K followers <span class="tbd">photo TBD</span></span>
       </div>
     </div>
   </section>
 
   <!-- 4 · Samples -->
-  <section class="block">
+  <section class="block" id="samples">
     <div class="wrap">
       <div class="shead"><span class="eyebrow">Samples</span><h2>What comes back</h2></div>
       <div class="samples">
-        <div class="vid v1"><span class="dur">0:31</span><span class="play">▶</span><span class="cap">Skincare · founder voice</span></div>
-        <div class="vid v2"><span class="dur">0:24</span><span class="play">▶</span><span class="cap">SaaS · problem first</span></div>
-        <div class="vid v3"><span class="dur">0:38</span><span class="play">▶</span><span class="cap">Food · unboxing style</span></div>
+        <div class="vid">
+          <video src="assets/sample-1.mp4" autoplay muted loop playsinline preload="metadata"></video>
+          <button class="snd" type="button">Sound on</button>
+          <span class="cap">Street, app on screen</span>
+        </div>
+        <div class="vid">
+          <video src="assets/sample-4.mp4" autoplay muted loop playsinline preload="metadata"></video>
+          <button class="snd" type="button">Sound on</button>
+          <span class="cap">At home, captioned</span>
+        </div>
+        <div class="vid">
+          <video src="assets/sample-2.mp4" autoplay muted loop playsinline preload="metadata"></video>
+          <button class="snd" type="button">Sound on</button>
+          <span class="cap">App walkthrough</span>
+        </div>
+        <div class="vid">
+          <video src="assets/sample-5.mp4" autoplay muted loop playsinline preload="none"></video>
+          <button class="snd" type="button">Sound on</button>
+          <span class="cap">Street interview</span>
+        </div>
+      </div>
+      <div class="ctarow">
+        <a class="btn solid" href="#start">Get your first ad for $29</a>
+        <span class="sub">One ad, in your inbox within 24 hours, credited to your first month if you subscribe.</span>
       </div>
     </div>
   </section>
@@ -270,45 +416,101 @@
   <!-- 5 · Pricing -->
   <section class="block">
     <div class="wrap">
-      <div class="shead"><span class="eyebrow">Pricing</span><h2>Start with one. Stay for the week.</h2></div>
-      <div class="tiers">
+      <div class="shead"><span class="eyebrow">Pricing</span><h2>Try one. Then subscribe.</h2></div>
+      <div class="tiers two">
         <div class="tier">
-          <div class="tname">Single video</div>
-          <div class="tprice">$ — <small><span class="tbd">price TBD</span></small></div>
-          <p>One sample video. Watch it first. Pay only if you want it.</p>
-          <a class="tcta" href="#start">Start a sample</a>
+          <div class="tname">Try it</div>
+          <div class="tprice">$29 <small>one ad, once</small></div>
+          <div class="spec">
+            <div><i>Ads</i><b>1</b></div>
+            <div><i>You give us</i><b>3 things</b></div>
+            <div><i>Back in</i><b>24 hours</b></div>
+            <div><i>Hook rate promise</i><b>No</b></div>
+            <div><i>Credited if you subscribe</i><b>Yes</b></div>
+          </div>
+          <a class="tcta" href="#start">Get your first ad</a>
         </div>
         <div class="tier hot">
-          <div class="tname">Starter · weekly</div>
-          <div class="tprice">$15 <small>per video · 3 videos a week</small></div>
-          <p>$45 a week. A steady flow of fresh creatives. Pause or cancel anytime.</p>
-          <a class="tcta solid" href="#start">Subscribe</a>
-        </div>
-        <div class="tier hot">
-          <div class="tname">Volume · weekly</div>
-          <div class="tprice">$10 <small>per video · 10 videos a week</small></div>
-          <p>$100 a week. For teams testing angles at scale. Pause or cancel anytime.</p>
-          <a class="tcta solid" href="#start">Subscribe</a>
+          <div class="tname">The monthly pack</div>
+          <div class="tprice">$395 <small>a month</small></div>
+          <div class="spec">
+            <div><i>Ads a month</i><b>8</b></div>
+            <div><i>Objectives</i><b>2 a cycle</b></div>
+            <div><i>Cycle</i><b>Monthly</b></div>
+            <div><i>Starts with</i><b>A call</b></div>
+            <div><i>Hook rate promise</i><b>Yes</b></div>
+          </div>
+          <a class="tcta solid" href="#">Book a call</a>
         </div>
       </div>
+      <details class="more">
+        <summary>Spending more than $10k a month on ads</summary>
+        <div class="tiers two">
+          <div class="tier">
+            <div class="tname">$10k to $30k ad spend</div>
+            <div class="tprice">$890 <small>a month</small></div>
+            <div class="spec">
+              <div><i>Ads a month</i><b>24</b></div>
+              <div><i>Objectives</i><b>All four</b></div>
+              <div><i>Cycle</i><b>Monthly</b></div>
+              <div><i>What won report</i><b>Yes</b></div>
+              <div><i>Hook rate promise</i><b>Yes</b></div>
+            </div>
+            <a class="tcta" href="#">Book a call</a>
+          </div>
+          <div class="tier">
+            <div class="tname">$30k+ ad spend</div>
+            <div class="tprice">$1,690 <small>a month</small></div>
+            <div class="spec">
+              <div><i>Ads a month</i><b>60</b></div>
+              <div><i>Objectives</i><b>All four</b></div>
+              <div><i>Cycle</i><b>Weekly</b></div>
+              <div><i>What won report</i><b>Weekly</b></div>
+              <div><i>Hook rate promise</i><b>Yes</b></div>
+            </div>
+            <a class="tcta" href="#">Book a call</a>
+          </div>
+        </div>
+      </details>
+      <p class="snote">Pause or cancel anytime.</p>
     </div>
   </section>
 
-  <!-- 6 · Guarantee -->
+  <!-- 7 · Guarantee -->
   <section class="block">
     <div class="wrap">
       <div class="guarantee">
-        <h2>Watch the sample. If you like it, you pay. If you don't, you don't.</h2>
-        <p>No card needed to start. The decision happens after you see the work.</p>
+        <h2>Any ad under a 30% hook rate, we replace free until it clears.</h2>
+        <p>Hook rate is the share of people still watching at three seconds. It is the one number your creative controls.</p>
+        <div class="scale">
+          <div class="sc"><b>20%</b><span>Failing</span></div>
+          <div class="sc"><b>28%</b><span>Meta median</span></div>
+          <div class="sc us"><b>30%</b><span>Our floor</span></div>
+          <div class="sc"><b>40%</b><span>Top 10%</span></div>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- 7 · Intake form -->
+  <!-- 8 · Intake form -->
   <section class="block" id="start">
     <div class="wrap">
-      <div class="shead"><span class="eyebrow">Start a sample</span><h2>Two minutes of input</h2></div>
+      <div class="shead"><span class="eyebrow">Start your first ad</span><h2>60 seconds of input</h2></div>
+      <p class="snote" style="margin-top:-16px; margin-bottom:22px;">This is the $29 first ad. A monthly pack starts with a call instead, where we take the full brief.</p>
       <div class="form">
+        <div class="field">
+          <label>What do you want this ad to do?</label>
+          <div class="objs">
+            <label class="obj"><input type="radio" name="objective" checked>
+              <div class="on">Awareness</div><div class="od">They have never heard of you</div></label>
+            <label class="obj"><input type="radio" name="objective">
+              <div class="on">Consideration</div><div class="od">They looked and did not buy</div></label>
+            <label class="obj"><input type="radio" name="objective">
+              <div class="on">Conversion</div><div class="od">They are close, and stalling</div></label>
+            <label class="obj"><input type="radio" name="objective">
+              <div class="on">Re-engagement</div><div class="od">They bought once already</div></label>
+          </div>
+        </div>
         <div class="field">
           <label>Product link</label>
           <input type="url" placeholder="https://yourproduct.com">
@@ -318,34 +520,35 @@
           <input type="url" placeholder="Link to the TikTok, Reel, or Short">
         </div>
         <div class="field">
-          <label>Model preference <small>optional</small></label>
-          <div class="upload">Drop a photo of the model you want, or describe them below</div>
-        </div>
-        <div class="field">
           <label>Anything else we should know <small>optional</small></label>
           <textarea placeholder="Tone, audience, words to avoid"></textarea>
         </div>
-        <div class="btnrow"><a class="btn solid" href="#">Start a sample</a></div>
-        <div class="formnote">No payment step. We confirm and research starts within 48 hours. <span class="tbd">SLA TBD</span></div>
+        <div class="btnrow"><a class="btn solid" href="#">Get your first ad for $29</a></div>
+        <div class="formnote">$29 today. Your ad lands in your inbox within 24 hours, watermarked. Like it and the clean file is yours, with the $29 credited to your first month.</div>
       </div>
     </div>
   </section>
 
-  <!-- 8 · FAQ -->
+  <!-- 9 · FAQ -->
   <section class="block">
     <div class="wrap">
       <div class="shead"><span class="eyebrow">FAQ</span><h2>The fine print, plainly</h2></div>
       <div class="faq">
-        <details><summary>How long does a sample take?</summary><p>Working target is 48 hours from a complete brief. <span class="tbd">TBD</span></p></details>
-        <details><summary>How many revisions do I get?</summary><p><span class="tbd">TBD</span> Working proposal: one revision round on a paid video.</p></details>
-        <details><summary>Do I own the video?</summary><p>Once paid, full usage rights are yours. Unpaid samples stay ours and are never run. <span class="tbd">TBD</span></p></details>
-        <details><summary>Who actually makes it?</summary><p>The agent does the research, script, and draft. A human expert reviews, finishes, and is accountable for what you receive.</p></details>
-        <details><summary>Who are the models? Can I pick one?</summary><p><span class="tbd">TBD</span> You can send a photo or describe the person you want in the intake form.</p></details>
+        <details><summary>How does the hook rate promise work?</summary><p>Read the number in your own ads manager and tell us. Under 30% and we make another, free, until it clears. Applies to every monthly pack, not to the $29 first ad. We do not promise sales, cost per acquisition or return on ad spend, because those depend on your price, offer and landing page.</p></details>
+        <details><summary>Why make four and send one?</summary><p>Judgment is what you are paying for. Generation is cheap for us and metered for you, so buying credits means running everything you made, including the two that should have been binned.</p></details>
+        <details><summary>Who actually makes it?</summary><p>The agent researches, drafts and generates. A human picks the angle, directs the output and rejects most of it. Both are named above.</p></details>
+        <details><summary>Which categories do you turn down?</summary><p>Regulated health claims, fitness transformations, finance, and anything needing real lived experience on camera. AI actors underperform there and get rejected more often. We say so rather than take the money.</p></details>
+        <details><summary>Do I need to give you ad account access?</summary><p>No. You report the hook rate yourself. Access is optional and only speeds up the what won report.</p></details>
+        <details><summary>How fast is the first ad?</summary><p>In your inbox within 24 hours of a complete brief.</p></details>
+        <details><summary>Why is the first ad watermarked?</summary><p>So you can judge it before anyone runs it. Say yes and we send the clean file, and the $29 comes off your first month.</p></details>
+        <details><summary>Revisions and ownership?</summary><p>Full usage rights once paid. <span class="tbd">TBD</span> Working proposal: one revision round per ad on a monthly pack.</p></details>
+        <details><summary>Can I pick the actor?</summary><p><span class="tbd">TBD</span> Not on the $29 ad. On a monthly pack we agree the casting on the call.</p></details>
+        <details><summary>What happens after I subscribe?</summary><p>A call first. We take the full brief there, agree the objectives for the cycle, and set the casting. The three-field form is only for the $29 ad.</p></details>
       </div>
     </div>
   </section>
 
-  <!-- 9 · Cross-sell -->
+  <!-- 10 · Cross-sell -->
   <section class="block cross">
     <div class="wrap">
       <div class="btnrow">
@@ -358,5 +561,116 @@
   <div class="foot">midsesh · Contact · Privacy</div>
 
 </div>
+<script>
+  /* Carousel: centre-focus scaling on mobile, gentle auto-advance as a scroll cue.
+     Transform and opacity only, written straight onto the card so no parent
+     variable forces a style recalc across every child. */
+  (function () {
+    var scroller = document.querySelector('.samples');
+    if (!scroller) return;
+    var cards = Array.prototype.slice.call(scroller.querySelectorAll('.vid'));
+    if (!cards.length) return;
+
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+    var isMobile = window.matchMedia('(max-width: 720px)');
+    var queued = false;
+
+    function paint() {
+      queued = false;
+      var mid = scroller.scrollLeft + scroller.clientWidth / 2;
+      cards.forEach(function (c) {
+        var d = Math.min(Math.abs((c.offsetLeft + c.offsetWidth / 2) - mid) / c.offsetWidth, 1);
+        c.style.setProperty('--focus-scale', (1 - d * 0.1).toFixed(3));
+        c.style.setProperty('--focus-op', (1 - d * 0.4).toFixed(3));
+      });
+    }
+    function onScroll() { if (!queued) { queued = true; requestAnimationFrame(paint); } }
+
+    scroller.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    window.addEventListener('load', onScroll);
+    /* Breakpoint changes do not fire scroll or resize on their own, and without
+       this the desktop layout keeps whatever scaling the first paint wrote. */
+    if (isMobile.addEventListener) isMobile.addEventListener('change', onScroll);
+    paint();
+
+    if (reduce.matches) return;
+
+    var i = 0, stopped = false, hovering = false;
+    var timer = setInterval(function () {
+      if (stopped || hovering || document.hidden) return;
+      i = (i + 1) % cards.length;
+      var t = cards[i];
+      var left = isMobile.matches
+        ? t.offsetLeft - (scroller.clientWidth - t.offsetWidth) / 2
+        : t.offsetLeft;
+      scroller.scrollTo({ left: Math.max(0, left), behavior: 'smooth' });
+    }, 3200);
+
+    function stop() { stopped = true; clearInterval(timer); }
+    ['pointerdown', 'wheel', 'touchstart', 'keydown'].forEach(function (e) {
+      scroller.addEventListener(e, stop, { passive: true, once: true });
+    });
+    scroller.addEventListener('mouseenter', function () { hovering = true; });
+    scroller.addEventListener('mouseleave', function () { hovering = false; });
+    /* On a phone the auto-advance is only there to say "this scrolls". Once that
+       has landed it stops, so nothing keeps moving under the reader. */
+    if (isMobile.matches) setTimeout(stop, 20000);
+  })();
+
+  /* The two example clips are cut so the outfit change lands at 3.00s in both.
+     They are looped from here rather than with the loop attribute, because the
+     encoded durations differ by 25ms and that drifts the beat apart over a few
+     cycles. Whichever reaches the end first sends both back to zero together. */
+  (function () {
+    var v = Array.prototype.slice.call(document.querySelectorAll('video.sync'));
+    if (v.length < 2) return;
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+    var END = 0, DRIFT = 0.12;
+
+    function ready() {
+      END = Math.min.apply(null, v.map(function (x) { return x.duration || Infinity; }));
+      if (!isFinite(END)) return;
+      restart();
+      if (!reduce.matches) requestAnimationFrame(tick);
+    }
+    function restart() {
+      v.forEach(function (x) { x.currentTime = 0; });
+      v.forEach(function (x) { var p = x.play(); if (p && p.catch) p.catch(function () {}); });
+    }
+    function tick() {
+      requestAnimationFrame(tick);
+      if (document.hidden) return;
+      var lead = v[0];
+      if (v.some(function (x) { return x.currentTime >= END - 0.05; })) { restart(); return; }
+      /* Nudge the follower rather than seeking it, so a correction is not a
+         visible jump. A seek only happens if it has fallen badly behind. */
+      for (var i = 1; i < v.length; i++) {
+        var d = v[i].currentTime - lead.currentTime;
+        if (Math.abs(d) > DRIFT) v[i].currentTime = lead.currentTime;
+      }
+    }
+
+    var pending = v.length;
+    v.forEach(function (x) {
+      if (x.readyState >= 2) { if (!--pending) ready(); }
+      else x.addEventListener('loadeddata', function () { if (!--pending) ready(); }, { once: true });
+    });
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) restart(); });
+  })();
+
+  document.querySelectorAll('.snd').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var v = btn.parentElement.querySelector('video');
+      if (!v) return;
+      var on = v.muted;
+      document.querySelectorAll('.samples video').forEach(function (o) { o.muted = true; });
+      document.querySelectorAll('.snd').forEach(function (o) { o.textContent = 'Sound on'; });
+      v.muted = !on;
+      btn.textContent = on ? 'Sound off' : 'Sound on';
+      if (on) v.play();
+    });
+  });
+</script>
 </body>
 </html>
