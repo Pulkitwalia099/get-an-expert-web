@@ -99,12 +99,8 @@ const LANDSCAPE: Layout = {
     'M945 282 Q945 512 608 512',
     'M565 486 Q610 440 650 388',
     'M997 82 Q1030 320 883 500',
-    'M740 522 Q400 570 378 260',
   ],
-  labels: [
-    { x: 925, y: 368, text: 'your edits teach it', anchor: 'end' },
-    { x: 620, y: 576, text: 'what worked comes back', anchor: 'middle' },
-  ],
+  labels: [{ x: 925, y: 368, text: 'your edits teach it', anchor: 'end' }],
 };
 
 const PORTRAIT: Layout = {
@@ -138,7 +134,6 @@ const PORTRAIT: Layout = {
     'M215 762 Q150 830 150 919',
     'M268 872 Q355 895 355 919',
     'M278 945 L218 945',
-    'M85 935 Q0 550 176 235',
   ],
   labels: [{ x: 240, y: 998, text: 'it learns from your every edit', anchor: 'middle' }],
 };
@@ -161,7 +156,7 @@ function MachineSvg({ layout, id, className }: { layout: Layout; id: string; cla
       viewBox={layout.viewBox}
       className={className}
       role="img"
-      aria-label="One expert's work, agentized, using a LinkedIn post as the example. A topic fans out to three research agents in parallel. Their findings merge, three hook agents compete and a judge picks the winner, a draft agent writes and a voice match agent applies your voice, then fact and tone checks run. Everything stops at you, the final say, before the post goes live. Voice memory and engagement data feed back, so the machine learns from your edits."
+      aria-label="One expert's work, agentized, using a LinkedIn post as the example. A topic fans out to three research agents in parallel. Their findings merge, three hook agents compete and a judge picks the winner, a draft agent writes and a voice match agent applies your voice, then fact and tone checks run. Everything stops at you, the final say, before the post goes live. Your edits flow into voice memory and live results into engagement data, so the machine learns from you."
     >
       <defs>
         <marker id={`${id}-a`} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">

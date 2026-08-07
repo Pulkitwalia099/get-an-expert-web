@@ -157,8 +157,8 @@ export function WorkflowLoopDiagram() {
         <line x1="428" y1="77" x2="478" y2="77" stroke="#C4593C" strokeWidth="2" markerEnd="url(#wl-l)" />
         <line x1="662" y1="77" x2="712" y2="77" stroke="#C4593C" strokeWidth="2" markerEnd="url(#wl-l)" />
         <path d="M570 114 L570 176 L336 176 L336 117" fill="none" stroke="#C4593C" strokeWidth="2" strokeDasharray="5 5" markerEnd="url(#wl-l)" />
-        <text x="453" y="200" textAnchor="middle" fontSize="12.5" fontWeight="600" fill="#A8452C">
-          your feedback improves the workflow
+        <text x="453" y="168" textAnchor="middle" fontSize="12.5" fontWeight="600" fill="#A8452C">
+          feedback
         </text>
       </svg>
       <svg viewBox="0 0 340 452" className="d-mobile" role="img" aria-label={aria}>
@@ -174,8 +174,8 @@ export function WorkflowLoopDiagram() {
         <line x1="150" y1="204" x2="150" y2="244" stroke="#C4593C" strokeWidth="2" markerEnd="url(#wl-p)" />
         <line x1="150" y1="318" x2="150" y2="358" stroke="#C4593C" strokeWidth="2" markerEnd="url(#wl-p)" />
         <path d="M262 288 Q318 231 264 176" fill="none" stroke="#C4593C" strokeWidth="2" strokeDasharray="5 5" markerEnd="url(#wl-p)" />
-        <text transform="rotate(90 326 232)" x="326" y="232" textAnchor="middle" fontSize="11.5" fontWeight="600" fill="#A8452C">
-          your feedback improves it
+        <text x="300" y="152" textAnchor="middle" fontSize="11.5" fontWeight="600" fill="#A8452C">
+          feedback
         </text>
       </svg>
     </>

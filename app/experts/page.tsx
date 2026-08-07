@@ -7,7 +7,7 @@ import ExpertMachineDiagram from '@/components/ExpertMachineDiagram';
 export const metadata: Metadata = {
   title: 'Become an expert · Get An Expert',
   description:
-    'Almost everything you deliver can be agentized. Agents run the work, you make the final call, and your judgment goes ten times further.',
+    'Experts everywhere are turning their craft into agents. We help you do that. You keep the final say and 90 percent of every sale.',
 };
 
 export default function Experts() {
@@ -20,29 +20,15 @@ export default function Experts() {
           Back to Get An Expert
         </Link>
 
-        {/* 1. The hook: their judgment is the scarce thing, agents multiply it.
-            No CTA yet, nothing is earned this early. */}
+        {/* 1. The hook, then the picture. One line, no CTA, nothing is
+            earned this early. The panel labels explain the diagram. */}
         <header className="exp-hero">
           <span className="exp-tag">For experts</span>
-          <h1>Your work can run without you. Your judgment cannot.</h1>
-          <p className="exp-lead">
-            Almost everything you deliver can be agentized. Agents run the work end to end. You
-            review, tweak and sign off. Ten times the output, the same you.
-          </p>
-        </header>
-
-        {/* The lift, drawn instead of written: what they do with AI today is
-            good, and it can carry far more. */}
-        <section className="exp-section">
-          <h2>You already use AI well. It can carry far more of your work.</h2>
+          <h1>Experts everywhere are turning their craft into agents. We help you do that.</h1>
           <figure className="exp-figure">
             <ChatVsAgentsDiagram />
           </figure>
-          <p className="exp-figcap">
-            Experts everywhere are turning their craft into agents. This is the new way work ships.
-            We build it with you.
-          </p>
-        </section>
+        </header>
 
         {/* 2. How it works: humans learn your workflow, agents run it,
             you keep the final say, it improves on your feedback. */}
