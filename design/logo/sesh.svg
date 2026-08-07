@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 64" width="96" height="64">
-  <!-- Sesh, the sea otter mascot. Floats on its back holding the splat, the way
-       otters hold the rock they crack shells with: a human, equipped. Sesh always
-       holds the splat so mascot and mark stay one system. Ground is assumed light;
-       the muzzle and eye are paper-colored. -->
+  <!-- Sesh, the midsesh logo. A sea otter floating on its back holding the
+       spark, the way otters hold the rock they crack shells with: a human,
+       equipped, arriving calmly in the middle of your current. For light
+       grounds; use sesh-on-dark.svg on ink. -->
   <path d="M6 52 Q11 48 16 52 T26 52" fill="none" stroke="#211E1A" stroke-width="2.5" stroke-linecap="round" opacity=".35"/>
   <path d="M78 54 Q83 50 88 54" fill="none" stroke="#211E1A" stroke-width="2.5" stroke-linecap="round" opacity=".35"/>
   <rect x="30" y="30" width="50" height="21" rx="10.5" fill="#211E1A"/>

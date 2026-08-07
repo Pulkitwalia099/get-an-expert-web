@@ -1,41 +1,55 @@
-# midsesh logo
+# The midsesh brand kit
 
-Identity exploration for the mark. Four concepts were drawn; two are the
-system, two are kept for the jobs they won.
+The logo is Sesh, a sea otter floating on its back holding a terracotta
+asterisk called the spark. Sea otters are the Bay's animal and the one marine
+mammal that uses tools: a rock on the chest, a shell opened. That is the
+product in one picture. A human, equipped, arriving calmly in the middle of
+your current.
 
-## The system
+## The marks
 
-**Primary mark: `splat.svg`.** The titlebar already wears a plain asterisk, so
-this is a promotion, not a rebrand. Five ink spokes and a sixth in terracotta,
-raised and detached from the center: a hand going up. The asterisk carries the
-product twice over. In code, `*` is the wildcard that matches anyone you need.
-In a document, an asterisk means a human note is attached to this line.
+| File | What it is | Where it goes |
+| --- | --- | --- |
+| `sesh.svg` | Full Sesh, floating, holding the spark | Hero placements, socials, stickers, anything 32px tall or larger |
+| `sesh-head.svg` | Sesh's head with the spark, square | Favicon, avatars, the titlebar dot, anything under 32px |
+| `spark.svg` | The terracotta asterisk alone | Bullets, the Sonar loading orb, small accents in text |
+| `lockup.svg` | Head mark plus the wordmark | Headers, email signatures, one-line brand moments |
 
-Rules that hold it together:
+Each mark has an `-on-dark` twin for ink grounds. The site renders the head
+mark from `components/SeshMark.tsx`, which uses `currentColor` so it follows
+the text color it sits in; these files are the fixed-color exports for use
+outside the app.
 
-- The detached terracotta spoke is the whole identity. Never close the gap,
-  never recolor it to match the others, never "fix" it back into a plain star.
-- Colors are the site tokens: ink `#211E1A`, terracotta `#C4593C`, paper
-  `#F6F3ED`. Use `splat-on-dark.svg` on dark grounds; only the ink spokes flip.
-- Wordmark stays lowercase `midsesh`, SF Pro (system stack), weight 750,
-  -2% tracking, mark set at cap height to the left with a gap of about a third
-  of the mark's width.
+## Color
 
-**Mascot: `sesh-otter.svg`.** Sesh is a sea otter, the Bay's animal and the
-one marine mammal that uses tools: it floats on its back with a rock on its
-chest and gets the shell open. That is the pitch in one picture: a human,
-equipped, floating calmly into the middle of your current. Sesh always holds
-the splat so the mascot and the mark read as one system. Sesh runs the social
-and sticker layer and is never the favicon.
+The kit uses the site tokens and nothing else.
 
-## Kept for parts
+| Name | Hex | Role |
+| --- | --- | --- |
+| Ink | `#211E1A` | Sesh's fur, the wordmark, text |
+| Paper | `#F6F3ED` | Grounds, and the muzzle and eyes on light marks |
+| Terracotta | `#C4593C` | The spark, links, the accent everywhere |
+| Terracotta deep | `#A8452C` | Hover and pressed states only |
+| Amber | `#D98E28` | Warnings and highlights, never in the logo |
 
-- `caret.svg` is the loading state, not the logo. The ink bar is the session
-  cursor and blinks while a search runs; the terracotta bar is the person
-  leaning into the line, and it lands when the expert does.
-- `seam.svg` is an m monogram with the second arch picked up in terracotta
-  mid-stroke. Runner-up; kept in case an avatar or app icon ever wants a
-  letterform instead of the splat.
+## Type
 
-The full exploration with scale tests, light and dark tiles, and lockups was
-built as a specimen sheet; the concepts above are its surviving output.
+The wordmark is lowercase `midsesh` in the system stack (SF Pro on Apple
+hardware), weight 700, tracking -2%. It is typed, not drawn, so it never
+drifts from the UI around it. No title case, no all caps, no rename of the
+mascot in copy: Sesh is Sesh.
+
+## Rules
+
+- The spark is Sesh's tool. It is always terracotta, and Sesh always holds it
+  in full-body placements. A Sesh with empty paws is off-brand.
+- Never flip Sesh to face right. The otter floats leftward, reading toward
+  the text that follows.
+- Do not add water, bubbles, sunglasses, or hats to production marks. Fan art
+  and launch memes are exempt, that is what a mascot is for.
+- Clearspace around any mark is the height of the spark on that mark. Minimum
+  sizes: full Sesh 32px tall, head mark 14px, below that use the spark.
+- Sesh appears on paper or ink grounds only. On photography, put the mark in
+  a paper circle first (see `app/icon.svg` for the pattern).
+- No copy may describe Sesh as an AI or the logo as a robot. The whole point
+  of the animal is the human holding the tool.

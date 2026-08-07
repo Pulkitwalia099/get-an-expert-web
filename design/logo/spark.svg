@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- The spark: the terracotta asterisk Sesh holds. Used alone as a bullet,
+       a loading glyph (the Sonar orb), and the accent in text. It is Sesh's
+       tool, so it never appears in any color but terracotta. -->
+  <g stroke="#C4593C" stroke-width="9" stroke-linecap="round">
+    <line x1="32" y1="8"    x2="32"   y2="56"/>
+    <line x1="11.2" y1="20" x2="52.8" y2="44"/>
+    <line x1="52.8" y1="20" x2="11.2" y2="44"/>
+  </g>
+</svg>
