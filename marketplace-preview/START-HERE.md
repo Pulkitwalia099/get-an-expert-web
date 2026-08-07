@@ -17,6 +17,9 @@ Next up: my review of the revised pages, then the remaining 5 detail pages.
   progress log, locked decisions, open questions, build phases, copy rules.
 - `hifi/index.html` — marketplace home, hero + 6 SKU tiles (Direction A).
 - `hifi/ugc.html` — complete UGC Ads detail page (the template for all SKUs).
+- `hifi/linkedin.html` — LinkedIn Marketeer detail page, same template.
+- `hifi/ratemyvibe.html` — RateMyVibe, the free tier. A flow page, not the
+  paid template: no pricing tiers, no guarantee strip, no intake form.
 - `hifi/directions.html` — the 3 brand directions explored (A chosen).
 - `hifi/shots/` — screenshots taken so far.
 - `wireframe/` — Phase A low-fi wireframes (home + UGC) and their shots.

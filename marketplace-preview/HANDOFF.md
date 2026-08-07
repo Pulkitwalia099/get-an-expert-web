@@ -1,6 +1,6 @@
 # Get-an-Expert Web — Marketplace Pivot: Session Handoff
 
-**Last updated:** 2026-08-06 (session 2 close-out, commit 0508869+)
+**Last updated:** 2026-08-07 (session 3: RateMyVibe decisions + flow page)
 **Read this first in any new session. It is the single source of truth.**
 
 **New session?** Clone/pull https://github.com/Pulkitwalia099/get-an-expert-web
@@ -16,6 +16,28 @@ live Next.js app. Read the progress log below, then continue from
   skeletons stay ours. No session (AI or human) changes fonts, theme, or
   component skeletons unless the user explicitly decides to. Copy for tiles
   and pages comes from Rohit where Rohit has written it; design stays ours.
+- **RateMyVibe decisions (user, session 3):** two of the three open decisions
+  are closed. **The name is RateMyVibe** (see the reversal bullet below).
+  **It lives as a flow page on our own site**, not as a full SKU detail page:
+  the paid template's pricing tiers, guarantee strip and intake form do not map
+  onto a free self-run tool. This is what Phase D already called for.
+- **RateMyVibe flow page (done, session 3):** `hifi/ratemyvibe.html`, seven
+  sections not nine (header, input/output, how to run it, what comes back, why
+  it is free, FAQ, cross-sell). Built from the ugc.html shell, so tokens and
+  card language are unchanged. New CSS is limited to the score card and two
+  input thumbs. NO emoji: the emoji exception was granted for the UGC
+  how-it-works section only, so the steps here are numbered instead. The home
+  tile now links to it; that tile is no longer a dead `#`.
+- **Still open, decision 6c (repo ownership):** the GitHub URL is marked TBD on
+  the page in three places (header button, step 1, FAQ) using the amber `.tbd`
+  convention. Recommendation on the table: move the repo under a shared org
+  before this page is public, with Rohit keeping maintainer and authorship
+  credit, so the marketplace's whole free tier does not depend on one personal
+  account. Not actionable without Rohit. Does not block anything else.
+- **Privacy answer is deliberately unresolved:** the FAQ item "Does anything
+  leave my machine?" is marked TBD on purpose. The tool reads session
+  transcripts, so that is the first question a developer asks, and the claim
+  should not ship before it can be checked against public code.
 - **Font revert (done):** the Direction A serif experiment (Fraunces) was
   REJECTED by the user and removed from index.html and ugc.html. All pages
   use the original system sans stack only. Direction A survives only as
@@ -39,8 +61,12 @@ live Next.js app. Read the progress log below, then continue from
   (3 premium brand directions). Verified shot: `hifi/shots/index-desktop.png`.
   REMAINING: screenshots of ugc.html + directions.html + mobile (Bash
   approvals expired mid-session; re-run the Chrome headless commands).
-- **Name correction (user, session 2):** it is RateMyWipe / "wipe coding",
-  never "vibe". Already applied everywhere.
+- **Name, REVERSED (user, session 3, 2026-08-07):** it is **RateMyVibe** and
+  "vibe coding". This reverses the session-2 correction, which read "it is
+  RateMyWipe / 'wipe coding', never 'vibe'" and is kept here only as history so
+  a later session does not "fix" the name back. RateMyVibe is now applied in
+  hifi/index.html, hifi/ratemyvibe.html, hifi/directions.html and
+  wireframe/index.html. The wordmark is one token; body copy says "vibe coding".
 - **Brand direction (corrected 2026-08-06):** Direction A survives as layout
   and tile structure ONLY. Its typography (Fraunces serif) was rejected and
   reverted. NO italics anywhere. Fonts remain the original site font; see
@@ -54,11 +80,11 @@ live Next.js app. Read the progress log below, then continue from
 - **Screenshot backlog:** Bash approvals expire repeatedly, so only
   hifi/shots/index-desktop.png (pre-revision) exists. Re-shoot hifi/index.html,
   hifi/ugc.html, and hifi/linkedin.html (desktop + mobile) at next opportunity.
-- **Next session starts at:** remaining 4 detail pages (RateMyWipe suggested
-  first, then Voice Outbound, Video Editing, Explainer Videos) using ugc.html
-  as the template; home tiles for those SKUs still link "#". Open questions
-  in section 7 still need user answers (UGC single price, Voice pricing,
-  Video Editing pricing, explainer template prices, RateMyWipe repo URL).
+- **Next session starts at:** remaining 3 detail pages (Voice Outbound, Video
+  Editing, Explainer Videos) using ugc.html as the template; those three tiles
+  still link "#". RateMyVibe is done. Open questions in section 7 still need
+  user answers (UGC single price, Voice pricing, Video Editing pricing,
+  explainer template prices, RateMyVibe repo URL once 6c is settled).
 - **LinkedIn tile (done, session 2):** Rohit's commit b48a3a5 built the
   LinkedIn Marketeer flagship tile (2-span, post-screenshot skeleton,
   $100 per 10k impressions pricing). Taste pass in commit 5a7e4d1: copy
@@ -97,7 +123,7 @@ six it is, grid handles any count.
 |---|-----|-------|-------|--------|-------|-------------|
 | 1 | **UGC Ads** (flagship, build first) | HUMAN + AGENT | Product link, a UGC ad you like, optional model photo/brief | Research, script, finished UGC video | Single price TBD; subscription $15/video at 3/week, $10/video at 10/week | Sample first: pay only if you like it |
 | 2 | **LinkedIn Marketeer** | HUMAN + AGENT (assumed) | TBD | TBD | TBD | TBD |
-| 3 | **RateMyWipe** | AGENT | Your Claude session transcripts (open-source tool on GitHub, user runs it on their cloud session) | Wipe-coding level 1-5, breakdown by skill area (planning, reviewing, running tools, etc.), prescribed skill packs/repos to level up | **FREE** | It IS the free sample/lead magnet |
+| 3 | **RateMyVibe** (page done) | AGENT | Your Claude session transcripts (open-source tool on GitHub, user runs it on their cloud session) | Vibe-coding level 1-5, breakdown by skill area (planning, reviewing, running tools, etc.), prescribed skill packs/repos to level up | **FREE** | It IS the free sample/lead magnet |
 | 4 | **Voice Outbound** ("voice port") | AGENT + HUMAN QA (assumed) | Call list + script/transcript | Outbound calls done: leads generated and qualified | TBD | On-site voice agent you can talk to, to judge quality |
 | 5 | **Video Editing** | HUMAN + AGENT (assumed) | Raw videos | Edited video | TBD; no content/data yet | TBD |
 | 6 | **Product Explainer Videos** | HUMAN + AGENT (assumed) | Product + launch context | Explainer video from fixed templates | Fixed price per template type | Template gallery |
@@ -105,10 +131,10 @@ six it is, grid handles any count.
 Notes:
 - "Lead Man" from session 1 appears folded into SKU 4 (voice outbound lead
   gen/qualification). Confirm, then delete the old name.
-- RateMyWipe details: open-source GitHub project; analyzes your AI coding
-  ("wipe coding") transcripts, scores 1-5, identifies weak areas, recommends
+- RateMyVibe details: open-source GitHub project; analyzes your AI coding
+  ("vibe coding") transcripts, scores 1-5, identifies weak areas, recommends
   skill packs/repos/git records to unlock productivity. Free tier of the
-  marketplace and the credibility play.
+  marketplace and the credibility play. Page built: `hifi/ratemyvibe.html`.
 
 ## 3. Information architecture
 
@@ -140,8 +166,8 @@ UGC Ads is the first detail page to be fully built.
 - **Phase C:** hi-fi — apply brand system (cream #F6F3ED, ink #211E1A,
   terracotta #9E3F24, aurora bg, existing card style) to home tiles + UGC
   detail in `design/app/index.html` preview; desktop + mobile screenshots.
-- **Phase D:** remaining 5 detail pages; voice-agent demo embed for SKU 4;
-  RateMyWipe flow page (GitHub instructions + results view).
+- **Phase D:** remaining detail pages; voice-agent demo embed for SKU 4.
+  RateMyVibe flow page (GitHub instructions + results view) is DONE, session 3.
 - **Phase E:** port to the Next.js repo (`repo/`, cloned from
   github.com/Pulkitwalia099/get-an-expert-web): new `/services/*` routes,
   tiles component on `app/page.tsx`. `npm test && npm run build` must pass;
@@ -185,4 +211,8 @@ UGC Ads is the first detail page to be fully built.
 6. Confirm "Lead Man" = Voice Outbound, or a separate SKU?
 7. Hero positioning line options: "Work, delivered." / "Agents do the work.
    Experts own the outcome." — pick or propose.
-8. RateMyWipe: exact GitHub repo URL and product name spelling?
+8. RateMyVibe: ~~product name spelling~~ ANSWERED session 3, it is RateMyVibe.
+   Still open: the exact GitHub repo URL, which is blocked on decision 6c
+   (who owns the repo). Marked TBD in three places on hifi/ratemyvibe.html.
+9. RateMyVibe privacy claim: does the tool upload anything, or is it fully
+   local? The FAQ answer stays TBD until this can be checked against the code.
