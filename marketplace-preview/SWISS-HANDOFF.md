@@ -87,6 +87,34 @@ restraint, see decision D3.
 
 ---
 
+## 2b. Two warnings from impeccable, to weigh during D1 and D3
+
+impeccable ships no template. It has one design system, `DESIGN.md`, which is
+its own brand identity, and its method explicitly refuses to offer a menu:
+"never present a ranked menu of your own grounded candidates; a lineup of those
+invites the safest card." So nothing was taken from it. But its
+`reference/new-work.md` says two things that touch this build directly.
+
+**One.** Its Calibration paragraph names the AI cluster as "warm cream ground,
+high-contrast serif display, and a terracotta **or signal-red** accent". Our
+old palette was the centre of that. Swiss is adjacent but not the same: the
+ground is unbleached `#F4F4F0` rather than warm cream, the display is heavy
+grotesk rather than serif, and the red is structural rather than decorative.
+Keep those three separations sharp during the build. If the paper drifts warm
+and the red starts decorating, we have walked back into the cluster wearing a
+different hat.
+
+**Two.** Its self check is: "if someone could guess your aesthetic from the
+category alone, or from category-plus-avoidance, rework until neither answer is
+obvious." A technical, monospaced, industrial look for an AI product is a
+guessable answer, and impeccable lists "tech wanting a mono" as exactly the
+association its banned-defaults list exists to break. The user chose Swiss with
+the alternatives in front of them, so this is not a reason to reopen the
+decision. It is a reason to make the execution specific to this product rather
+than generic industrial: the telemetry should describe real things this
+marketplace does, not decorative `REV 2.6` strings. Raise it once during D3,
+where the texture level is chosen, and then let it go.
+
 ## 3. Already decided, so you do not have to ask
 
 | # | Decision | Rationale |
