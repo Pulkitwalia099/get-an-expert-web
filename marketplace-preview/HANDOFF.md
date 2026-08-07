@@ -10,6 +10,40 @@ live Next.js app. Read the progress log below, then continue from
 
 ## 0. Progress log
 
+### Session 5 (2026-08-06): the design language is now Swiss Industrial
+
+**This supersedes the design half of the HARD RULE below. Read both.**
+
+- **DECISION, made by the user on 2026-08-06.** The visual system moves to
+  **Swiss Industrial Print**, the light substrate of the `industrial-brutalist-ui`
+  language in github.com/leonxlnx/taste-skill. Warm cream and terracotta are
+  retired. Ground `#F4F4F0`, carbon ink `#050505`, hazard red `#E61919` as the
+  only accent, zero border radius, no shadows, no gradients, no glass.
+- **The freeze is deliberately lifted for this work only.** The HARD RULE in
+  "Sessions 1 and 2" below still governs everything it does not cover, and the
+  new system gets frozen the same way once it is built. Do not treat this as
+  permission to improvise generally.
+- **The plan lives in `SWISS-PLAN.md`**, reviewed through plan-room at
+  `SWISS-PLAN.plan-room.html`. 10 tasks, 4 tradeoffs, 8 unknowns, risk low.
+  **Open that file before writing any code.** Four of the tradeoffs and all
+  eight unknowns need the user's answer, and several block the first task.
+- **How we got here.** Sessions 1 to 4 built the pages inside the old system.
+  A review against github.com/pbakaus/impeccable and taste-skill measured the
+  set and found: 26 font sizes with 10 between 10.5px and 15px, 13 corner radii
+  with 24 places bypassing the `--radius-card` token, an eyebrow above every
+  section on 6 of 7 pages, all 36 section heads centred, and all five brand
+  colours sitting inside the palette family taste-skill names as the AI default
+  for craft brands. Five design languages were rendered on real content and the
+  user picked Swiss Industrial.
+- **Audit items still to apply, tracked as T9 in the plan.** Item 03 (radii)
+  and item 04 (centred heads) are resolved by the language itself. Items 01
+  (one eyebrow per three sections), 02 (consolidated type ramp) and 05 (no em
+  dash in the `$ —` placeholder) still have to be done by hand. Items E2 (div
+  built fake previews) and E4 (six one-line cards) were left as the user's call
+  and should be raised again once the new language is in place.
+- **Nothing was converted in this session.** No page CSS changed. The only
+  files touched were `SWISS-PLAN.md`, this log, and `START-HERE.md`.
+
 ### Session 4 (2026-08-06): UGC offer redraft
 
 - **`hifi/ugc.html` fully redrafted around a new offer.** The old pricing said
@@ -342,16 +376,20 @@ live Next.js app. Read the progress log below, then continue from
   mobile, are in `hifi/shots/`. If you need to re-shoot, start the static
   server (`.claude/launch.json` has a `marketplace-preview` entry on port
   4319) and shoot against `http://localhost:4319`, not `file://`.
-- **Next session starts at:** UGC Ads is done and committed. Pick one:
-  1. **The next SKU.** LinkedIn Marketeer is the closest to ready since Rohit
-     wrote the copy and the price. Voice Outbound, Video Editing and Explainer
-     all still need a price decision, and each lays its options out on its own
-     page so it is a read-and-pick rather than a blank.
-  2. **Unblock the UGC launch.** Items 1a to 1f in section 7. 1f is the real
-     one: nothing can take the $29.
-  3. **Phase E, the port into Next.js:** six `/services/<slug>` routes plus the
-     tiles component on `app/page.tsx`. Guardrails in section 6. Note the video
-     assets are ~20MB in git and should move to blob storage in the port.
+- **Next session starts at: the Swiss Industrial rebuild. Open `SWISS-PLAN.md`
+  first.** Everything below is now queued behind it, because converting the
+  design language touches every page and doing more work in the old system
+  means converting that too.
+  - **Step 1 is not code.** Answer the 4 tradeoffs and 8 unknowns in the plan.
+    Several block T1: which page converts first, which macro grotesk we can
+    licence, how much analog texture, and what happens to the amber TBD and
+    green ready states under a single accent rule.
+  - **Step 2 is T1 and T2 on one page only**, then stop for approval. The plan
+    says `voice.html` unless the user overrides in the tradeoff.
+  - Queued behind the rebuild, unchanged: the remaining SKU prices (section 7),
+    unblocking the UGC launch (items 1a to 1f), and Phase E, the Next.js port
+    with six `/services/<slug>` routes. The ~20MB of video still needs to move
+    to blob storage during that port.
 - **LinkedIn tile (done, session 2):** Rohit's commit b48a3a5 built the
   LinkedIn Marketeer flagship tile (2-span, post-screenshot skeleton,
   $100 per 10k impressions pricing). Taste pass in commit 5a7e4d1: copy

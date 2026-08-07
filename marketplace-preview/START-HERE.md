@@ -4,17 +4,30 @@ Paste this as your first message in the new session:
 
 ---
 
-Read `marketplace-preview/HANDOFF.md` in this repo and continue the
-get-an-expert marketplace work. UGC Ads is finished and committed in 710b988:
-new offer, real sample videos, synced worked example. Do not redesign it.
+Read `marketplace-preview/HANDOFF.md` section 0, then read
+`marketplace-preview/SWISS-PLAN.md` in full before anything else.
+
+We are rebuilding the marketplace preview in **Swiss Industrial Print**. I
+picked that language on 2026-08-06 from the five in taste-skill, and the design
+freeze is deliberately lifted for this work only. Ground `#F4F4F0`, carbon ink
+`#050505`, hazard red `#E61919` as the only accent, zero radius, no shadows,
+no gradients, no glass.
+
+Clone the language source first, it is the spec you are building to:
+`git clone --depth 1 https://github.com/leonxlnx/taste-skill /tmp/taste-skill`
+then read `/tmp/taste-skill/skills/brutalist-skill/SKILL.md`, section 2.1 and
+sections 3 to 8.
 
 Serve the preview before you look at anything:
 `python3 -m http.server 4319 --directory marketplace-preview/hifi`
-then open http://localhost:4319/ugc.html
 
-Read section 0 for what shipped, section 7 for what is still open, then tell me
-which of the three options under "Next session starts at" you would pick and
-why, before you touch a file.
+Do not write any CSS yet. Start by walking me through the 4 tradeoffs and 8
+unknowns in SWISS-PLAN.md, with a recommendation and the reasoning for each,
+and get my answers. Several of them block task T1. Then convert exactly one
+page and stop for my approval before touching the rest.
+
+Do not redesign the UGC offer, prices, promise, videos or copy. That shipped in
+710b988 and this is a visual conversion only.
 
 ---
 
