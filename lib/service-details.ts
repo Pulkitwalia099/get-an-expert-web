@@ -247,9 +247,9 @@ export const SERVICE_DETAILS: Record<string, ServiceDetail> = {
       'Give us your call list and script. The voice agent makes the calls, qualifies the leads, and sends you the notes.',
     priceLine: 'Per qualified lead',
     priceOpen: true,
-    ctaLabel: 'Join the list',
+    ctaLabel: 'Get notified',
     ctaHref: '#start',
-    ctaNote: 'Launching soon. Tell us what you would run and we will come to you first.',
+    ctaNote: 'Not open yet. Leave an email and we will tell you when it is.',
     ioHeading: 'A list in. Qualified leads out.',
     inputs: [
       { title: 'Your call list', note: 'CSV of names and numbers' },
@@ -306,9 +306,9 @@ export const SERVICE_DETAILS: Record<string, ServiceDetail> = {
       'Pick a template, send your product, get a launch-ready explainer video at a fixed price per template.',
     priceLine: 'Fixed price per template',
     priceOpen: true,
-    ctaLabel: 'Join the list',
+    ctaLabel: 'Get notified',
     ctaHref: '#start',
-    ctaNote: 'Launching soon. Tell us which template you want and we will come to you first.',
+    ctaNote: 'Not open yet. Leave an email and we will tell you when it is.',
     ioHeading: 'A template and a product. One video.',
     inputs: [
       { title: 'A template', note: 'you pick the shape first' },

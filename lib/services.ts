@@ -82,7 +82,7 @@ export const SERVICES: Service[] = [
     price: 'Per qualified lead',
     priceNote: 'Rate TBD',
     priceOpen: true,
-    cta: 'See details',
+    cta: 'Get notified',
     media: null,
   },
   {
@@ -95,7 +95,7 @@ export const SERVICES: Service[] = [
     price: 'Fixed price per template',
     priceNote: 'Prices TBD',
     priceOpen: true,
-    cta: 'See details',
+    cta: 'Get notified',
     media: null,
   },
 ];

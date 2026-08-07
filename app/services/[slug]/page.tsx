@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import AccountLink from '@/components/AccountLink';
 import ContactBlock from '@/components/ContactBlock';
+import NotifyForm from '@/components/NotifyForm';
 import ContactLink from '@/components/ContactLink';
 import SiteFooter from '@/components/SiteFooter';
 import { SERVICES, serviceBySlug } from '@/lib/services';
@@ -171,13 +172,20 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
       <section className={styles.section} id="start">
         <div className={styles.wrap}>
           <div className={styles.shead}>
-            <span className={styles.eyebrow}>{soon ? 'Get in first' : 'Get started'}</span>
-            <h2>{soon ? 'Tell us what you would run' : 'Tell us what you need'}</h2>
+            <span className={styles.eyebrow}>{soon ? 'Not open yet' : 'Get started'}</span>
+            <h2>{soon ? `Get notified when ${service.name} opens` : 'Tell us what you need'}</h2>
           </div>
-          {/* Always open here. It is a collapsible panel on the home page,
-              where a button owns that state; on a service page it IS the step,
-              so there is nothing to collapse it behind. */}
-          <ContactBlock open />
+          {soon ? (
+            // Email and nothing else. There is no brief to take for something
+            // that cannot be bought, and asking for one would be collecting
+            // work we cannot start.
+            <NotifyForm service={service.name} />
+          ) : (
+            // Always open here. It is a collapsible panel on the home page,
+            // where a button owns that state; on a service page it IS the step,
+            // so there is nothing to collapse it behind.
+            <ContactBlock open />
+          )}
         </div>
       </section>
 
