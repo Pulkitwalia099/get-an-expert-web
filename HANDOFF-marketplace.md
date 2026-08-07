@@ -12,6 +12,17 @@ history and the two rejected redesigns; it knows nothing about the port.
 The marketplace is **built, deployed to a Vercel preview, and verified**. It is
 **not on production**. Three things stand in the way, all listed in section 4.
 
+**2026-08-07, later: the home hero is now the V1 split** the user picked over
+three mockup rounds (decision trail in `design/hero-concepts/`, history in the
+preview handoff, sessions 5 to 8). `components/HomeHero.tsx` plus its module
+replace the centered opener on `app/page.tsx`: headline left, the three lead
+services as cards on the right, no pricing in the hero. The UGC card plays
+`/media/ugc-reel.mp4` for real (a poster keeps first paint from being black),
+the LinkedIn card shows the real post as a screenshot so it does not echo the
+live tile in the grid one scroll down, and the old search bar survives as a
+door to `/search-experts`. The display headline size is the one user-approved
+exception to the frozen type scale.
+
 - Branch: **`design/cream-directions`**, 12 commits ahead of `master`, nothing
   pushed, nothing merged.
 - Latest preview:
