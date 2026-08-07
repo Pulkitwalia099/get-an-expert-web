@@ -4,30 +4,25 @@ Paste this as your first message in the new session:
 
 ---
 
-Read `marketplace-preview/SWISS-HANDOFF.md` and `HANDOFF.md` section 0, then
-start. Everything you need is in those two files.
+Read `marketplace-preview/HANDOFF.md` section 0, starting at session 6. That is
+the single source of truth.
 
-We are rebuilding the marketplace preview in **Swiss Industrial Print**. I
-picked it on 2026-08-06 and the design freeze is lifted for this work only.
-
-Clone the spec first:
-`git clone --depth 1 https://github.com/leonxlnx/taste-skill /tmp/taste-skill`
-then read `/tmp/taste-skill/skills/brutalist-skill/SKILL.md` section 2.1 and
-sections 3 to 8.
+**There is no redesign. Do not propose one.** Two have been built and rejected:
+Swiss Industrial Print on 2026-08-06, and three cream directions on 2026-08-07.
+The design system is FROZEN again, in full, per ground rule 3 below. The cream
+`#F6F3ED` / terracotta `#C4593C` system, glass cards, aurora background and 16px
+radii stay exactly as they are on all seven pages. `SWISS-HANDOFF.md` is dead
+and is kept only as a record of what was tried.
 
 Serve the preview:
 `python3 -m http.server 4319 --directory marketplace-preview/hifi`
 
-**Your first build is `hifi/_decisions.html`**, the five comparisons in section
-4 of SWISS-HANDOFF.md, rendered on real Voice Outbound content. I decide by
-looking, not by reading questions. Show me all five at once, I answer once,
-then you convert `voice.html` alone and stop for approval.
-
-Do not ask me anything before that page exists. Everything else is already
-decided in section 3.
+Work is now product, not visual. Pick up from the queue at the end of the
+session 5 entry in `HANDOFF.md`: the three open prices first, since they are the
+only reason a visitor cannot find out what a service costs.
 
 Do not redesign the UGC offer, prices, promise, videos or copy. That shipped in
-710b988 and this is a visual conversion only.
+710b988 and is final.
 
 ---
 
