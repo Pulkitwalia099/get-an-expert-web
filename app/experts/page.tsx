@@ -3,7 +3,6 @@ import Link from 'next/link';
 import ExpertJoinForm from '@/components/ExpertJoinForm';
 import { WorkflowLoopDiagram } from '@/components/ExpertDiagrams';
 import ExpertHeroDemo from '@/components/ExpertHeroDemo';
-import ExpertExampleFlow from '@/components/ExpertExampleFlow';
 import ExpertMachineDiagram from '@/components/ExpertMachineDiagram';
 
 export const metadata: Metadata = {
@@ -22,19 +21,12 @@ export default function Experts() {
           Back to Get An Expert
         </Link>
 
-        {/* 1. The hook, then the reframe in plain words, then the two
-            looping panels that act it out. No CTA, nothing is earned this
-            early. */}
+        {/* 1. The hook, then the two looping panels that act it out. The
+            panels carry their own titles, so no paragraph in between. No
+            CTA, nothing is earned this early. */}
         <header className="exp-hero">
           <span className="exp-tag">For experts</span>
           <h1>Experts everywhere are turning their craft into agents. We help you do that.</h1>
-          <p className="exp-lead">
-            The AI you use today is a chat. You ask for research or a draft, you get an answer,
-            and every step in between is still yours: the reading, the picking, the rewriting,
-            the checking. Agentized work is different. A team of small sub-agents runs each step
-            of your workflow, and your job becomes giving feedback at a few review points. Here
-            is the same LinkedIn post, both ways:
-          </p>
           <ExpertHeroDemo />
         </header>
 
@@ -78,15 +70,8 @@ export default function Experts() {
 
           <h3>What agentized work looks like</h3>
           <p>
-            One example from many. If you write LinkedIn posts for clients, your work agentized
-            starts as three inputs and ends as a post that goes live:
-          </p>
-          <ExpertExampleFlow />
-          <p>
-            Between the inputs and the live post sits a machine like this one. Every white box is
-            a sub-agent built from your process. Every box marked expert review is a place where
-            you, the expert, check the work before the work moves on. Cold email, video, Reddit,
-            enrichment: your craft will have its own shape.
+            One example from many. If you write LinkedIn posts, your work agentized runs like
+            this. Cold email, video, Reddit, enrichment: your craft will have its own shape.
           </p>
           <figure className="exp-figure wide">
             <ExpertMachineDiagram />

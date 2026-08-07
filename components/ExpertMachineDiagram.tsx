@@ -2,6 +2,12 @@
 // example. Two layouts of the same 15-node machine: landscape for desktop,
 // portrait for phones, swapped by CSS (.d-desktop / .d-mobile). Dense enough
 // to feel like a serious machine, always ending at YOU.
+//
+// The machine plays itself: every node and edge carries an .mm1-.mm8 class
+// and the mm-dim keyframes in globals.css light the pipeline up stage by
+// stage on a 16 second loop, topic to research to merge to hooks to draft
+// to checks to YOU to live, with the memory loops last. Reduced motion
+// shows the whole machine lit.
 
 type Kind = 'end' | 'agent' | 'gate' | 'you' | 'mem';
 
@@ -43,6 +49,28 @@ const INK: Record<Kind, string> = {
   gate: '#211E1A',
   you: '#FFFFFF',
   mem: '#5F594E',
+};
+
+// Which of the eight animation stages a node joins. Edges take the stage
+// of the node they point at, so an arrow appears with its destination.
+const NODE_PHASE: Record<string, number> = {
+  topic: 1,
+  trend: 2,
+  audience: 2,
+  deep: 2,
+  merge: 3,
+  hookA: 4,
+  hookB: 4,
+  hookC: 4,
+  judge: 4,
+  draft: 5,
+  voice: 5,
+  fact: 6,
+  tone: 6,
+  you: 7,
+  live: 8,
+  voiceMem: 8,
+  engage: 8,
 };
 
 const FLOW: Array<[string, string]> = [
@@ -185,22 +213,22 @@ function MachineSvg({ layout, id, className }: { layout: Layout; id: string; cla
         const p1 = anchorPt(nodes[a], nodes[b]);
         const p2 = anchorPt(nodes[b], nodes[a]);
         return (
-          <line key={`${a}-${b}`} x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} stroke="#C4593C" strokeWidth="1.7" opacity="0.85" markerEnd={`url(#${id}-a)`} />
+          <line key={`${a}-${b}`} className={`mm-g mm${NODE_PHASE[b]}`} x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} stroke="#C4593C" strokeWidth="1.7" opacity="0.85" markerEnd={`url(#${id}-a)`} />
         );
       })}
 
       {dashed.map((d) => (
-        <path key={d} d={d} fill="none" stroke="#8B8375" strokeWidth="1.7" strokeDasharray="5 5" markerEnd={`url(#${id}-d)`} />
+        <path key={d} className="mm-g mm8" d={d} fill="none" stroke="#8B8375" strokeWidth="1.7" strokeDasharray="5 5" markerEnd={`url(#${id}-d)`} />
       ))}
 
       {labels.map((l) => (
-        <text key={l.text} x={l.x} y={l.y} textAnchor={l.anchor} fontSize="11.5" fontWeight="600" fill="#8B8375">
+        <text key={l.text} className="mm-g mm8" x={l.x} y={l.y} textAnchor={l.anchor} fontSize="11.5" fontWeight="600" fill="#8B8375">
           {l.text}
         </text>
       ))}
 
       {Object.entries(nodes).map(([key, n]) => (
-        <g key={key}>
+        <g key={key} className={`mm-g mm${NODE_PHASE[key]}${n.kind === 'you' ? ' mm-youp' : ''}`}>
           <rect
             x={n.x - n.w / 2}
             y={n.y - n.h / 2}

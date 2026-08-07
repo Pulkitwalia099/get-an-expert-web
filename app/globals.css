@@ -1957,105 +1957,44 @@ a.cta { text-decoration: none; display: inline-block; }
 .ca4, .cb4 { animation: xd-cap-4 15s infinite; }
 .ca5, .cb5 { animation: xd-cap-5 15s infinite; }
 
-/* ---------- Experts example flow (ExpertExampleFlow) ---------- */
-/* The LinkedIn Marketeer input-to-output flow, on a 9s loop: cards pop in,
-   the arrow pulses, the post assembles and goes live. */
-.xio {
-  margin: 24px 0 20px;
-  display: grid; gap: 16px; grid-template-columns: 1fr 44px 1fr; align-items: center;
-}
-@media (max-width: 720px) {
-  .xio { grid-template-columns: 1fr; }
-  .xio-arrow { transform: rotate(90deg); }
-}
-.xio-in { display: flex; flex-direction: column; gap: 10px; }
-.xio-card {
-  display: flex; gap: 12px; align-items: center;
-  padding: 11px 13px;
-  background: rgba(255, 255, 255, .78);
-  border: 1px solid rgba(33, 30, 26, .09);
-  border-radius: 14px;
-  box-shadow: 0 8px 20px -10px rgba(45, 32, 22, .15);
-}
-.xio-meta { min-width: 0; display: flex; flex-direction: column; }
-.xio-meta b { font-size: 13px; font-weight: 650; color: var(--ink); }
-.xio-meta i { font-size: 11.5px; font-style: normal; color: var(--ink-3); margin-top: 1px; }
-.xio-th { flex: none; }
-.xio-li {
-  width: 44px; height: 44px; border-radius: 10px;
-  background: #0A66C2; color: #fff;
-  font-size: 15px; font-weight: 800;
-  display: grid; place-items: center;
-}
-.xio-aud {
-  width: 44px; height: 44px; border-radius: 50%;
-  background: radial-gradient(circle at 34% 30%, #B8C9D9, #4A6582 75%, #2E4256);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .4);
-}
-.xio-voice {
-  width: 44px; height: 44px; border-radius: 10px;
-  background: #fff; border: 1px solid rgba(33, 30, 26, .14);
-  display: flex; flex-direction: column; gap: 4px; justify-content: center; padding: 0 8px;
-}
-.xio-voice i { height: 3px; border-radius: 2px; background: rgba(33, 30, 26, .18); }
-.xio-voice i:last-child { width: 60%; }
-.xio-arrow { text-align: center; font-size: 20px; font-weight: 700; color: var(--accent-deep); }
+/* ---------- Experts machine diagram animation ---------- */
+/* The big workflow plays itself: eight stages on a 16s loop, each part
+   brightening at its stage and holding until the loop resets. Edges carry
+   the stage of the node they point at (classes set in
+   ExpertMachineDiagram). The faint base keeps the whole machine readable
+   at any moment. */
+@keyframes mm-dim-1 { 0% { opacity: .25; } 1.5%, 96% { opacity: 1; } 100% { opacity: .25; } }
+@keyframes mm-dim-2 { 0%, 12.5% { opacity: .25; } 14%, 96% { opacity: 1; } 100% { opacity: .25; } }
+@keyframes mm-dim-3 { 0%, 25% { opacity: .25; } 26.5%, 96% { opacity: 1; } 100% { opacity: .25; } }
+@keyframes mm-dim-4 { 0%, 37.5% { opacity: .25; } 39%, 96% { opacity: 1; } 100% { opacity: .25; } }
+@keyframes mm-dim-5 { 0%, 50% { opacity: .25; } 51.5%, 96% { opacity: 1; } 100% { opacity: .25; } }
+@keyframes mm-dim-6 { 0%, 62.5% { opacity: .25; } 64%, 96% { opacity: 1; } 100% { opacity: .25; } }
+@keyframes mm-dim-7 { 0%, 75% { opacity: .25; } 76.5%, 96% { opacity: 1; } 100% { opacity: .25; } }
+@keyframes mm-dim-8 { 0%, 87.5% { opacity: .25; } 89%, 96% { opacity: 1; } 100% { opacity: .25; } }
+.mm1 { animation: mm-dim-1 16s infinite; }
+.mm2 { animation: mm-dim-2 16s infinite; }
+.mm3 { animation: mm-dim-3 16s infinite; }
+.mm4 { animation: mm-dim-4 16s infinite; }
+.mm5 { animation: mm-dim-5 16s infinite; }
+.mm6 { animation: mm-dim-6 16s infinite; }
+.mm7 { animation: mm-dim-7 16s infinite; }
+.mm8 { animation: mm-dim-8 16s infinite; }
 
-.xio-post {
-  position: relative; width: 100%; max-width: 300px; margin: 0 auto;
-  background: #fff; border: 1px solid rgba(33, 30, 26, .12); border-radius: 14px;
-  padding: 14px; display: flex; flex-direction: column; gap: 8px;
-  box-shadow: 0 18px 38px -16px rgba(45, 32, 22, .3);
+/* YOU breathes twice when the run reaches it. Composes with .mm7 because
+   the stage animation sits on the group and the pulse on transform only. */
+@keyframes mm-you-pulse {
+  0%, 75% { transform: scale(1); }
+  78% { transform: scale(1.05); }
+  81% { transform: scale(1); }
+  84% { transform: scale(1.05); }
+  87.5%, 100% { transform: scale(1); }
 }
-.xio-live {
-  position: absolute; right: 10px; top: 10px;
-  font-size: 10px; font-weight: 700; letter-spacing: .08em;
-  color: #2F7A3D; background: rgba(62, 155, 79, .12);
-  border: 1px solid rgba(62, 155, 79, .3);
-  border-radius: 999px; padding: 3px 9px;
-}
-.xio-pk-head { display: flex; align-items: center; gap: 9px; }
-.xio-pk-av {
-  flex: none; width: 30px; height: 30px; border-radius: 50%;
-  background: radial-gradient(circle at 34% 30%, #E8C9B0, #A87B5A 70%, #6B4A33);
-}
-.xio-pk-name { display: block; height: 6px; width: 66px; border-radius: 3px; background: rgba(33, 30, 26, .17); }
-.xio-pk-sub { display: block; height: 5px; width: 50px; border-radius: 3px; background: rgba(33, 30, 26, .09); margin-top: 5px; }
-.xio-pk-line { height: 5px; border-radius: 3px; background: rgba(33, 30, 26, .10); }
-.xio-pk-short { width: 68%; }
-.xio-pk-media {
-  min-height: 74px; border-radius: 8px; margin-top: 2px;
-  background: linear-gradient(140deg, rgba(33, 30, 26, .07), rgba(33, 30, 26, .03));
-  border: 1px solid rgba(33, 30, 26, .06);
-}
-.xio-pk-bar {
-  display: flex; gap: 6px; align-items: center;
-  border-top: 1px solid rgba(33, 30, 26, .08); padding-top: 10px;
-}
-.xio-pk-dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: #0A66C2; opacity: .85; }
-.xio-pk-pill { height: 7px; width: 26px; border-radius: 4px; background: rgba(33, 30, 26, .09); }
-
-@keyframes xio-card-1 { 0% { opacity: 0; transform: translateY(6px); } 5%, 94% { opacity: 1; transform: none; } 99%, 100% { opacity: 0; } }
-@keyframes xio-card-2 { 0%, 7% { opacity: 0; transform: translateY(6px); } 12%, 94% { opacity: 1; transform: none; } 99%, 100% { opacity: 0; } }
-@keyframes xio-card-3 { 0%, 14% { opacity: 0; transform: translateY(6px); } 19%, 94% { opacity: 1; transform: none; } 99%, 100% { opacity: 0; } }
-@keyframes xio-go { 0%, 24% { opacity: .25; } 34%, 94% { opacity: 1; } 100% { opacity: .25; } }
-@keyframes xio-out { 0%, 38% { opacity: 0; transform: translateY(8px) scale(.98); } 46%, 94% { opacity: 1; transform: none; } 99%, 100% { opacity: 0; } }
-@keyframes xio-badge { 0%, 62% { opacity: 0; transform: scale(.6); } 66% { opacity: 1; transform: scale(1.12); } 70%, 94% { opacity: 1; transform: scale(1); } 99%, 100% { opacity: 0; } }
-.xio-c1 { animation: xio-card-1 9s infinite; }
-.xio-c2 { animation: xio-card-2 9s infinite; }
-.xio-c3 { animation: xio-card-3 9s infinite; }
-.xio-arrow { animation: xio-go 9s infinite; }
-@media (max-width: 720px) {
-  .xio-arrow { animation: none; opacity: 1; }
-}
-.xio-post { animation: xio-out 9s infinite; }
-.xio-live { animation: xio-badge 9s infinite; }
+.mm-youp { animation: mm-dim-7 16s infinite, mm-you-pulse 16s infinite; transform-origin: center; transform-box: fill-box; }
 
 /* Reduced motion: no loops, show the finished frame of every animation. */
 @media (prefers-reduced-motion: reduce) {
-  .xd-bub, .xd-chip, .xd-g, .xd-youc, .xd-cap span,
-  .xio-c1, .xio-c2, .xio-c3, .xio-arrow, .xio-post, .xio-live { animation: none !important; }
-  .xd-bub, .xd-chip, .xd-g, .xio-c1, .xio-c2, .xio-c3, .xio-arrow, .xio-post, .xio-live { opacity: 1; }
+  .xd-bub, .xd-chip, .xd-g, .xd-youc, .xd-cap span, .mm-g, .mm-youp { animation: none !important; }
+  .xd-bub, .xd-chip, .xd-g, .mm-g { opacity: 1; }
   .xd-cap { min-height: 0; }
   .xd-cap span { position: static; opacity: 1; }
   .xd-cap { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
