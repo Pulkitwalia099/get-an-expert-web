@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hi-fi · RateMyVibe flow page</title>
+<style>
+  :root {
+    --bg: #F6F3ED; --ink: #211E1A; --ink-2: #5F594E; --ink-3: #8B8375;
+    --line: rgba(33,30,26,.08);
+    --glass: rgba(255,255,255,.55); --glass-strong: rgba(255,255,255,.78);
+    --accent: #C4593C; --accent-deep: #9E3F24; --accent-tint: rgba(196,89,60,.09);
+    --amber: #B97A1A; --green: #2F7A3D;
+    --ease-out: cubic-bezier(0.23,1,0.32,1); --spring: cubic-bezier(0.34,1.56,0.64,1);
+    --radius-card: 16px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
+    color: var(--ink); background: var(--bg);
+    -webkit-font-smoothing: antialiased; letter-spacing: -0.004em;
+  }
+  .bg { position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(52vw 44vh at 16% 8%,  rgba(255,196,156,.52), transparent 68%),
+      radial-gradient(46vw 42vh at 86% 12%, rgba(206,190,255,.46), transparent 70%),
+      radial-gradient(58vw 50vh at 50% 104%, rgba(168,206,255,.42), transparent 70%);
+  }
+  .page { position: relative; z-index: 1; }
+  .sitebar { display:flex; align-items:center; justify-content:space-between; padding:18px clamp(18px,4vw,40px); }
+  .sitemark { display:flex; align-items:center; gap:7px; font-size:15px; font-weight:700; text-decoration:none; color:inherit; }
+  .worb { width:17px; height:17px; border-radius:50%; background:linear-gradient(140deg,#E8A184,var(--accent));
+    color:#fff; font-size:9px; display:inline-grid; place-items:center; }
+  .sitenav { display:flex; gap:18px; font-size:13.5px; }
+  .sitenav a { color:var(--ink-2); text-decoration:none; }
+
+  section.block { padding: clamp(36px,6vh,64px) 16px; }
+  .wrap { width: min(880px,100%); margin:0 auto; }
+  .eyebrow { display:block; font-size:11.5px; font-weight:650; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); }
+
+  /* Header */
+  .dhead { text-align:center; padding-top: clamp(28px,5vh,56px); }
+  .badge { display:inline-block; font-size:10.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--accent-deep); background:var(--accent-tint); border:1px solid rgba(158,63,36,.28);
+    border-radius:999px; padding:4px 12px; }
+  /* Free badge matches the green honesty label on the home tile */
+  .badge.free { color:var(--green); background:rgba(62,155,79,.10); border:1px solid rgba(62,155,79,.3); }
+  .dhead h1 { margin-top:16px; font-size:clamp(30px,5vw,42px); font-weight:750; letter-spacing:-0.03em; }
+  .dhead .promise { margin:12px auto 0; max-width:540px; font-size:clamp(15px,2.2vw,17px); color:var(--ink-2); line-height:1.5; }
+  .priceline { margin-top:16px; font-size:14px; font-weight:700; }
+  .priceline span { color:var(--ink-3); font-weight:400; }
+  .btn { display:inline-block; font-size:15px; font-weight:650; border-radius:999px; padding:13px 30px; text-decoration:none; }
+  .btn.solid { background:var(--accent-deep); color:#fff; box-shadow:0 8px 20px -6px rgba(158,63,36,.5);
+    transition: transform .2s var(--spring); }
+  .btn.solid:hover { transform: translateY(-2px) scale(1.02); }
+  .btn.ghost { color:var(--accent-deep); border:1px solid rgba(158,63,36,.3); background:var(--glass-strong); }
+  .btnrow { margin-top:22px; display:flex; gap:10px; justify-content:center; align-items:center; flex-wrap:wrap; }
+  .nocard { font-size:12.5px; color:var(--ink-3); }
+
+  .shead { text-align:center; margin-bottom:28px; }
+  .shead h2 { margin-top:10px; font-size:clamp(21px,3.4vw,27px); font-weight:700; letter-spacing:-0.02em; }
+
+  /* You give / You get — visual flow */
+  .io-flow { display:grid; gap:16px; grid-template-columns:1fr; align-items:center; }
+  @media (min-width:721px){ .io-flow { grid-template-columns:1fr 44px 1fr; } }
+  .instack { display:flex; flex-direction:column; gap:10px; }
+  .incard { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:14px;
+    padding:11px 13px; display:flex; gap:12px; align-items:center;
+    box-shadow:0 8px 20px -10px rgba(45,32,22,.15); }
+  .incard .meta { min-width:0; }
+  .incard .t1 { font-size:13px; font-weight:650; }
+  .incard .t2 { font-size:11.5px; color:var(--ink-3); margin-top:1px; }
+  .th { flex:none; border-radius:9px; overflow:hidden; position:relative; }
+  /* transcript thumb: a session, alternating turns */
+  .th-tx { width:52px; height:44px; background:#fff; border:1px solid rgba(33,30,26,.14);
+    padding:6px; display:flex; flex-direction:column; gap:4px; justify-content:center; }
+  .th-tx i { height:4px; border-radius:2px; background:rgba(33,30,26,.16); }
+  .th-tx i.you { width:70%; }
+  .th-tx i.bot { width:100%; background:var(--accent-tint); border:1px solid rgba(158,63,36,.22); }
+  /* local thumb: a terminal, because you run it yourself */
+  .th-cli { width:52px; height:44px; background:linear-gradient(160deg,#31404E,#211E1A 70%);
+    display:grid; place-items:center; color:rgba(246,243,237,.9); font-size:13px; font-weight:700; }
+  .io-arrow { text-align:center; font-size:20px; color:var(--accent-deep); font-weight:700; }
+  @media (max-width:720px){ .io-arrow { transform:rotate(90deg); } }
+
+  /* Score card: the output artifact */
+  .scorecard { position:relative; max-width:300px; margin:0 auto; width:100%;
+    background:var(--glass-strong); border:1px solid rgba(33,30,26,.12); border-radius:18px;
+    padding:20px; display:flex; flex-direction:column; gap:15px;
+    box-shadow:0 22px 44px -16px rgba(45,32,22,.3); }
+  .scorecard .stag { position:absolute; right:14px; top:14px; font-size:10px; font-weight:700;
+    letter-spacing:.08em; color:var(--green); background:rgba(62,155,79,.10);
+    border:1px solid rgba(62,155,79,.3); border-radius:999px; padding:4px 9px; }
+  .lvl { display:flex; align-items:baseline; gap:7px; }
+  .lvl .num { font-size:42px; font-weight:750; letter-spacing:-0.03em; line-height:1; color:var(--accent-deep); }
+  .lvl .of { font-size:13px; color:var(--ink-3); }
+  .pips { display:flex; gap:5px; }
+  .pip { flex:1; height:5px; border-radius:3px; background:rgba(33,30,26,.10); }
+  .pip.on { background:var(--accent-deep); }
+  /* hairline keeps the level pips from reading as the first skill's bar */
+  .skills { display:flex; flex-direction:column; gap:10px;
+    border-top:1px solid var(--line); padding-top:13px; }
+  .skill .sname { display:flex; justify-content:space-between; align-items:baseline;
+    font-size:11.5px; color:var(--ink-2); }
+  .skill .sname b { font-weight:650; }
+  .skill .sname span { color:var(--ink-3); }
+  .track { height:5px; border-radius:3px; background:rgba(33,30,26,.09); margin-top:5px; overflow:hidden; }
+  .track i { display:block; height:100%; border-radius:3px;
+    background:linear-gradient(90deg,var(--accent),var(--accent-deep)); }
+  .scorecard .rx { border-top:1px solid var(--line); padding-top:12px;
+    font-size:11.5px; color:var(--ink-2); line-height:1.45; }
+  .scorecard .rx b { font-weight:650; }
+
+  /* Steps and result cards — same card language, no emoji here */
+  .grid3 { display:grid; gap:12px; grid-template-columns:1fr; align-items:stretch; }
+  @media (min-width:560px){ .grid3 { grid-template-columns:1fr 1fr; } }
+  @media (min-width:900px){ .grid3 { grid-template-columns:repeat(3,1fr); } }
+  .h2c { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:14px;
+    padding:18px 16px; box-shadow:0 8px 20px -10px rgba(45,32,22,.14); }
+  .h2c .n { font-size:12px; color:var(--ink-3); letter-spacing:.06em; }
+  .h2c h3 { margin-top:7px; font-size:15px; font-weight:700; }
+  .h2c p { margin-top:5px; font-size:12.5px; color:var(--ink-2); line-height:1.45; }
+  .h2c code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size:11.5px;
+    background:rgba(33,30,26,.05); border:1px solid var(--line); border-radius:6px;
+    padding:2px 6px; display:inline-block; margin-top:8px; color:var(--ink-2); }
+
+  /* Why it is free */
+  .guarantee { text-align:center; background:var(--glass); border:1px solid var(--line);
+    border-radius:var(--radius-card); padding:30px 22px; }
+  .guarantee h2 { font-size:clamp(19px,3vw,24px); font-weight:700; letter-spacing:-0.02em; max-width:560px; margin:0 auto; }
+  .guarantee p { margin-top:10px; color:var(--ink-2); font-size:14.5px; max-width:520px; margin-left:auto; margin-right:auto; }
+
+  /* FAQ */
+  .faq details { border-bottom:1px solid var(--line); padding:14px 2px; }
+  .faq summary { font-size:14.5px; font-weight:650; cursor:pointer; list-style:none; }
+  .faq summary::after { content:"+"; float:right; color:var(--ink-3); }
+  .faq details[open] summary::after { content:"–"; }
+  .faq details p { margin-top:8px; font-size:13.5px; color:var(--ink-2); line-height:1.5; }
+  .tbd { color:var(--amber); font-size:12px; font-weight:650; }
+
+  .cross { text-align:center; }
+  .foot { text-align:center; color:var(--ink-3); font-size:12.5px; padding:26px 16px 40px; }
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="page">
+
+  <header class="sitebar">
+    <a class="sitemark" href="index.html"><span class="worb">✳︎</span>midsesh</a>
+    <nav class="sitenav"><a href="index.html">All services</a><a href="#">Contact</a><a href="#">Sign in</a></nav>
+  </header>
+
+  <!-- 1 · Header -->
+  <section class="block dhead">
+    <div class="wrap">
+      <span class="badge free">Agent · Free</span>
+      <h1>RateMyVibe</h1>
+      <p class="promise">Our agent reads your AI coding sessions and rates your vibe coding from 1 to 5. You get a breakdown of your weak areas and the skill packs to fix them.</p>
+      <div class="priceline">Free <span>· open source, runs on your machine</span></div>
+      <div class="btnrow">
+        <!-- href stays "#" until the repo owner question is settled -->
+        <a class="btn solid" href="#run">Run it on your sessions</a>
+        <a class="btn ghost" href="#">View on GitHub</a>
+      </div>
+      <div class="btnrow" style="margin-top:12px;">
+        <span class="nocard">Repo URL <span class="tbd">TBD</span></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 · Input, output -->
+  <section class="block">
+    <div class="wrap">
+      <div class="shead"><span class="eyebrow">Input, output</span><h2>Your sessions in. A score out.</h2></div>
+      <div class="io-flow">
+        <div class="instack">
+          <div class="incard">
+            <div class="th th-tx"><i class="you"></i><i class="bot"></i><i class="you"></i></div>
+            <div class="meta">
+              <div class="t1">Your coding sessions</div>
+              <div class="t2">the transcripts already on your machine</div>
+            </div>
+          </div>
+          <div class="incard">
+            <div class="th th-cli">&gt;_</div>
+            <div class="meta">
+              <div class="t1">One command</div>
+              <div class="t2">you run it yourself, on your own machine</div>
+            </div>
+          </div>
+        </div>
+        <div class="io-arrow">→</div>
+        <div class="scorecard">
+          <span class="stag">YOUR LEVEL</span>
+          <div>
+            <div class="lvl"><span class="num">3</span><span class="of">of 5</span></div>
+            <div class="pips" style="margin-top:10px;">
+              <span class="pip on"></span><span class="pip on"></span><span class="pip on"></span>
+              <span class="pip"></span><span class="pip"></span>
+            </div>
+          </div>
+          <div class="skills">
+            <div class="skill">
+              <div class="sname"><b>Planning</b><span>strong</span></div>
+              <div class="track"><i style="width:78%;"></i></div>
+            </div>
+            <div class="skill">
+              <div class="sname"><b>Reviewing output</b><span>weak</span></div>
+              <div class="track"><i style="width:31%;"></i></div>
+            </div>
+            <div class="skill">
+              <div class="sname"><b>Running tools</b><span>fair</span></div>
+              <div class="track"><i style="width:54%;"></i></div>
+            </div>
+          </div>
+          <div class="rx"><b>Install next:</b> two skill packs for reviewing output, one repo to read.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 · How to run it -->
+  <section class="block" id="run">
+    <div class="wrap">
+      <div class="shead"><span class="eyebrow">How to run it</span><h2>Three steps, on your machine</h2></div>
+      <div class="grid3">
+        <div class="h2c">
+          <div class="n">Step 1</div>
+          <h3>Clone the repo</h3>
+          <p>It is public and open source. Read the code before you run it.</p>
+          <code>git clone …<span class="tbd"> URL TBD</span></code>
+        </div>
+        <div class="h2c">
+          <div class="n">Step 2</div>
+          <h3>Point it at your sessions</h3>
+          <p>One command, aimed at the transcripts you already have.</p>
+          <code>ratemyvibe ./sessions</code>
+        </div>
+        <div class="h2c">
+          <div class="n">Step 3</div>
+          <h3>Read the report</h3>
+          <p>Your level, where you are weak, and what to install to fix it.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 · What comes back -->
+  <section class="block">
+    <div class="wrap">
+      <div class="shead"><span class="eyebrow">The report</span><h2>What comes back</h2></div>
+      <div class="grid3">
+        <div class="h2c">
+          <div class="n">01</div>
+          <h3>A level, 1 to 5</h3>
+          <p>One number for how you work with a coding agent, scored against what the transcripts show you actually did.</p>
+        </div>
+        <div class="h2c">
+          <div class="n">02</div>
+          <h3>A breakdown by skill</h3>
+          <p>Planning, reviewing what comes back, running tools. Scored separately, because most people are lopsided.</p>
+        </div>
+        <div class="h2c">
+          <div class="n">03</div>
+          <h3>What to install next</h3>
+          <p>The skill packs and repos that address your weakest area, not a generic reading list.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 · Why it is free -->
+  <section class="block">
+    <div class="wrap">
+      <div class="guarantee">
+        <h2>This one is free, and it stays free.</h2>
+        <p>It is the honest sample. You can read the code, run it yourself, and judge our work before any money is discussed. If it is useful, the rest of the marketplace is here.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 · FAQ -->
+  <section class="block">
+    <div class="wrap">
+      <div class="shead"><span class="eyebrow">FAQ</span><h2>The fine print, plainly</h2></div>
+      <div class="faq">
+        <details>
+          <summary>Does anything leave my machine?</summary>
+          <p><span class="tbd">TBD</span> Working answer: it runs locally and reads only the transcripts you point it at. This stays marked TBD until the repo is public and the claim can be checked against the code. We are not going to promise it before you can verify it.</p>
+        </details>
+        <details>
+          <summary>What does it actually read?</summary>
+          <p>Your AI coding session transcripts: what you asked for, what came back, and what you did with it. That is what the score is built from.</p>
+        </details>
+        <details>
+          <summary>What is vibe coding?</summary>
+          <p>Building by directing a coding agent rather than writing most of the lines yourself. It is a skill with a range, which is the reason a score is worth anything.</p>
+        </details>
+        <details>
+          <summary>Is it really free?</summary>
+          <p>Yes. No card, no account, no trial. It is open source and you run it yourself, so there is nothing to charge for.</p>
+        </details>
+        <details>
+          <summary>Who built it, and where is the code?</summary>
+          <p><span class="tbd">TBD</span> Repo URL and maintainer credit are pending.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 · Cross-sell -->
+  <section class="block cross">
+    <div class="wrap">
+      <div class="btnrow">
+        <a class="btn ghost" href="index.html">Browse all services</a>
+        <a class="btn ghost" href="#">Ask for something custom</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="foot">midsesh · Contact · Privacy</div>
+
+</div>
+</body>
+</html>
