@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<title>RateMyWipe · midsesh</title>
+<meta name="description" content="Our agent reads your AI coding transcripts and rates your wipe coding from 1 to 5. You get a breakdown of weak areas and the exact skill packs and repos to level up.">
+<style>
+  :root {
+    --bg: #F6F3ED; --ink: #211E1A; --ink-2: #5F594E; --ink-3: #8B8375;
+    --line: rgba(33,30,26,.08);
+    --glass: rgba(255,255,255,.55); --glass-strong: rgba(255,255,255,.78);
+    --accent: #C4593C; --accent-deep: #9E3F24; --accent-tint: rgba(196,89,60,.09);
+    --amber: #B97A1A;
+    --ease-out: cubic-bezier(0.23,1,0.32,1); --spring: cubic-bezier(0.34,1.56,0.64,1);
+    --radius-card: 16px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
+    color: var(--ink); background: var(--bg);
+    -webkit-font-smoothing: antialiased; letter-spacing: -0.004em;
+  }
+  .bg { position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(52vw 44vh at 16% 8%,  rgba(255,196,156,.52), transparent 68%),
+      radial-gradient(46vw 42vh at 86% 12%, rgba(206,190,255,.46), transparent 70%),
+      radial-gradient(58vw 50vh at 50% 104%, rgba(168,206,255,.42), transparent 70%);
+  }
+  .page { position: relative; z-index: 1; }
+  .sitebar { display:flex; align-items:center; justify-content:space-between; padding:18px clamp(18px,4vw,40px); }
+  .sitemark { display:flex; align-items:center; gap:7px; font-size:15px; font-weight:700; text-decoration:none; color:inherit; }
+  .worb { width:17px; height:17px; color:var(--ink);
+    display:inline-grid; place-items:center; }
+  .worb svg { width:100%; height:100%; display:block; }
+  .sitenav { display:flex; gap:18px; font-size:13.5px; }
+  .sitenav a { color:var(--ink-2); text-decoration:none; }
+
+  section.block { padding: clamp(36px,6vh,64px) 16px; }
+  .wrap { width: min(880px,100%); margin:0 auto; }
+  .eyebrow { display:block; font-size:11.5px; font-weight:650; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); }
+
+  /* Header */
+  .dhead { text-align:center; padding-top: clamp(28px,5vh,56px); }
+  .badge { display:inline-block; font-size:10.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--accent-deep); background:var(--accent-tint); border:1px solid rgba(158,63,36,.28);
+    border-radius:999px; padding:4px 12px; }
+  .badge.free { color:#2F7A3D; background:rgba(62,155,79,.10); border-color:rgba(62,155,79,.3); }
+  .oschip { display:inline-block; margin-left:6px; font-size:10.5px; font-weight:650; color:var(--ink-2);
+    background:rgba(33,30,26,.05); border:1px solid rgba(33,30,26,.14); border-radius:999px; padding:4px 12px; }
+  .dhead h1 { margin-top:16px; font-size:clamp(30px,5vw,42px); font-weight:750; letter-spacing:-0.03em; }
+  .dhead .promise { margin:12px auto 0; max-width:540px; font-size:clamp(15px,2.2vw,17px); color:var(--ink-2); line-height:1.5; }
+  .priceline { margin-top:16px; font-size:14px; font-weight:700; }
+  .priceline span { color:var(--ink-3); font-weight:400; }
+  .btn { display:inline-block; font-size:15px; font-weight:650; border-radius:999px; padding:13px 30px; text-decoration:none;
+    transition: transform 160ms var(--ease-out), box-shadow 160ms var(--ease-out); }
+  .btn.solid { background:var(--accent-deep); color:#fff; box-shadow:0 8px 20px -6px rgba(158,63,36,.5); }
+  .btn.ghost { color:var(--accent-deep); border:1px solid rgba(158,63,36,.3); background:var(--glass-strong); }
+  @media (hover:hover) and (pointer:fine) {
+    .btn.solid:hover { transform: translateY(-2px) scale(1.02); }
+  }
+  .btn:active { transform: scale(0.97); }
+  .btnrow { margin-top:22px; display:flex; gap:10px; justify-content:center; align-items:center; flex-wrap:wrap; }
+  .nocard { font-size:12.5px; color:var(--ink-3); }
+
+  .shead { text-align:center; margin-bottom:28px; }
+  .shead h2 { margin-top:10px; font-size:clamp(21px,3.4vw,27px); font-weight:700; letter-spacing:-0.02em; }
+
+  /* You give / You get — visual flow */
+  .io-flow { display:grid; gap:16px; grid-template-columns:1fr; align-items:center; }
+  @media (min-width:721px){ .io-flow { grid-template-columns:1fr 44px 1fr; } }
+  .instack { display:flex; flex-direction:column; gap:10px; }
+  .incard { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:14px;
+    padding:11px 13px; display:flex; gap:12px; align-items:center;
+    box-shadow:0 8px 20px -10px rgba(45,32,22,.15); }
+  .incard .meta { min-width:0; }
+  .incard .t1 { font-size:13px; font-weight:650; }
+  .incard .t2 { font-size:11.5px; color:var(--ink-3); margin-top:1px; }
+  .th { flex:none; border-radius:9px; overflow:hidden; position:relative; }
+  /* transcript file thumb */
+  .th-tr { width:44px; height:44px; border-radius:10px; background:#fff; border:1px solid rgba(33,30,26,.14);
+    display:flex; flex-direction:column; gap:3px; justify-content:center; padding:0 7px; }
+  .th-tr i { height:3px; border-radius:2px; background:rgba(33,30,26,.16); }
+  .th-tr i:nth-child(2) { width:70%; background:rgba(196,89,60,.4); }
+  .th-tr i:last-child { width:52%; }
+  /* terminal thumb */
+  .th-cmd { width:44px; height:44px; border-radius:10px; background:#211E1A;
+    display:grid; place-items:center; color:#8FD694; font-size:14px; font-weight:700;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  /* repo thumb */
+  .th-repo { width:44px; height:44px; border-radius:10px; background:rgba(33,30,26,.06);
+    border:1px solid rgba(33,30,26,.14); display:grid; place-items:center; font-size:17px; }
+  .io-arrow { text-align:center; font-size:20px; color:var(--accent-deep); font-weight:700; }
+  @media (max-width:720px){ .io-arrow { transform:rotate(90deg); } }
+
+  /* Score card (the report) */
+  .scorecard { position:relative; max-width:300px; margin:0 auto; width:100%;
+    background:#fff; border:1px solid rgba(33,30,26,.12); border-radius:16px; padding:18px;
+    box-shadow:0 20px 42px -16px rgba(45,32,22,.32); }
+  .sc-tag { position:absolute; right:12px; top:12px; font-size:9.5px; font-weight:700; letter-spacing:.08em;
+    color:var(--ink-3); background:rgba(33,30,26,.05); border:1px solid rgba(33,30,26,.12);
+    border-radius:999px; padding:3px 9px; }
+  .sc-top { display:flex; align-items:baseline; gap:10px; }
+  .sc-num { font-size:46px; font-weight:750; letter-spacing:-0.04em; line-height:1; color:var(--accent-deep); }
+  .sc-num small { font-size:19px; font-weight:600; color:var(--ink-3); }
+  .sc-lab { font-size:13px; font-weight:700; }
+  .sc-lab span { display:block; font-size:11px; font-weight:400; color:var(--ink-3); margin-top:2px; }
+  .skills { margin-top:16px; display:flex; flex-direction:column; gap:9px;
+    border-top:1px solid rgba(33,30,26,.08); padding-top:14px; }
+  .skillrow { display:flex; align-items:center; gap:10px; }
+  .sk-n { flex:none; width:92px; font-size:11.5px; color:var(--ink-2); }
+  .sk-bar { flex:1; height:6px; border-radius:3px; background:rgba(33,30,26,.08); overflow:hidden; }
+  .sk-bar i { display:block; height:100%; border-radius:3px; background:var(--accent); }
+  .sk-bar i.low { background:var(--amber); }
+  .sc-next { margin-top:14px; border-top:1px solid rgba(33,30,26,.08); padding-top:12px;
+    font-size:11.5px; color:var(--ink-2); }
+  .sc-next b { display:block; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--ink-3); margin-bottom:5px; }
+  .sc-pack { display:inline-block; font-size:11px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    background:rgba(33,30,26,.05); border:1px solid rgba(33,30,26,.1); border-radius:6px;
+    padding:2px 7px; margin:0 4px 4px 0; }
+
+  /* Steps */
+  .how2 { display:grid; gap:12px; grid-template-columns:1fr; align-items:stretch; }
+  @media (min-width:560px){ .how2 { grid-template-columns:1fr 1fr; } }
+  @media (min-width:900px){ .how2 { grid-template-columns:repeat(4,1fr); } }
+  .h2c { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:14px;
+    padding:18px 14px; text-align:center; box-shadow:0 8px 20px -10px rgba(45,32,22,.14); }
+  .h2c .em { font-size:26px; line-height:1; }
+  .h2c h3 { margin-top:9px; font-size:15px; font-weight:700; }
+  .h2c p { margin-top:4px; font-size:12.5px; color:var(--ink-2); line-height:1.4; }
+  .h2c.main { background:var(--accent-tint); border:1.5px solid rgba(158,63,36,.45); }
+  .h2c.main h3 { color:var(--accent-deep); }
+
+  /* What the report contains */
+  .samples { display:grid; gap:14px; grid-template-columns:1fr; }
+  @media (min-width:721px){ .samples { grid-template-columns:repeat(3,1fr); } }
+  .rep { background:#fff; border:1px solid rgba(33,30,26,.12); border-radius:var(--radius-card);
+    padding:18px; box-shadow:0 14px 30px -14px rgba(45,32,22,.24);
+    display:flex; flex-direction:column; gap:10px; }
+  .rep .rtitle { font-size:13.5px; font-weight:700; }
+  .rep .rsub { font-size:11.5px; color:var(--ink-3); margin-top:-6px; }
+  .rep .rline { height:5px; border-radius:3px; background:rgba(33,30,26,.09); }
+  .rep .rbig { font-size:28px; font-weight:750; letter-spacing:-0.03em; color:var(--accent-deep); line-height:1; }
+  .rep .rflag { font-size:11.5px; color:var(--amber); font-weight:650; }
+
+  /* Run it */
+  .runbox { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:var(--radius-card);
+    padding:24px; box-shadow:0 10px 26px -12px rgba(45,32,22,.15); }
+  .cmd { background:#211E1A; border-radius:12px; padding:15px 16px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size:13.5px;
+    color:#F0EBE2; display:flex; align-items:center; gap:9px; flex-wrap:wrap; }
+  .cmd .dollar { color:#8FD694; user-select:none; }
+  .cmd .arg { color:#E8A184; }
+  .runsteps { margin-top:16px; display:flex; flex-direction:column; gap:12px; }
+  .runstep { display:flex; gap:11px; align-items:flex-start; }
+  .runstep .n { flex:none; width:20px; height:20px; border-radius:50%; background:rgba(33,30,26,.06);
+    border:1px solid rgba(33,30,26,.12); display:grid; place-items:center;
+    font-size:10.5px; font-weight:700; color:var(--ink-2); margin-top:1px; }
+  .runstep p { font-size:13.5px; color:var(--ink-2); line-height:1.45; }
+  .runstep p b { color:var(--ink); font-weight:650; }
+  .repolink { margin-top:16px; display:flex; align-items:center; gap:9px; flex-wrap:wrap;
+    border-top:1px solid var(--line); padding-top:14px; font-size:13px; color:var(--ink-2); }
+  .repolink code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12.5px;
+    background:rgba(33,30,26,.05); border:1px solid rgba(33,30,26,.1); border-radius:6px; padding:3px 8px; }
+  .formnote { text-align:center; font-size:12.5px; color:var(--ink-3); margin-top:12px; }
+
+  /* Guarantee */
+  .guarantee { text-align:center; background:var(--glass); border:1px solid var(--line);
+    border-radius:var(--radius-card); padding:30px 22px; }
+  .guarantee h2 { font-size:clamp(19px,3vw,24px); font-weight:700; letter-spacing:-0.02em; max-width:580px; margin:0 auto; }
+  .guarantee p { margin-top:10px; color:var(--ink-2); font-size:14.5px; }
+
+  /* FAQ */
+  .faq details { border-bottom:1px solid var(--line); padding:14px 2px; }
+  .faq summary { font-size:14.5px; font-weight:650; cursor:pointer; list-style:none; }
+  .faq summary::after { content:"+"; float:right; color:var(--ink-3); }
+  .faq details[open] summary::after { content:"–"; }
+  .faq details p { margin-top:8px; font-size:13.5px; color:var(--ink-2); line-height:1.5; }
+  .tbd { color:var(--amber); font-size:12px; font-weight:650; }
+
+  .cross { text-align:center; }
+  .foot { text-align:center; color:var(--ink-3); font-size:12.5px; padding:26px 16px 40px; }
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="page">
+
+  <header class="sitebar">
+    <a class="sitemark" href="/"><span class="worb"><svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><path d="M13 50 L13 28 Q13 18 22.5 18 Q32 18 32 28 L32 50" fill="none" stroke="currentColor" stroke-width="8.5" stroke-linecap="round"/><path d="M33.5 46 L33.5 28 Q33.5 18 42.5 18 Q51.5 18 51.5 28 L51.5 50" fill="none" stroke="#C4593C" stroke-width="8.5" stroke-linecap="round"/></svg></span>midsesh</a>
+    <nav class="sitenav"><a href="/">All services</a><a href="mailto:midsesh.social@gmail.com?subject=Question%20about%20midsesh">Contact</a><a href="/api/auth/google">Sign in</a></nav>
+  </header>
+
+  <!-- 1 · Header -->
+  <section class="block dhead">
+    <div class="wrap">
+      <span class="badge free">Agent · Free</span><span class="oschip">Open source</span>
+      <h1>RateMyWipe</h1>
+      <p class="promise">Our agent reads your AI coding transcripts and rates your wipe coding from 1 to 5. You get a breakdown of weak areas and the exact skill packs and repos to level up.</p>
+      <div class="priceline">Free <span>· open source on GitHub</span></div>
+      <div class="btnrow">
+        <a class="btn solid" href="#run">Rate my wipe</a>
+        <span class="nocard">No account. No card.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 · You give / You get -->
+  <section class="block">
+    <div class="wrap">
+      <div class="shead"><span class="eyebrow">Input, output</span><h2>Your sessions in. A level out.</h2></div>
+      <div class="io-flow">
+        <div class="instack">
+          <div class="incard">
+            <div class="th th-tr"><i></i><i></i><i></i></div>
+            <div class="meta">
+              <div class="t1">Your session transcripts</div>
+              <div class="t2">the AI coding you already did</div>
+            </div>
+          </div>
+          <div class="incard">
+            <div class="th th-cmd">&gt;_</div>
+            <div class="meta">
+              <div class="t1">One command</div>
+              <div class="t2">run where your sessions live</div>
+            </div>
+          </div>
+          <div class="incard">
+            <div class="th th-repo">📁</div>
+            <div class="meta">
+              <div class="t1">Your repo</div>
+              <div class="t2">optional, for extra context</div>
+            </div>
+          </div>
+        </div>
+        <div class="io-arrow">→</div>
+        <div class="scorecard">
+          <span class="sc-tag">SAMPLE</span>
+          <div class="sc-top">
+            <div class="sc-num">3<small>/5</small></div>
+            <div class="sc-lab">Wipe level<span>Example output, not a real score</span></div>
+          </div>
+          <div class="skills">
+            <div class="skillrow"><span class="sk-n">Planning</span><span class="sk-bar"><i style="width:38%" class="low"></i></span></div>
+            <div class="skillrow"><span class="sk-n">Reviewing</span><span class="sk-bar"><i style="width:31%" class="low"></i></span></div>
+            <div class="skillrow"><span class="sk-n">Running tools</span><span class="sk-bar"><i style="width:74%"></i></span></div>
+            <div class="skillrow"><span class="sk-n">Giving context</span><span class="sk-bar"><i style="width:66%"></i></span></div>
+            <div class="skillrow"><span class="sk-n">Verifying</span><span class="sk-bar"><i style="width:44%" class="low"></i></span></div>
+          </div>
+          <div class="sc-next">
+            <b>What to work on</b>
+            <span class="sc-pack">writing-plans</span>
+            <span class="sc-pack">verification</span>
+            <span class="sc-pack">code-review</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 · How it works -->
+  <section class="block">
+    <div class="wrap">
+      <div class="shead"><span class="eyebrow">How it works</span><h2>Four steps, one command.</h2></div>
+      <div class="how2">
+        <div class="h2c"><div class="em">📥</div><h3>You run it</h3><p>One command, where your sessions already are.</p></div>
+        <div class="h2c"><div class="em">🧮</div><h3>The agent reads</h3><p>Every session, start to finish.</p></div>
+        <div class="h2c main"><div class="em">📊</div><h3>You get a level</h3><p>1 to 5, with the breakdown behind it.</p></div>
+        <div class="h2c"><div class="em">🎯</div><h3>You get the fix</h3><p>The skill packs and repos to work on next.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 · What the report contains -->
+  <section class="block">
+    <div class="wrap">
+      <div class="shead"><span class="eyebrow">The report</span><h2>What comes back</h2></div>
+      <div class="samples">
+        <div class="rep">
+          <div class="rbig">3 / 5</div>
+          <div class="rtitle">Your level</div>
+          <div class="rsub">One number, scored the same way every run</div>
+          <div class="rline"></div>
+          <div class="rline" style="width:72%;"></div>
+        </div>
+        <div class="rep">
+          <div class="rtitle">The breakdown</div>
+          <div class="rsub">Where the level came from</div>
+          <div class="skillrow"><span class="sk-n">Planning</span><span class="sk-bar"><i style="width:38%" class="low"></i></span></div>
+          <div class="skillrow"><span class="sk-n">Reviewing</span><span class="sk-bar"><i style="width:31%" class="low"></i></span></div>
+          <div class="skillrow"><span class="sk-n">Verifying</span><span class="sk-bar"><i style="width:44%" class="low"></i></span></div>
+          <div class="rflag">3 weak areas found</div>
+        </div>
+        <div class="rep">
+          <div class="rtitle">What to do next</div>
+          <div class="rsub">Named packs and repos, not advice</div>
+          <div><span class="sc-pack">writing-plans</span><span class="sc-pack">verification</span><span class="sc-pack">systematic-debugging</span></div>
+          <div class="rline"></div>
+          <div class="rline" style="width:60%;"></div>
+        </div>
+      </div>
+      <div class="formnote">Report layout is a working draft.</div>
+    </div>
+  </section>
+
+  <!-- 5 · Pricing -->
+  <section class="block">
+    <div class="wrap">
+      <div class="shead"><span class="eyebrow">Pricing</span><h2>There is no price.</h2></div>
+      <div class="guarantee">
+        <h2>Free, open source, and yours to read before you run it.</h2>
+        <p>This is the sample for everything else on the marketplace. Run it, see whether we know what we are talking about, then decide about the paid services.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 · Run it -->
+  <section class="block" id="run">
+    <div class="wrap">
+      <div class="shead"><span class="eyebrow">Run it</span><h2>One command</h2></div>
+      <div class="runbox">
+        <div class="cmd">
+          <span class="dollar">$</span>npx <span class="arg">ratemywipe</span>
+
+        </div>
+        <div class="runsteps">
+          <div class="runstep"><span class="n">1</span><p><b>Point it at your sessions.</b> It reads the transcripts already on disk. Nothing is uploaded unless you ask for it.</p></div>
+          <div class="runstep"><span class="n">2</span><p><b>Wait for the read.</b> The agent goes through each session end to end rather than sampling.</p></div>
+          <div class="runstep"><span class="n">3</span><p><b>Read the report.</b> Your level, the breakdown by skill area, and the packs to pick up next.</p></div>
+        </div>
+        <div class="repolink">
+          <span>Source:</span>
+          <code>github.com/ · · ·</code>
+
+        </div>
+      </div>
+      <div class="formnote">No sign in. No card. Nothing to cancel.</div>
+    </div>
+  </section>
+
+  <!-- 7 · FAQ -->
+  <section class="block">
+    <div class="wrap">
+      <div class="shead"><span class="eyebrow">FAQ</span><h2>The fine print, plainly</h2></div>
+      <div class="faq">
+        <details><summary>What is a wipe level?</summary><p>A score from 1 to 5 for how well you work with an AI coding agent. It covers planning, reviewing, running tools, giving context, and verifying the result. The exact rubric is published with the source.</p></details>
+        <details><summary>Does my code leave my machine?</summary><p> Working intent is that the read happens where your sessions live and you choose what, if anything, gets sent.</p></details>
+        <details><summary>Which transcripts does it read?</summary><p> Claude Code sessions first. Other agents depend on what they write to disk.</p></details>
+        <details><summary>Is it really free?</summary><p>Yes. It is open source and there is no paid tier of it. The paid services are the other six on the marketplace.</p></details>
+        <details><summary>What do I do with the score?</summary><p>The report names the skill packs and repos for your weakest areas. You install those and run it again to see the level move.</p></details>
+        <details><summary>Who is behind it?</summary><p>The same team that runs the marketplace. The source is public, so the scoring is checkable rather than something you take our word for.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 · Cross-sell -->
+  <section class="block cross">
+    <div class="wrap">
+      <div class="btnrow">
+        <a class="btn ghost" href="/">Browse all services</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="foot">midsesh · Contact · Privacy</div>
+
+</div>
+<script src="/services/intake.js" defer></script>
+</body>
+</html>

@@ -15,13 +15,40 @@
     {
       "source": "/classic",
       "destination": "/classic/index.html"
+    },
+    {
+      "source": "/services/ugc-ads",
+      "destination": "/services/ugc.html"
+    },
+    {
+      "source": "/services/linkedin",
+      "destination": "/services/linkedin.html"
+    },
+    {
+      "source": "/services/voice-outbound",
+      "destination": "/services/voice.html"
+    },
+    {
+      "source": "/services/video-editing",
+      "destination": "/services/video-editing.html"
+    },
+    {
+      "source": "/services/explainer-videos",
+      "destination": "/services/explainer.html"
+    },
+    {
+      "source": "/services/ratemywipe",
+      "destination": "/services/ratemywipe.html"
     }
   ],
   "headers": [
     {
       "source": "/mcp",
       "headers": [
-        { "key": "x-vercel-enable-rewrite-caching", "value": "0" }
+        {
+          "key": "x-vercel-enable-rewrite-caching",
+          "value": "0"
+        }
       ]
     }
   ]

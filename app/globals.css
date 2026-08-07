@@ -140,6 +140,17 @@ button:active { transform: scale(0.96); }
 
 /* ---------- Background: soft aurora + grain ---------- */
 .bg {
+  /* pointer-events: none is not optional. This is a fixed, full-viewport,
+     positioned layer, so it paints above every non-positioned block in the
+     document and, left clickable, swallows the pointer over all of them. On
+     the marketplace grid that meant the cards took no hover and no click at
+     all: no lift, no CTA colour change, nothing on tap. The site bar kept
+     working only because each control in it carries its own z-index: 1, which
+     is how the bug stayed invisible.
+
+     .grain directly below already had this. It was the same trap, found once
+     and fixed on one of the two layers. */
+  pointer-events: none;
   position: fixed; inset: 0; z-index: 0;
   background:
     radial-gradient(52vw 44vh at 16% 8%,  rgba(255, 196, 156, .52), transparent 68%),
@@ -178,6 +189,9 @@ button:active { transform: scale(0.96); }
   display: flex; align-items: center; gap: 7px;
   font-size: 13.5px; font-weight: 600; color: var(--ink); letter-spacing: -0.012em;
 }
+/* The wordmark is a link on every page except the marketplace home, where it
+   would only point at itself. Nothing else about it changes. */
+a.sitemark { text-decoration: none; }
 
 .sitenav { display: flex; align-items: center; gap: 16px; }
 .sitebar .privacy-link { margin-left: 0; }
@@ -194,7 +208,21 @@ button:active { transform: scale(0.96); }
 @media (hover: hover) and (pointer: fine) {
   .contact-link:hover { color: var(--ink-2); }
 }
-.contact-link:focus-visible, .privacy-link:focus-visible {
+/* One step louder than Contact and Privacy: same size and tracking, ink-2
+   rather than ink-3. It is asking for something, where the other two are
+   answering a question, and that is the smallest change that says so without
+   reaching for a second filled control beside the Sign in pill. */
+.partner-link {
+  position: relative; z-index: 1;
+  font-size: 11px; font-weight: 550; letter-spacing: 0.01em;
+  color: var(--ink-2); text-decoration: none;
+  transition: color .2s var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .partner-link:hover { color: var(--ink); }
+}
+
+.contact-link:focus-visible, .privacy-link:focus-visible, .partner-link:focus-visible {
   outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px;
 }
 
@@ -641,13 +669,14 @@ button:active { transform: scale(0.96); }
   display: flex; align-items: center; gap: 7px; white-space: nowrap;
   font-size: 13.5px; font-weight: 600; color: var(--ink); letter-spacing: -0.012em;
 }
+/* The seam (components/SeamMark.tsx). No background: the mark is the two
+   strokes themselves, so the ink arch can take the colour around it. */
 .worb {
-  width: 15px; height: 15px; border-radius: 50%;
-  background: linear-gradient(140deg, #E8A184, var(--accent));
-  color: #fff; font-size: 8px; line-height: 1;
+  width: 17px; height: 17px;
+  color: var(--ink);
   display: grid; place-items: center;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.4), 0 2px 6px rgba(168, 69, 44, .3);
 }
+.worb svg { width: 100%; height: 100%; display: block; }
 
 .chat {
   flex: 1 1 auto; min-height: 0;
@@ -747,12 +776,14 @@ button:active { transform: scale(0.96); }
   overflow-wrap: anywhere;
 }
 .msg.ai { gap: 10px; }
+/* The agent's avatar is the seam on a paper disc, the same pattern the favicon
+   uses: the mark keeps its own ground rather than sitting on the glass. */
 .ava {
   flex: none; width: 24px; height: 24px; margin-top: 1px; border-radius: 50%;
-  background: linear-gradient(140deg, #E8A184, var(--accent));
-  color: #fff; font-size: 11px;
+  background: var(--bg);
+  color: var(--ink);
   display: grid; place-items: center;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.4);
+  box-shadow: inset 0 0 0 1px var(--line);
 }
 .msg.ai .body { min-width: 0; }
 .msg.ai .text { font-size: 14.5px; line-height: 1.55; color: var(--ink); padding-top: 2px; overflow-wrap: anywhere; }
@@ -1839,3 +1870,216 @@ a.cta { text-decoration: none; display: inline-block; }
   box-shadow: 0 12px 30px rgba(45, 32, 22, .06);
 }
 .exp-join p { margin-bottom: 14px; }
+
+/* ---------- Experts hero demo (ExpertHeroDemo) ---------- */
+/* Two panels that play on demand. The .xd-toggle checkbox is the play
+   state: unchecked shows the finished scene with a big play button,
+   checked runs a 15s CSS cycle split into five 3s phases. Chat items
+   (.xa1-.xa5) pop in at their phase and hold until the loop clears; graph
+   parts (.xg1-.xg5) brighten the same way but dim instead of vanishing;
+   one caption line (.ca1-.ca5, .cb1-.cb5) narrates the phase. */
+.xd {
+  margin-top: 30px;
+  display: grid; gap: 16px; grid-template-columns: 1fr 1fr; align-items: stretch;
+}
+@media (max-width: 720px) { .xd { grid-template-columns: 1fr; } }
+.xd-panel {
+  position: relative;
+  display: flex; flex-direction: column;
+  padding: 18px 18px 16px;
+  background: rgba(255, 255, 255, .5);
+  border: 1px solid rgba(255, 255, 255, .7);
+  outline: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  box-shadow: 0 12px 30px rgba(45, 32, 22, .06);
+}
+.xd-head { margin-bottom: 14px; }
+.xd-title { display: block; font-size: 15px; font-weight: 650; color: var(--ink); }
+.xd-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--ink-3); line-height: 1.45; }
+
+/* The play state, focusable but not visible. */
+.xd-toggle {
+  position: absolute; width: 1px; height: 1px;
+  margin: -1px; padding: 0; border: 0;
+  clip-path: inset(50%); overflow: hidden;
+}
+
+.xd-win {
+  position: relative;
+  flex: 1; min-height: 296px;
+  background: #fff; border: 1px solid #DAD3C7; border-radius: 14px;
+  padding: 13px 14px 12px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+
+/* Play: a big centered button over the resting scene. */
+.xd-play {
+  position: absolute; left: 50%; top: 50%;
+  width: 56px; height: 56px; margin: -28px 0 0 -28px;
+  border-radius: 50%; cursor: pointer;
+  background: var(--accent-deep);
+  box-shadow: 0 10px 26px -8px rgba(158, 63, 36, .65), 0 0 0 7px rgba(255, 255, 255, .55);
+  transition: transform 160ms var(--ease-out);
+}
+.xd-play::before {
+  content: ""; position: absolute; left: 22px; top: 18px;
+  border-left: 16px solid #fff;
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+}
+@media (hover: hover) and (pointer: fine) {
+  .xd-play:hover { transform: scale(1.07); }
+}
+/* Pause: a small corner control while the loop runs. */
+.xd-stop {
+  position: absolute; right: 10px; bottom: 10px;
+  width: 30px; height: 30px;
+  border-radius: 50%; cursor: pointer;
+  background: rgba(33, 30, 26, .55);
+}
+.xd-stop::before {
+  content: ""; position: absolute; left: 11px; top: 9px;
+  width: 3px; height: 12px; background: #fff; border-radius: 1px;
+  box-shadow: 5px 0 0 #fff;
+}
+.xd-toggle:checked ~ .xd-win .xd-play { display: none; }
+.xd-toggle:not(:checked) ~ .xd-win .xd-stop { display: none; }
+.xd-toggle:focus-visible ~ .xd-win .xd-play,
+.xd-toggle:focus-visible ~ .xd-win .xd-stop {
+  outline: 2px solid var(--accent-deep); outline-offset: 3px;
+}
+
+/* At rest the finished scene shows, narrated by the closing caption. */
+.xd-toggle:not(:checked) ~ .xd-cap span:last-child { opacity: 1; }
+.xd-lights { display: flex; gap: 5px; margin-bottom: 3px; }
+.xd-lights i { width: 9px; height: 9px; border-radius: 50%; }
+.xd-lights i:nth-child(1) { background: #FF5F57; }
+.xd-lights i:nth-child(2) { background: #FEBC2E; }
+.xd-lights i:nth-child(3) { background: #28C840; }
+
+.xd-bub { max-width: 86%; font-size: 12.5px; line-height: 1.45; padding: 8px 11px; border-radius: 13px; }
+.xd-you { align-self: flex-end; background: #262019; color: #F6F3ED; border-bottom-right-radius: 4px; }
+.xd-ai {
+  align-self: flex-start; width: 78%; padding: 11px;
+  background: #F1EDE4; border-bottom-left-radius: 4px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.xd-ai i { height: 5px; border-radius: 3px; background: rgba(33, 30, 26, .16); }
+.xd-ai i:nth-child(2) { width: 92%; }
+.xd-ai i:nth-child(3) { width: 84%; }
+.xd-ai i:nth-child(4) { width: 58%; }
+.xd-chip {
+  align-self: flex-start;
+  font-size: 11px; font-weight: 600; color: var(--accent-deep);
+  background: var(--accent-tint);
+  border: 1px dashed rgba(158, 63, 36, .42);
+  border-radius: 999px; padding: 4px 11px;
+}
+
+.xd-win-graph { justify-content: center; }
+.xd-graph { display: block; width: 100%; height: auto; }
+
+.xd-cap { position: relative; margin-top: 12px; min-height: 40px; }
+.xd-cap span {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; gap: 9px;
+  font-size: 13px; font-weight: 600; color: var(--ink); line-height: 1.3;
+  opacity: 0;
+}
+.xd-cap span i {
+  flex: none; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--accent); color: #fff;
+  font-size: 11px; font-style: normal; font-weight: 700;
+  display: grid; place-items: center;
+}
+
+/* Chat items: pop at the phase start, hold, clear at the loop end. */
+@keyframes xd-pop-1 { 0% { opacity: 0; transform: translateY(5px); } 2.5%, 96% { opacity: 1; transform: none; } 99.5%, 100% { opacity: 0; } }
+@keyframes xd-pop-2 { 0%, 20% { opacity: 0; transform: translateY(5px); } 22.5%, 96% { opacity: 1; transform: none; } 99.5%, 100% { opacity: 0; } }
+@keyframes xd-pop-3 { 0%, 40% { opacity: 0; transform: translateY(5px); } 42.5%, 96% { opacity: 1; transform: none; } 99.5%, 100% { opacity: 0; } }
+@keyframes xd-pop-4 { 0%, 60% { opacity: 0; transform: translateY(5px); } 62.5%, 96% { opacity: 1; transform: none; } 99.5%, 100% { opacity: 0; } }
+@keyframes xd-pop-5 { 0%, 80% { opacity: 0; transform: translateY(5px); } 82.5%, 96% { opacity: 1; transform: none; } 99.5%, 100% { opacity: 0; } }
+.xd-toggle:checked ~ .xd-win .xa1 { animation: xd-pop-1 15s infinite; }
+.xd-toggle:checked ~ .xd-win .xa2 { animation: xd-pop-2 15s infinite; }
+.xd-toggle:checked ~ .xd-win .xa3 { animation: xd-pop-3 15s infinite; }
+.xd-toggle:checked ~ .xd-win .xa4 { animation: xd-pop-4 15s infinite; }
+.xd-toggle:checked ~ .xd-win .xa5 { animation: xd-pop-5 15s infinite; }
+
+/* Graph parts: same staging, but the machine stays faintly visible. */
+@keyframes xd-dim-1 { 0% { opacity: .28; } 2.5%, 96% { opacity: 1; } 100% { opacity: .28; } }
+@keyframes xd-dim-2 { 0%, 20% { opacity: .28; } 22.5%, 96% { opacity: 1; } 100% { opacity: .28; } }
+@keyframes xd-dim-3 { 0%, 40% { opacity: .28; } 42.5%, 96% { opacity: 1; } 100% { opacity: .28; } }
+@keyframes xd-dim-4 { 0%, 60% { opacity: .28; } 62.5%, 96% { opacity: 1; } 100% { opacity: .28; } }
+@keyframes xd-dim-5 { 0%, 80% { opacity: .28; } 82.5%, 96% { opacity: 1; } 100% { opacity: .28; } }
+.xd-toggle:checked ~ .xd-win .xg1 { animation: xd-dim-1 15s infinite; }
+.xd-toggle:checked ~ .xd-win .xg2 { animation: xd-dim-2 15s infinite; }
+.xd-toggle:checked ~ .xd-win .xg3 { animation: xd-dim-3 15s infinite; }
+.xd-toggle:checked ~ .xd-win .xg4 { animation: xd-dim-4 15s infinite; }
+.xd-toggle:checked ~ .xd-win .xg5 { animation: xd-dim-5 15s infinite; }
+
+/* The YOU node breathes twice during the review phase. */
+@keyframes xd-you-pulse {
+  0%, 60% { transform: scale(1); }
+  64% { transform: scale(1.07); }
+  68% { transform: scale(1); }
+  72% { transform: scale(1.07); }
+  76%, 100% { transform: scale(1); }
+}
+.xd-toggle:checked ~ .xd-win .xd-youc { animation: xd-you-pulse 15s infinite; transform-origin: center; transform-box: fill-box; }
+
+/* Captions: only the current phase shows. */
+@keyframes xd-cap-1 { 0%, 18% { opacity: 1; } 21%, 100% { opacity: 0; } }
+@keyframes xd-cap-2 { 0%, 19% { opacity: 0; } 22%, 38% { opacity: 1; } 41%, 100% { opacity: 0; } }
+@keyframes xd-cap-3 { 0%, 39% { opacity: 0; } 42%, 58% { opacity: 1; } 61%, 100% { opacity: 0; } }
+@keyframes xd-cap-4 { 0%, 59% { opacity: 0; } 62%, 78% { opacity: 1; } 81%, 100% { opacity: 0; } }
+@keyframes xd-cap-5 { 0%, 79% { opacity: 0; } 82%, 98% { opacity: 1; } 100% { opacity: 0; } }
+.xd-toggle:checked ~ .xd-cap .ca1, .xd-toggle:checked ~ .xd-cap .cb1 { animation: xd-cap-1 15s infinite; }
+.xd-toggle:checked ~ .xd-cap .ca2, .xd-toggle:checked ~ .xd-cap .cb2 { animation: xd-cap-2 15s infinite; }
+.xd-toggle:checked ~ .xd-cap .ca3, .xd-toggle:checked ~ .xd-cap .cb3 { animation: xd-cap-3 15s infinite; }
+.xd-toggle:checked ~ .xd-cap .ca4, .xd-toggle:checked ~ .xd-cap .cb4 { animation: xd-cap-4 15s infinite; }
+.xd-toggle:checked ~ .xd-cap .ca5, .xd-toggle:checked ~ .xd-cap .cb5 { animation: xd-cap-5 15s infinite; }
+
+/* ---------- Experts machine diagram animation ---------- */
+/* The big workflow plays itself: eight stages on a 16s loop, each part
+   brightening at its stage and holding until the loop resets. Edges carry
+   the stage of the node they point at (classes set in
+   ExpertMachineDiagram). The faint base keeps the whole machine readable
+   at any moment. */
+@keyframes mm-dim-1 { 0% { opacity: .25; } 1.5%, 96% { opacity: 1; } 100% { opacity: .25; } }
+@keyframes mm-dim-2 { 0%, 12.5% { opacity: .25; } 14%, 96% { opacity: 1; } 100% { opacity: .25; } }
+@keyframes mm-dim-3 { 0%, 25% { opacity: .25; } 26.5%, 96% { opacity: 1; } 100% { opacity: .25; } }
+@keyframes mm-dim-4 { 0%, 37.5% { opacity: .25; } 39%, 96% { opacity: 1; } 100% { opacity: .25; } }
+@keyframes mm-dim-5 { 0%, 50% { opacity: .25; } 51.5%, 96% { opacity: 1; } 100% { opacity: .25; } }
+@keyframes mm-dim-6 { 0%, 62.5% { opacity: .25; } 64%, 96% { opacity: 1; } 100% { opacity: .25; } }
+@keyframes mm-dim-7 { 0%, 75% { opacity: .25; } 76.5%, 96% { opacity: 1; } 100% { opacity: .25; } }
+@keyframes mm-dim-8 { 0%, 87.5% { opacity: .25; } 89%, 96% { opacity: 1; } 100% { opacity: .25; } }
+.mm1 { animation: mm-dim-1 16s infinite; }
+.mm2 { animation: mm-dim-2 16s infinite; }
+.mm3 { animation: mm-dim-3 16s infinite; }
+.mm4 { animation: mm-dim-4 16s infinite; }
+.mm5 { animation: mm-dim-5 16s infinite; }
+.mm6 { animation: mm-dim-6 16s infinite; }
+.mm7 { animation: mm-dim-7 16s infinite; }
+.mm8 { animation: mm-dim-8 16s infinite; }
+
+/* YOU breathes twice when the run reaches it. Composes with .mm7 because
+   the stage animation sits on the group and the pulse on transform only. */
+@keyframes mm-you-pulse {
+  0%, 75% { transform: scale(1); }
+  78% { transform: scale(1.05); }
+  81% { transform: scale(1); }
+  84% { transform: scale(1.05); }
+  87.5%, 100% { transform: scale(1); }
+}
+.mm-youp { animation: mm-dim-7 16s infinite, mm-you-pulse 16s infinite; transform-origin: center; transform-box: fill-box; }
+
+/* Reduced motion: no loops and no play controls, show the finished frame
+   of every animation. */
+@media (prefers-reduced-motion: reduce) {
+  .xd-bub, .xd-chip, .xd-g, .xd-youc, .xd-cap span, .mm-g, .mm-youp { animation: none !important; }
+  .xd-bub, .xd-chip, .xd-g, .mm-g { opacity: 1 !important; }
+  .xd-toggle, .xd-play, .xd-stop { display: none !important; }
+  .xd-cap { min-height: 0; }
+  .xd-cap span { position: static; opacity: 1 !important; }
+  .xd-cap { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+}

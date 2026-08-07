@@ -4,17 +4,25 @@ Paste this as your first message in the new session:
 
 ---
 
-Read `marketplace-preview/HANDOFF.md` in this repo and continue the
-get-an-expert marketplace work. UGC Ads is finished and committed in 710b988:
-new offer, real sample videos, synced worked example. Do not redesign it.
+Read `marketplace-preview/HANDOFF.md` section 0, starting at session 6. That is
+the single source of truth.
 
-Serve the preview before you look at anything:
+**There is no redesign. Do not propose one.** Two have been built and rejected:
+Swiss Industrial Print on 2026-08-06, and three cream directions on 2026-08-07.
+The design system is FROZEN again, in full, per ground rule 3 below. The cream
+`#F6F3ED` / terracotta `#C4593C` system, glass cards, aurora background and 16px
+radii stay exactly as they are on all seven pages. `SWISS-HANDOFF.md` is dead
+and is kept only as a record of what was tried.
+
+Serve the preview:
 `python3 -m http.server 4319 --directory marketplace-preview/hifi`
-then open http://localhost:4319/ugc.html
 
-Read section 0 for what shipped, section 7 for what is still open, then tell me
-which of the three options under "Next session starts at" you would pick and
-why, before you touch a file.
+Work is now product, not visual. Pick up from the queue at the end of the
+session 5 entry in `HANDOFF.md`: the three open prices first, since they are the
+only reason a visitor cannot find out what a service costs.
+
+Do not redesign the UGC offer, prices, promise, videos or copy. That shipped in
+710b988 and is final.
 
 ---
 

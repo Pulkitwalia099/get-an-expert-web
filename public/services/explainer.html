@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<title>Product Explainer Videos · midsesh</title>
+<meta name="description" content="Pick a template, send your product, get a launch-ready explainer video at a fixed price per template.">
+<style>
+  :root {
+    --bg: #F6F3ED; --ink: #211E1A; --ink-2: #5F594E; --ink-3: #8B8375;
+    --line: rgba(33,30,26,.08);
+    --glass: rgba(255,255,255,.55); --glass-strong: rgba(255,255,255,.78);
+    --accent: #C4593C; --accent-deep: #9E3F24; --accent-tint: rgba(196,89,60,.09);
+    --amber: #B97A1A;
+    --ease-out: cubic-bezier(0.23,1,0.32,1); --spring: cubic-bezier(0.34,1.56,0.64,1);
+    --radius-card: 16px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
+    color: var(--ink); background: var(--bg);
+    -webkit-font-smoothing: antialiased; letter-spacing: -0.004em;
+  }
+  .bg { position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(52vw 44vh at 16% 8%,  rgba(255,196,156,.52), transparent 68%),
+      radial-gradient(46vw 42vh at 86% 12%, rgba(206,190,255,.46), transparent 70%),
+      radial-gradient(58vw 50vh at 50% 104%, rgba(168,206,255,.42), transparent 70%);
+  }
+  .page { position: relative; z-index: 1; }
+  .sitebar { display:flex; align-items:center; justify-content:space-between; padding:18px clamp(18px,4vw,40px); }
+  .sitemark { display:flex; align-items:center; gap:7px; font-size:15px; font-weight:700; text-decoration:none; color:inherit; }
+  .worb { width:17px; height:17px; color:var(--ink);
+    display:inline-grid; place-items:center; }
+  .worb svg { width:100%; height:100%; display:block; }
+  .sitenav { display:flex; gap:18px; font-size:13.5px; }
+  .sitenav a { color:var(--ink-2); text-decoration:none; }
+
+  section.block { padding: clamp(36px,6vh,64px) 16px; }
+  .wrap { width: min(880px,100%); margin:0 auto; }
+  .eyebrow { display:block; font-size:11.5px; font-weight:650; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); }
+
+  /* Header */
+  .dhead { text-align:center; padding-top: clamp(28px,5vh,56px); }
+  .badge { display:inline-block; font-size:10.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--accent-deep); background:var(--accent-tint); border:1px solid rgba(158,63,36,.28);
+    border-radius:999px; padding:4px 12px; }
+  .fixedchip { display:inline-block; margin-left:6px; font-size:10.5px; font-weight:650; color:var(--ink-2);
+    background:rgba(33,30,26,.05); border:1px solid rgba(33,30,26,.14); border-radius:999px; padding:4px 12px; }
+  .dhead h1 { margin-top:16px; font-size:clamp(30px,5vw,42px); font-weight:750; letter-spacing:-0.03em; }
+  .dhead .promise { margin:12px auto 0; max-width:540px; font-size:clamp(15px,2.2vw,17px); color:var(--ink-2); line-height:1.5; }
+  .priceline { margin-top:16px; font-size:14px; font-weight:700; }
+  .priceline span { color:var(--ink-3); font-weight:400; }
+  .btn { display:inline-block; font-size:15px; font-weight:650; border-radius:999px; padding:13px 30px; text-decoration:none;
+    transition: transform 160ms var(--ease-out), box-shadow 160ms var(--ease-out); }
+  .btn.solid { background:var(--accent-deep); color:#fff; box-shadow:0 8px 20px -6px rgba(158,63,36,.5); }
+  .btn.ghost { color:var(--accent-deep); border:1px solid rgba(158,63,36,.3); background:var(--glass-strong); }
+  @media (hover:hover) and (pointer:fine) {
+    .btn.solid:hover { transform: translateY(-2px) scale(1.02); }
+  }
+  .btn:active { transform: scale(0.97); }
+  .btnrow { margin-top:22px; display:flex; gap:10px; justify-content:center; align-items:center; flex-wrap:wrap; }
+  .nocard { font-size:12.5px; color:var(--ink-3); }
+
+  .shead { text-align:center; margin-bottom:28px; }
+  .shead h2 { margin-top:10px; font-size:clamp(21px,3.4vw,27px); font-weight:700; letter-spacing:-0.02em; }
+  .shead p { margin-top:8px; color:var(--ink-2); font-size:14.5px; max-width:520px; margin-left:auto; margin-right:auto; }
+
+  /* You give / You get */
+  .io-flow { display:grid; gap:16px; grid-template-columns:1fr; align-items:center; }
+  @media (min-width:721px){ .io-flow { grid-template-columns:1fr 44px 1fr; } }
+  .instack { display:flex; flex-direction:column; gap:10px; }
+  .incard { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:14px;
+    padding:11px 13px; display:flex; gap:12px; align-items:center;
+    box-shadow:0 8px 20px -10px rgba(45,32,22,.15); }
+  .incard .meta { min-width:0; }
+  .incard .t1 { font-size:13px; font-weight:650; }
+  .incard .t2 { font-size:11.5px; color:var(--ink-3); margin-top:1px; }
+  .th { flex:none; border-radius:9px; overflow:hidden; position:relative; }
+  /* template pick thumb */
+  .th-tpl { width:44px; height:44px; border-radius:10px; background:#fff; border:1px solid rgba(33,30,26,.14);
+    display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; gap:3px; padding:6px; }
+  .th-tpl i { border-radius:3px; background:rgba(33,30,26,.12); }
+  .th-tpl i:first-child { background:var(--accent); }
+  /* product site thumb */
+  .th-site { width:64px; height:44px; background:#fff; border:1px solid rgba(33,30,26,.14); }
+  .th-site .urlbar { height:9px; background:rgba(33,30,26,.06); border-bottom:1px solid rgba(33,30,26,.1);
+    display:flex; align-items:center; padding:0 4px; }
+  .th-site .urlbar i { width:26px; height:3px; border-radius:2px; background:rgba(33,30,26,.25); }
+  .th-site .heroimg { margin:5px 6px 0; height:16px; border-radius:4px;
+    background:linear-gradient(120deg,#C4593C,#E8A184); }
+  .th-site .txtline { margin:4px 6px 0; height:3px; border-radius:2px; background:rgba(33,30,26,.14); }
+  /* launch context thumb */
+  .th-cal { width:44px; height:44px; border-radius:10px; background:#fff; border:1px solid rgba(33,30,26,.14);
+    display:flex; flex-direction:column; overflow:hidden; }
+  .th-cal .cm { height:12px; background:var(--accent-deep); }
+  .th-cal .cd { flex:1; display:grid; place-items:center; font-size:14px; font-weight:750; color:var(--ink-2); }
+  .io-arrow { text-align:center; font-size:20px; color:var(--accent-deep); font-weight:700; }
+  @media (max-width:720px){ .io-arrow { transform:rotate(90deg); } }
+
+  .outcard { position:relative; aspect-ratio:16/10; max-width:320px; margin:0 auto; width:100%;
+    border-radius:16px; overflow:hidden; display:grid; place-items:center;
+    background:linear-gradient(160deg,#3A3B52,#211E1A 60%,#4A2E20);
+    box-shadow:0 22px 44px -16px rgba(45,32,22,.4); }
+  .outcard .play { width:50px; height:50px; border-radius:50%; background:rgba(246,243,237,.94);
+    display:grid; place-items:center; color:var(--accent-deep); font-size:16px;
+    box-shadow:0 10px 26px rgba(0,0,0,.4); }
+  .outcard .cap { position:absolute; left:12px; bottom:12px; font-size:11px; color:rgba(246,243,237,.92);
+    background:rgba(33,30,26,.55); border-radius:999px; padding:4px 11px; }
+  .outcard .ready { position:absolute; right:12px; top:12px; font-size:9.5px; font-weight:700;
+    letter-spacing:.08em; color:#2F7A3D; background:rgba(246,243,237,.94); border-radius:999px; padding:3px 9px; }
+
+  /* Steps */
+  .how2 { display:grid; gap:12px; grid-template-columns:1fr; align-items:stretch; }
+  @media (min-width:560px){ .how2 { grid-template-columns:1fr 1fr; } }
+  @media (min-width:900px){ .how2 { grid-template-columns:repeat(4,1fr); } }
+  .h2c { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:14px;
+    padding:18px 14px; text-align:center; box-shadow:0 8px 20px -10px rgba(45,32,22,.14); }
+  .h2c .em { font-size:26px; line-height:1; }
+  .h2c h3 { margin-top:9px; font-size:15px; font-weight:700; }
+  .h2c p { margin-top:4px; font-size:12.5px; color:var(--ink-2); line-height:1.4; }
+  .h2c.main { background:var(--accent-tint); border:1.5px solid rgba(158,63,36,.45); }
+  .h2c.main h3 { color:var(--accent-deep); }
+
+  /* Template gallery */
+  .tmpls { display:grid; gap:14px; grid-template-columns:1fr; }
+  @media (min-width:640px){ .tmpls { grid-template-columns:1fr 1fr; } }
+  .tmpl { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:var(--radius-card);
+    padding:18px; box-shadow:0 10px 26px -12px rgba(45,32,22,.15);
+    display:flex; flex-direction:column; gap:12px; }
+  /* Fixed board height so cards align across the row whatever the panel count */
+  .board { display:flex; gap:6px; height:78px; }
+  .panel { flex:1; height:100%; border-radius:8px; position:relative; overflow:hidden;
+    background:linear-gradient(160deg,#3A3B52,#211E1A); display:grid; place-items:end start; padding:6px; }
+  .panel span { font-size:8.5px; letter-spacing:.04em; color:rgba(246,243,237,.8); }
+  .panel.p-alt { background:linear-gradient(160deg,#4A3B30,#211E1A); }
+  .panel.p-acc { background:linear-gradient(160deg,#5A3423,#211E1A); }
+  .tmpl .tname { font-size:15px; font-weight:700; }
+  .tmpl .tdesc { font-size:13px; color:var(--ink-2); line-height:1.45; flex:1; }
+  .tmpl .trow { display:flex; align-items:center; justify-content:space-between; gap:8px;
+    border-top:1px solid var(--line); padding-top:11px; }
+  .tmpl .tlen { font-size:12px; color:var(--ink-3); }
+  .tmpl .tprice { font-size:13.5px; font-weight:750; }
+
+  /* Price table */
+  .ptable { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:var(--radius-card);
+    overflow:hidden; box-shadow:0 10px 26px -12px rgba(45,32,22,.15); }
+  .prow { display:flex; align-items:center; gap:12px; padding:15px 18px;
+    border-bottom:1px solid var(--line); }
+  .prow:last-child { border-bottom:none; }
+  .prow .pn { flex:1; font-size:14px; font-weight:650; min-width:0; }
+  .prow .pl { flex:none; font-size:12.5px; color:var(--ink-3); width:64px; text-align:right; }
+  .prow .pp { flex:none; font-size:15px; font-weight:750; width:96px; text-align:right; }
+  .prow.head { background:rgba(33,30,26,.03); }
+  .prow.head .pn, .prow.head .pl, .prow.head .pp {
+    font-size:10.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); }
+
+  /* Guarantee */
+  .guarantee { text-align:center; background:var(--glass); border:1px solid var(--line);
+    border-radius:var(--radius-card); padding:30px 22px; }
+  .guarantee h2 { font-size:clamp(19px,3vw,24px); font-weight:700; letter-spacing:-0.02em; max-width:580px; margin:0 auto; }
+  .guarantee p { margin-top:10px; color:var(--ink-2); font-size:14.5px; }
+
+  /* Intake */
+  .form { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:var(--radius-card);
+    padding:24px; box-shadow:0 10px 26px -12px rgba(45,32,22,.15); }
+  .field { margin-bottom:16px; }
+  .field label { display:block; font-size:13px; font-weight:650; margin-bottom:6px; }
+  .field label small { color:var(--ink-3); font-weight:400; }
+  .field input, .field textarea {
+    width:100%; border:1px solid rgba(33,30,26,.14); border-radius:10px; background:#fff;
+    font:inherit; font-size:14px; padding:11px 13px; color:var(--ink); outline:none; }
+  .field input:focus, .field textarea:focus { border-color:rgba(158,63,36,.5); }
+  .field textarea { min-height:84px; resize:vertical; }
+  /* template picker chips */
+  .picks { display:flex; gap:8px; flex-wrap:wrap; }
+  .pick input { position:absolute; opacity:0; width:0; height:0; }
+  .pick { cursor:pointer; }
+  .pick span { display:inline-block; font-size:13px; font-weight:600; color:var(--ink-2);
+    background:#fff; border:1px solid rgba(33,30,26,.14); border-radius:999px; padding:9px 16px;
+    transition: transform 140ms var(--ease-out), border-color 140ms var(--ease-out), color 140ms var(--ease-out); }
+  @media (hover:hover) and (pointer:fine) { .pick:hover span { border-color:rgba(158,63,36,.35); } }
+  .pick:active span { transform: scale(0.97); }
+  .pick input:checked + span { color:var(--accent-deep); background:var(--accent-tint);
+    border-color:rgba(158,63,36,.45); font-weight:700; }
+  .pick input:focus-visible + span { border-color:var(--accent-deep); }
+  .formnote { text-align:center; font-size:12.5px; color:var(--ink-3); margin-top:12px; }
+
+  /* FAQ */
+  .faq details { border-bottom:1px solid var(--line); padding:14px 2px; }
+  .faq summary { font-size:14.5px; font-weight:650; cursor:pointer; list-style:none; }
+  .faq summary::after { content:"+"; float:right; color:var(--ink-3); }
+  .faq details[open] summary::after { content:"–"; }
+  .faq details p { margin-top:8px; font-size:13.5px; color:var(--ink-2); line-height:1.5; }
+  .tbd { color:var(--amber); font-size:12px; font-weight:650; }
+
+  .cross { text-align:center; }
+  .foot { text-align:center; color:var(--ink-3); font-size:12.5px; padding:26px 16px 40px; }
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="page">
+
+  <header class="sitebar">
+    <a class="sitemark" href="/"><span class="worb"><svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><path d="M13 50 L13 28 Q13 18 22.5 18 Q32 18 32 28 L32 50" fill="none" stroke="currentColor" stroke-width="8.5" stroke-linecap="round"/><path d="M33.5 46 L33.5 28 Q33.5 18 42.5 18 Q51.5 18 51.5 28 L51.5 50" fill="none" stroke="#C4593C" stroke-width="8.5" stroke-linecap="round"/></svg></span>midsesh</a>
+    <nav class="sitenav"><a href="/">All services</a><a href="mailto:midsesh.social@gmail.com?subject=Question%20about%20midsesh">Contact</a><a href="/api/auth/google">Sign in</a></nav>
+  </header>
+
+  <!-- 1 · Header -->
+  <section class="block dhead">
+    <div class="wrap">
+      <span class="badge">Human + Agent</span><span class="fixedchip">Fixed price</span>
+      <h1>Product Explainer Videos</h1>
+      <p class="promise">Pick a template, send your product, get a launch-ready explainer video at a fixed price per template.</p>
+      <div class="priceline">Fixed price per template</div>
+      <div class="btnrow">
+        <a class="btn solid" href="#templates">Pick a template</a>
+        <span class="nocard">You know the price before we start</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 · You give / You get -->
+  <section class="block">
+    <div class="wrap">
+      <div class="shead"><span class="eyebrow">Input, output</span><h2>A template and a product. One video.</h2></div>
+      <div class="io-flow">
+        <div class="instack">
+          <div class="incard">
+            <div class="th th-tpl"><i></i><i></i><i></i><i></i></div>
+            <div class="meta">
+              <div class="t1">A template</div>
+              <div class="t2">picked from the gallery below</div>
+            </div>
+          </div>
+          <div class="incard">
+            <div class="th th-site">
+              <div class="urlbar"><i></i></div>
+              <div class="heroimg"></div>
+              <div class="txtline"></div>
+              <div class="txtline" style="width:60%;"></div>
+            </div>
+            <div class="meta">
+              <div class="t1">Your product</div>
+              <div class="t2">a link, and access if it needs a login</div>
+            </div>
+          </div>
+          <div class="incard">
+            <div class="th th-cal"><div class="cm"></div><div class="cd">21</div></div>
+            <div class="meta">
+              <div class="t1">Your launch context</div>
+              <div class="t2">the date, and what it has to say</div>
+            </div>
+          </div>
+        </div>
+        <div class="io-arrow">→</div>
+        <div class="outcard">
+          <span class="ready">READY TO LAUNCH</span>
+          <span class="play">▶</span>
+          <span class="cap">Your explainer · 1:02</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 · How it works -->
+  <section class="block">
+    <div class="wrap">
+      <div class="shead"><span class="eyebrow">How it works</span><h2>Fixed shape, fixed price.</h2></div>
+      <div class="how2">
+        <div class="h2c"><div class="em">🗂</div><h3>Pick a template</h3><p>You see the beats and the price before you start.</p></div>
+        <div class="h2c"><div class="em">🔗</div><h3>Send your product</h3><p>A link, and access if it needs a login.</p></div>
+        <div class="h2c"><div class="em">🎬</div><h3>We build it</h3><p>Agent drafts the script and screens, an expert finishes.</p></div>
+        <div class="h2c main"><div class="em">✅</div><h3>You review before launch</h3><p>You see the video before it goes anywhere.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 · Template gallery -->
+  <section class="block" id="templates">
+    <div class="wrap">
+      <div class="shead">
+        <span class="eyebrow">Templates</span>
+        <h2>Pick the shape first</h2>
+        <p>Each template is a fixed set of beats and a fixed length. The price follows the template, so it does not move once you have picked.</p>
+      </div>
+      <div class="tmpls">
+
+        <div class="tmpl">
+          <div class="board">
+            <div class="panel"><span>PROBLEM</span></div>
+            <div class="panel p-alt"><span>PRODUCT</span></div>
+            <div class="panel p-acc"><span>PROOF</span></div>
+          </div>
+          <div class="tname">Problem, then product</div>
+          <div class="tdesc">Opens on the thing that is broken, then shows your product fixing it. The default for a cold audience.</div>
+          <div class="trow"><span class="tlen">About 60s</span><span class="tprice">Coming soon</span></div>
+        </div>
+
+        <div class="tmpl">
+          <div class="board">
+            <div class="panel p-alt"><span>OPEN</span></div>
+            <div class="panel"><span>FEATURE</span></div>
+            <div class="panel"><span>FEATURE</span></div>
+            <div class="panel p-acc"><span>CTA</span></div>
+          </div>
+          <div class="tname">Feature tour</div>
+          <div class="tdesc">Screen recording through the three or four things the product does, narrated. For an audience that already knows the problem.</div>
+          <div class="trow"><span class="tlen">About 90s</span><span class="tprice">Coming soon</span></div>
+        </div>
+
+        <div class="tmpl">
+          <div class="board">
+            <div class="panel p-acc"><span>TO CAMERA</span></div>
+            <div class="panel"><span>SCREEN</span></div>
+            <div class="panel p-alt"><span>ASK</span></div>
+          </div>
+          <div class="tname">Founder to camera</div>
+          <div class="tdesc">You talking, cut with product screens. Needs footage of you. The one that works on a launch day post.</div>
+          <div class="trow"><span class="tlen">About 45s</span><span class="tprice">Coming soon</span></div>
+        </div>
+
+        <div class="tmpl">
+          <div class="board">
+            <div class="panel p-alt"><span>HOOK</span></div>
+            <div class="panel p-acc"><span>REVEAL</span></div>
+          </div>
+          <div class="tname">Launch teaser</div>
+          <div class="tdesc">Short, no narration, built to autoplay on a feed. Two beats and a date.</div>
+          <div class="trow"><span class="tlen">About 20s</span><span class="tprice">Coming soon</span></div>
+        </div>
+
+      </div>
+      <div class="formnote">Four templates shown. How many ship at launch, and what each costs, is not decided.</div>
+    </div>
+  </section>
+
+  <!-- 5 · Pricing -->
+  <section class="block">
+    <div class="wrap">
+      <div class="shead"><span class="eyebrow">Pricing</span><h2>One price per template</h2></div>
+      <div class="ptable">
+        <div class="prow head"><span class="pn">Template</span><span class="pl">Length</span><span class="pp">Price</span></div>
+        <div class="prow"><span class="pn">Problem, then product</span><span class="pl">60s</span><span class="pp">Coming soon</span></div>
+        <div class="prow"><span class="pn">Feature tour</span><span class="pl">90s</span><span class="pp">Coming soon</span></div>
+        <div class="prow"><span class="pn">Founder to camera</span><span class="pl">45s</span><span class="pp">Coming soon</span></div>
+        <div class="prow"><span class="pn">Launch teaser</span><span class="pl">20s</span><span class="pp">Coming soon</span></div>
+      </div>
+      <div class="formnote">Every price on this table is undecided.</div>
+    </div>
+  </section>
+
+  <!-- 6 · Guarantee -->
+  <section class="block">
+    <div class="wrap">
+      <div class="guarantee">
+        <h2>You know the shape and the price before we start.</h2>
+        <p>The template fixes the beats, the length, and the cost. Nothing about the quote moves once you have picked one.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 · Intake form -->
+  <section class="block" id="start">
+    <div class="wrap">
+      <div class="shead"><span class="eyebrow">Not open yet</span><h2>Get notified when Product Explainer Videos opens</h2></div>
+            <div class="form" data-notify="1">
+        <div class="field">
+          <label for="notify-email">Your email <small>the only thing we need</small></label>
+          <input id="notify-email" type="email" inputmode="email" autocomplete="email" placeholder="you@company.com">
+        </div>
+        <div class="btnrow"><a class="btn solid" href="#">Get notified</a></div>
+        <div class="formnote">One email when it opens. We do not add you to anything else.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 · FAQ -->
+  <section class="block">
+    <div class="wrap">
+      <div class="shead"><span class="eyebrow">FAQ</span><h2>The fine print, plainly</h2></div>
+      <div class="faq">
+        <details><summary>Can I get something outside the templates?</summary><p>That is a custom job, not this service. The fixed price works because the shape is fixed. Ask for something custom and we will quote it separately.</p></details>
+        <details><summary>How long does it take?</summary><p> Tell us your launch date in the intake form and we will confirm whether it is possible before you commit.</p></details>
+        <details><summary>How many revisions do I get?</summary><p> Working proposal is one round inside the template. Changing the template is a new video.</p></details>
+        <details><summary>Do I need to be on camera?</summary><p>Only for Founder to camera. The other three are built from your product and a voiceover.</p></details>
+        <details><summary>What if my product needs a login to demo?</summary><p>Send a demo account in the intake form. We record against that rather than asking for your own credentials.</p></details>
+        <details><summary>Who actually makes it?</summary><p>The agent drafts the script and captures the screens. A human expert finishes it and is accountable for what you receive.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9 · Cross-sell -->
+  <section class="block cross">
+    <div class="wrap">
+      <div class="btnrow">
+        <a class="btn ghost" href="/">Browse all services</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="foot">midsesh · Contact · Privacy</div>
+
+</div>
+<script src="/services/intake.js" defer></script>
+</body>
+</html>

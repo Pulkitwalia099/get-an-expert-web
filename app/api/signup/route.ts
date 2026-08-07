@@ -5,6 +5,8 @@ import { recordInsight } from '@/lib/insights';
 import { withMetrics } from '@/lib/metrics';
 import { clientId, rateLimit } from '@/lib/ratelimit';
 import { matchesOrigin, scrubUntrusted } from '@/lib/sanitize';
+import { recordMarketplaceOrder, type OrderKind } from '@/lib/marketplaceOrders';
+import { serviceBySlug } from '@/lib/services';
 import { recordLead } from '@/lib/supabase';
 import { durableLimit } from '@/lib/usage';
 
@@ -39,6 +41,57 @@ function lines(rows: [string, string | null][]): string {
     .filter(([, v]) => v)
     .map(([k, v]) => `${k}: ${v}`)
     .join('\n');
+}
+
+/**
+ * Mirror the submission into `mk_orders`, the marketplace order table.
+ *
+ * This runs alongside `recordLead`, not instead of it. `leads` is what the
+ * privacy policy names and what its deletion path walks, so every piece of
+ * personal data still lands there. `mk_orders` is the operational copy: the
+ * same submission with a service slug, a price and a status, which is what
+ * makes "which orders are still open" a query rather than a read of prose.
+ *
+ * Never throws and never blocks the response. The email has already gone by
+ * the time this is called, so a failed row must not turn a delivered brief
+ * into an error page for somebody who did nothing wrong. It is logged instead,
+ * which is what the daily report reads.
+ */
+async function mirrorOrder(
+  kind: OrderKind,
+  input: {
+    email: string;
+    name: string | null;
+    slug?: string | null;
+    serviceName?: string | null;
+    brief: string | null;
+    fields?: Record<string, string>;
+    req: NextRequest;
+  },
+): Promise<void> {
+  const service = input.slug ? serviceBySlug(input.slug) : undefined;
+  try {
+    const written = await recordMarketplaceOrder({
+      kind,
+      email: input.email,
+      name: input.name,
+      // Only a slug the catalogue actually knows is stored. An unknown one is
+      // dropped rather than written, because a typo becoming a service name is
+      // how a queue quietly grows a category nobody delivers.
+      serviceSlug: service?.slug ?? null,
+      serviceName: service?.name ?? input.serviceName ?? null,
+      brief: input.brief,
+      fields: input.fields,
+      priceCents: service?.priceCents ?? null,
+      referrer: input.req.headers.get('referer'),
+      userAgent: input.req.headers.get('user-agent'),
+    });
+    if (!written.ok) {
+      console.error('[midsesh:orders] mk_orders write failed', kind, written.ref);
+    }
+  } catch (err) {
+    console.error('[midsesh:orders] mk_orders threw', kind, err);
+  }
 }
 
 async function handleSignup(req: NextRequest): Promise<NextResponse> {
@@ -112,6 +165,18 @@ async function handleSignup(req: NextRequest): Promise<NextResponse> {
       subject: `Register: ${track === 'agents' ? 'agents' : 'expert'} from ${name || email}`,
       text: summary,
     });
+    // Somebody offering to do the work is not an order, but it is the same
+    // shape of thing: a person, an address, and something a human has to act
+    // on. It goes in the same queue under kind 'expert' so there is one place
+    // to look rather than four.
+    await mirrorOrder('expert', {
+      email,
+      name,
+      serviceName: track === 'agents' ? 'Agent builder' : 'Expert',
+      brief: summary,
+      fields: details,
+      req,
+    });
     return NextResponse.json({ ok: true, notified: sent });
   }
 
@@ -144,6 +209,32 @@ async function handleSignup(req: NextRequest): Promise<NextResponse> {
     to: NOTIFY,
     subject: `Contact: ${purpose || 'message'} from ${name || email}`,
     text: summary,
+  });
+
+  // Three different things arrive on this branch and they are not the same
+  // thing to work. A brief from a service page is an order. An address left on
+  // a page that is not open yet is a waitlist entry that must never sit in the
+  // queue looking like work. Anything else is the contact card.
+  //
+  // The slug and the kind are sent by the form rather than guessed from the
+  // page title, because a title is copy and copy gets rewritten, and a queue
+  // that silently reclassifies itself when somebody edits a heading is worse
+  // than one that was never wired at all.
+  const slug = field(body.serviceSlug, 60);
+  const declared = body.orderKind;
+  const kind: OrderKind = !slug
+    ? 'contact'
+    : declared === 'notify'
+      ? 'notify'
+      : 'order';
+
+  await mirrorOrder(kind, {
+    email,
+    name,
+    slug,
+    serviceName: purpose,
+    brief: message,
+    req,
   });
 
   return NextResponse.json({ ok: true, notified: sent });

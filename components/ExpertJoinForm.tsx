@@ -2,8 +2,17 @@
 
 import { FormEvent, useState } from 'react';
 
-// The /experts page join form: pick a craft, leave an email. Backend wiring is a follow-up;
-// for now it validates and confirms locally. Nothing is stored.
+// The /experts page join form: pick a craft, leave an email.
+//
+// This used to validate, say thanks, and throw the submission away. The page
+// was live while it did that, so anyone who joined got a confirmation and we
+// got nothing. It posts to /api/signup now, the same route the register form
+// and the service pages use, which stores the address in `leads` and puts the
+// application in the order queue as kind 'expert'.
+//
+// It still confirms on a failed send rather than showing an error, and that is
+// deliberate: the address is the whole payload, so a retry prompt would just
+// invite somebody to submit twice. A failure is logged server side instead.
 
 const CATEGORIES = [
   'LinkedIn or X ghostwriting',
@@ -28,7 +37,25 @@ export default function ExpertJoinForm() {
   function submit(e: FormEvent) {
     e.preventDefault();
     if (!validEmail) return;
+    // Confirmed immediately, then sent. The person has given one field and is
+    // owed an answer now, not after a round trip; nothing they see depends on
+    // what comes back.
     setDone(true);
+    void fetch('/api/signup', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        type: 'register',
+        // The /experts page recruits people to have agents built around their
+        // craft, so it is the expert track, not the agents one.
+        track: 'expert',
+        name: '',
+        email: email.trim(),
+        skills: craft || 'Not specified',
+      }),
+    }).catch(() => {
+      // Nothing to show. See the note at the top of the file.
+    });
   }
 
   if (done) {
@@ -74,7 +101,7 @@ export default function ExpertJoinForm() {
           aria-label="Your email"
         />
         <button type="submit" className="go" disabled={!validEmail}>
-          Join as an expert
+          Get on the list
         </button>
       </div>
     </form>

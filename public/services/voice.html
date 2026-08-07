@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<title>Voice Outbound · midsesh</title>
+<meta name="description" content="Outbound calls that convert. The voice agent works your list, qualifies the leads, and sends you the notes.">
+<style>
+  :root {
+    --bg: #F6F3ED; --ink: #211E1A; --ink-2: #5F594E; --ink-3: #8B8375;
+    --line: rgba(33,30,26,.08);
+    --glass: rgba(255,255,255,.55); --glass-strong: rgba(255,255,255,.78);
+    --accent: #C4593C; --accent-deep: #9E3F24; --accent-tint: rgba(196,89,60,.09);
+    --amber: #B97A1A;
+    --ease-out: cubic-bezier(0.23,1,0.32,1); --spring: cubic-bezier(0.34,1.56,0.64,1);
+    --radius-card: 16px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
+    color: var(--ink); background: var(--bg);
+    -webkit-font-smoothing: antialiased; letter-spacing: -0.004em;
+  }
+  .bg { position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(52vw 44vh at 16% 8%,  rgba(255,196,156,.52), transparent 68%),
+      radial-gradient(46vw 42vh at 86% 12%, rgba(206,190,255,.46), transparent 70%),
+      radial-gradient(58vw 50vh at 50% 104%, rgba(168,206,255,.42), transparent 70%);
+  }
+  .page { position: relative; z-index: 1; }
+  .sitebar { display:flex; align-items:center; justify-content:space-between; padding:18px clamp(18px,4vw,40px); }
+  .sitemark { display:flex; align-items:center; gap:7px; font-size:15px; font-weight:700; text-decoration:none; color:inherit; }
+  .worb { width:17px; height:17px; color:var(--ink);
+    display:inline-grid; place-items:center; }
+  .worb svg { width:100%; height:100%; display:block; }
+  .sitenav { display:flex; gap:18px; font-size:13.5px; }
+  .sitenav a { color:var(--ink-2); text-decoration:none; }
+
+  section.block { padding: clamp(36px,6vh,64px) 16px; }
+  .wrap { width: min(880px,100%); margin:0 auto; }
+  .eyebrow { display:block; font-size:11.5px; font-weight:650; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); }
+
+  /* Header */
+  .dhead { text-align:center; padding-top: clamp(28px,5vh,56px); }
+  .badge { display:inline-block; font-size:10.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--ink-2); background:rgba(33,30,26,.05); border:1px solid rgba(33,30,26,.14);
+    border-radius:999px; padding:4px 12px; }
+  .dhead h1 { margin-top:16px; font-size:clamp(30px,5vw,42px); font-weight:750; letter-spacing:-0.03em; }
+  .dhead .promise { margin:12px auto 0; max-width:540px; font-size:clamp(15px,2.2vw,17px); color:var(--ink-2); line-height:1.5; }
+  .priceline { margin-top:16px; font-size:14px; font-weight:700; }
+  .priceline span { color:var(--ink-3); font-weight:400; }
+  .btn { display:inline-block; font-size:15px; font-weight:650; border-radius:999px; padding:13px 30px; text-decoration:none;
+    transition: transform 160ms var(--ease-out), box-shadow 160ms var(--ease-out); }
+  .btn.solid { background:var(--accent-deep); color:#fff; box-shadow:0 8px 20px -6px rgba(158,63,36,.5); }
+  .btn.ghost { color:var(--accent-deep); border:1px solid rgba(158,63,36,.3); background:var(--glass-strong); }
+  @media (hover:hover) and (pointer:fine) {
+    .btn.solid:hover { transform: translateY(-2px) scale(1.02); }
+  }
+  .btn:active { transform: scale(0.97); }
+  .btnrow { margin-top:22px; display:flex; gap:10px; justify-content:center; align-items:center; flex-wrap:wrap; }
+  .nocard { font-size:12.5px; color:var(--ink-3); }
+
+  .shead { text-align:center; margin-bottom:28px; }
+  .shead h2 { margin-top:10px; font-size:clamp(21px,3.4vw,27px); font-weight:700; letter-spacing:-0.02em; }
+
+  /* Live demo strip */
+  .demo { margin-top:26px; background:var(--glass-strong); border:1px solid rgba(33,30,26,.09);
+    border-radius:var(--radius-card); padding:18px 20px; display:flex; align-items:center; gap:16px;
+    flex-wrap:wrap; justify-content:center; text-align:left;
+    box-shadow:0 12px 28px -14px rgba(45,32,22,.2); }
+  .demo .ring { flex:none; width:46px; height:46px; border-radius:50%; background:var(--accent-tint);
+    border:1px solid rgba(158,63,36,.28); display:grid; place-items:center; font-size:19px; }
+  .demo .dtext { min-width:0; }
+  .demo .dt1 { font-size:14px; font-weight:700; display:flex; align-items:center; gap:7px; }
+  .demo .live { width:7px; height:7px; border-radius:50%; background:#2F7A3D; }
+  .demo .dt2 { font-size:12.5px; color:var(--ink-2); margin-top:3px; }
+  .demo .dcall { flex:none; font-size:13.5px; font-weight:650; color:#fff; background:var(--accent-deep);
+    border:none; border-radius:999px; padding:11px 22px; cursor:pointer; font-family:inherit;
+    transition: transform 160ms var(--ease-out); }
+  @media (hover:hover) and (pointer:fine) { .demo .dcall:hover { transform: translateY(-2px); } }
+  .demo .dcall:active { transform: scale(0.97); }
+
+  /* You give / You get */
+  .io-flow { display:grid; gap:16px; grid-template-columns:1fr; align-items:center; }
+  @media (min-width:721px){ .io-flow { grid-template-columns:1fr 44px 1fr; } }
+  .instack { display:flex; flex-direction:column; gap:10px; }
+  .incard { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:14px;
+    padding:11px 13px; display:flex; gap:12px; align-items:center;
+    box-shadow:0 8px 20px -10px rgba(45,32,22,.15); }
+  .incard .meta { min-width:0; }
+  .incard .t1 { font-size:13px; font-weight:650; }
+  .incard .t2 { font-size:11.5px; color:var(--ink-3); margin-top:1px; }
+  .th { flex:none; border-radius:9px; overflow:hidden; position:relative; }
+  /* call list thumb */
+  .th-list { width:44px; height:44px; border-radius:10px; background:#fff; border:1px solid rgba(33,30,26,.14);
+    display:flex; flex-direction:column; gap:0; overflow:hidden; }
+  .th-list i { flex:1; border-bottom:1px solid rgba(33,30,26,.08); }
+  .th-list i:nth-child(odd) { background:rgba(33,30,26,.035); }
+  .th-list i:last-child { border-bottom:none; }
+  /* script thumb */
+  .th-doc { width:44px; height:44px; border-radius:10px; background:#fff; border:1px solid rgba(33,30,26,.14);
+    display:flex; flex-direction:column; gap:4px; justify-content:center; padding:0 8px; }
+  .th-doc i { height:3px; border-radius:2px; background:rgba(33,30,26,.18); }
+  .th-doc i:nth-child(2) { width:70%; }
+  .th-doc i:last-child { width:50%; }
+  /* criteria thumb */
+  .th-check { width:44px; height:44px; border-radius:10px; background:var(--accent-tint);
+    border:1px solid rgba(158,63,36,.22); display:grid; place-items:center;
+    color:var(--accent-deep); font-size:17px; font-weight:700; }
+  .io-arrow { text-align:center; font-size:20px; color:var(--accent-deep); font-weight:700; }
+  @media (max-width:720px){ .io-arrow { transform:rotate(90deg); } }
+
+  /* Call summary card (the output) */
+  .callcard { position:relative; max-width:300px; margin:0 auto; width:100%;
+    background:#fff; border:1px solid rgba(33,30,26,.12); border-radius:16px; padding:17px;
+    box-shadow:0 20px 42px -16px rgba(45,32,22,.32);
+    display:flex; flex-direction:column; gap:12px; }
+  .cc-tag { position:absolute; right:12px; top:12px; font-size:9.5px; font-weight:700; letter-spacing:.08em;
+    color:#2F7A3D; background:rgba(62,155,79,.12); border:1px solid rgba(62,155,79,.3);
+    border-radius:999px; padding:3px 9px; }
+  .cc-who { display:flex; align-items:center; gap:10px; }
+  .cc-av { flex:none; width:32px; height:32px; border-radius:50%;
+    background:radial-gradient(circle at 34% 30%, #C9D9E8, #5A7B98 72%, #33475C); }
+  .cc-name { height:6px; width:70px; border-radius:3px; background:rgba(33,30,26,.17); }
+  .cc-sub { height:5px; width:52px; border-radius:3px; background:rgba(33,30,26,.09); margin-top:5px; }
+  .wave { display:flex; align-items:center; justify-content:space-between; gap:2px; height:34px; }
+  .wave i { flex:1; max-width:4px; border-radius:2px; background:rgba(158,63,36,.38); min-height:3px; }
+  .cc-meta { display:flex; align-items:center; justify-content:space-between;
+    font-size:11px; color:var(--ink-3); }
+  .cc-notes { border-top:1px solid rgba(33,30,26,.08); padding-top:11px;
+    display:flex; flex-direction:column; gap:6px; }
+  .cc-notes b { font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); }
+  .cc-line { height:5px; border-radius:3px; background:rgba(33,30,26,.10); }
+  .cc-flag { font-size:11.5px; font-weight:650; color:#2F7A3D; }
+
+  /* Steps */
+  .how2 { display:grid; gap:12px; grid-template-columns:1fr; align-items:stretch; }
+  @media (min-width:560px){ .how2 { grid-template-columns:1fr 1fr; } }
+  @media (min-width:900px){ .how2 { grid-template-columns:repeat(4,1fr); } }
+  .h2c { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:14px;
+    padding:18px 14px; text-align:center; box-shadow:0 8px 20px -10px rgba(45,32,22,.14); }
+  .h2c .em { font-size:26px; line-height:1; }
+  .h2c h3 { margin-top:9px; font-size:15px; font-weight:700; }
+  .h2c p { margin-top:4px; font-size:12.5px; color:var(--ink-2); line-height:1.4; }
+  .h2c.main { background:var(--accent-tint); border:1.5px solid rgba(158,63,36,.45); }
+  .h2c.main h3 { color:var(--accent-deep); }
+
+  /* Sample calls */
+  .samples { display:grid; gap:14px; grid-template-columns:1fr; }
+  @media (min-width:721px){ .samples { grid-template-columns:repeat(3,1fr); } }
+  .clip { background:#fff; border:1px solid rgba(33,30,26,.12); border-radius:var(--radius-card);
+    padding:18px; box-shadow:0 14px 30px -14px rgba(45,32,22,.24);
+    display:flex; flex-direction:column; gap:12px; }
+  .clip .ctop { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .clip .cplay { flex:none; width:34px; height:34px; border-radius:50%; background:var(--accent-deep);
+    color:#fff; display:grid; place-items:center; font-size:12px; }
+  .clip .cdur { font-size:11.5px; color:var(--ink-3); }
+  .clip .ctitle { font-size:13.5px; font-weight:650; }
+  .clip .cout { font-size:11.5px; font-weight:650; }
+  .clip .cout.yes { color:#2F7A3D; }
+  .clip .cout.no { color:var(--ink-3); }
+
+  /* Pricing */
+  .tiers { display:grid; gap:14px; grid-template-columns:1fr; }
+  @media (min-width:721px){ .tiers { grid-template-columns:repeat(3,1fr); } }
+  .tier { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:var(--radius-card);
+    padding:22px; box-shadow:0 10px 26px -12px rgba(45,32,22,.15); display:flex; flex-direction:column; gap:8px; }
+  .tier .tname { font-size:13px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--ink-2); }
+  .tier .tprice { font-size:24px; font-weight:750; letter-spacing:-0.02em; }
+  .tier .tprice small { font-size:13px; font-weight:400; color:var(--ink-3); }
+  .tier p { font-size:13.5px; color:var(--ink-2); line-height:1.45; flex:1; }
+
+  /* Guarantee */
+  .guarantee { text-align:center; background:var(--glass); border:1px solid var(--line);
+    border-radius:var(--radius-card); padding:30px 22px; }
+  .guarantee h2 { font-size:clamp(19px,3vw,24px); font-weight:700; letter-spacing:-0.02em; max-width:580px; margin:0 auto; }
+  .guarantee p { margin-top:10px; color:var(--ink-2); font-size:14.5px; }
+
+  /* Intake */
+  .form { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:var(--radius-card);
+    padding:24px; box-shadow:0 10px 26px -12px rgba(45,32,22,.15); }
+  .field { margin-bottom:16px; }
+  .field label { display:block; font-size:13px; font-weight:650; margin-bottom:6px; }
+  .field label small { color:var(--ink-3); font-weight:400; }
+  .field input, .field textarea {
+    width:100%; border:1px solid rgba(33,30,26,.14); border-radius:10px; background:#fff;
+    font:inherit; font-size:14px; padding:11px 13px; color:var(--ink); outline:none; }
+  .field input:focus, .field textarea:focus { border-color:rgba(158,63,36,.5); }
+  .field textarea { min-height:84px; resize:vertical; }
+  .upload { border:1.5px dashed rgba(33,30,26,.2); border-radius:10px; padding:16px; text-align:center;
+    font-size:13px; color:var(--ink-2); background:rgba(255,255,255,.6); }
+  .formnote { text-align:center; font-size:12.5px; color:var(--ink-3); margin-top:12px; }
+
+  /* FAQ */
+  .faq details { border-bottom:1px solid var(--line); padding:14px 2px; }
+  .faq summary { font-size:14.5px; font-weight:650; cursor:pointer; list-style:none; }
+  .faq summary::after { content:"+"; float:right; color:var(--ink-3); }
+  .faq details[open] summary::after { content:"–"; }
+  .faq details p { margin-top:8px; font-size:13.5px; color:var(--ink-2); line-height:1.5; }
+  .tbd { color:var(--amber); font-size:12px; font-weight:650; }
+
+  .cross { text-align:center; }
+  .foot { text-align:center; color:var(--ink-3); font-size:12.5px; padding:26px 16px 40px; }
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="page">
+
+  <header class="sitebar">
+    <a class="sitemark" href="/"><span class="worb"><svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><path d="M13 50 L13 28 Q13 18 22.5 18 Q32 18 32 28 L32 50" fill="none" stroke="currentColor" stroke-width="8.5" stroke-linecap="round"/><path d="M33.5 46 L33.5 28 Q33.5 18 42.5 18 Q51.5 18 51.5 28 L51.5 50" fill="none" stroke="#C4593C" stroke-width="8.5" stroke-linecap="round"/></svg></span>midsesh</a>
+    <nav class="sitenav"><a href="/">All services</a><a href="mailto:midsesh.social@gmail.com?subject=Question%20about%20midsesh">Contact</a><a href="/api/auth/google">Sign in</a></nav>
+  </header>
+
+  <!-- 1 · Header -->
+  <section class="block dhead">
+    <div class="wrap">
+      <span class="badge">Agent + Human QA</span>
+      <h1>Voice Outbound</h1>
+      <p class="promise">Give us your call list and script. The voice agent makes the calls, qualifies the leads, and sends you the notes.</p>
+      <div class="priceline">Per qualified lead</div>
+      <div class="btnrow">
+        <a class="btn solid" href="#start">Get notified</a>
+        <span class="nocard">Hear the agent first</span>
+      </div>
+
+      <div class="demo">
+        <div class="ring">☎️</div>
+        <div class="dtext">
+          <div class="dt1"><span class="live"></span>Talk to the agent</div>
+          <div class="dt2">Same voice that calls your list. Judge it before you buy.</div>
+        </div>
+        <button class="dcall">Get notified</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 · You give / You get -->
+  <section class="block">
+    <div class="wrap">
+      <div class="shead"><span class="eyebrow">Input, output</span><h2>A list in. Qualified leads out.</h2></div>
+      <div class="io-flow">
+        <div class="instack">
+          <div class="incard">
+            <div class="th th-list"><i></i><i></i><i></i><i></i><i></i></div>
+            <div class="meta">
+              <div class="t1">Your call list</div>
+              <div class="t2">CSV of names and numbers</div>
+            </div>
+          </div>
+          <div class="incard">
+            <div class="th th-doc"><i></i><i></i><i></i></div>
+            <div class="meta">
+              <div class="t1">Your script</div>
+              <div class="t2">or a transcript of a call that worked</div>
+            </div>
+          </div>
+          <div class="incard">
+            <div class="th th-check">✓</div>
+            <div class="meta">
+              <div class="t1">What counts as qualified</div>
+              <div class="t2">your criteria, not ours</div>
+            </div>
+          </div>
+        </div>
+        <div class="io-arrow">→</div>
+        <div class="callcard">
+          <span class="cc-tag">QUALIFIED</span>
+          <div class="cc-who">
+            <div class="cc-av"></div>
+            <div><div class="cc-name"></div><div class="cc-sub"></div></div>
+          </div>
+          <div class="wave">
+            <i style="height:18%"></i><i style="height:34%"></i><i style="height:62%"></i><i style="height:41%"></i>
+            <i style="height:78%"></i><i style="height:52%"></i><i style="height:88%"></i><i style="height:36%"></i>
+            <i style="height:64%"></i><i style="height:94%"></i><i style="height:44%"></i><i style="height:70%"></i>
+            <i style="height:28%"></i><i style="height:58%"></i><i style="height:82%"></i><i style="height:39%"></i>
+            <i style="height:66%"></i><i style="height:47%"></i><i style="height:74%"></i><i style="height:31%"></i>
+            <i style="height:55%"></i><i style="height:86%"></i><i style="height:42%"></i><i style="height:24%"></i>
+            <i style="height:60%"></i><i style="height:33%"></i><i style="height:16%"></i>
+          </div>
+          <div class="cc-meta"><span>Call 3:12</span><span>Recording + transcript</span></div>
+          <div class="cc-notes">
+            <b>Notes</b>
+            <div class="cc-line"></div>
+            <div class="cc-line" style="width:78%;"></div>
+            <div class="cc-line" style="width:56%;"></div>
+            <div class="cc-flag">Meeting booked for Thursday</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 · How it works -->
+  <section class="block">
+    <div class="wrap">
+      <div class="shead"><span class="eyebrow">How it works</span><h2>The agent calls. A person checks.</h2></div>
+      <div class="how2">
+        <div class="h2c"><div class="em">📇</div><h3>We load your list</h3><p>Numbers, script, and your qualifying criteria.</p></div>
+        <div class="h2c"><div class="em">☎️</div><h3>The agent calls</h3><p>Through the list, on the hours you set.</p></div>
+        <div class="h2c main"><div class="em">🧑‍⚖️</div><h3>A human checks the calls</h3><p>Before any lead is marked qualified.</p></div>
+        <div class="h2c"><div class="em">📋</div><h3>You get the notes</h3><p>Outcome, notes, and the recording for each call.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 · Sample calls -->
+  <section class="block">
+    <div class="wrap">
+      <div class="shead"><span class="eyebrow">Samples</span><h2>What the calls sound like</h2></div>
+      <div class="samples">
+        <div class="clip">
+          <div class="ctop"><span class="cplay">▶</span><span class="cdur">3:12</span></div>
+          <div class="wave">
+            <i style="height:22%"></i><i style="height:58%"></i><i style="height:84%"></i><i style="height:37%"></i>
+            <i style="height:66%"></i><i style="height:45%"></i><i style="height:91%"></i><i style="height:29%"></i>
+            <i style="height:73%"></i><i style="height:50%"></i><i style="height:62%"></i><i style="height:34%"></i>
+            <i style="height:79%"></i><i style="height:26%"></i><i style="height:55%"></i><i style="height:18%"></i>
+          </div>
+          <div class="ctitle">Cold call to a warm list</div>
+          <div class="cout yes">Meeting booked</div>
+        </div>
+        <div class="clip">
+          <div class="ctop"><span class="cplay">▶</span><span class="cdur">1:48</span></div>
+          <div class="wave">
+            <i style="height:31%"></i><i style="height:72%"></i><i style="height:44%"></i><i style="height:88%"></i>
+            <i style="height:25%"></i><i style="height:61%"></i><i style="height:39%"></i><i style="height:77%"></i>
+            <i style="height:53%"></i><i style="height:20%"></i><i style="height:68%"></i><i style="height:41%"></i>
+            <i style="height:59%"></i><i style="height:83%"></i><i style="height:30%"></i><i style="height:16%"></i>
+          </div>
+          <div class="ctitle">Qualifying against your criteria</div>
+          <div class="cout yes">Qualified, notes sent</div>
+        </div>
+        <div class="clip">
+          <div class="ctop"><span class="cplay">▶</span><span class="cdur">0:52</span></div>
+          <div class="wave">
+            <i style="height:19%"></i><i style="height:42%"></i><i style="height:27%"></i><i style="height:64%"></i>
+            <i style="height:35%"></i><i style="height:51%"></i><i style="height:22%"></i><i style="height:46%"></i>
+            <i style="height:33%"></i><i style="height:57%"></i><i style="height:24%"></i><i style="height:38%"></i>
+            <i style="height:29%"></i><i style="height:17%"></i><i style="height:43%"></i><i style="height:14%"></i>
+          </div>
+          <div class="ctitle">A clean no</div>
+          <div class="cout no">Not a fit, removed from list</div>
+        </div>
+      </div>
+      <div class="formnote">Real recordings coming, with permission from the people on the calls.</div>
+    </div>
+  </section>
+
+  <!-- 5 · Pricing -->
+  <section class="block">
+    <div class="wrap">
+      <div class="shead"><span class="eyebrow">Pricing</span><h2>Three models on the table</h2></div>
+      <div class="tiers">
+        <div class="tier">
+          <div class="tname">Per call</div>
+          <div class="tprice">Coming soon</div>
+          <p>You pay for dials made, whoever picks up. Cheapest per unit, and the risk of a bad list sits with you.</p>
+        </div>
+        <div class="tier">
+          <div class="tname">Per qualified lead</div>
+          <div class="tprice">Coming soon</div>
+          <p>You pay only for leads that clear your criteria. The risk of a bad list sits with us.</p>
+        </div>
+        <div class="tier">
+          <div class="tname">Monthly</div>
+          <div class="tprice">Coming soon</div>
+          <p>A set volume of calls a month at a flat rate. Predictable for both sides once volume is known.</p>
+        </div>
+      </div>
+      <div class="formnote">The model is not decided yet. These are the three under consideration.</div>
+    </div>
+  </section>
+
+  <!-- 6 · Guarantee -->
+  <section class="block">
+    <div class="wrap">
+      <div class="guarantee">
+        <h2>Talk to the agent before you buy.</h2>
+        <p>The demo on this page is the same voice that calls your list. You judge the quality yourself, before anything is scheduled and before you send us a single number.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 · Intake form -->
+  <section class="block" id="start">
+    <div class="wrap">
+      <div class="shead"><span class="eyebrow">Not open yet</span><h2>Get notified when Voice Outbound opens</h2></div>
+            <div class="form" data-notify="1">
+        <div class="field">
+          <label for="notify-email">Your email <small>the only thing we need</small></label>
+          <input id="notify-email" type="email" inputmode="email" autocomplete="email" placeholder="you@company.com">
+        </div>
+        <div class="btnrow"><a class="btn solid" href="#">Get notified</a></div>
+        <div class="formnote">One email when it opens. We do not add you to anything else.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 · FAQ -->
+  <section class="block">
+    <div class="wrap">
+      <div class="shead"><span class="eyebrow">FAQ</span><h2>The fine print, plainly</h2></div>
+      <div class="faq">
+        <details><summary>Does the agent say it is an AI?</summary><p>Yes. It identifies itself on the call. We do not run a voice agent that pretends to be a person.</p></details>
+        <details><summary>Whose number do the calls come from?</summary><p> Options are a number we provide or one you own. Decided at onboarding.</p></details>
+        <details><summary>What about do-not-call rules and consent?</summary><p> You are responsible for the list you send. What we screen for on our side is being worked out and will be written here before the service opens.</p></details>
+        <details><summary>Are the calls recorded?</summary><p> Recording and transcript are what make the notes checkable, so the intent is yes, subject to the rules in the places you are calling.</p></details>
+        <details><summary>What counts as a qualified lead?</summary><p>Whatever you write in the intake form. The agent marks a lead qualified against your criteria, not a definition of ours.</p></details>
+        <details><summary>Who actually does the work?</summary><p>The agent makes the calls and writes the notes. A human reviews before leads reach you and is accountable for what you receive.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9 · Cross-sell -->
+  <section class="block cross">
+    <div class="wrap">
+      <div class="btnrow">
+        <a class="btn ghost" href="/">Browse all services</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="foot">midsesh · Contact · Privacy</div>
+
+</div>
+<script src="/services/intake.js" defer></script>
+</body>
+</html>

@@ -2,6 +2,7 @@
 
 import { initials } from '@/lib/initials';
 import TypingStatus from '@/components/TypingStatus';
+import SeamMark from '@/components/SeamMark';
 
 export interface Msg {
   id: number;
@@ -38,7 +39,7 @@ export default function Thread({
           </div>
         ) : (
           <div key={m.id} className="msg ai">
-            <div className="ava">✳︎</div>
+            <div className="ava"><SeamMark size={15} /></div>
             <div className="body">
               {m.avatars && m.avatars.length > 0 && (
                 <div className="mini-avs">
@@ -78,7 +79,7 @@ export default function Thread({
 
       {typing && (
         <div className="msg ai">
-          <div className="ava">✳︎</div>
+          <div className="ava"><SeamMark size={15} /></div>
           <div className="body">
             <TypingStatus />
           </div>
