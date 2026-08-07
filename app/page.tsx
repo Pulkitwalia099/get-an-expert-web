@@ -3,7 +3,7 @@ import AccountLink from '@/components/AccountLink';
 import HomeApp from '@/components/HomeApp';
 import ContactLink from '@/components/ContactLink';
 import SiteFooter from '@/components/SiteFooter';
-import SeshMark from '@/components/SeshMark';
+import SeamMark from '@/components/SeamMark';
 
 // This page was at /ask until the front door changed. Asking for what you need
 // is the offer we lead with now, so the domain opens on it and setups moved to
@@ -33,7 +33,7 @@ export default function Home() {
           and no route to privacy or to a human. */}
       <header className="sitebar">
         <span className="sitemark">
-          <span className="worb"><SeshMark /></span>midsesh
+          <span className="worb"><SeamMark /></span>midsesh
         </span>
         <nav className="sitenav">
           <ContactLink />

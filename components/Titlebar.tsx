@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import styles from './Titlebar.module.css';
-import SeshMark from './SeshMark';
+import SeamMark from './SeamMark';
 
 // The Mac window chrome: lights, wordmark, and the privacy link. The red light
 // is the only real control here. Mac chrome promises a close action, and on a
@@ -53,7 +53,7 @@ export default function Titlebar({
     return (
       <div className="titlebar">
         <div className="wordmark">
-          <span className="worb"><SeshMark /></span>midsesh
+          <span className="worb"><SeamMark /></span>midsesh
           {tag && <span className="tag">{tag}</span>}
         </div>
         <button type="button" className={styles.dismiss} aria-label="Close" onClick={onDismiss}>
@@ -123,7 +123,7 @@ export default function Titlebar({
         <i className="g" aria-hidden="true" />
       </div>
       <div className="wordmark">
-        <span className="worb"><SeshMark /></span>midsesh
+        <span className="worb"><SeamMark /></span>midsesh
         {tag && <span className="tag">{tag}</span>}
       </div>
       <a className="privacy-link" href="/privacy">

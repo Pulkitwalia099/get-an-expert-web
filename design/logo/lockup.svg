@@ -1,20 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 64" width="240" height="64">
-  <!-- Horizontal lockup: head mark at cap height, wordmark in the system
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 236 64" width="236" height="64">
+  <!-- Horizontal lockup: the seam at cap height, wordmark in the system
        stack. For light grounds. -->
-  <g>
-    <circle cx="18" cy="18" r="5.5" fill="#211E1A"/>
-    <circle cx="46" cy="18" r="5.5" fill="#211E1A"/>
-    <circle cx="32" cy="36" r="22" fill="#211E1A"/>
-    <ellipse cx="32" cy="44" rx="11" ry="8.5" fill="#F6F3ED"/>
-    <ellipse cx="32" cy="39.8" rx="3.6" ry="2.8" fill="#211E1A"/>
-    <line x1="32" y1="42.5" x2="32" y2="44.6" stroke="#211E1A" stroke-width="1.6" stroke-linecap="round"/>
-    <circle cx="23.5" cy="30.5" r="2.4" fill="#F6F3ED"/>
-    <circle cx="40.5" cy="30.5" r="2.4" fill="#F6F3ED"/>
-    <g stroke="#C4593C" stroke-width="3.2" stroke-linecap="round">
-      <line x1="56"   y1="2.5"  x2="56"   y2="14.5"/>
-      <line x1="50.8" y1="5.5"  x2="61.2" y2="11.5"/>
-      <line x1="61.2" y1="5.5"  x2="50.8" y2="11.5"/>
-    </g>
-  </g>
-  <text x="72" y="47" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', system-ui, sans-serif" font-size="34" font-weight="700" letter-spacing="-0.7" fill="#211E1A">midsesh</text>
+  <path d="M13 50 L13 28 Q13 18 22.5 18 Q32 18 32 28 L32 50" fill="none" stroke="#211E1A" stroke-width="8.5" stroke-linecap="round"/>
+  <path d="M33.5 46 L33.5 28 Q33.5 18 42.5 18 Q51.5 18 51.5 28 L51.5 50" fill="none" stroke="#C4593C" stroke-width="8.5" stroke-linecap="round"/>
+  <text x="68" y="47" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', system-ui, sans-serif" font-size="34" font-weight="700" letter-spacing="-0.7" fill="#211E1A">midsesh</text>
 </svg>

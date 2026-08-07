@@ -641,8 +641,8 @@ button:active { transform: scale(0.96); }
   display: flex; align-items: center; gap: 7px; white-space: nowrap;
   font-size: 13.5px; font-weight: 600; color: var(--ink); letter-spacing: -0.012em;
 }
-/* Sesh's head (components/SeshMark.tsx). No background: the mark is the ink
-   silhouette itself, and its muzzle punches through to --bg. */
+/* The seam (components/SeamMark.tsx). No background: the mark is the two
+   strokes themselves, so the ink arch can take the colour around it. */
 .worb {
   width: 17px; height: 17px;
   color: var(--ink);

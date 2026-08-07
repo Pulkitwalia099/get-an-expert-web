@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- The seam, the midsesh logo. An m drawn as a handoff: the first arch in
+       ink, the second picked up in terracotta mid-stroke. One letter finished
+       by two hands, which is the product: where your session ends and the
+       expert begins. For light grounds; use seam-on-dark.svg on ink. -->
+  <path d="M13 50 L13 28 Q13 18 22.5 18 Q32 18 32 28 L32 50" fill="none" stroke="#211E1A" stroke-width="8.5" stroke-linecap="round"/>
+  <path d="M33.5 46 L33.5 28 Q33.5 18 42.5 18 Q51.5 18 51.5 28 L51.5 50" fill="none" stroke="#C4593C" stroke-width="8.5" stroke-linecap="round"/>
+</svg>
