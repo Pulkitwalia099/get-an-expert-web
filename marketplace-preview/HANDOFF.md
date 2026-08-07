@@ -1,6 +1,6 @@
 # Get-an-Expert Web — Marketplace Pivot: Session Handoff
 
-**Last updated:** 2026-08-06 (session 4 close-out, UGC Ads shipped in 710b988)
+**Last updated:** 2026-08-07 (session 5 close-out, Explainer offer priced and animated)
 **Read this first in any new session. It is the single source of truth.**
 
 **New session?** Clone/pull https://github.com/Pulkitwalia099/get-an-expert-web
@@ -9,6 +9,58 @@ live Next.js app. Read the progress log below, then continue from
 "Next session starts at".
 
 ## 0. Progress log
+
+### Session 5 (2026-08-07): Explainer offer, priced and animated
+
+- **`hifi/explainer.html` rebuilt to the LinkedIn Marketeer standard**, on
+  branch `claude/video-creation-marketplace-page-h0o5q1`. Same skeleton and
+  frozen system: header, input to output flow, samples, animated machine,
+  template gallery, pricing, guarantee, intake, FAQ, cross-sell.
+- **Every price on the page is now a number, proposed this session and
+  awaiting the user's review.** Launch teaser 20s $149, Founder to camera
+  45s $299, Problem then product 60s $499, Feature tour 90s $649. A launch
+  kit at $799 bundles the 60s hero, the 20s teaser, and three 15s vertical
+  cutdowns. Reasoning follows the UGC lesson: enough above pure-AI tool
+  pricing that the HUMAN + AGENT badge is payable, far under the $3k-plus
+  agency floor. Open question 5 is answered pending that review.
+- **The offer's spine is watch before you pay.** First cut in 72 hours,
+  watermarked; take it and the clean master follows with the invoice, or
+  walk away owing nothing. One revision round inside the template, returned
+  in 24 hours; a template change is a new video. The narration is generated
+  and the FAQ says so plainly, with a human voice as a quoted extra.
+- **The machine is the buzz centerpiece: 19 nodes, 28 edges, 10 stages**
+  against the LinkedIn machine's 15, 21, and 9. Product link and brief fan
+  into product crawl, review mine, and competitor scan; angle lock; scripts
+  A, B, and C into a retention judge; screen capture, voice track, and
+  motion graphics in parallel into cut assembly; claim, sync, and brand
+  gates; a human Editor finish node; first cut out. Same palette, edge
+  style, node shapes, and 620ms stage cadence as linkedin.html, so the two
+  read as one system.
+- **The output card is an animated player**, this page's equivalent of the
+  LinkedIn post's looping counters: it scrubs a 1:02 virtual video through
+  HOOK, PROBLEM, PRODUCT, PROOF, and ASK with beat ticks on the bar and a
+  counting timestamp. Interval driven, visibility gated, final frame under
+  reduced motion. A comment in the file says how to swap in a real mp4.
+- **Samples are three labelled empty slots** per the video-editing
+  precedent: no borrowed work, amber TBD until our own deliveries land with
+  written permission. The user will supply assets later.
+- **Claim check is a stated promise**: every scripted line must trace to
+  something the product shows on screen. Same ethos as the search route's
+  ranking prompt rule against invented claims.
+- The emoji how-it-works cards are gone from this page; the emoji exception
+  was UGC only, and the machine replaces that section. The home tile price
+  follows to From $149, the way the LinkedIn tile carries $99.
+- **Verified, not assumed:** 0px horizontal overflow at 320, 390, 721, 1024
+  and 1440 on explainer.html and index.html. All 19 nodes and 28 edges
+  render; no SVG label wider than its box; stages light on the 620ms
+  cadence in live headless playback, not a frozen pane. Player fill, beat,
+  and timestamp advance. Zero em dashes and zero exclamation marks in
+  rendered text; the spec-row `i` elements compute font-style normal. Shots
+  re-taken at exact height: explainer 1440x5999 and 390x7449, index
+  1440x2384 and 390x3970.
+- **Still open:** sample videos and any hero mp4 (user supplies), the Get
+  the first cut submit target, and the prices hold only until the user
+  reviews them.
 
 ### Session 4 (2026-08-06): UGC offer redraft
 
@@ -484,7 +536,7 @@ harden into a fake number by accident.
 | 2 | LinkedIn Marketeer input and output detail | mostly answered by Rohit; price is $100 per 10k | linkedin.html |
 | 3 | Voice Outbound price model, and is the demo real or recorded? | open, **three options now written out with their trade-offs** | voice.html pricing + demo strip |
 | 4 | Video Editing: per video or per finished minute? Sample content? | open, **two options now written out**; no samples exist | video-editing.html pricing + samples |
-| 5 | Explainer Videos: how many templates, what price points? | open, **4 proposed templates drawn**; all prices blank | explainer.html gallery + price table |
+| 5 | Explainer Videos: how many templates, what price points? | **proposed by session 5, awaiting user review**: 4 templates at $149 / $299 / $499 / $649, launch kit $799, first cut in 72 hours | explainer.html templates + pricing |
 | 6 | Confirm "Lead Man" = Voice Outbound, or a separate SKU? | open | not on any page yet |
 | 7 | Hero line: "Work, delivered." vs "Agents do the work. Experts own the outcome." | "Work, delivered." is live | index.html hero |
 | 8 | RateMyWipe: exact GitHub repo URL | open | ratemywipe.html run block |
