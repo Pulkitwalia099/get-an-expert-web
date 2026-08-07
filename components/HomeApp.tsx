@@ -255,11 +255,11 @@ export default function HomeApp() {
           above would ask one reader to sort through two different offers. */}
       <div className="signup">
         <Link
-          href="/register"
+          href="/experts"
           className="signup-link"
           onClick={() => track('register_opened', { source: 'home' })}
         >
-          Register as an expert
+          Become an expert
         </Link>
       </div>
       {body && (

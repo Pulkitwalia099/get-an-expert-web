@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, useState } from 'react';
+import { track as analytics } from '@/lib/analytics';
 
 // The /experts page join form: pick a craft, leave an email.
 //
@@ -41,6 +42,14 @@ export default function ExpertJoinForm() {
     // owed an answer now, not after a round trip; nothing they see depends on
     // what comes back.
     setDone(true);
+    // The same event name the /register form fires, because it is the same
+    // funnel step and renaming it here would split one conversion across two
+    // labels. `register_opened` is still emitted by the link on the home page,
+    // so opens and submits stay comparable now that the link lands here.
+    //
+    // Fired on submit rather than on the response, because the send is not
+    // awaited and a person who never gets a reply still converted.
+    analytics('register_submitted', { track: 'expert', craft: craft || null });
     void fetch('/api/signup', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },

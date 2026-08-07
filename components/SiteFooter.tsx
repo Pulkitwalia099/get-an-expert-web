@@ -14,7 +14,7 @@ export default function SiteFooter() {
     <footer className="sitefoot">
       <span className="sitefoot-mark">midsesh</span>
       <nav className="sitefoot-links" aria-label="Footer">
-        <Link href="/register">Register as an expert</Link>
+        <Link href="/experts">Become an expert</Link>
         <Link href="/get">Setups</Link>
         {/* No email address here. A raw mailto in a footer reads as a personal
             inbox rather than a company, and the contact form above already

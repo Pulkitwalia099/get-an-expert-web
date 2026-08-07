@@ -59,11 +59,12 @@ export default function Home() {
         <nav className="sitenav">
           {/* Supply side. A marketplace that only ever addresses buyers has to
               recruit everyone who delivers the work somewhere else, and
-              /register already exists for exactly this. It reads a step louder
-              than Contact and Privacy beside it, and stays a text link rather
-              than a second pill: Sign in is the one filled control up here,
-              and two of them make a visitor choose instead of act. */}
-          <a className="partner-link" href="/register">
+              /experts is the page that does it: it argues the case before it
+              asks for anything, where /register opened on a form. It reads a
+              step louder than Contact and Privacy beside it, and stays a text
+              link rather than a second pill: Sign in is the one filled control
+              up here, and two of them make a visitor choose instead of act. */}
+          <a className="partner-link" href="/experts">
             Partner with us
           </a>
           <ContactLink />
@@ -137,6 +138,15 @@ export default function Home() {
                 a fallback, so it gets a sentence rather than a nav item. */}
             <a className={styles.btnGhost} href="/search-experts">
               Looking for a human AI expert instead? &rarr;
+            </a>
+            {/* The supply side, in the same shape. "Partner with us" in the
+                sitebar is the only other way in, and a nav link at the top of a
+                page written for buyers is not how somebody who does the work
+                finds out we want them. Both of these address a reader the rest
+                of the page does not, which is why they sit together down here
+                rather than competing with the services above. */}
+            <a className={styles.btnGhost} href="/experts">
+              Do this work yourself? Turn your craft into agents &rarr;
             </a>
           </div>
         </div>
