@@ -128,47 +128,31 @@
 .thumbVideo { background: linear-gradient(150deg, #3A2E26, #211E1A 55%, #4A2E20); }
 .thumbVideo video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 
-.thumbPost {
-  background: #fff; border: 1px solid rgba(33, 30, 26, .12);
-  padding: 12px; display: flex; flex-direction: column; gap: 7px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9);
+.thumbPost { background: #fff; border: 1px solid rgba(33, 30, 26, .12); }
+/* object-position: top, not the default centre. See the note in ServiceCard:
+   the middle of a post crop is anonymous body text, the top is the part that
+   reads as LinkedIn without being read. */
+.postShot {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover; object-position: top;
 }
-.pkHead { display: flex; align-items: center; gap: 8px; }
-.pkAv {
-  flex: none; width: 24px; height: 24px; border-radius: 50%;
-  background: radial-gradient(circle at 34% 30%, #E8C9B0, #A87B5A 70%, #6B4A33);
-}
-.pkName { height: 5px; width: 56px; border-radius: 3px; background: rgba(33, 30, 26, .17); }
-.pkSub { height: 4px; width: 42px; border-radius: 3px; background: rgba(33, 30, 26, .09); margin-top: 4px; }
-.pkLine { height: 4px; border-radius: 3px; background: rgba(33, 30, 26, .10); }
-.pkMedia {
-  flex: 1; min-height: 26px; border-radius: 6px;
-  background: linear-gradient(140deg, rgba(33, 30, 26, .07), rgba(33, 30, 26, .03));
-  border: 1px solid rgba(33, 30, 26, .06);
-}
-.pkBar {
-  margin-top: auto; display: flex; gap: 6px; align-items: center;
-  border-top: 1px solid var(--line); padding-top: 8px;
-}
-.pkDot { flex: none; width: 7px; height: 7px; border-radius: 50%; background: #0A66C2; opacity: .85; }
-.pkPill { height: 6px; width: 22px; border-radius: 4px; background: rgba(33, 30, 26, .09); }
-
-/* Anything still undecided stays visibly marked, in amber, until it is answered. */
-.tbdTag {
-  position: absolute; right: 9px; top: 9px; z-index: 1;
-  font-size: 9.5px; font-weight: 650; color: var(--amber);
-  background: rgba(217, 142, 40, .12); border: 1px solid rgba(217, 142, 40, .32);
-  border-radius: 999px; padding: 3px 8px;
+/* Ours, not part of the screenshot, and deliberately styled so it cannot be
+   mistaken for one. The figure is what that post actually earned. */
+.postStat {
+  position: absolute; right: 8px; bottom: 8px;
+  font-size: 10px; font-weight: 650; letter-spacing: .01em;
+  color: #fff; background: rgba(20, 24, 28, .72);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  border-radius: 999px; padding: 4px 9px;
+  font-variant-numeric: tabular-nums;
 }
 
-/* Video Editing has no sample footage yet, deliberately. A timeline motif says
-   what the service is without filling the slot with someone else's work. */
-.thumbTimeline { background: linear-gradient(150deg, #332C26, #211E1A); display: grid; place-items: center; }
-.track { display: flex; gap: 5px; width: 70%; }
-.track i {
-  height: 24px; border-radius: 4px;
-  background: rgba(246, 243, 237, .20); border: 1px solid rgba(246, 243, 237, .16);
-}
+/* The clip's own background colour, so the box is already the right colour
+   before a single frame has decoded. A dark placeholder here is what made this
+   tile read as a hole between two bright cards. */
+.thumbEdit { background: #F1F7FE; }
+.thumbEdit video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 
 /* ---------- Launching soon ----------
    Lighter than the three above on purpose. Nothing here can be bought yet, so

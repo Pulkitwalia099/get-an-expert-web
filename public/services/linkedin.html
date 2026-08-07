@@ -11,7 +11,7 @@
     --line: rgba(33,30,26,.08);
     --glass: rgba(255,255,255,.55); --glass-strong: rgba(255,255,255,.78);
     --accent: #C4593C; --accent-deep: #9E3F24; --accent-tint: rgba(196,89,60,.09);
-    --amber: #B97A1A;
+    --amber: #B97A1A; --li-blue: #0A66C2;
     --ease-out: cubic-bezier(0.23,1,0.32,1); --spring: cubic-bezier(0.34,1.56,0.64,1);
     --radius-card: 16px;
   }
@@ -45,8 +45,6 @@
     border-radius:999px; padding:4px 12px; }
   .dhead h1 { margin-top:16px; font-size:clamp(30px,5vw,42px); font-weight:750; letter-spacing:-0.03em; }
   .dhead .promise { margin:12px auto 0; max-width:540px; font-size:clamp(15px,2.2vw,17px); color:var(--ink-2); line-height:1.5; }
-  .priceline { margin-top:16px; font-size:14px; font-weight:700; }
-  .priceline span { color:var(--ink-3); font-weight:400; }
   .btn { display:inline-block; font-size:15px; font-weight:650; border-radius:999px; padding:13px 30px; text-decoration:none; }
   .btn.solid { background:var(--accent-deep); color:#fff; box-shadow:0 8px 20px -6px rgba(158,63,36,.5);
     transition: transform 160ms var(--ease-out); }
@@ -54,91 +52,138 @@
     .btn.solid:hover { transform: translateY(-2px) scale(1.02); }
   }
   .btn:active { transform: scale(0.97); }
-  .btn.ghost { color:var(--accent-deep); border:1px solid rgba(158,63,36,.3); background:var(--glass-strong); }
+  .btn.ghost { color:var(--accent-deep); border:1px solid rgba(158,63,36,.3); background:var(--glass-strong);
+    transition: transform 160ms var(--ease-out); }
   .btnrow { margin-top:22px; display:flex; gap:10px; justify-content:center; align-items:center; flex-wrap:wrap; }
-  .nocard { font-size:12.5px; color:var(--ink-3); }
 
   .shead { text-align:center; margin-bottom:28px; }
   .shead h2 { margin-top:10px; font-size:clamp(21px,3.4vw,27px); font-weight:700; letter-spacing:-0.02em; }
+  .snote { text-align:center; font-size:13px; color:var(--ink-3); margin-top:16px; }
 
   /* You give / You get — visual flow */
   .io-flow { display:grid; gap:16px; grid-template-columns:1fr; align-items:center; }
-  @media (min-width:721px){ .io-flow { grid-template-columns:1fr 44px 1fr; } }
+  @media (min-width:721px){ .io-flow { grid-template-columns:1fr 44px 1.15fr; } }
   .instack { display:flex; flex-direction:column; gap:10px; }
   .incard { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:14px;
-    padding:11px 13px; display:flex; gap:12px; align-items:center;
+    padding:13px 14px; display:flex; gap:12px; align-items:center;
     box-shadow:0 8px 20px -10px rgba(45,32,22,.15); }
   .incard .meta { min-width:0; }
-  .incard .t1 { font-size:13px; font-weight:650; }
+  .incard .t1 { font-size:13.5px; font-weight:650; }
   .incard .t2 { font-size:11.5px; color:var(--ink-3); margin-top:1px; }
   .th { flex:none; border-radius:9px; overflow:hidden; position:relative; }
-  .th-li { width:44px; height:44px; border-radius:10px; background:#0A66C2; color:#fff;
-    display:grid; place-items:center; font-size:15px; font-weight:800; }
   .th-aud { width:44px; height:44px; border-radius:50%;
     background:radial-gradient(circle at 34% 30%, #B8C9D9, #4A6582 75%, #2E4256);
     box-shadow:inset 0 1px 0 rgba(255,255,255,.4); }
-  .th-voice { width:44px; height:44px; border-radius:10px; background:#fff; border:1px solid rgba(33,30,26,.14);
+  .th-topics { width:44px; height:44px; border-radius:10px; background:#fff; border:1px solid rgba(33,30,26,.14);
     display:flex; flex-direction:column; gap:4px; justify-content:center; padding:0 8px; }
-  .th-voice i { height:3px; border-radius:2px; background:rgba(33,30,26,.18); }
-  .th-voice i:last-child { width:60%; }
+  .th-topics i { height:3px; border-radius:2px; background:rgba(33,30,26,.18); }
+  .th-topics i:last-child { width:60%; }
   .io-arrow { text-align:center; font-size:20px; color:var(--accent-deep); font-weight:700; }
   @media (max-width:720px){ .io-arrow { transform:rotate(90deg); } }
 
-  /* Post card (shared skeleton language with the home tile) */
-  .postcard { position:relative; max-width:300px; margin:0 auto; width:100%;
-    background:#fff; border:1px solid rgba(33,30,26,.12); border-radius:14px; padding:14px;
-    display:flex; flex-direction:column; gap:8px;
+  /* The animated LinkedIn post that comes out the other side */
+  .li-card { position:relative; max-width:340px; margin:0 auto; width:100%;
+    background:#fff; border:1px solid rgba(33,30,26,.12); border-radius:12px; padding:14px 14px 10px;
     box-shadow:0 18px 38px -16px rgba(45,32,22,.3); }
-  .pk-head { display:flex; align-items:center; gap:9px; }
-  .pk-av { flex:none; width:30px; height:30px; border-radius:50%;
+  .li-live { position:absolute; right:12px; top:-11px; font-size:10px; font-weight:700; letter-spacing:.08em;
+    color:#2F7A3D; background:#fff; border:1px solid rgba(62,155,79,.4); border-radius:999px; padding:3px 10px; }
+  .li-head { display:flex; gap:9px; align-items:flex-start; }
+  .li-av { flex:none; width:40px; height:40px; border-radius:50%; display:block; object-fit:cover;
     background:radial-gradient(circle at 34% 30%, #E8C9B0, #A87B5A 70%, #6B4A33); }
-  .pk-name { height:6px; width:66px; border-radius:3px; background:rgba(33,30,26,.17); }
-  .pk-sub { height:5px; width:50px; border-radius:3px; background:rgba(33,30,26,.09); margin-top:5px; }
-  .pk-line { height:5px; border-radius:3px; background:rgba(33,30,26,.10); }
-  .pk-media { min-height:74px; border-radius:8px; margin-top:2px;
-    background:linear-gradient(140deg, rgba(33,30,26,.07), rgba(33,30,26,.03));
-    border:1px solid rgba(33,30,26,.06); }
-  .pk-bar { display:flex; gap:6px; align-items:center; border-top:1px solid rgba(33,30,26,.08); padding-top:10px; }
-  .pk-dot { flex:none; width:8px; height:8px; border-radius:50%; background:#0A66C2; opacity:.85; }
-  .pk-pill { height:7px; width:26px; border-radius:4px; background:rgba(33,30,26,.09); }
-  .pk-out { position:absolute; right:10px; top:10px; font-size:10px; font-weight:700; letter-spacing:.08em;
-    color:#2F7A3D; background:rgba(62,155,79,.12); border:1px solid rgba(62,155,79,.3);
-    border-radius:999px; padding:3px 9px; }
+  .li-id { min-width:0; flex:1; }
+  .li-name { font-size:13.5px; font-weight:700; }
+  .li-sub  { font-size:11px; color:rgba(0,0,0,.55); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .li-time { font-size:11px; color:rgba(0,0,0,.55); }
+  .li-bug { flex:none; width:20px; height:20px; border-radius:4px; background:var(--li-blue); color:#fff;
+    display:grid; place-items:center; font-size:11px; font-weight:800; letter-spacing:-0.02em; }
+  .li-text { margin-top:9px; font-size:13px; line-height:1.45; color:rgba(0,0,0,.88); }
+  .li-text .more { color:rgba(0,0,0,.5); }
+  .li-social { display:flex; justify-content:space-between; align-items:center; margin-top:10px;
+    padding-bottom:8px; border-bottom:1px solid rgba(0,0,0,.08); font-size:11.5px; color:rgba(0,0,0,.55); }
+  .li-reacts { display:flex; align-items:center; gap:5px; }
+  .li-emoji { display:flex; }
+  .li-emoji span { width:16px; height:16px; border-radius:50%; font-size:10px; display:grid; place-items:center;
+    border:1.5px solid #fff; }
+  .li-emoji span:nth-child(1){ background:#DCEBFF; z-index:3; }
+  .li-emoji span:nth-child(2){ background:#FFE3DE; margin-left:-5px; z-index:2; }
+  .li-emoji span:nth-child(3){ background:#FFF3D6; margin-left:-5px; z-index:1; }
+  .li-actions { display:flex; justify-content:space-around; padding:7px 0; font-size:12px; font-weight:650;
+    color:rgba(0,0,0,.6); border-bottom:1px solid rgba(0,0,0,.08); }
+  .li-actions span { display:flex; gap:5px; align-items:center; }
+  .li-impr { display:flex; justify-content:space-between; align-items:center; padding-top:9px; font-size:12.5px; }
+  .li-impr .n { font-weight:700; font-variant-numeric:tabular-nums; }
+  .li-impr .bars { display:inline-flex; align-items:flex-end; gap:1.5px; margin-right:6px; }
+  .li-impr .bars i { width:3px; background:rgba(0,0,0,.55); border-radius:1px; }
+  .li-impr .bars i:nth-child(1){ height:5px; } .li-impr .bars i:nth-child(2){ height:8px; } .li-impr .bars i:nth-child(3){ height:11px; }
+  .li-impr .va { color:var(--li-blue); font-weight:650; }
+  .num { font-variant-numeric:tabular-nums; }
 
-  /* Steps */
-  .how2 { display:grid; gap:12px; grid-template-columns:1fr; align-items:stretch; }
-  @media (min-width:560px){ .how2 { grid-template-columns:1fr 1fr; } }
-  @media (min-width:900px){ .how2 { grid-template-columns:repeat(4,1fr); } }
-  .h2c { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:14px;
-    padding:18px 14px; text-align:center; box-shadow:0 8px 20px -10px rgba(45,32,22,.14); }
-  .h2c .em { font-size:26px; line-height:1; }
-  .h2c h3 { margin-top:9px; font-size:15px; font-weight:700; }
-  .h2c p { margin-top:4px; font-size:12.5px; color:var(--ink-2); line-height:1.4; }
-  .h2c.main { background:var(--accent-tint); border:1.5px solid rgba(158,63,36,.45); }
-  .h2c.main h3 { color:var(--accent-deep); }
+  /* Results carousel — screenshots of the real posts, each opens on LinkedIn */
+  .samples { position:relative; display:flex; align-items:flex-start; gap:14px; overflow-x:auto;
+    scroll-snap-type:x mandatory; padding:14px 0 28px; -webkit-overflow-scrolling:touch; scrollbar-width:thin; }
+  .samples::-webkit-scrollbar { height:6px; }
+  .samples::-webkit-scrollbar-track { background:transparent; }
+  .samples::-webkit-scrollbar-thumb { background:rgba(33,30,26,.18); border-radius:999px; }
+  .li-shot { flex:0 0 auto; width:78%; aspect-ratio:3/4; scroll-snap-align:center; display:block;
+    border-radius:14px; overflow:hidden; background:#fff; border:1px solid rgba(33,30,26,.12);
+    box-shadow:0 16px 34px -14px rgba(45,32,22,.3);
+    transition: transform 260ms var(--ease-out), opacity 260ms var(--ease-out); }
+  .li-shot img { display:block; width:100%; height:100%; object-fit:cover; object-position:top; }
+  @media (max-width:720px){
+    .samples { padding-inline:11%; }
+    .li-shot { transform:scale(var(--focus-scale,1)); opacity:var(--focus-op,1); }
+  }
+  @media (min-width:721px){
+    .samples { padding-inline:0; }
+    .li-shot { width:calc((100% - 28px)/3); scroll-snap-align:start; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .li-shot { transition:opacity 260ms ease; transform:none; }
+  }
+  .ctarow { text-align:center; margin-top:24px; }
+  .ctarow .sub { display:block; margin-top:10px; font-size:12.5px; color:var(--ink-3); }
 
-  /* Sample posts */
-  .samples { display:grid; gap:14px; grid-template-columns:1fr; }
-  @media (min-width:721px){ .samples { grid-template-columns:repeat(3,1fr); } }
-  .samples .postcard { max-width:none; }
+  /* The machine */
+  .machine { background:var(--glass); border:1px solid var(--line); border-radius:var(--radius-card); padding:22px 10px 14px; }
+  .machine svg { width:100%; max-width:560px; height:auto; display:block; margin:0 auto; }
+  .m-edge { opacity:.22; transition: opacity 420ms ease; }
+  .m-edge.on { opacity:1; }
+  .m-node { opacity:.5; transition: opacity 420ms ease, transform 420ms var(--spring);
+    transform-box:fill-box; transform-origin:center; }
+  .m-node.on { opacity:1; transform:scale(1.03); }
+  @media (prefers-reduced-motion: reduce){ .m-edge, .m-node { transition:none; transform:none; } }
 
   /* Pricing */
-  .tiers { display:grid; gap:14px; grid-template-columns:1fr; max-width:420px; margin:0 auto; }
-  .tier { background:var(--glass-strong); border:1.5px solid rgba(158,63,36,.45); border-radius:var(--radius-card);
-    padding:24px; box-shadow:0 10px 26px -12px rgba(45,32,22,.15); display:flex; flex-direction:column; gap:8px;
-    text-align:center; }
+  .tiers { display:grid; gap:14px; grid-template-columns:1fr; }
+  @media (min-width:721px){ .tiers.two { grid-template-columns:repeat(2,1fr); } }
+  .tier { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:var(--radius-card);
+    padding:22px; box-shadow:0 10px 26px -12px rgba(45,32,22,.15); display:flex; flex-direction:column; gap:8px; }
+  .tier.hot { border:1.5px solid rgba(158,63,36,.45); }
   .tier .tname { font-size:13px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--ink-2); }
-  .tier .tprice { font-size:26px; font-weight:750; letter-spacing:-0.02em; }
+  .tier .tprice { font-size:24px; font-weight:750; letter-spacing:-0.02em; }
   .tier .tprice small { font-size:13px; font-weight:400; color:var(--ink-3); }
-  .tier p { font-size:13.5px; color:var(--ink-2); line-height:1.45; }
-  .tier .tcta { margin-top:6px; font-size:13.5px; font-weight:650; color:#fff; background:var(--accent-deep);
-    border-radius:999px; padding:10px; text-decoration:none; }
+  .tier .spec { flex:1; margin:6px 0 2px; }
+  .tier .spec div { display:flex; justify-content:space-between; align-items:baseline; gap:10px;
+    font-size:12.5px; padding:7px 0; border-bottom:1px solid var(--line); }
+  .tier .spec div:last-child { border-bottom:0; }
+  .tier .spec i { font-style:normal; color:var(--ink-3); }
+  .tier .spec b { font-weight:650; text-align:right; }
+  .tier .tcta { margin-top:6px; text-align:center; font-size:13.5px; font-weight:650; color:var(--accent-deep);
+    border:1px solid rgba(158,63,36,.3); border-radius:999px; padding:9px; text-decoration:none;
+    transition: transform 160ms var(--ease-out); }
+  .tier .tcta:active { transform: scale(0.97); }
+  .tier .tcta.solid { background:var(--accent-deep); color:#fff; }
+  .more { margin-top:14px; }
+  .more summary { list-style:none; cursor:pointer; text-align:center; font-size:13.5px; font-weight:650;
+    color:var(--accent-deep); border:1px solid rgba(158,63,36,.3); background:var(--glass-strong);
+    border-radius:999px; padding:11px; transition: transform 160ms var(--ease-out); }
+  .more summary::-webkit-details-marker { display:none; }
+  .more summary::after { content:" ▾"; }
+  .more[open] summary::after { content:" ▴"; }
+  .more summary:active { transform: scale(0.97); }
+  .more .tiers { margin-top:14px; }
 
-  .guarantee { text-align:center; background:var(--glass); border:1px solid var(--line);
-    border-radius:var(--radius-card); padding:30px 22px; }
-  .guarantee h2 { font-size:clamp(19px,3vw,24px); font-weight:700; letter-spacing:-0.02em; max-width:580px; margin:0 auto; }
-  .guarantee p { margin-top:10px; color:var(--ink-2); font-size:14.5px; }
-
+  /* Intake */
   .form { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:var(--radius-card);
     padding:24px; box-shadow:0 10px 26px -12px rgba(45,32,22,.15); }
   .field { margin-bottom:16px; }
@@ -156,7 +201,6 @@
   .faq summary::after { content:"+"; float:right; color:var(--ink-3); }
   .faq details[open] summary::after { content:"–"; }
   .faq details p { margin-top:8px; font-size:13.5px; color:var(--ink-2); line-height:1.5; }
-  .tbd { color:var(--amber); font-size:12px; font-weight:650; }
 
   .cross { text-align:center; }
   .foot { text-align:center; color:var(--ink-3); font-size:12.5px; padding:26px 16px 40px; }
@@ -168,19 +212,17 @@
 
   <header class="sitebar">
     <a class="sitemark" href="/"><span class="worb">✳︎</span>midsesh</a>
-    <nav class="sitenav"><a href="/">All services</a><a href="mailto:midsesh.social@gmail.com?subject=Question%20about%20midsesh">Contact</a><a href="/api/auth/google">Sign in</a></nav>
+    <nav class="sitenav"><a href="/">All services</a><a href="#">Contact</a><a href="#">Sign in</a></nav>
   </header>
 
   <!-- 1 · Header -->
   <section class="block dhead">
     <div class="wrap">
       <span class="badge">Human + Agent</span>
-      <h1>LinkedIn Marketeer</h1>
+      <h1>LinkedIn Growth Engine</h1>
       <p class="promise">Your LinkedIn all handled by our agents. Posts, comments, and engagements all reviewed by a human before anything ships.</p>
-      <div class="priceline">$100 per 10k impressions <span>in your relevant audience</span></div>
       <div class="btnrow">
-        <a class="btn solid" href="#start">Get started</a>
-        <span class="nocard">Pay for reach, not retainers</span>
+        <a class="btn ghost" href="#results">See the results</a>
       </div>
     </div>
   </section>
@@ -188,158 +230,180 @@
   <!-- 2 · You give / You get -->
   <section class="block">
     <div class="wrap">
-      <div class="shead"><span class="eyebrow">Input, output</span><h2>Three things in. Your LinkedIn, running.</h2></div>
+      <div class="shead"><span class="eyebrow">Input, output</span><h2>Two things in. Your feed, working.</h2></div>
       <div class="io-flow">
         <div class="instack">
           <div class="incard">
-            <div class="th th-li">in</div>
-            <div class="meta">
-              <div class="t1">Your LinkedIn profile</div>
-              <div class="t2">the account we run for you</div>
-            </div>
-          </div>
-          <div class="incard">
             <div class="th th-aud"></div>
             <div class="meta">
-              <div class="t1">Your audience</div>
-              <div class="t2">who you want to reach</div>
+              <div class="t1">Target audience</div>
             </div>
           </div>
           <div class="incard">
-            <div class="th th-voice"><i></i><i></i><i></i></div>
+            <div class="th th-topics"><i></i><i></i><i></i></div>
             <div class="meta">
-              <div class="t1">Your voice</div>
-              <div class="t2">posts you like, topics you care about</div>
+              <div class="t1">Topics you want to talk about</div>
             </div>
           </div>
         </div>
         <div class="io-arrow">→</div>
-        <div class="postcard">
-          <span class="pk-out">LIVE</span>
-          <div class="pk-head">
-            <div class="pk-av"></div>
-            <div><div class="pk-name"></div><div class="pk-sub"></div></div>
+        <div class="li-card" id="outpost">
+          <span class="li-live">LIVE</span>
+          <div class="li-head">
+            <img class="li-av" src="assets/rohit.png" alt="">
+            <div class="li-id">
+              <div class="li-name">Rohit Jain</div>
+              <div class="li-sub">Ex-Amazon | IIT KGP 2019 alum | SDE @ Square</div>
+              <div class="li-time">2h · 🌐</div>
+            </div>
+            <span class="li-bug"><svg viewBox="0 0 448 512" width="11" height="11" fill="#fff" aria-hidden="true"><path d="M100.28 448H7.4V148.9h92.88zM53.79 108.1C24.09 108.1 0 83.5 0 53.8a53.79 53.79 0 0 1 107.58 0c0 29.7-24.1 54.3-53.79 54.3zM447.9 448h-92.68V302.4c0-34.7-.7-79.2-48.29-79.2-48.29 0-55.69 37.7-55.69 76.7V448h-92.78V148.9h89.08v40.8h1.3c12.4-23.5 42.69-48.3 87.88-48.3 94 0 111.28 61.9 111.28 142.3V448z"/></svg></span>
           </div>
-          <div class="pk-line"></div>
-          <div class="pk-line"></div>
-          <div class="pk-line" style="width:68%;"></div>
-          <div class="pk-media"></div>
-          <div class="pk-bar"><span class="pk-dot"></span><span class="pk-pill"></span><span class="pk-pill"></span><span class="pk-pill"></span></div>
+          <p class="li-text">We interviewed 40 engineers in 30 days. <span class="more">…more</span></p>
+          <div class="li-social">
+            <span class="li-reacts">
+              <span class="li-emoji"><span>👍</span><span>❤️</span><span>💡</span></span>
+              You and <span class="num" data-count="1186">0</span> others
+            </span>
+            <span><span class="num" data-count="51">0</span> comments · <span class="num" data-count="17">0</span> reposts</span>
+          </div>
+          <div class="li-actions">
+            <span>👍 Like</span><span>💬 Comment</span><span>🔁 Repost</span><span>➤ Send</span>
+          </div>
+          <div class="li-impr">
+            <span><span class="bars"><i></i><i></i><i></i></span><span class="n" data-count="254950">0</span> impressions</span>
+            <span class="va">View analytics</span>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- 3 · How it works -->
-  <section class="block">
+  <!-- 3 · Results, real posts -->
+  <section class="block" id="results">
     <div class="wrap">
-      <div class="shead"><span class="eyebrow">How it works</span><h2>Nothing ships without a human.</h2></div>
-      <div class="how2">
-        <div class="h2c"><div class="em">🎯</div><h3>We learn your voice</h3><p>Your profile, audience, and posts you like.</p></div>
-        <div class="h2c"><div class="em">✍️</div><h3>Agents draft</h3><p>Posts, comments, and engagements.</p></div>
-        <div class="h2c main"><div class="em">🧑‍⚖️</div><h3>A human reviews</h3><p>Every word, before anything ships.</p></div>
-        <div class="h2c"><div class="em">🚀</div><h3>It ships</h3><p>You pay per 10k impressions delivered.</p></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 4 · Sample posts -->
-  <section class="block">
-    <div class="wrap">
-      <div class="shead"><span class="eyebrow">Samples</span><h2>What goes out under your name</h2></div>
+      <div class="shead"><span class="eyebrow">The results</span><h2>Posts our experts ran</h2></div>
       <div class="samples">
-        <div class="postcard">
-          <div class="pk-head"><div class="pk-av"></div><div><div class="pk-name"></div><div class="pk-sub"></div></div></div>
-          <div class="pk-line"></div><div class="pk-line"></div><div class="pk-line" style="width:72%;"></div>
-          <div class="pk-bar"><span class="pk-dot"></span><span class="pk-pill"></span><span class="pk-pill"></span><span class="pk-pill"></span></div>
-        </div>
-        <div class="postcard">
-          <div class="pk-head"><div class="pk-av"></div><div><div class="pk-name"></div><div class="pk-sub"></div></div></div>
-          <div class="pk-line"></div><div class="pk-line"></div><div class="pk-line" style="width:58%;"></div>
-          <div class="pk-media"></div>
-          <div class="pk-bar"><span class="pk-dot"></span><span class="pk-pill"></span><span class="pk-pill"></span><span class="pk-pill"></span></div>
-        </div>
-        <div class="postcard">
-          <div class="pk-head"><div class="pk-av"></div><div><div class="pk-name"></div><div class="pk-sub"></div></div></div>
-          <div class="pk-line"></div><div class="pk-line"></div><div class="pk-line" style="width:80%;"></div>
-          <div class="pk-bar"><span class="pk-dot"></span><span class="pk-pill"></span><span class="pk-pill"></span><span class="pk-pill"></span></div>
-        </div>
+        <a class="li-shot" href="https://www.linkedin.com/posts/activity-7474811688744230913-ECIa" target="_blank" rel="noopener"><img src="assets/li-post-1.png" alt="Rohit Jain's post quoting John Crickett on Forward Deployed Engineers, 254,950 impressions"></a>
+        <a class="li-shot" href="https://www.linkedin.com/posts/suresh-g-688608191_a-24-year-old-joined-tech-because-he-loved-share-7486063317623390208-dQNX" target="_blank" rel="noopener"><img src="assets/li-post-2.png" alt="Suresh Gandhi's post quoting a GitHub comment about leaving software for woodworking, 1,186 reactions"></a>
+        <a class="li-shot" href="https://www.linkedin.com/posts/sai-ram-somanaboina_if-you-write-10x-code-ship-faster-than-everyone-activity-7487852885532180480-I2vb" target="_blank" rel="noopener"><img src="assets/li-post-3.png" alt="Sai Ram Somanaboina's post quoting Ritesh Roushan on production mindset, 631 reactions"></a>
+        <a class="li-shot" href="https://www.linkedin.com/posts/activity-7460690672736628736--Tpl" target="_blank" rel="noopener"><img src="assets/li-post-4.png" alt="Rohit Jain's post quoting Sarthak on Uber and Rapido OTPs, 68 comments"></a>
+        <a class="li-shot" href="https://www.linkedin.com/posts/suresh-g-688608191_linkedin-makes-it-look-like-every-senior-activity-7480610263763820544-VLip" target="_blank" rel="noopener"><img src="assets/li-post-5.png" alt="Suresh Gandhi's post on software engineering as a long marathon, 1,457 reactions"></a>
       </div>
-      <div class="formnote">Real post screenshots coming.</div>
+    </div>
+  </section>
+
+  <!-- 4 · How it works -->
+  <section class="block">
+    <div class="wrap">
+      <div class="shead"><span class="eyebrow">How it works</span><h2>Your two inputs start a machine.</h2></div>
+      <div class="machine" id="machine"></div>
     </div>
   </section>
 
   <!-- 5 · Pricing -->
   <section class="block">
     <div class="wrap">
-      <div class="shead"><span class="eyebrow">Pricing</span><h2>Pay for reach, not retainers.</h2></div>
-      <div class="tiers">
+      <div class="shead"><span class="eyebrow">Pricing</span></div>
+      <div class="tiers two">
         <div class="tier">
-          <div class="tname">Per impressions</div>
-          <div class="tprice">$100 <small>per 10k impressions</small></div>
-          <p>Counted in your relevant audience, not raw views. You set the budget, we deliver the reach.</p>
-          <a class="tcta" href="#start">Get started</a>
+          <div class="tname">Try it</div>
+          <div class="tprice">$99 <small>per 10,000 impressions</small></div>
+          <div class="spec">
+            <div><i>Impressions</i><b>10,000</b></div>
+            <div><i>Counted in</i><b>Your audience</b></div>
+            <div><i>Your approval</i><b>Every post</b></div>
+            <div><i>Credited if you subscribe</i><b>Yes</b></div>
+          </div>
+          <a class="tcta" href="#start">Start now</a>
+        </div>
+        <div class="tier hot">
+          <div class="tname">The monthly plan</div>
+          <div class="tprice">$499 <small>a month</small></div>
+          <div class="spec">
+            <div><i>Impressions a month</i><b>200,000</b></div>
+            <div><i>Posts a week</i><b>3 to 5</b></div>
+            <div><i>Comments and replies</i><b>Handled</b></div>
+            <div><i>Starts with</i><b>A call</b></div>
+            <div><i>Your approval</i><b>Every post</b></div>
+          </div>
+          <a class="tcta solid" href="#">Book a call</a>
         </div>
       </div>
+      <details class="more">
+        <summary>Need more than 200K a month</summary>
+        <div class="tiers two">
+          <div class="tier">
+            <div class="tname">500K a month</div>
+            <div class="tprice">$1,099 <small>a month</small></div>
+            <div class="spec">
+              <div><i>Impressions a month</i><b>500,000</b></div>
+              <div><i>Posts a week</i><b>5 to 7</b></div>
+              <div><i>Comments and replies</i><b>Handled</b></div>
+              <div><i>What worked report</i><b>Monthly</b></div>
+            </div>
+            <a class="tcta" href="#">Book a call</a>
+          </div>
+          <div class="tier">
+            <div class="tname">1M a month</div>
+            <div class="tprice">$1,899 <small>a month</small></div>
+            <div class="spec">
+              <div><i>Impressions a month</i><b>1,000,000</b></div>
+              <div><i>Posts a week</i><b>Daily</b></div>
+              <div><i>Comments and replies</i><b>Handled</b></div>
+              <div><i>What worked report</i><b>Weekly</b></div>
+            </div>
+            <a class="tcta" href="#">Book a call</a>
+          </div>
+        </div>
+      </details>
+      <p class="snote">Pause or cancel anytime.</p>
     </div>
   </section>
 
-  <!-- 6 · Guarantee -->
-  <section class="block">
-    <div class="wrap">
-      <div class="guarantee">
-        <h2>A human reads every post, comment, and reply before it ships.</h2>
-        <p>Agents do the work. A person is accountable for what goes out under your name.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- 7 · Intake form -->
+  <!-- 6 · Intake form -->
   <section class="block" id="start">
     <div class="wrap">
-      <div class="shead"><span class="eyebrow">Get started</span><h2>Two minutes of input</h2></div>
+      <div class="shead"><span class="eyebrow">Get started</span><h2>Two inputs and an email</h2></div>
       <div class="form">
         <div class="field">
-          <label>Your LinkedIn profile</label>
-          <input type="url" placeholder="https://linkedin.com/in/you">
-        </div>
-        <div class="field">
-          <label>Who do you want to reach?</label>
+          <label>Target audience</label>
           <input type="text" placeholder="e.g. founders at seed-stage SaaS companies">
         </div>
         <div class="field">
-          <label>Posts you like <small>links, one per line</small></label>
-          <textarea placeholder="Links to 2 or 3 posts in a voice you want"></textarea>
+          <label>Topics you want to talk about</label>
+          <textarea placeholder="e.g. hiring engineers, system design, what you are building"></textarea>
         </div>
         <div class="field">
-          <label>Anything else we should know <small>optional</small></label>
-          <textarea placeholder="Topics to avoid, goals, timelines"></textarea>
+          <label>Email</label>
+          <input type="email" placeholder="you@company.com">
         </div>
         <div class="btnrow"><a class="btn solid" href="#">Get started</a></div>
-        <div class="formnote">We reply with a plan before anything is posted.</div>
       </div>
     </div>
   </section>
 
-  <!-- 8 · FAQ -->
+  <!-- 7 · FAQ -->
   <section class="block">
     <div class="wrap">
       <div class="shead"><span class="eyebrow">FAQ</span><h2>The fine print, plainly</h2></div>
       <div class="faq">
-        <details><summary>Do you need my LinkedIn password?</summary><p> Access and posting mechanics get defined at onboarding.</p></details>
-        <details><summary>Do I approve posts before they go out?</summary><p>Every post, comment, and engagement is reviewed by a human on our side before it ships. Your own approval flow is set up at onboarding.</p></details>
-        <details><summary>What counts as my relevant audience?</summary><p>The audience you define in onboarding. Impressions are counted against that, not raw views.</p></details>
-        <details><summary>Is there a minimum budget?</summary><p>Yes. One block of 10,000 impressions at $100 is the smallest we run. Below that there are not enough posts inside the window to tell whether the targeting is working, so you would be paying for a number instead of a result.</p></details>
-        <details><summary>Who actually does the work?</summary><p>Agents draft the posts, comments, and engagements. A human expert reviews everything and is accountable for what ships.</p></details>
+        <details><summary>Do you need my LinkedIn password?</summary><p>No. Every post reaches you for approval and ships from your account through access you can revoke at any time. Your password stays yours.</p></details>
+        <details><summary>Do I approve posts before they go out?</summary><p>Yes. Nothing is published without your sign-off. Approve, edit, or bin any draft, and your edits teach the voice model what you sound like.</p></details>
+        <details><summary>What counts as a relevant impression?</summary><p>A view from the audience you name in the form: role, industry, seniority. We read the numbers from your own LinkedIn analytics and count those views, not raw reach.</p></details>
+        <details><summary>Is there a minimum?</summary><p>$99, once. That buys 10,000 relevant impressions. No retainer and no contract.</p></details>
+        <details><summary>What if the impressions do not arrive?</summary><p>The pack stays open until they do. A pack of 10,000 is a pack of 10,000; you never pay twice for the same reach.</p></details>
+        <details><summary>How fast does it start?</summary><p>The first post reaches you for approval within 48 hours of your two inputs.</p></details>
+        <details><summary>Who actually does the work?</summary><p>Agents research, draft, and match your voice. A human expert reviews everything before it reaches you and answers for what ships.</p></details>
       </div>
     </div>
   </section>
 
-  <!-- 9 · Cross-sell -->
+  <!-- 8 · Cross-sell -->
   <section class="block cross">
     <div class="wrap">
       <div class="btnrow">
         <a class="btn ghost" href="/">Browse all services</a>
+        <a class="btn ghost" href="#">Ask for something custom</a>
       </div>
     </div>
   </section>
@@ -347,6 +411,212 @@
   <div class="foot">midsesh · Contact · Privacy</div>
 
 </div>
+<script>
+  /* The output post's numbers count up, hold, and go again. The loop is the
+     point: impressions climbing is the product. Runs only while the card is
+     on screen, and reduced motion gets the final numbers with no counting. */
+  (function () {
+    var card = document.getElementById('outpost');
+    if (!card) return;
+    var els = Array.prototype.slice.call(card.querySelectorAll('[data-count]'));
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    function setFinal() {
+      els.forEach(function (el) {
+        el.textContent = Number(el.getAttribute('data-count')).toLocaleString('en-US');
+      });
+    }
+    if (reduce.matches) { setFinal(); return; }
+
+    /* Time-based on an interval rather than requestAnimationFrame: a digit
+       counter reads the same at 20fps as at 60, and intervals keep ticking
+       in embedded views where rAF is throttled to nothing. */
+    var COUNT = 4200, HOLD = 1600, CYCLE = COUNT + HOLD;
+    var epoch = performance.now(), visible = true;
+
+    function ease(t) { return 1 - Math.pow(1 - t, 3); }
+    setInterval(function () {
+      if (!visible) return;
+      var t = (performance.now() - epoch) % CYCLE;
+      var p = ease(Math.min(t / COUNT, 1));
+      els.forEach(function (el) {
+        var target = Number(el.getAttribute('data-count'));
+        el.textContent = Math.round(target * p).toLocaleString('en-US');
+      });
+    }, 50);
+
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (entries) {
+        visible = entries[0].isIntersecting;
+      }, { threshold: 0.3 }).observe(card);
+    }
+  })();
+
+  /* Carousel: centre-focus scaling on mobile, gentle auto-advance as a scroll
+     cue. Same behaviour as the UGC page, pointed at the post cards. */
+  (function () {
+    var scroller = document.querySelector('.samples');
+    if (!scroller) return;
+    var cards = Array.prototype.slice.call(scroller.querySelectorAll('.li-post'));
+    if (!cards.length) return;
+
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+    var isMobile = window.matchMedia('(max-width: 720px)');
+    var queued = false;
+
+    function paint() {
+      queued = false;
+      var mid = scroller.scrollLeft + scroller.clientWidth / 2;
+      cards.forEach(function (c) {
+        var d = Math.min(Math.abs((c.offsetLeft + c.offsetWidth / 2) - mid) / c.offsetWidth, 1);
+        c.style.setProperty('--focus-scale', (1 - d * 0.1).toFixed(3));
+        c.style.setProperty('--focus-op', (1 - d * 0.4).toFixed(3));
+      });
+    }
+    function onScroll() { if (!queued) { queued = true; requestAnimationFrame(paint); } }
+
+    scroller.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    window.addEventListener('load', onScroll);
+    if (isMobile.addEventListener) isMobile.addEventListener('change', onScroll);
+    paint();
+
+    if (reduce.matches) return;
+
+    var i = 0, stopped = false, hovering = false;
+    var timer = setInterval(function () {
+      if (stopped || hovering || document.hidden) return;
+      i = (i + 1) % cards.length;
+      var t = cards[i];
+      var left = isMobile.matches
+        ? t.offsetLeft - (scroller.clientWidth - t.offsetWidth) / 2
+        : t.offsetLeft;
+      scroller.scrollTo({ left: Math.max(0, left), behavior: 'smooth' });
+    }, 3200);
+
+    function stop() { stopped = true; clearInterval(timer); }
+    ['pointerdown', 'wheel', 'touchstart', 'keydown'].forEach(function (e) {
+      scroller.addEventListener(e, stop, { passive: true, once: true });
+    });
+    scroller.addEventListener('mouseenter', function () { hovering = true; });
+    scroller.addEventListener('mouseleave', function () { hovering = false; });
+    if (isMobile.matches) setTimeout(stop, 20000);
+  })();
+
+  /* The machine. One top-to-bottom layout at every width, and the flow
+     animates: the two inputs light first, then each stage of the pipeline
+     down to the live post, then it resets and runs again. */
+  (function () {
+    var host = document.getElementById('machine');
+    if (!host) return;
+
+    var FILL = { end: '#F7E7E0', agent: '#FFFFFF', gate: '#FBF3E2' };
+    var STROKE = { end: '#C4593C', agent: '#DAD3C7', gate: '#D98E28' };
+
+    var NODES = {
+      aud:   { x: 135, y: 40,  w: 120, h: 48, label: 'Audience in', kind: 'end', stage: 0 },
+      top:   { x: 345, y: 40,  w: 110, h: 48, label: 'Topics in', kind: 'end', stage: 0 },
+      trend: { x: 90,  y: 150, w: 120, h: 48, label: 'Trend scan', sub: 'agent', kind: 'agent', stage: 1 },
+      mine:  { x: 240, y: 150, w: 128, h: 48, label: 'Audience mine', sub: 'agent', kind: 'agent', stage: 1 },
+      deep:  { x: 390, y: 150, w: 120, h: 48, label: 'Deep research', sub: 'agent', kind: 'agent', stage: 1 },
+      merge: { x: 240, y: 255, w: 130, h: 50, label: 'Insight merge', sub: 'agent', kind: 'agent', stage: 2 },
+      hookA: { x: 90,  y: 360, w: 96, h: 44, label: 'Hook A', sub: 'agent', kind: 'agent', stage: 3 },
+      hookB: { x: 240, y: 360, w: 96, h: 44, label: 'Hook B', sub: 'agent', kind: 'agent', stage: 3 },
+      hookC: { x: 390, y: 360, w: 96, h: 44, label: 'Hook C', sub: 'agent', kind: 'agent', stage: 3 },
+      judge: { x: 240, y: 455, w: 110, h: 46, label: 'Hook judge', sub: 'agent', kind: 'agent', stage: 4 },
+      draft: { x: 150, y: 550, w: 96, h: 46, label: 'Draft', sub: 'agent', kind: 'agent', stage: 5 },
+      voice: { x: 330, y: 550, w: 110, h: 46, label: 'Voice match', sub: 'agent', kind: 'agent', stage: 6 },
+      fact:  { x: 150, y: 645, w: 104, h: 44, label: 'Fact check', kind: 'gate', stage: 7 },
+      tone:  { x: 330, y: 645, w: 104, h: 44, label: 'Tone check', kind: 'gate', stage: 7 },
+      live:  { x: 240, y: 748, w: 150, h: 56, label: 'Post live', sub: 'impressions counted', kind: 'end', stage: 8 }
+    };
+
+    var FLOW = [
+      ['aud', 'trend'], ['aud', 'mine'], ['aud', 'deep'],
+      ['top', 'trend'], ['top', 'mine'], ['top', 'deep'],
+      ['trend', 'merge'], ['mine', 'merge'], ['deep', 'merge'],
+      ['merge', 'hookA'], ['merge', 'hookB'], ['merge', 'hookC'],
+      ['hookA', 'judge'], ['hookB', 'judge'], ['hookC', 'judge'],
+      ['judge', 'draft'], ['draft', 'voice'],
+      ['voice', 'fact'], ['voice', 'tone'],
+      ['fact', 'live'], ['tone', 'live']
+    ];
+
+    var NS = 'http://www.w3.org/2000/svg';
+    function el(tag, attrs, text) {
+      var n = document.createElementNS(NS, tag);
+      for (var k in attrs) n.setAttribute(k, attrs[k]);
+      if (text) n.textContent = text;
+      return n;
+    }
+    function anchorPt(a, b) {
+      var dx = b.x - a.x, dy = b.y - a.y;
+      var sx = dx === 0 ? Infinity : (a.w / 2) / Math.abs(dx);
+      var sy = dy === 0 ? Infinity : (a.h / 2) / Math.abs(dy);
+      var t = Math.min(sx, sy);
+      return { x: a.x + dx * t, y: a.y + dy * t };
+    }
+
+    var svg = el('svg', { viewBox: '0 0 480 810', role: 'img' });
+    svg.setAttribute('aria-label', 'Your audience and topics fan out to three research agents. Their findings merge, three hook agents compete and a judge picks the winner, a draft agent writes, a voice match agent applies your voice, and fact and tone checks run before the post goes live with its impressions counted.');
+
+    var defs = el('defs', {});
+    var mk = el('marker', { id: 'mm-a', viewBox: '0 0 10 10', refX: 8, refY: 5,
+      markerWidth: 6.5, markerHeight: 6.5, orient: 'auto-start-reverse' });
+    mk.appendChild(el('path', { d: 'M0 0 L10 5 L0 10 z', fill: '#C4593C' }));
+    defs.appendChild(mk);
+    svg.appendChild(defs);
+
+    FLOW.forEach(function (pair) {
+      var a = NODES[pair[0]], b = NODES[pair[1]];
+      var p1 = anchorPt(a, b), p2 = anchorPt(b, a);
+      svg.appendChild(el('line', { x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y,
+        stroke: '#C4593C', 'stroke-width': 1.7, 'marker-end': 'url(#mm-a)',
+        'class': 'm-edge', 'data-stage': b.stage }));
+    });
+
+    Object.keys(NODES).forEach(function (key) {
+      var n = NODES[key];
+      var g = el('g', { 'class': 'm-node', 'data-stage': n.stage });
+      g.appendChild(el('rect', { x: n.x - n.w / 2, y: n.y - n.h / 2, width: n.w, height: n.h,
+        rx: 12, fill: FILL[n.kind], stroke: STROKE[n.kind], 'stroke-width': 1.4 }));
+      g.appendChild(el('text', { x: n.x, y: n.sub ? n.y - 1 : n.y + 4.5, 'text-anchor': 'middle',
+        'font-size': 13, 'font-weight': 650, fill: '#211E1A' }, n.label));
+      if (n.sub) {
+        g.appendChild(el('text', { x: n.x, y: n.y + 16, 'text-anchor': 'middle', 'font-size': 10,
+          fill: '#8B8375' }, n.sub));
+      }
+      svg.appendChild(g);
+    });
+
+    host.appendChild(svg);
+
+    var parts = Array.prototype.slice.call(svg.querySelectorAll('[data-stage]'));
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (reduce.matches) {
+      parts.forEach(function (p) { p.classList.add('on'); });
+      return;
+    }
+
+    /* One stage lights per tick, holds a beat once the post is live, then
+       the whole machine dims and runs again. Interval-driven for the same
+       reason as the counter above. */
+    var STAGES = 9, HOLD = 3, stage = -2;
+    setInterval(function () {
+      stage++;
+      if (stage >= STAGES + HOLD) {
+        stage = -2;
+        parts.forEach(function (p) { p.classList.remove('on'); });
+        return;
+      }
+      if (stage >= 0 && stage < STAGES) {
+        parts.forEach(function (p) {
+          if (Number(p.getAttribute('data-stage')) === stage) p.classList.add('on');
+        });
+      }
+    }, 620);
+  })();
+</script>
 <script src="/services/intake.js" defer></script>
 </body>
 </html>

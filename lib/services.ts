@@ -51,7 +51,10 @@ export const SERVICES: Service[] = [
     status: 'live',
     blurb:
       'Your LinkedIn all handled by our agents. Posts, comments, and engagements all reviewed by a human before anything ships.',
-    price: '$100 per 10k',
+    // $99, matching the page. The page is the one that has to be right, since
+    // it is what somebody reads before they buy, and it now answers "is there a
+    // minimum" with this same number.
+    price: '$99 per 10k',
     priceNote: 'impressions in your relevant audience',
     priceOpen: false,
     cta: 'View more',

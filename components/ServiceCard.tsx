@@ -37,36 +37,38 @@ export default function ServiceCard({ service, dim = false }: { service: Service
 
       {service.media === 'post' && (
         <div className={`${styles.thumb} ${styles.thumbPost}`}>
-          {/* A drawn post, not a missing screenshot. It shares its skeleton
-              language with the post card on the LinkedIn page, so it reads as
-              the same designed motif in both places rather than as an image
-              that failed to load. Swapping in a real screenshot later is one
-              element, and nothing around it has to change. */}
-          <div className={styles.pkHead}>
-            <div className={styles.pkAv} />
-            <div>
-              <div className={styles.pkName} />
-              <div className={styles.pkSub} />
-            </div>
-          </div>
-          <div className={styles.pkLine} />
-          <div className={styles.pkLine} style={{ width: '68%' }} />
-          <div className={styles.pkMedia} />
-          <div className={styles.pkBar}>
-            <span className={styles.pkDot} />
-            <span className={styles.pkPill} />
-            <span className={styles.pkPill} />
-          </div>
+          {/* A real post, and one of ours: this is the founder's own, which is
+              why it can be shown at all. The other four in the page carousel
+              belong to other people.
+
+              The screenshot is portrait and the box is 16:10, so it is pinned
+              to the top rather than centred. Cover from the middle of a post
+              is a band of body text that could be anything; the top is the
+              avatar, the name and the first line, which reads as LinkedIn at
+              a glance. The number the post actually earned is the payoff, so
+              it is stated in our own chip rather than left inside a crop that
+              would have to be unreadably small to include it. */}
+          <img
+            className={styles.postShot}
+            src="/media/li-tile.png"
+            alt="A LinkedIn post from the founder's account"
+            /* Not lazy. This card is in the first screen of the grid, so
+               deferring it trades a visible empty box for bytes that were
+               going to be fetched a moment later anyway. */
+            fetchPriority="high"
+          />
+          <span className={styles.postStat}>254,950 impressions</span>
         </div>
       )}
 
       {service.media === 'timeline' && (
-        <div className={`${styles.thumb} ${styles.thumbTimeline}`}>
-          <div className={styles.track}>
-            <i style={{ width: '38%' }} />
-            <i style={{ width: '24%' }} />
-            <i style={{ width: '32%' }} />
-          </div>
+        // Light on purpose. This tile used to be a dark timeline motif sitting
+        // between two bright cards, and it read as a hole in the row. The clip
+        // is trimmed to a stretch that never cuts to the dark half of the
+        // source, and the box behind it is the clip's own background colour so
+        // there is no dark flash before the first frame paints.
+        <div className={`${styles.thumb} ${styles.thumbEdit}`}>
+          <video src="/media/edit-tile.mp4" autoPlay muted loop playsInline />
         </div>
       )}
 
