@@ -60,7 +60,10 @@
   }
 
   function wire(form) {
-    var emailEl = addEmailField(form);
+    var emailEl = form.dataset.notify === '1'
+      ? form.querySelector('input[type="email"]')
+      : addEmailField(form);
+    if (!emailEl) return;
     var btn = form.querySelector('.btnrow .btn, .btnrow a, button[type="submit"]');
     if (!btn) return;
 
@@ -82,7 +85,13 @@
         emailEl.focus();
         return;
       }
-      var message = collect(form);
+      /* A notify form has one field and nothing to brief. Sending the address
+         back as "Your email: x" would be the only line in the message, which
+         tells whoever reads it nothing about what they asked for. */
+      var notify = form.dataset.notify === '1';
+      var message = notify
+        ? 'Notify me when ' + document.title.replace(/^Hi-fi · /, '') + ' opens.'
+        : collect(form);
       if (!message) {
         fail('Fill in at least one field so we know what you need.');
         return;
@@ -117,7 +126,9 @@
             (data && data.notified === false
               ? 'Your brief is saved, but our own alert did not send. If you hear nothing, email ' +
                 '<a href="mailto:' + CONTACT + '">' + CONTACT + '</a>.'
-              : 'We have your brief and we answer by email, usually the same day.') +
+              : (form.dataset.notify === '1'
+                ? 'You are on the list. One email when it opens, nothing else.'
+                : 'We have your brief and we answer by email, usually the same day.')) +
             '</p>';
           form.replaceWith(ok);
         })

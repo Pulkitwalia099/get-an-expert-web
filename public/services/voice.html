@@ -218,7 +218,7 @@
       <p class="promise">Give us your call list and script. The voice agent makes the calls, qualifies the leads, and sends you the notes.</p>
       <div class="priceline">Price <span class="tbd">TBD</span></div>
       <div class="btnrow">
-        <a class="btn solid" href="#start">Start a run</a>
+        <a class="btn solid" href="#start">Get notified</a>
         <span class="nocard">Hear the agent first</span>
       </div>
 
@@ -228,7 +228,7 @@
           <div class="dt1"><span class="live"></span>Talk to the agent</div>
           <div class="dt2">Same voice that calls your list. Judge it before you buy. <span class="tbd">Demo TBD</span></div>
         </div>
-        <button class="dcall">Call now</button>
+        <button class="dcall">Get notified</button>
       </div>
     </div>
   </section>
@@ -384,26 +384,14 @@
   <!-- 7 · Intake form -->
   <section class="block" id="start">
     <div class="wrap">
-      <div class="shead"><span class="eyebrow">Start a run</span><h2>Four things to set up</h2></div>
-      <div class="form">
+      <div class="shead"><span class="eyebrow">Not open yet</span><h2>Get notified when Voice Outbound opens</h2></div>
+            <div class="form" data-notify="1">
         <div class="field">
-          <label>Your call list</label>
-          <div class="upload">Drop a CSV with names, numbers, and any context you have</div>
+          <label for="notify-email">Your email <small>the only thing we need</small></label>
+          <input id="notify-email" type="email" inputmode="email" autocomplete="email" placeholder="you@company.com">
         </div>
-        <div class="field">
-          <label>Your script <small>or a transcript of a call that worked</small></label>
-          <textarea placeholder="Paste the script, or the transcript you want the agent to learn from"></textarea>
-        </div>
-        <div class="field">
-          <label>What counts as a qualified lead</label>
-          <textarea placeholder="e.g. has budget, is the decision maker, wants a call within 30 days"></textarea>
-        </div>
-        <div class="field">
-          <label>Calling hours and time zone</label>
-          <input type="text" placeholder="e.g. 9am to 5pm Pacific, weekdays only">
-        </div>
-        <div class="btnrow"><a class="btn solid" href="#">Start a run</a></div>
-        <div class="formnote">We come back with a test batch before the full list is called. <span class="tbd">Batch size and SLA TBD</span></div>
+        <div class="btnrow"><a class="btn solid" href="#">Get notified</a></div>
+        <div class="formnote">One email when it opens. We do not add you to anything else.</div>
       </div>
     </div>
   </section>
