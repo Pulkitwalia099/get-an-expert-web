@@ -20,6 +20,15 @@ export type Service = {
   blurb: string;
   /** Headline price. */
   price: string;
+  /**
+   * That same headline price as integer cents, or null where there is not one
+   * number to name: a quote, a rate per lead, a table of templates.
+   *
+   * It exists so a recorded order carries what it listed at without anything
+   * parsing `price` back out of English. Never rendered. The string above is
+   * what a visitor reads, and the two must say the same thing.
+   */
+  priceCents: number | null;
   /** Second line under the price, or null. */
   priceNote: string | null;
   /** True when the price itself is still undecided, so it renders in amber. */
@@ -39,6 +48,7 @@ export const SERVICES: Service[] = [
     blurb:
       'Send your product link and an ad you like. We research it, script it, and send back a finished ad within 24 hours. The actors are AI, not hired creators.',
     price: '$29 first ad',
+    priceCents: 2900,
     priceNote: 'Packs from $395 a month',
     priceOpen: false,
     cta: 'View more',
@@ -55,6 +65,7 @@ export const SERVICES: Service[] = [
     // it is what somebody reads before they buy, and it now answers "is there a
     // minimum" with this same number.
     price: '$99 per 10k',
+    priceCents: 9900,
     priceNote: 'impressions in your relevant audience',
     priceOpen: false,
     cta: 'View more',
@@ -76,6 +87,7 @@ export const SERVICES: Service[] = [
     // intake form still works, and the price is set from real briefs rather
     // than guessed before the first one arrives.
     price: 'Quoted per project',
+    priceCents: null,
     priceNote: 'Quote before any editing starts',
     priceOpen: false,
     cta: 'View more',
@@ -93,6 +105,7 @@ export const SERVICES: Service[] = [
     // visitor this is not buyable yet, so a second line admitting the price is
     // missing adds no information and costs confidence.
     price: 'Per qualified lead',
+    priceCents: null,
     priceNote: null,
     priceOpen: false,
     cta: 'Get notified',
@@ -107,6 +120,7 @@ export const SERVICES: Service[] = [
       'Pick a template, send your product, get a launch-ready explainer video at a fixed price per template.',
     // Same reasoning as Voice Outbound above.
     price: 'Fixed price per template',
+    priceCents: null,
     priceNote: null,
     priceOpen: false,
     cta: 'Get notified',

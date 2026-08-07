@@ -24,6 +24,16 @@
     return document.title.replace(/ · midsesh$/, '').trim();
   }
 
+  /* Which service this is, from the address rather than the heading. The route
+     is /services/<slug> and the slug is a value in lib/services.ts, so it is
+     stable in a way copy is not: the server checks it against the catalogue and
+     drops anything it does not recognise. Deriving it from the title instead
+     would mean a rewritten heading quietly refiling every order after it. */
+  function serviceSlug() {
+    var m = location.pathname.match(/^\/services\/([a-z0-9-]+)\/?$/);
+    return m ? m[1] : '';
+  }
+
   function labelFor(el) {
     var wrap = el.closest('.field');
     var lab = wrap && wrap.querySelector('label');
@@ -118,6 +128,10 @@
           email: email,
           purpose: serviceName(),
           message: message,
+          /* What the order queue keys off. A waitlist address must not sit in
+             the queue looking like work somebody owes an answer to. */
+          serviceSlug: serviceSlug(),
+          orderKind: notify ? 'notify' : 'order',
         }),
       })
         .then(function (r) {
