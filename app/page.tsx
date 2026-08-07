@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import AccountLink from '@/components/AccountLink';
 import Backing from '@/components/Backing';
 import ContactLink from '@/components/ContactLink';
+import HomeHero from '@/components/HomeHero';
 import ServiceCard from '@/components/ServiceCard';
 import SiteFooter from '@/components/SiteFooter';
 import SeamMark from '@/components/SeamMark';
@@ -76,15 +77,11 @@ export default function Home() {
         </nav>
       </header>
 
-      <section className={styles.hero}>
-        <h1>Work, delivered.</h1>
-        <p>
-          Pick a service. An agent does the work, a human expert owns the outcome. You approve
-          before you pay.
-        </p>
-      </section>
+      {/* The V1 split the user chose from the mockup rounds. Its own module
+          holds the styles; the section id below is the primary CTA's target. */}
+      <HomeHero />
 
-      <section className={styles.section}>
+      <section className={styles.section} id="services">
         <div className={styles.wrap}>
           <div className={styles.shead}>
             <span className={styles.eyebrow}>AI plus expert</span>

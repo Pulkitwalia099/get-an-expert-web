@@ -16,23 +16,8 @@
   padding: 0 var(--page-gutter);
 }
 
-.hero {
-  padding: clamp(40px, 7vh, 80px) var(--page-gutter) 8px;
-  text-align: center;
-}
-.hero h1 {
-  font-size: clamp(32px, 5.4vw, 46px);
-  font-weight: 750;
-  letter-spacing: -0.03em;
-  line-height: 1.08;
-}
-.hero p {
-  margin: 14px auto 0;
-  max-width: 520px;
-  font-size: clamp(15px, 2.2vw, 17px);
-  line-height: 1.5;
-  color: var(--ink-2);
-}
+/* The hero lives in components/HomeHero.module.css since the V1 split
+   replaced the centered opener. */
 
 .section { padding: clamp(48px, 8vh, 88px) 0; }
 .shead { text-align: center; margin-bottom: 36px; }
