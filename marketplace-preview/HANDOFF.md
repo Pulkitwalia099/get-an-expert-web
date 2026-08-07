@@ -1,6 +1,6 @@
 # Get-an-Expert Web — Marketplace Pivot: Session Handoff
 
-**Last updated:** 2026-08-06 (session 4 close-out, UGC Ads shipped in 710b988)
+**Last updated:** 2026-08-07 (session 5 close-out, Launch Videos repositioned and priced)
 **Read this first in any new session. It is the single source of truth.**
 
 **New session?** Clone/pull https://github.com/Pulkitwalia099/get-an-expert-web
@@ -9,6 +9,137 @@ live Next.js app. Read the progress log below, then continue from
 "Next session starts at".
 
 ## 0. Progress log
+
+### Session 5 (2026-08-07): Explainer offer, priced and animated
+
+- **`hifi/explainer.html` rebuilt to the LinkedIn Marketeer standard**, on
+  branch `claude/video-creation-marketplace-page-h0o5q1`. Same skeleton and
+  frozen system: header, input to output flow, samples, animated machine,
+  template gallery, pricing, guarantee, intake, FAQ, cross-sell.
+- **Every price on the page is now a number, proposed this session and
+  awaiting the user's review.** Launch teaser 20s $149, Founder to camera
+  45s $299, Problem then product 60s $499, Feature tour 90s $649. A launch
+  kit at $799 bundles the 60s hero, the 20s teaser, and three 15s vertical
+  cutdowns. Reasoning follows the UGC lesson: enough above pure-AI tool
+  pricing that the HUMAN + AGENT badge is payable, far under the $3k-plus
+  agency floor. Open question 5 is answered pending that review.
+- **The offer's spine is watch before you pay.** First cut in 72 hours,
+  watermarked; take it and the clean master follows with the invoice, or
+  walk away owing nothing. One revision round inside the template, returned
+  in 24 hours; a template change is a new video. The narration is generated
+  and the FAQ says so plainly, with a human voice as a quoted extra.
+- **The machine is the buzz centerpiece: 19 nodes, 28 edges, 10 stages**
+  against the LinkedIn machine's 15, 21, and 9. Product link and brief fan
+  into product crawl, review mine, and competitor scan; angle lock; scripts
+  A, B, and C into a retention judge; screen capture, voice track, and
+  motion graphics in parallel into cut assembly; claim, sync, and brand
+  gates; a human Editor finish node; first cut out. Same palette, edge
+  style, node shapes, and 620ms stage cadence as linkedin.html, so the two
+  read as one system.
+- **The output card is an animated player**, this page's equivalent of the
+  LinkedIn post's looping counters: it scrubs a 1:02 virtual video through
+  HOOK, PROBLEM, PRODUCT, PROOF, and ASK with beat ticks on the bar and a
+  counting timestamp. Interval driven, visibility gated, final frame under
+  reduced motion. A comment in the file says how to swap in a real mp4.
+- **Samples are three labelled empty slots** per the video-editing
+  precedent: no borrowed work, amber TBD until our own deliveries land with
+  written permission. The user will supply assets later.
+- **Claim check is a stated promise**: every scripted line must trace to
+  something the product shows on screen. Same ethos as the search route's
+  ranking prompt rule against invented claims.
+- The emoji how-it-works cards are gone from this page; the emoji exception
+  was UGC only, and the machine replaces that section. The home tile price
+  follows to From $149, the way the LinkedIn tile carries $99.
+- **Verified, not assumed:** 0px horizontal overflow at 320, 390, 721, 1024
+  and 1440 on explainer.html and index.html. All 19 nodes and 28 edges
+  render; no SVG label wider than its box; stages light on the 620ms
+  cadence in live headless playback, not a frozen pane. Player fill, beat,
+  and timestamp advance. Zero em dashes and zero exclamation marks in
+  rendered text; the spec-row `i` elements compute font-style normal. Shots
+  re-taken at exact height: explainer 1440x5999 and 390x7449, index
+  1440x2384 and 390x3970.
+- **Second pass, same session, after user review:**
+  - **The SKU is now Product Launch Videos.** The user narrowed the offer:
+    launch videos are the product, and the page and home tile follow. The
+    template gallery and the guarantee strip are deleted on request, and
+    the intake heading is plain "Get started". The file stays
+    `explainer.html` so links and this log keep working; rename it at the
+    Next.js port if wanted.
+  - **Pricing collapsed to two tiers with the templates gone:** the launch
+    video $499, the launch kit $799 (60s hero, 20s teaser, three 15s
+    verticals). The $149 / $299 / $649 per-template ladder went with the
+    gallery. Watch before you pay, the 72 hour first cut, and the single
+    24 hour revision round all stay.
+  - **Samples are a five-card video carousel wired to the user's own
+    launches**, `assets/launch1.mp4` to `launch5.mp4`, with the UGC
+    carousel's centre focus, auto-advance, and one-at-a-time sound
+    toggles. **The files are on the user's desktop and could not reach
+    this cloud session**, so each card degrades to a labelled drop slot
+    and an amber Awaiting upload note shows while any file is missing.
+    The page heals itself when the mp4s are committed; nothing else needs
+    editing.
+  - **Check each launch clip end to end on arrival** (ground rule 7):
+    third party marks, brand names, resolution. Captions are numbered
+    Launch 1 to 5 until the footage can actually be read; rewrite them
+    off the footage, not from memory.
+  - **The machine grew to 22 nodes, 34 edges, and 12 stages, and every
+    agent now carries its real tool**: Firecrawl, Unipile, and Apify on
+    research (Unipile and p5 were the user's own asks), LTX Studio on
+    storyboard, Playwright on screen capture, Runway on b-roll, p5.js on
+    motion graphics, Remotion on cut assembly, ElevenLabs and Suno on
+    sound. Tool names sanity-checked by web search this session. The
+    sound lanes sit after picture lock, which is editorially true and
+    keeps every edge clear of every node box.
+  - **Re-verified:** 0px overflow at 320, 390, 721, 1024, and 1440 on
+    both pages; 22 nodes and 34 edges render with no label wider than its
+    box; the player and the machine animate in live playback; all five
+    sample cards degrade to drop slots and the amber note shows; zero em
+    dashes and zero exclamation marks. Shots re-taken at exact height:
+    explainer 1440x5338 and 390x5434, index 1440x2391 and 390x3957.
+- **Third pass, same session:** the launch page is its own file now.
+  `hifi/launch.html` carries everything the second pass built, and
+  `hifi/explainer.html` is restored byte for byte to its session 3 state,
+  per the user: launch videos are a separate page, not a rewrite of the
+  explainer. The home tile points at launch.html; nothing links to
+  explainer.html until the user decides whether both SKUs stay. Shots:
+  launch-desktop and launch-mobile added, explainer shots restored to
+  their session 3 captures.
+- **Fourth pass, same session, after user review. All of it on
+  launch.html; the restored explainer.html stays untouched.**
+  - **The page sells on the brief now.** Hero reads "Send us a brief",
+    the priceline, the watch-before-pay line, and the Watch it get made
+    button are gone; one See samples button remains. Inputs are two:
+    your brief and your product link. The animated beat player is
+    replaced by the real output slot, wired to `assets/launch1.mp4`.
+  - **Pricing is $200 for the launch video** (up to 60s, delivered
+    within 3 days) **and $500 for the launch kit** (three videos, first
+    cut in 72 hours). No revision row, no pay-when-you-take-it row, no
+    snote under the cards. The pay-related FAQ entries went with them.
+  - **Get started is two fields**, product link and email, button "Get
+    started". We reach out from there; the brief is collected in that
+    conversation, not the form.
+  - **Every tool node in the machine carries a logo chip** in the
+    tool's brand colour. The proxy blocks favicon and GitHub avatar
+    downloads from this sandbox, so the chips are DRAWN stand-ins
+    (flame for Firecrawl, the p5 asterisk, the ElevenLabs bars, brand
+    initials for the rest). The user holds rights to the real logos:
+    drop files in assets/logos/ and set `LOGOS[key] = {img: '...'}` in
+    launch.html to swap any chip for the official mark.
+  - **The launch mp4s are still not in the repo.** The user reports
+    adding them to the assets folder, but no branch on either remote
+    and no upload mount carries them, so the cards and the output slot
+    quietly show their labels. Every card heals the moment
+    `assets/launch1.mp4` to `launch5.mp4` land. **Check each clip end
+    to end on arrival** (ground rule 7).
+  - **Re-verified:** 0px overflow at 320 to 1440 on launch.html and
+    index.html; 22 nodes, 34 edges, 10 chips, all inside their boxes;
+    machine animates; all six video slots degrade quietly; zero em
+    dashes and zero exclamation marks. Shots: launch 1440x4520 and
+    390x4354, index re-taken.
+- **Still open:** the launch1 to launch5 mp4s (user supplies), official
+  logo files for the machine chips, the Get started submit target,
+  whether the restored explainer SKU keeps a home tile, and the prices
+  hold only until the user reviews them.
 
 ### Session 4 (2026-08-06): UGC offer redraft
 
@@ -484,7 +615,7 @@ harden into a fake number by accident.
 | 2 | LinkedIn Marketeer input and output detail | mostly answered by Rohit; price is $100 per 10k | linkedin.html |
 | 3 | Voice Outbound price model, and is the demo real or recorded? | open, **three options now written out with their trade-offs** | voice.html pricing + demo strip |
 | 4 | Video Editing: per video or per finished minute? Sample content? | open, **two options now written out**; no samples exist | video-editing.html pricing + samples |
-| 5 | Explainer Videos: how many templates, what price points? | open, **4 proposed templates drawn**; all prices blank | explainer.html gallery + price table |
+| 5 | Product Launch Videos (was Explainer): price points and samples | **priced by session 5, awaiting user review**: $499 one video, $799 launch kit, first cut in 72 hours. **launch1 to launch5 mp4s awaiting upload** | launch.html pricing + results |
 | 6 | Confirm "Lead Man" = Voice Outbound, or a separate SKU? | open | not on any page yet |
 | 7 | Hero line: "Work, delivered." vs "Agents do the work. Experts own the outcome." | "Work, delivered." is live | index.html hero |
 | 8 | RateMyWipe: exact GitHub repo URL | open | ratemywipe.html run block |
