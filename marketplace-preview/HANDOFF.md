@@ -23,10 +23,13 @@ live Next.js app. Read the progress log below, then continue from
   "Sessions 1 and 2" below still governs everything it does not cover, and the
   new system gets frozen the same way once it is built. Do not treat this as
   permission to improvise generally.
-- **The plan lives in `SWISS-PLAN.md`**, reviewed through plan-room at
-  `SWISS-PLAN.plan-room.html`. 10 tasks, 4 tradeoffs, 8 unknowns, risk low.
-  **Open that file before writing any code.** Four of the tradeoffs and all
-  eight unknowns need the user's answer, and several block the first task.
+- **Everything for the rebuild is in `SWISS-HANDOFF.md`.** The spec with real
+  values, the measured contrast table, the seven things already decided, the
+  five that need the user's eye, the build order and the verification list.
+  Open it before writing any code.
+- **The user decides by looking, not by reading questions.** Session 6 builds
+  `hifi/_decisions.html` first, renders all five open decisions side by side on
+  real content, and asks once. Do not open with a list of questions.
 - **How we got here.** Sessions 1 to 4 built the pages inside the old system.
   A review against github.com/pbakaus/impeccable and taste-skill measured the
   set and found: 26 font sizes with 10 between 10.5px and 15px, 13 corner radii
@@ -42,7 +45,11 @@ live Next.js app. Read the progress log below, then continue from
   built fake previews) and E4 (six one-line cards) were left as the user's call
   and should be raised again once the new language is in place.
 - **Nothing was converted in this session.** No page CSS changed. The only
-  files touched were `SWISS-PLAN.md`, this log, and `START-HERE.md`.
+  files touched were `SWISS-HANDOFF.md`, this log, and `START-HERE.md`.
+- **Measured, so it is not an open question:** hazard red `#E61919` on paper
+  `#F4F4F0` is 4.22:1, which fails AA for body text. Red is legal for large
+  type, rules, fills and icons only. White on red is 4.65:1, so red buttons
+  with white labels are fine.
 
 ### Session 4 (2026-08-06): UGC offer redraft
 
@@ -376,16 +383,16 @@ live Next.js app. Read the progress log below, then continue from
   mobile, are in `hifi/shots/`. If you need to re-shoot, start the static
   server (`.claude/launch.json` has a `marketplace-preview` entry on port
   4319) and shoot against `http://localhost:4319`, not `file://`.
-- **Next session starts at: the Swiss Industrial rebuild. Open `SWISS-PLAN.md`
-  first.** Everything below is now queued behind it, because converting the
-  design language touches every page and doing more work in the old system
-  means converting that too.
-  - **Step 1 is not code.** Answer the 4 tradeoffs and 8 unknowns in the plan.
-    Several block T1: which page converts first, which macro grotesk we can
-    licence, how much analog texture, and what happens to the amber TBD and
-    green ready states under a single accent rule.
-  - **Step 2 is T1 and T2 on one page only**, then stop for approval. The plan
-    says `voice.html` unless the user overrides in the tradeoff.
+- **Next session starts at: the Swiss Industrial rebuild. Open
+  `SWISS-HANDOFF.md` first.** Everything below is queued behind it, because
+  converting the design language touches every page, and more work in the old
+  system just means converting that too.
+  - **Step 1 is `hifi/_decisions.html`**, the five comparisons rendered on real
+    content: the macro grotesk face, what happens to amber and green, how much
+    analog texture, wordmark casing, and the emoji cards. One page, one round
+    of answers, then it gets deleted at the end.
+  - **Step 2 is `voice.html` alone**, then stop for approval before anything
+    else is touched.
   - Queued behind the rebuild, unchanged: the remaining SKU prices (section 7),
     unblocking the UGC launch (items 1a to 1f), and Phase E, the Next.js port
     with six `/services/<slug>` routes. The ~20MB of video still needs to move

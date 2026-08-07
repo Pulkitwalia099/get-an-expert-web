@@ -4,27 +4,27 @@ Paste this as your first message in the new session:
 
 ---
 
-Read `marketplace-preview/HANDOFF.md` section 0, then read
-`marketplace-preview/SWISS-PLAN.md` in full before anything else.
+Read `marketplace-preview/SWISS-HANDOFF.md` and `HANDOFF.md` section 0, then
+start. Everything you need is in those two files.
 
 We are rebuilding the marketplace preview in **Swiss Industrial Print**. I
-picked that language on 2026-08-06 from the five in taste-skill, and the design
-freeze is deliberately lifted for this work only. Ground `#F4F4F0`, carbon ink
-`#050505`, hazard red `#E61919` as the only accent, zero radius, no shadows,
-no gradients, no glass.
+picked it on 2026-08-06 and the design freeze is lifted for this work only.
 
-Clone the language source first, it is the spec you are building to:
+Clone the spec first:
 `git clone --depth 1 https://github.com/leonxlnx/taste-skill /tmp/taste-skill`
-then read `/tmp/taste-skill/skills/brutalist-skill/SKILL.md`, section 2.1 and
+then read `/tmp/taste-skill/skills/brutalist-skill/SKILL.md` section 2.1 and
 sections 3 to 8.
 
-Serve the preview before you look at anything:
+Serve the preview:
 `python3 -m http.server 4319 --directory marketplace-preview/hifi`
 
-Do not write any CSS yet. Start by walking me through the 4 tradeoffs and 8
-unknowns in SWISS-PLAN.md, with a recommendation and the reasoning for each,
-and get my answers. Several of them block task T1. Then convert exactly one
-page and stop for my approval before touching the rest.
+**Your first build is `hifi/_decisions.html`**, the five comparisons in section
+4 of SWISS-HANDOFF.md, rendered on real Voice Outbound content. I decide by
+looking, not by reading questions. Show me all five at once, I answer once,
+then you convert `voice.html` alone and stop for approval.
+
+Do not ask me anything before that page exists. Everything else is already
+decided in section 3.
 
 Do not redesign the UGC offer, prices, promise, videos or copy. That shipped in
 710b988 and this is a visual conversion only.
