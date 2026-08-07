@@ -23,7 +23,22 @@ rule.
   the live "Work, delivered." hero at display size, the search bar, and the
   three SKU tiles with their real badges and prices above the fold.
 
-The four files below are the previous round, built for the expert-intro
+`marketplace/work-delivered/` is the chosen direction (the aurora split) taken
+to a final round: three treatments of "Work, delivered." with the real assets
+and no pricing anywhere. The UGC card shows an actual frame from
+`hifi/assets/sample-1.mp4` styled as a playing video, and becomes an autoplay
+muted loop in the port. The LinkedIn card shows the real post screenshot from
+the linkedin-marketeer-v2 branch with its real 254,950 impressions. Video
+Editing stays an abstract timeline because its page owns the decision not to
+show work that is not ours.
+
+- `v1-classic.html` ink headline, terracotta full stop, three stacked cards.
+- `v2-video.html` "delivered." in terracotta, the UGC video large and
+  dominant, post and timeline tucked beside it.
+- `v3-orb.html` the brand orb as the full stop, cards in a bento grid with an
+  expert sign off strip naming Rohit.
+
+The four files below are the first round, built for the expert-intro
 positioning before the marketplace pivot. Kept for reference.
 
 None of this is wired into the app. These are visual proposals only, to pick a
