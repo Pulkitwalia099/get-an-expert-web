@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Swiss Industrial Print · five decisions · Voice Outbound</title>
+<style>
+  /* Self-hosted latin subsets. No network call, so this sheet renders the same
+     everywhere and offline. Files in assets/fonts/, 170KB total. */
+  @font-face{font-family:'Archivo';font-style:normal;font-weight:400 900;font-stretch:62% 125%;
+    font-display:block;src:url(assets/fonts/archivo-400_900-62_125.woff2) format('woff2');}
+  @font-face{font-family:'Archivo Black';font-style:normal;font-weight:400;
+    font-display:block;src:url(assets/fonts/archivoblack-400.woff2) format('woff2');}
+  @font-face{font-family:'Inter';font-style:normal;font-weight:400 900;
+    font-display:block;src:url(assets/fonts/inter-400_900.woff2) format('woff2');}
+  @font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:400;
+    font-display:block;src:url(assets/fonts/ibmplexmono-400.woff2) format('woff2');}
+  @font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:600;
+    font-display:block;src:url(assets/fonts/ibmplexmono-600.woff2) format('woff2');}
+  @font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:700;
+    font-display:block;src:url(assets/fonts/ibmplexmono-700.woff2) format('woff2');}
+
+  :root{
+    --paper:#F4F4F0; --paper-2:#EAE8E3;
+    --ink:#0A0A0A; --ink-2:#4A4A45; --ink-3:#8E8C84;
+    --red:#E61919;
+    --macro:'Inter','Helvetica Neue',Arial,sans-serif;
+    --macro-wght:900; --macro-wdth:100;
+    --mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;border-radius:0!important;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--paper);color:var(--ink);font-family:var(--mono);
+    font-size:13px;line-height:1.4;-webkit-font-smoothing:antialiased;}
+
+  /* ── structural primitives ─────────────────────────────── */
+  .sheet{width:min(1360px,100%);margin:0 auto;padding:0 clamp(12px,2.4vw,28px);}
+  .rule{border-top:2px solid var(--ink);}
+  .rule-thin{border-top:1px solid var(--ink);}
+  .mono{font-family:var(--mono);text-transform:uppercase;letter-spacing:.09em;}
+  .m10{font-size:10px;} .m11{font-size:11px;} .m12{font-size:12px;}
+  .dim{color:var(--ink-3);} .mid{color:var(--ink-2);} .red{color:var(--red);}
+  .macro{font-family:var(--macro);font-weight:var(--macro-wght);
+    font-variation-settings:'wght' var(--macro-wght),'wdth' var(--macro-wdth);
+    text-transform:uppercase;letter-spacing:-.04em;line-height:.86;}
+
+  /* ── masthead ──────────────────────────────────────────── */
+  .mast{border-bottom:2px solid var(--ink);padding:14px 0 12px;
+    display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;justify-content:space-between;}
+  .mast .lockup{display:flex;align-items:baseline;gap:10px;}
+  .mast .lockup b{font-family:var(--macro);font-weight:900;font-size:15px;
+    text-transform:uppercase;letter-spacing:-.02em;}
+  .sub-ctrl{display:flex;align-items:center;gap:8px;}
+  .sw{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.09em;
+    border:1px solid var(--ink);background:var(--paper);color:var(--ink);
+    padding:5px 9px;cursor:pointer;display:flex;align-items:center;gap:6px;}
+  .sw i{width:9px;height:9px;display:block;border:1px solid var(--ink);}
+  .sw[aria-pressed="true"]{background:var(--ink);color:var(--paper);}
+  .sw[aria-pressed="true"] i{border-color:var(--paper);}
+
+  .hero{padding:26px 0 20px;border-bottom:2px solid var(--ink);}
+  .hero h1{font-family:var(--macro);font-weight:900;text-transform:uppercase;
+    font-size:clamp(46px,11.5vw,168px);line-height:.82;letter-spacing:-.05em;}
+  .hero .strap{margin-top:14px;display:grid;gap:10px;
+    grid-template-columns:1fr;max-width:960px;}
+  @media(min-width:760px){.hero .strap{grid-template-columns:1.1fr 1fr;gap:28px;}}
+  .hero p{font-size:12px;line-height:1.55;color:var(--ink-2);
+    text-transform:uppercase;letter-spacing:.05em;}
+
+  /* answer readout */
+  .readout{position:sticky;top:0;z-index:40;background:var(--ink);color:var(--paper);
+    border-bottom:2px solid var(--ink);}
+  .readout .in{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;
+    padding:9px 0;font-size:11px;text-transform:uppercase;letter-spacing:.1em;}
+  .readout .slots{display:flex;gap:6px;flex-wrap:wrap;}
+  .slot{border:1px solid var(--paper);padding:3px 8px;min-width:44px;text-align:center;
+    font-weight:600;}
+  .slot.set{background:var(--red);border-color:var(--red);}
+  .readout .hint{color:#9A9A93;}
+
+  /* ── section frame ─────────────────────────────────────── */
+  section.dec{border-bottom:2px solid var(--ink);padding:0 0 34px;}
+  .sechead{display:grid;grid-template-columns:auto 1fr;gap:0 16px;
+    align-items:start;padding:22px 0 14px;}
+  .sechead .id{font-family:var(--macro);font-weight:900;text-transform:uppercase;
+    font-size:clamp(40px,7vw,84px);line-height:.78;letter-spacing:-.05em;color:var(--red);
+    margin-top:-.06em;}
+  .sechead .tt h2{font-family:var(--macro);font-weight:900;text-transform:uppercase;
+    font-size:clamp(19px,3.1vw,34px);line-height:.94;letter-spacing:-.035em;}
+  .sechead .tt .q{margin-top:7px;font-size:11px;text-transform:uppercase;
+    letter-spacing:.08em;color:var(--ink-2);max-width:70ch;line-height:1.5;}
+
+  /* option rack: 1px hairlines from a black parent */
+  .rack{display:grid;gap:1px;background:var(--ink);border:1px solid var(--ink);}
+  .r2{grid-template-columns:1fr;} .r4{grid-template-columns:1fr;}
+  @media(min-width:640px){.r4{grid-template-columns:1fr 1fr;} .r2{grid-template-columns:1fr 1fr;}}
+  @media(min-width:1040px){.r4{grid-template-columns:repeat(4,1fr);}}
+  /* text-align is explicit: <button> centres by default and Swiss ranges left. */
+  .opt{background:var(--paper);position:relative;cursor:pointer;text-align:left;
+    display:flex;flex-direction:column;min-width:0;font:inherit;color:inherit;border:0;}
+  .opt:focus-visible{outline:3px solid var(--red);outline-offset:-3px;}
+  .opt .ohead{display:flex;align-items:center;justify-content:space-between;gap:8px;
+    padding:8px 12px;border-bottom:1px solid var(--ink);background:var(--paper-2);}
+  .opt .oid{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;}
+  .opt .opick{width:13px;height:13px;border:1px solid var(--ink);flex:none;}
+  .opt[aria-pressed="true"] .ohead{background:var(--red);color:#fff;}
+  .opt[aria-pressed="true"] .opick{background:#fff;border-color:#fff;}
+  .opt[aria-pressed="true"]{box-shadow:inset 0 0 0 3px var(--red);}
+  .obody{padding:16px 12px;flex:1;display:flex;flex-direction:column;justify-content:center;
+    min-height:150px;overflow:hidden;}
+  .rack.tight .obody{min-height:0;padding:14px 12px;}
+  .ofoot{border-top:1px solid var(--ink);padding:7px 12px;font-size:10px;
+    text-transform:uppercase;letter-spacing:.07em;color:var(--ink-2);line-height:1.45;}
+  .ofoot b{color:var(--ink);font-weight:600;}
+
+  /* ── A · type specimens ────────────────────────────────── */
+  /* One size for all four, set so the widest face still fits the panel.
+     Changing this per face would defeat the comparison. */
+  .spec{font-weight:900;text-transform:uppercase;letter-spacing:-.045em;line-height:.84;
+    font-size:clamp(26px,3.3vw,40px);}
+  .spec-sub{margin-top:12px;font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;
+    color:var(--ink-2);line-height:1.5;}
+  .f-inter{font-family:'Inter',sans-serif;font-variation-settings:'wght' 900;}
+  .f-archivo{font-family:'Archivo Black','Archivo',sans-serif;font-weight:400;}
+  .f-helv{font-family:'Helvetica Neue','Helvetica','Arial',sans-serif;font-weight:900;}
+  .f-wide{font-family:'Archivo',sans-serif;font-variation-settings:'wght' 900,'wdth' 125;
+    font-weight:900;}
+
+  /* ── B · semantic colour ───────────────────────────────── */
+  .bstack{display:flex;flex-direction:column;gap:11px;}
+  .chip{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;
+    font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.11em;
+    border:1px solid var(--ink);padding:3px 8px;}
+  .flagline{font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;}
+  .outrow{display:flex;flex-direction:column;gap:4px;font-size:10.5px;
+    text-transform:uppercase;letter-spacing:.06em;}
+  .tbdrow{display:flex;flex-wrap:wrap;gap:6px;padding-top:9px;border-top:1px solid var(--ink);}
+  .tbd{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;
+    padding:3px 7px;border:1px solid currentColor;}
+  /* B1 all red */
+  .b1 .chip{color:var(--red);border-color:var(--red);}
+  .b1 .flagline,.b1 .yes{color:var(--red);} .b1 .no{color:var(--ink-3);}
+  .b1 .tbd{color:var(--red);}
+  /* B2 red = unresolved only */
+  .b2 .chip{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+  .b2 .flagline,.b2 .yes{color:var(--ink);} .b2 .no{color:var(--ink-3);}
+  .b2 .tbd{color:var(--red);}
+  /* B3 red = status, hazard stripe = unresolved */
+  .b3 .chip{color:var(--red);border-color:var(--red);}
+  .b3 .flagline,.b3 .yes{color:var(--red);} .b3 .no{color:var(--ink-3);}
+  .b3 .tbd{color:var(--ink);border-color:var(--ink);
+    background:repeating-linear-gradient(45deg,#F4F4F0 0 4px,#DCDAD3 4px 8px);}
+  /* B4 one green survives */
+  .b4 .chip{color:#1F7A2E;border-color:#1F7A2E;}
+  .b4 .flagline,.b4 .yes{color:#1F7A2E;} .b4 .no{color:var(--ink-3);}
+  .b4 .tbd{color:var(--red);}
+
+  /* ── C · analog texture ────────────────────────────────── */
+  .card{border:1px solid var(--ink);background:#fff;padding:13px;position:relative;
+    display:flex;flex-direction:column;gap:10px;overflow:hidden;}
+  .card .ctag{position:absolute;right:9px;top:9px;font-size:8.5px;font-weight:700;
+    letter-spacing:.11em;color:var(--red);border:1px solid var(--red);padding:2px 6px;}
+  .cwho{display:flex;align-items:center;gap:9px;}
+  .cav{flex:none;width:34px;height:34px;
+    background:radial-gradient(circle at 34% 28%,#D8D8D2,#6E6E66 66%,#22221E);}
+  .cnm{height:6px;width:74px;background:var(--ink);}
+  .csb{height:5px;width:50px;background:#B9B7B0;margin-top:5px;}
+  .wave{display:flex;align-items:flex-end;gap:2px;height:30px;}
+  .wave i{flex:1;background:var(--ink);min-height:2px;}
+  .cmeta{display:flex;justify-content:space-between;font-size:9px;
+    text-transform:uppercase;letter-spacing:.08em;color:var(--ink-2);
+    border-top:1px solid var(--ink);padding-top:7px;}
+  .cflag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;
+    color:var(--red);}
+  .grain::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.62;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='4' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='180' height='180' filter='url(%23n)' opacity='0.42'/></svg>");}
+  .half .cav,.half .wave{position:relative;}
+  .half .cav::after,.half .wave::after{content:"";position:absolute;inset:0;
+    pointer-events:none;mix-blend-mode:screen;
+    background-image:radial-gradient(#fff 0.9px,transparent 1.1px);background-size:3px 3px;}
+  .misreg .cflag{text-shadow:1.6px 0 0 rgba(230,25,25,.85);}
+  .misreg .ctag{transform:rotate(-1.1deg);}
+  .misreg .cnm{box-shadow:1.4px 0 0 rgba(230,25,25,.8);}
+  .wear{position:relative;}
+  .wear::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:2;
+    background:repeating-linear-gradient(96deg,transparent 0 26px,rgba(10,10,10,.035) 26px 27px,transparent 27px 62px);}
+
+  /* ── D · wordmark ──────────────────────────────────────── */
+  .bar{border:1px solid var(--ink);background:var(--paper-2);
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:11px 13px;flex-wrap:wrap;}
+  .bar nav{display:flex;gap:13px;font-size:9.5px;text-transform:uppercase;
+    letter-spacing:.11em;color:var(--ink-2);}
+  .wm{font-family:var(--macro);font-weight:900;letter-spacing:-.035em;line-height:1;
+    font-size:clamp(19px,2.5vw,26px);display:flex;align-items:baseline;gap:6px;}
+  .wm .reg{font-size:.58em;letter-spacing:0;transform:translateY(-.5em);color:var(--red);
+    font-family:var(--mono);font-weight:400;}
+  .wm .unit{font-family:var(--mono);font-size:9.5px;font-weight:600;letter-spacing:.12em;
+    border-left:1px solid var(--ink);padding-left:8px;transform:translateY(-.15em);
+    color:var(--ink-2);}
+  .wm.lower{text-transform:lowercase;}
+  .wm.upper{text-transform:uppercase;}
+
+  /* ── E · how-it-works cards ────────────────────────────── */
+  .steps{display:grid;gap:1px;background:var(--ink);border:1px solid var(--ink);
+    grid-template-columns:1fr;}
+  @media(min-width:520px){.steps{grid-template-columns:1fr 1fr;}}
+  @media(min-width:900px){.steps{grid-template-columns:repeat(4,1fr);}}
+  .step{background:var(--paper);padding:13px 12px 14px;display:flex;flex-direction:column;gap:7px;}
+  .step.main{background:var(--ink);color:var(--paper);}
+  .step.main .sp{color:#C9C7BF;} .step.main .mark{color:var(--red);}
+  .step h3{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.045em;
+    line-height:1.25;}
+  .step .sp{font-size:10px;text-transform:uppercase;letter-spacing:.05em;
+    color:var(--ink-2);line-height:1.5;}
+  .step .mark{line-height:1;}
+  .mark.emoji{font-size:24px;}
+  .mark.num{font-family:var(--macro);font-weight:900;font-size:clamp(34px,4.6vw,50px);
+    letter-spacing:-.05em;color:var(--red);}
+  .mark.glyph{display:block;height:26px;}
+  .mark.glyph svg{height:26px;width:26px;display:block;stroke:currentColor;fill:none;
+    stroke-width:1.6;shape-rendering:geometricPrecision;}
+  .mark.none{font-family:var(--mono);font-size:9.5px;font-weight:600;letter-spacing:.14em;
+    color:var(--ink-3);border-bottom:2px solid var(--ink);padding-bottom:6px;}
+  .step.main .mark.none{border-bottom-color:var(--red);color:#C9C7BF;}
+
+  .foot{padding:26px 0 60px;display:grid;gap:16px;}
+  .foot .big{font-family:var(--macro);font-weight:900;text-transform:uppercase;
+    font-size:clamp(22px,3.6vw,40px);letter-spacing:-.04em;line-height:.92;}
+  .note{border:1px solid var(--ink);padding:12px 13px;font-size:10.5px;
+    text-transform:uppercase;letter-spacing:.06em;line-height:1.6;color:var(--ink-2);
+    max-width:none;}
+  .note b{color:var(--red);}
+  .crosshair{display:flex;justify-content:space-between;padding:5px 0;
+    font-size:10px;color:var(--ink-3);letter-spacing:.1em;}
+</style>
+</head>
+<body>
+
+<div class="sheet">
+
+  <!-- MASTHEAD -->
+  <header class="mast">
+    <div class="lockup">
+      <b>MIDSESH<span style="color:var(--red)">®</span></b>
+      <span class="mono m10 dim">SWISS INDUSTRIAL PRINT / DECISION SHEET / REV 01</span>
+    </div>
+    <div class="sub-ctrl">
+      <span class="mono m10 dim">SUBSTRATE RED (NOT ONE OF THE FIVE)</span>
+      <button class="sw" data-red="#E61919" aria-pressed="true"><i style="background:#E61919"></i>SPEC E61919</button>
+      <button class="sw" data-red="#C4593C" aria-pressed="false"><i style="background:#C4593C"></i>BRAND C4593C</button>
+    </div>
+  </header>
+</div>
+
+<!-- STICKY READOUT -->
+<div class="readout">
+  <div class="sheet in">
+    <span>YOUR ANSWER</span>
+    <span class="slots">
+      <span class="slot" id="s-A">A—</span>
+      <span class="slot" id="s-B">B—</span>
+      <span class="slot" id="s-C">C—</span>
+      <span class="slot" id="s-D">D—</span>
+      <span class="slot" id="s-E">E—</span>
+    </span>
+    <span class="hint" id="hint">CLICK A PANEL IN EACH ROW. READ THE LINE BACK TO ME.</span>
+  </div>
+</div>
+
+<div class="sheet">
+
+  <!-- HERO -->
+  <div class="hero">
+    <h1>FIVE<br>DECISIONS</h1>
+    <div class="strap">
+      <p>Every specimen below is real Voice Outbound content. Nothing is lorem, nothing is invented. The face you pick in row A is applied to rows B through E as you click, so you are always judging one system and not four.</p>
+      <p>Rows are independent. Pick one panel per row. Row A drives the type on the whole sheet. The red switch above is a substrate control, not a decision.</p>
+    </div>
+  </div>
+
+  <!-- ══ A · MACRO GROTESK FACE ══════════════════════════ -->
+  <section class="dec">
+    <div class="sechead">
+      <div class="id">A</div>
+      <div class="tt">
+        <h2>The macro grotesk face</h2>
+        <div class="q">Set at the headline size the page actually uses. Same tracking, same leading, same word.</div>
+      </div>
+    </div>
+    <div class="rack r4" data-group="A">
+      <button class="opt" data-id="A1" data-font="'Inter',sans-serif" data-wght="900" data-wdth="100">
+        <div class="ohead"><span class="oid">A1 · INTER BLACK</span><span class="opick"></span></div>
+        <div class="obody"><div class="spec f-inter">VOICE<br>OUTBOUND</div>
+          <div class="spec-sub">AGENT + HUMAN QA<br>WGT 900 / TRK −0.045EM</div></div>
+        <div class="ofoot"><b>Tall x-height, wide apertures.</b> Reads modern rather than 1960s.</div>
+      </button>
+      <button class="opt" data-id="A2" data-font="'Archivo Black',sans-serif" data-wght="400" data-wdth="100">
+        <div class="ohead"><span class="oid">A2 · ARCHIVO BLACK</span><span class="opick"></span></div>
+        <div class="obody"><div class="spec f-archivo">VOICE<br>OUTBOUND</div>
+          <div class="spec-sub">AGENT + HUMAN QA<br>SINGLE WEIGHT / TRK −0.045EM</div></div>
+        <div class="ofoot"><b>Narrower, heavier, poster grade.</b> One weight only, so no light companion.</div>
+      </button>
+      <button class="opt" data-id="A3" data-font="'Helvetica Neue',Helvetica,Arial,sans-serif" data-wght="900" data-wdth="100">
+        <div class="ohead"><span class="oid">A3 · HELVETICA NEUE BLACK</span><span class="opick"></span></div>
+        <div class="obody"><div class="spec f-helv">VOICE<br>OUTBOUND</div>
+          <div class="spec-sub">AGENT + HUMAN QA<br>WGT 900 / TRK −0.045EM</div></div>
+        <div class="ofoot"><b>The actual Swiss original.</b> Native on Mac, substitutes to Arial elsewhere.</div>
+      </button>
+      <button class="opt" data-id="A4" data-font="'Archivo',sans-serif" data-wght="900" data-wdth="125">
+        <div class="ohead"><span class="oid">A4 · ARCHIVO EXPANDED</span><span class="opick"></span></div>
+        <div class="obody"><div class="spec f-wide">VOICE<br>OUTBOUND</div>
+          <div class="spec-sub">AGENT + HUMAN QA<br>WGT 900 / WDT 125 / TRK −0.045EM</div></div>
+        <div class="ofoot"><b>Widest, most machined.</b> Long SKU names will wrap sooner.</div>
+      </button>
+    </div>
+  </section>
+
+  <!-- ══ B · AMBER AND GREEN ═════════════════════════════ -->
+  <section class="dec">
+    <div class="sechead">
+      <div class="id">B</div>
+      <div class="tt">
+        <h2>Amber and green under one accent</h2>
+        <div class="q">Today green marks qualified and amber marks TBD. One accent means one of those meanings loses its colour. Each panel shows the real qualified tag, the real booked flag, both sample-call outcomes and three real TBD markers.</div>
+      </div>
+    </div>
+    <div class="rack r4" data-group="B">
+      <button class="opt" data-id="B1">
+        <div class="ohead"><span class="oid">B1 · EVERYTHING RED</span><span class="opick"></span></div>
+        <div class="obody"><div class="bstack b1">
+          <span class="chip">QUALIFIED</span>
+          <span class="flagline">Meeting booked for Thursday</span>
+          <span class="outrow"><span class="yes">▸ MEETING BOOKED</span><span class="no">▸ NOT A FIT, REMOVED FROM LIST</span></span>
+          <span class="tbdrow"><span class="tbd">PRICE TBD</span><span class="tbd">DEMO TBD</span><span class="tbd">SCOPE TBD</span></span>
+        </div></div>
+        <div class="ofoot"><b>Most orthodox.</b> A booked meeting and an unanswered question look identical.</div>
+      </button>
+      <button class="opt" data-id="B2">
+        <div class="ohead"><span class="oid">B2 · RED = UNRESOLVED</span><span class="opick"></span></div>
+        <div class="obody"><div class="bstack b2">
+          <span class="chip">QUALIFIED</span>
+          <span class="flagline">Meeting booked for Thursday</span>
+          <span class="outrow"><span class="yes">▸ MEETING BOOKED</span><span class="no">▸ NOT A FIT, REMOVED FROM LIST</span></span>
+          <span class="tbdrow"><span class="tbd">PRICE TBD</span><span class="tbd">DEMO TBD</span><span class="tbd">SCOPE TBD</span></span>
+        </div></div>
+        <div class="ofoot"><b>Red keeps its native meaning.</b> Success drops to solid ink and stops being scannable.</div>
+      </button>
+      <button class="opt" data-id="B3">
+        <div class="ohead"><span class="oid">B3 · RED = STATUS</span><span class="opick"></span></div>
+        <div class="obody"><div class="bstack b3">
+          <span class="chip">QUALIFIED</span>
+          <span class="flagline">Meeting booked for Thursday</span>
+          <span class="outrow"><span class="yes">▸ MEETING BOOKED</span><span class="no">▸ NOT A FIT, REMOVED FROM LIST</span></span>
+          <span class="tbdrow"><span class="tbd">PRICE TBD</span><span class="tbd">DEMO TBD</span><span class="tbd">SCOPE TBD</span></span>
+        </div></div>
+        <div class="ofoot"><b>TBD becomes a hazard stripe, not a colour.</b> Keeps both meanings, adds a texture.</div>
+      </button>
+      <button class="opt" data-id="B4">
+        <div class="ohead"><span class="oid">B4 · ONE GREEN SURVIVES</span><span class="opick"></span></div>
+        <div class="obody"><div class="bstack b4">
+          <span class="chip">QUALIFIED</span>
+          <span class="flagline">Meeting booked for Thursday</span>
+          <span class="outrow"><span class="yes">▸ MEETING BOOKED</span><span class="no">▸ NOT A FIT, REMOVED FROM LIST</span></span>
+          <span class="tbdrow"><span class="tbd">PRICE TBD</span><span class="tbd">DEMO TBD</span><span class="tbd">SCOPE TBD</span></span>
+        </div></div>
+        <div class="ofoot"><b>Breaks the rule once, on purpose.</b> Green only ever means qualified, nowhere else.</div>
+      </button>
+    </div>
+  </section>
+
+  <!-- ══ C · ANALOG TEXTURE ══════════════════════════════ -->
+  <section class="dec">
+    <div class="sechead">
+      <div class="id">C</div>
+      <div class="tt">
+        <h2>How much analog texture</h2>
+        <div class="q">The same call summary card, four times. Texture is applied per panel, not to the sheet, so C0 is genuinely clean. Look at this at arm's length and then at 30cm.</div>
+      </div>
+    </div>
+    <div class="rack r4" data-group="C">
+      <button class="opt" data-id="C0">
+        <div class="ohead"><span class="oid">C0 · NONE</span><span class="opick"></span></div>
+        <div class="obody"><div class="card">
+          <span class="ctag">QUALIFIED</span>
+          <div class="cwho"><div class="cav"></div><div><div class="cnm"></div><div class="csb"></div></div></div>
+          <div class="wave"><i style="height:18%"></i><i style="height:34%"></i><i style="height:62%"></i><i style="height:41%"></i><i style="height:78%"></i><i style="height:52%"></i><i style="height:88%"></i><i style="height:36%"></i><i style="height:64%"></i><i style="height:94%"></i><i style="height:44%"></i><i style="height:70%"></i><i style="height:28%"></i><i style="height:58%"></i><i style="height:82%"></i><i style="height:39%"></i></div>
+          <div class="cmeta"><span>CALL 3:12</span><span>REC + TRANSCRIPT</span></div>
+          <div class="cflag">MEETING BOOKED FOR THURSDAY</div>
+        </div></div>
+        <div class="ofoot"><b>Pure vector.</b> Cleanest, and closest to every other SaaS page.</div>
+      </button>
+      <button class="opt" data-id="C1">
+        <div class="ohead"><span class="oid">C1 · GRAIN</span><span class="opick"></span></div>
+        <div class="obody"><div class="card grain">
+          <span class="ctag">QUALIFIED</span>
+          <div class="cwho"><div class="cav"></div><div><div class="cnm"></div><div class="csb"></div></div></div>
+          <div class="wave"><i style="height:18%"></i><i style="height:34%"></i><i style="height:62%"></i><i style="height:41%"></i><i style="height:78%"></i><i style="height:52%"></i><i style="height:88%"></i><i style="height:36%"></i><i style="height:64%"></i><i style="height:94%"></i><i style="height:44%"></i><i style="height:70%"></i><i style="height:28%"></i><i style="height:58%"></i><i style="height:82%"></i><i style="height:39%"></i></div>
+          <div class="cmeta"><span>CALL 3:12</span><span>REC + TRANSCRIPT</span></div>
+          <div class="cflag">MEETING BOOKED FOR THURSDAY</div>
+        </div></div>
+        <div class="ofoot"><b>Paper grain only.</b> Invisible on a phone, visible on a retina desktop.</div>
+      </button>
+      <button class="opt" data-id="C2">
+        <div class="ohead"><span class="oid">C2 · GRAIN + HALFTONE</span><span class="opick"></span></div>
+        <div class="obody"><div class="card grain half">
+          <span class="ctag">QUALIFIED</span>
+          <div class="cwho"><div class="cav"></div><div><div class="cnm"></div><div class="csb"></div></div></div>
+          <div class="wave"><i style="height:18%"></i><i style="height:34%"></i><i style="height:62%"></i><i style="height:41%"></i><i style="height:78%"></i><i style="height:52%"></i><i style="height:88%"></i><i style="height:36%"></i><i style="height:64%"></i><i style="height:94%"></i><i style="height:44%"></i><i style="height:70%"></i><i style="height:28%"></i><i style="height:58%"></i><i style="height:82%"></i><i style="height:39%"></i></div>
+          <div class="cmeta"><span>CALL 3:12</span><span>REC + TRANSCRIPT</span></div>
+          <div class="cflag">MEETING BOOKED FOR THURSDAY</div>
+        </div></div>
+        <div class="ofoot"><b>Photo and waveform screen to dots.</b> This is the one that will hit real client footage.</div>
+      </button>
+      <button class="opt" data-id="C3">
+        <div class="ohead"><span class="oid">C3 · FULL PRESS</span><span class="opick"></span></div>
+        <div class="obody"><div class="card grain half misreg wear">
+          <span class="ctag">QUALIFIED</span>
+          <div class="cwho"><div class="cav"></div><div><div class="cnm"></div><div class="csb"></div></div></div>
+          <div class="wave"><i style="height:18%"></i><i style="height:34%"></i><i style="height:62%"></i><i style="height:41%"></i><i style="height:78%"></i><i style="height:52%"></i><i style="height:88%"></i><i style="height:36%"></i><i style="height:64%"></i><i style="height:94%"></i><i style="height:44%"></i><i style="height:70%"></i><i style="height:28%"></i><i style="height:58%"></i><i style="height:82%"></i><i style="height:39%"></i></div>
+          <div class="cmeta"><span>CALL 3:12</span><span>REC + TRANSCRIPT</span></div>
+          <div class="cflag">MEETING BOOKED FOR THURSDAY</div>
+        </div></div>
+        <div class="ofoot"><b>Adds misregistration and plate wear.</b> Strongest character, reads as broken to some.</div>
+      </button>
+    </div>
+  </section>
+
+  <!-- ══ D · WORDMARK CASING ═════════════════════════════ -->
+  <section class="dec">
+    <div class="sechead">
+      <div class="id">D</div>
+      <div class="tt">
+        <h2>Wordmark casing</h2>
+        <div class="q">In the real titlebar, with the real nav. The orb from the current site is gone either way, since Swiss has no gradient discs.</div>
+      </div>
+    </div>
+    <div class="rack r2 tight" data-group="D">
+      <button class="opt" data-id="D1">
+        <div class="ohead"><span class="oid">D1 · LOWERCASE</span><span class="opick"></span></div>
+        <div class="obody"><div class="bar"><span class="wm lower">midsesh</span>
+          <nav><span>ALL SERVICES</span><span>CONTACT</span><span>SIGN IN</span></nav></div></div>
+        <div class="ofoot"><b>Keeps continuity with what is live.</b> The only lowercase thing left on the page.</div>
+      </button>
+      <button class="opt" data-id="D2">
+        <div class="ohead"><span class="oid">D2 · UPPERCASE</span><span class="opick"></span></div>
+        <div class="obody"><div class="bar"><span class="wm upper">midsesh</span>
+          <nav><span>ALL SERVICES</span><span>CONTACT</span><span>SIGN IN</span></nav></div></div>
+        <div class="ofoot"><b>Matches every other label on the sheet.</b> Loses the friendly read of the name.</div>
+      </button>
+      <button class="opt" data-id="D3">
+        <div class="ohead"><span class="oid">D3 · UPPERCASE + ®</span><span class="opick"></span></div>
+        <div class="obody"><div class="bar"><span class="wm upper">midsesh<span class="reg">®</span></span>
+          <nav><span>ALL SERVICES</span><span>CONTACT</span><span>SIGN IN</span></nav></div></div>
+        <div class="ofoot"><b>The mark as structure, per the spec.</b> Note the trademark is not actually registered.</div>
+      </button>
+      <button class="opt" data-id="D4">
+        <div class="ohead"><span class="oid">D4 · UPPERCASE + UNIT ID</span><span class="opick"></span></div>
+        <div class="obody"><div class="bar"><span class="wm upper">midsesh<span class="unit">VOICE / SKU-04</span></span>
+          <nav><span>ALL SERVICES</span><span>CONTACT</span><span>SIGN IN</span></nav></div></div>
+        <div class="ofoot"><b>Titlebar tells you which page you are on.</b> One more thing to maintain per page.</div>
+      </button>
+    </div>
+  </section>
+
+  <!-- ══ E · EMOJI CARDS ═════════════════════════════════ -->
+  <section class="dec">
+    <div class="sechead">
+      <div class="id">E</div>
+      <div class="tt">
+        <h2>The emoji cards</h2>
+        <div class="q">The real How it works row, four times, with the real copy and the real emphasised third card. Emoji were asked for explicitly on UGC, so keeping them is a live option and not an oversight.</div>
+      </div>
+    </div>
+
+    <div class="rack" style="grid-template-columns:1fr" data-group="E">
+      <button class="opt" data-id="E1">
+        <div class="ohead"><span class="oid">E1 · KEEP THE EMOJI</span><span class="opick"></span></div>
+        <div class="obody" style="min-height:0;padding:12px"><div class="steps">
+          <div class="step"><span class="mark emoji">📇</span><h3>We load your list</h3><p class="sp">Numbers, script, and your qualifying criteria.</p></div>
+          <div class="step"><span class="mark emoji">☎️</span><h3>The agent calls</h3><p class="sp">Through the list, on the hours you set.</p></div>
+          <div class="step main"><span class="mark emoji">🧑‍⚖️</span><h3>A human checks the calls</h3><p class="sp">Before any lead is marked qualified.</p></div>
+          <div class="step"><span class="mark emoji">📋</span><h3>You get the notes</h3><p class="sp">Outcome, notes, and the recording for each call.</p></div>
+        </div></div>
+        <div class="ofoot"><b>Colour and roundness inside a system that has neither.</b> Zero build cost, already shipped on UGC.</div>
+      </button>
+
+      <button class="opt" data-id="E2">
+        <div class="ohead"><span class="oid">E2 · INDEX NUMERALS</span><span class="opick"></span></div>
+        <div class="obody" style="min-height:0;padding:12px"><div class="steps">
+          <div class="step"><span class="mark num">01</span><h3>We load your list</h3><p class="sp">Numbers, script, and your qualifying criteria.</p></div>
+          <div class="step"><span class="mark num">02</span><h3>The agent calls</h3><p class="sp">Through the list, on the hours you set.</p></div>
+          <div class="step main"><span class="mark num">03</span><h3>A human checks the calls</h3><p class="sp">Before any lead is marked qualified.</p></div>
+          <div class="step"><span class="mark num">04</span><h3>You get the notes</h3><p class="sp">Outcome, notes, and the recording for each call.</p></div>
+        </div></div>
+        <div class="ofoot"><b>The face does the work and the order becomes explicit.</b> Nothing depicts the step.</div>
+      </button>
+
+      <button class="opt" data-id="E3">
+        <div class="ohead"><span class="oid">E3 · DRAWN MARKS</span><span class="opick"></span></div>
+        <div class="obody" style="min-height:0;padding:12px"><div class="steps">
+          <div class="step"><span class="mark glyph"><svg viewBox="0 0 26 26" aria-hidden="true"><rect x="2.5" y="4.5" width="21" height="17"/><path d="M2.5 9.5h21M2.5 14.5h21M2.5 19.5h21M8.5 4.5v17"/></svg></span><h3>We load your list</h3><p class="sp">Numbers, script, and your qualifying criteria.</p></div>
+          <div class="step"><span class="mark glyph"><svg viewBox="0 0 26 26" aria-hidden="true"><path d="M4.5 3.5h5l2 6-3 2c1.2 3.4 3.6 5.8 7 7l2-3 6 2v5h-3C10.9 22.5 3.5 15.1 3.5 6.5v-3z"/></svg></span><h3>The agent calls</h3><p class="sp">Through the list, on the hours you set.</p></div>
+          <div class="step main"><span class="mark glyph"><svg viewBox="0 0 26 26" aria-hidden="true"><rect x="3.5" y="3.5" width="19" height="19"/><path d="M7.5 13.5l4 4 7-8"/></svg></span><h3>A human checks the calls</h3><p class="sp">Before any lead is marked qualified.</p></div>
+          <div class="step"><span class="mark glyph"><svg viewBox="0 0 26 26" aria-hidden="true"><path d="M5.5 3.5h15v19h-15z"/><path d="M9.5 1.5h7v4h-7z"/><path d="M9 11.5h8M9 15.5h8M9 19h5"/></svg></span><h3>You get the notes</h3><p class="sp">Outcome, notes, and the recording for each call.</p></div>
+        </div></div>
+        <div class="ofoot"><b>Drawn pictograms, one colour, no font dependency.</b> Four more assets to keep consistent.</div>
+      </button>
+
+      <button class="opt" data-id="E4">
+        <div class="ohead"><span class="oid">E4 · NO MARK AT ALL</span><span class="opick"></span></div>
+        <div class="obody" style="min-height:0;padding:12px"><div class="steps">
+          <div class="step"><span class="mark none">STEP 01 / INTAKE</span><h3>We load your list</h3><p class="sp">Numbers, script, and your qualifying criteria.</p></div>
+          <div class="step"><span class="mark none">STEP 02 / DIAL</span><h3>The agent calls</h3><p class="sp">Through the list, on the hours you set.</p></div>
+          <div class="step main"><span class="mark none">STEP 03 / REVIEW</span><h3>A human checks the calls</h3><p class="sp">Before any lead is marked qualified.</p></div>
+          <div class="step"><span class="mark none">STEP 04 / HANDOFF</span><h3>You get the notes</h3><p class="sp">Outcome, notes, and the recording for each call.</p></div>
+        </div></div>
+        <div class="ofoot"><b>Pure type and rule weight.</b> Most disciplined, and the row stops being scannable at a glance.</div>
+      </button>
+    </div>
+  </section>
+
+  <!-- FOOT -->
+  <div class="foot">
+    <div class="crosshair"><span>+</span><span>+</span><span>+</span><span>+</span></div>
+    <div class="big" id="footline">READ THE LINE AT THE TOP BACK TO ME</div>
+    <div class="note">
+      One line is enough, for example <b>A2 B3 C1 D3 E2</b>. I convert voice.html alone and stop for approval before anything else is touched.
+    </div>
+    <div class="note">
+      Assumption on record, tell me if it is wrong: <b>SWISS-HANDOFF.md is not in the pushed repo</b>, so section 3 could not be read.
+      The accent above defaults to the spec hazard red E61919, with the existing brand red C4593C behind the switch in the masthead.
+      If section 3 already fixed the accent, say which and it is a one token change.
+    </div>
+    <div class="crosshair"><span class="mono m10 dim">MIDSESH® / DECISION SHEET</span><span class="mono m10 dim">VOICE OUTBOUND / SKU-04</span><span class="mono m10 dim">REV 01</span></div>
+  </div>
+
+</div>
+
+<script>
+  var picks = {A:null,B:null,C:null,D:null,E:null};
+  var root = document.documentElement;
+
+  function paint(){
+    var done = 0;
+    ['A','B','C','D','E'].forEach(function(g){
+      var el = document.getElementById('s-'+g);
+      if (picks[g]) { el.textContent = picks[g]; el.classList.add('set'); done++; }
+      else { el.textContent = g+'—'; el.classList.remove('set'); }
+    });
+    var hint = document.getElementById('hint');
+    var foot = document.getElementById('footline');
+    if (done === 5) {
+      var line = picks.A+' '+picks.B+' '+picks.C+' '+picks.D+' '+picks.E;
+      hint.textContent = 'COMPLETE. SEND: ' + line;
+      foot.textContent = line;
+    } else {
+      hint.textContent = 'CLICK A PANEL IN EACH ROW. READ THE LINE BACK TO ME. ('+done+'/5)';
+      foot.textContent = 'READ THE LINE AT THE TOP BACK TO ME';
+    }
+  }
+
+  document.querySelectorAll('.rack[data-group]').forEach(function(rack){
+    var group = rack.getAttribute('data-group');
+    rack.querySelectorAll('.opt').forEach(function(opt){
+      opt.setAttribute('type','button');
+      opt.setAttribute('aria-pressed','false');
+      opt.addEventListener('click', function(){
+        rack.querySelectorAll('.opt').forEach(function(o){ o.setAttribute('aria-pressed','false'); });
+        opt.setAttribute('aria-pressed','true');
+        picks[group] = opt.getAttribute('data-id');
+        if (group === 'A') {
+          root.style.setProperty('--macro', opt.getAttribute('data-font'));
+          root.style.setProperty('--macro-wght', opt.getAttribute('data-wght'));
+          root.style.setProperty('--macro-wdth', opt.getAttribute('data-wdth'));
+        }
+        paint();
+      });
+    });
+  });
+
+  document.querySelectorAll('.sw').forEach(function(sw){
+    sw.addEventListener('click', function(){
+      document.querySelectorAll('.sw').forEach(function(s){ s.setAttribute('aria-pressed','false'); });
+      sw.setAttribute('aria-pressed','true');
+      root.style.setProperty('--red', sw.getAttribute('data-red'));
+    });
+  });
+
+  paint();
+</script>
+</body>
+</html>
