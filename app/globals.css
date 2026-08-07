@@ -1755,3 +1755,115 @@ a.cta { text-decoration: none; display: inline-block; }
 @media (hover: hover) and (pointer: fine) {
   .dash-more:hover { color: var(--ink); }
 }
+
+/* ---------- Experts page ---------- */
+/* A scrolling marketing page over the same aurora background. Styling is
+   intentionally light; the copy and the two diagrams do the work. */
+.exp {
+  position: relative; z-index: 1;
+  max-width: 780px; margin: 0 auto;
+  padding: clamp(40px, 7vw, 80px) 22px 100px;
+  color: var(--ink);
+}
+.exp-nav {
+  display: inline-block; margin-bottom: 40px;
+  font-size: 13px; font-weight: 500; color: var(--ink-3); text-decoration: none;
+  transition: color .2s var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .exp-nav:hover { color: var(--accent); }
+}
+
+.exp-tag {
+  display: inline-block;
+  font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--accent-deep); background: var(--accent-tint);
+  border: 1px solid rgba(196, 89, 60, .22);
+  padding: 4px 10px; border-radius: 999px; margin-bottom: 18px;
+}
+.exp-hero h1 {
+  font-size: clamp(30px, 6vw, 46px); font-weight: 650; line-height: 1.08;
+  letter-spacing: -0.022em; margin-bottom: 18px;
+}
+.exp-lead { font-size: clamp(16px, 2.4vw, 19px); color: var(--ink-2); line-height: 1.6; max-width: 60ch; }
+.exp-hero-cta { margin-top: 28px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.exp-hero-cta .cta { text-decoration: none; }
+.exp-hero-note { font-size: 13px; color: var(--ink-3); }
+
+.exp-section { margin-top: clamp(48px, 8vw, 84px); }
+.exp-section h2 {
+  font-size: clamp(22px, 3.6vw, 30px); font-weight: 650; letter-spacing: -0.018em; margin-bottom: 14px;
+}
+.exp-section h3 {
+  font-size: 18px; font-weight: 650; letter-spacing: -0.01em; margin: 34px 0 10px;
+}
+.exp-section p { font-size: 16px; color: var(--ink-2); line-height: 1.65; max-width: 62ch; }
+.exp-section p + p { margin-top: 12px; }
+
+.exp-steps { list-style: none; margin: 22px 0 0; display: flex; flex-direction: column; gap: 14px; }
+.exp-step { display: flex; gap: 13px; align-items: flex-start; }
+.exp-step .n {
+  flex: none; width: 26px; height: 26px; border-radius: 50%;
+  background: var(--accent); color: #fff; font-size: 13px; font-weight: 700;
+  display: grid; place-items: center; margin-top: 1px;
+}
+.exp-step .t { font-size: 15.5px; color: var(--ink-2); line-height: 1.55; }
+.exp-step .t b { color: var(--ink); font-weight: 650; }
+
+.exp-figure {
+  margin: 26px 0 6px; padding: 20px 16px;
+  background: rgba(255, 255, 255, .5);
+  border: 1px solid rgba(255, 255, 255, .7);
+  outline: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  box-shadow: 0 12px 30px rgba(45, 32, 22, .06);
+  overflow-x: auto; scrollbar-width: none;
+}
+.exp-figure::-webkit-scrollbar { display: none; }
+.exp-figure svg { display: block; width: 100%; min-width: 600px; height: auto; }
+/* The dense machine diagram breaks out of the text column so the whole
+   machine, ending at YOU, is visible without scrolling on desktop. */
+.exp-figure.wide {
+  width: min(1000px, calc(100vw - 32px));
+  position: relative; left: 50%; transform: translateX(-50%);
+}
+.exp-figure.wide svg { min-width: 860px; }
+/* Every diagram ships landscape and portrait variants. Desktop shows the
+   landscape one; under 560px the portrait variant swaps in, full width, so
+   phones never scroll a diagram sideways. */
+.exp-figure svg.d-mobile,
+.exp-figure.wide svg.d-mobile { display: none; min-width: 0; }
+@media (max-width: 560px) {
+  .exp-figure svg.d-desktop,
+  .exp-figure.wide svg.d-desktop { display: none; }
+  .exp-figure svg.d-mobile,
+  .exp-figure.wide svg.d-mobile { display: block; }
+  .exp-figure.wide { width: 100%; left: auto; transform: none; }
+}
+
+/* Join form: category chips above the email row. */
+.exp-cats { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 12px; }
+.exp-other { width: 100%; margin-bottom: 10px; }
+.exp-figcap { font-size: 13px; color: var(--ink-3); line-height: 1.55; margin-top: 8px; }
+
+.exp-earn { list-style: none; margin: 18px 0 0; display: flex; flex-direction: column; gap: 10px; }
+.exp-earn li { position: relative; padding-left: 22px; font-size: 15.5px; color: var(--ink-2); line-height: 1.55; }
+.exp-earn li::before {
+  content: ""; position: absolute; left: 2px; top: 8px;
+  width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
+}
+.exp-earn b { color: var(--ink); font-weight: 650; }
+
+.exp-faq { margin-top: 22px; display: flex; flex-direction: column; gap: 18px; }
+.exp-q { font-size: 16px; font-weight: 650; color: var(--ink); margin-bottom: 5px; }
+.exp-a { font-size: 15px; color: var(--ink-2); line-height: 1.6; max-width: 62ch; }
+
+.exp-join {
+  margin-top: 24px; padding: 22px;
+  background: rgba(255, 255, 255, .55);
+  border: 1px solid rgba(255, 255, 255, .7);
+  outline: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  box-shadow: 0 12px 30px rgba(45, 32, 22, .06);
+}
+.exp-join p { margin-bottom: 14px; }
