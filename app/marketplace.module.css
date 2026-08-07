@@ -66,7 +66,6 @@
 }
 @media (hover: hover) and (pointer: fine) {
   .card:hover { transform: translateY(-3px); box-shadow: 0 18px 36px -14px rgba(45, 32, 22, .22); }
-  .card:hover .cta { transform: translateX(3px); }
 }
 .card:active { transform: scale(0.99); }
 
@@ -96,9 +95,20 @@
 .price { font-size: 13.5px; font-weight: 750; }
 .price small { display: block; font-size: 11px; font-weight: 400; color: var(--ink-3); margin-top: 2px; }
 .priceOpen { color: var(--amber); }
+/* A bordered pill, not a bare coloured word. Next to a price, an unboxed
+   accent-coloured phrase reads as another label rather than the thing to
+   press, which is the whole point of it being there. */
 .cta {
-  font-size: 13px; font-weight: 650; color: var(--accent-deep); white-space: nowrap;
-  transition: transform 180ms var(--ease-out);
+  flex: none;
+  font-size: 12.5px; font-weight: 660; white-space: nowrap;
+  color: var(--accent-deep);
+  border: 1px solid rgba(168, 69, 44, .3);
+  background: rgba(255, 255, 255, .7);
+  border-radius: 999px; padding: 7px 14px;
+  transition: transform 180ms var(--ease-out), background 180ms var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .card:hover .cta { background: var(--accent-deep); color: #fff; border-color: transparent; }
 }
 
 /* One media box for all three, whatever is inside it. flex:none so a card with

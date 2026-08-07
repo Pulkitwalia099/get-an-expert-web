@@ -41,7 +41,7 @@ export const SERVICES: Service[] = [
     price: '$29 first ad',
     priceNote: 'Packs from $395 a month',
     priceOpen: false,
-    cta: 'Start for $29',
+    cta: 'View more',
     media: 'video',
   },
   {
@@ -54,7 +54,7 @@ export const SERVICES: Service[] = [
     price: '$100 per 10k',
     priceNote: 'impressions in your relevant audience',
     priceOpen: false,
-    cta: 'See details',
+    cta: 'View more',
     media: 'post',
   },
   {
@@ -69,7 +69,7 @@ export const SERVICES: Service[] = [
     price: 'Price TBD',
     priceNote: null,
     priceOpen: true,
-    cta: 'See details',
+    cta: 'View more',
     media: 'timeline',
   },
   {
