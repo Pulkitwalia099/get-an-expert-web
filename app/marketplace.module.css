@@ -128,25 +128,89 @@
 .thumbVideo { background: linear-gradient(150deg, #3A2E26, #211E1A 55%, #4A2E20); }
 .thumbVideo video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 
-.thumbPost { background: #fff; border: 1px solid rgba(33, 30, 26, .12); }
-/* object-position: top, not the default centre. See the note in ServiceCard:
-   the middle of a post crop is anonymous body text, the top is the part that
-   reads as LinkedIn without being read. */
-.postShot {
-  position: absolute; inset: 0;
-  width: 100%; height: 100%;
-  object-fit: cover; object-position: top;
+/* The post tile is the live card, not a picture of one, so this box only has
+   to hold it. Ground it in the page rather than in white: the card carries its
+   own white and needs something to sit on. */
+.thumbPost {
+  background: linear-gradient(150deg, #F3EFE7, #EFE9DF);
+  display: grid; place-items: center; padding: 9px;
 }
-/* Ours, not part of the screenshot, and deliberately styled so it cannot be
-   mistaken for one. The figure is what that post actually earned. */
-.postStat {
-  position: absolute; right: 8px; bottom: 8px;
-  font-size: 10px; font-weight: 650; letter-spacing: .01em;
-  color: #fff; background: rgba(20, 24, 28, .72);
-  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
-  border-radius: 999px; padding: 4px 9px;
-  font-variant-numeric: tabular-nums;
+
+/* ---- The LinkedIn post, rebuilt at tile size ----
+   Same card as the hero on /services/linkedin. Sizes are stepped down from
+   that one rather than scaled with a transform, because a transform would blur
+   the type at fractional scales and make the whole card one flat layer to a
+   screen reader. Real text costs nothing extra and stays sharp. */
+.liCard {
+  position: relative;
+  width: 100%; max-width: 320px;
+  background: #fff; border: 1px solid rgba(33, 30, 26, .12);
+  border-radius: 9px; padding: 10px 10px 8px;
+  box-shadow: 0 10px 22px -12px rgba(45, 32, 22, .3);
+  color: #211E1A;
 }
+/* Inside the card, not hanging off the top edge the way the page hero does:
+   the tile clips its overflow, so a negative offset would cut this in half. */
+.liLive {
+  position: absolute; right: 9px; top: -1px;
+  font-size: 8px; font-weight: 700; letter-spacing: .08em;
+  color: #2F7A3D; background: #fff;
+  border: 1px solid rgba(62, 155, 79, .4);
+  border-radius: 999px; padding: 2px 7px;
+}
+.liHead { display: flex; gap: 7px; align-items: flex-start; }
+.liAv {
+  flex: none; width: 30px; height: 30px; border-radius: 50%;
+  display: block; object-fit: cover;
+  background: radial-gradient(circle at 34% 30%, #E8C9B0, #A87B5A 70%, #6B4A33);
+}
+.liId { min-width: 0; flex: 1; }
+.liName { font-size: 11px; font-weight: 700; line-height: 1.25; }
+.liSub, .liTime {
+  font-size: 8.5px; color: rgba(0, 0, 0, .55); line-height: 1.3;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.liBug {
+  flex: none; width: 15px; height: 15px; border-radius: 3px;
+  background: #0A66C2; display: grid; place-items: center;
+}
+.liText { margin-top: 7px; font-size: 9.5px; line-height: 1.4; color: rgba(0, 0, 0, .88); }
+.liMore { color: rgba(0, 0, 0, .5); }
+.liSocial {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 6px; margin-top: 7px; padding-bottom: 6px;
+  border-bottom: 1px solid rgba(0, 0, 0, .08);
+  font-size: 8px; color: rgba(0, 0, 0, .55); white-space: nowrap;
+}
+.liSocial b { font-weight: 600; font-variant-numeric: tabular-nums; }
+.liReacts { display: flex; align-items: center; gap: 4px; }
+.liEmoji { display: flex; }
+.liEmoji span {
+  width: 12px; height: 12px; border-radius: 50%; font-size: 7px;
+  display: grid; place-items: center; border: 1.2px solid #fff;
+}
+.liEmoji span:nth-child(1) { background: #DCEBFF; z-index: 3; }
+.liEmoji span:nth-child(2) { background: #FFE3DE; margin-left: -4px; z-index: 2; }
+.liEmoji span:nth-child(3) { background: #FFF3D6; margin-left: -4px; z-index: 1; }
+.liActions {
+  display: flex; justify-content: space-around; gap: 4px;
+  padding: 5px 0; font-size: 8.5px; font-weight: 650;
+  color: rgba(0, 0, 0, .6); border-bottom: 1px solid rgba(0, 0, 0, .08);
+  white-space: nowrap;
+}
+.liImpr {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 6px; padding-top: 6px; font-size: 9px; white-space: nowrap;
+}
+.liImprN { display: flex; align-items: center; }
+/* The payoff. Everything above it is context for this number. */
+.liImpr b { font-weight: 700; font-variant-numeric: tabular-nums; }
+.liBars { display: inline-flex; align-items: flex-end; gap: 1.5px; margin-right: 5px; }
+.liBars i { width: 2.5px; background: rgba(0, 0, 0, .55); border-radius: 1px; }
+.liBars i:nth-child(1) { height: 4px; }
+.liBars i:nth-child(2) { height: 6px; }
+.liBars i:nth-child(3) { height: 9px; }
+.liVa { color: #0A66C2; font-weight: 650; }
 
 /* The clip's own background colour, so the box is already the right colour
    before a single frame has decoded. A dark placeholder here is what made this

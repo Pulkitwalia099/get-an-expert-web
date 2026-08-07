@@ -1,3 +1,4 @@
+import LinkedInPostTile from '@/components/LinkedInPostTile';
 import styles from '@/app/marketplace.module.css';
 import type { Service } from '@/lib/services';
 
@@ -36,28 +37,10 @@ export default function ServiceCard({ service, dim = false }: { service: Service
       )}
 
       {service.media === 'post' && (
+        // The same card the LinkedIn page leads with, counters and all. Built
+        // rather than screenshotted: see the note in LinkedInPostTile.
         <div className={`${styles.thumb} ${styles.thumbPost}`}>
-          {/* A real post, and one of ours: this is the founder's own, which is
-              why it can be shown at all. The other four in the page carousel
-              belong to other people.
-
-              The screenshot is portrait and the box is 16:10, so it is pinned
-              to the top rather than centred. Cover from the middle of a post
-              is a band of body text that could be anything; the top is the
-              avatar, the name and the first line, which reads as LinkedIn at
-              a glance. The number the post actually earned is the payoff, so
-              it is stated in our own chip rather than left inside a crop that
-              would have to be unreadably small to include it. */}
-          <img
-            className={styles.postShot}
-            src="/media/li-tile.png"
-            alt="A LinkedIn post from the founder's account"
-            /* Not lazy. This card is in the first screen of the grid, so
-               deferring it trades a visible empty box for bytes that were
-               going to be fetched a moment later anyway. */
-            fetchPriority="high"
-          />
-          <span className={styles.postStat}>254,950 impressions</span>
+          <LinkedInPostTile />
         </div>
       )}
 
