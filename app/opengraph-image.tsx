@@ -45,7 +45,11 @@ export default function Image() {
         </svg>
         <div style={{ fontSize: 84, fontWeight: 700, letterSpacing: -2, marginTop: 8 }}>midsesh</div>
         <div style={{ fontSize: 32, color: '#5F594E', marginTop: 14 }}>
-          Describe what you need. An expert picks it up.
+          {/* The line the page it represents actually leads with. The
+              previous one described the expert search, which moved to
+              /search-experts when the marketplace took the front door, so
+              every shared link was unfurling a different product. */}
+          An agent does the work. A human expert owns the outcome.
         </div>
       </div>
     ),
