@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Brand directions — premium exploration</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif; background:#ECEAE4; color:#211E1A; }
+  .intro { max-width:900px; margin:0 auto; padding:48px 20px 8px; }
+  .intro h1 { font-size:26px; letter-spacing:-0.02em; }
+  .intro p { margin-top:8px; color:#5F594E; font-size:14.5px; line-height:1.5; max-width:640px; }
+  .dir { max-width:900px; margin:36px auto; padding:0 20px; }
+  .dir .meta { margin-bottom:12px; }
+  .dir .meta .label { font-size:11px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:#9E3F24; }
+  .dir .meta h2 { font-size:19px; margin-top:4px; }
+  .dir .meta p { font-size:13.5px; color:#5F594E; margin-top:4px; max-width:640px; line-height:1.5; }
+  .frame { border-radius:18px; overflow:hidden; box-shadow:0 24px 60px -20px rgba(45,32,22,.35); border:1px solid rgba(33,30,26,.1); }
+
+  /* ============ DIRECTION A — Warm Editorial ============ */
+  .da { background:#F6F3ED; padding:56px 32px; text-align:center; position:relative;
+    background-image: radial-gradient(46vw 34vh at 14% 6%, rgba(255,196,156,.5), transparent 68%),
+                      radial-gradient(40vw 32vh at 88% 10%, rgba(206,190,255,.42), transparent 70%); }
+  .da .serif { font-family:"Fraunces","Iowan Old Style",Georgia,serif; }
+  .da h3 { font-size:38px; font-weight:560; letter-spacing:-0.015em; line-height:1.1; }
+  .da h3 em { font-style:italic; color:#9E3F24; }
+  .da .sub { margin:14px auto 0; max-width:440px; color:#5F594E; font-size:15px; line-height:1.55; }
+  .da .tile { margin:34px auto 0; max-width:560px; background:rgba(255,255,255,.8);
+    border:1px solid rgba(33,30,26,.08); border-radius:20px; padding:24px; text-align:left;
+    display:flex; gap:18px; box-shadow:0 16px 40px -16px rgba(45,32,22,.2); }
+  .da .tile .t-body { flex:1; }
+  .da .kicker { font-family:"Fraunces",Georgia,serif; font-style:italic; font-size:13px; color:#9E3F24; }
+  .da .tile h4 { font-family:"Fraunces",Georgia,serif; font-size:22px; font-weight:560; margin-top:6px; }
+  .da .tile p { font-size:13.5px; color:#5F594E; line-height:1.5; margin-top:8px; }
+  .da .tile .row { display:flex; justify-content:space-between; align-items:center; margin-top:14px; }
+  .da .price { font-size:13px; font-weight:700; }
+  .da .go { font-size:13px; font-weight:650; color:#9E3F24; border-bottom:1.5px solid #9E3F24; padding-bottom:1px; }
+  .da .thumb { flex:none; width:96px; border-radius:14px; background:linear-gradient(160deg,#4A3B30,#211E1A 60%,#5A3423);
+    display:grid; place-items:center; color:#F6F3ED; font-size:14px; }
+  .da .notes { margin-top:20px; font-size:12px; color:#8B8375; }
+
+  /* ============ DIRECTION B — Dark Premium ============ */
+  .db { background:#171410; padding:56px 32px; text-align:center; position:relative; }
+  .db::before { content:""; position:absolute; inset:0;
+    background: radial-gradient(40vw 30vh at 50% -10%, rgba(196,89,60,.22), transparent 70%); pointer-events:none; }
+  .db > * { position:relative; }
+  .db h3 { color:#F6F3ED; font-size:36px; font-weight:700; letter-spacing:-0.03em; }
+  .db h3 span { color:#E8A184; }
+  .db .sub { margin:14px auto 0; max-width:440px; color:rgba(246,243,237,.62); font-size:15px; line-height:1.55; }
+  .db .tile { margin:34px auto 0; max-width:560px; text-align:left; display:flex; gap:18px;
+    background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.1); border-radius:20px; padding:24px;
+    backdrop-filter:blur(8px); }
+  .db .tile .t-body { flex:1; }
+  .db .kicker { font-size:10.5px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:#E8A184; }
+  .db .tile h4 { color:#F6F3ED; font-size:20px; font-weight:700; margin-top:6px; }
+  .db .tile p { font-size:13.5px; color:rgba(246,243,237,.6); line-height:1.5; margin-top:8px; }
+  .db .tile .row { display:flex; justify-content:space-between; align-items:center; margin-top:14px; }
+  .db .price { font-size:13px; font-weight:700; color:#F6F3ED; }
+  .db .go { font-size:12.5px; font-weight:650; color:#171410; background:#E8A184; border-radius:999px; padding:7px 16px; }
+  .db .thumb { flex:none; width:96px; border-radius:14px; background:linear-gradient(160deg,#3A2E26,#0E0C09 60%,#4A2E20);
+    border:1px solid rgba(255,255,255,.08); display:grid; place-items:center; color:#E8A184; font-size:14px; }
+  .db .notes { margin-top:20px; font-size:12px; color:rgba(246,243,237,.4); }
+
+  /* ============ DIRECTION C — Swiss Catalog ============ */
+  .dc { background:#FFFFFF; padding:0; }
+  .dc .top { padding:44px 32px 28px; border-bottom:1px solid #211E1A; }
+  .dc .catline { font-size:10.5px; font-weight:700; letter-spacing:.18em; text-transform:uppercase; display:flex; justify-content:space-between; }
+  .dc h3 { font-size:40px; font-weight:800; letter-spacing:-0.035em; line-height:1.02; margin-top:14px; text-transform:uppercase; }
+  .dc h3 span { color:#9E3F24; }
+  .dc .grid { display:grid; grid-template-columns:repeat(3,1fr); }
+  .dc .cell { border-right:1px solid rgba(33,30,26,.15); padding:20px; min-height:170px; display:flex; flex-direction:column; }
+  .dc .cell:last-child { border-right:none; }
+  .dc .cell .no { font-size:10.5px; font-weight:700; letter-spacing:.14em; color:#8B8375; }
+  .dc .cell h4 { font-size:16px; font-weight:800; letter-spacing:-0.01em; margin-top:10px; text-transform:uppercase; }
+  .dc .cell p { font-size:12.5px; color:#5F594E; line-height:1.5; margin-top:8px; flex:1; }
+  .dc .cell .row { display:flex; justify-content:space-between; align-items:center; margin-top:12px;
+    border-top:1px solid rgba(33,30,26,.15); padding-top:10px; }
+  .dc .price { font-size:12px; font-weight:800; }
+  .dc .go { font-size:11.5px; font-weight:800; text-transform:uppercase; letter-spacing:.06em; color:#9E3F24; }
+  .dc .cell.first { background:#F6F3ED; }
+  .dc .notes { padding:14px 32px; font-size:12px; color:#8B8375; border-top:1px solid rgba(33,30,26,.15); }
+
+  .verdict { max-width:900px; margin:0 auto 60px; padding:0 20px; font-size:13.5px; color:#5F594E; line-height:1.6; }
+  .verdict b { color:#211E1A; }
+</style>
+</head>
+<body>
+
+<div class="intro">
+  <h1>Three premium directions</h1>
+  <p>Same content, three levels of brand ambition. Each frame shows the hero line and the UGC tile (A and B) or the catalog grid (C). Recommendation at the bottom.</p>
+</div>
+
+<!-- A -->
+<div class="dir">
+  <div class="meta">
+    <span class="label">Direction A</span>
+    <h2>Warm Editorial</h2>
+    <p>Keeps the current cream and terracotta but adds a serif display face (Fraunces), italic accents, and more air. Lowest migration cost, feels like a funded consumer brand. Reference class: Linear's warmth meets a Kinfolk-style editorial.</p>
+  </div>
+  <div class="frame da">
+    <h3 class="serif">Work, <em>delivered.</em></h3>
+    <p class="sub">Pick a service. An agent does the work, a human expert owns the outcome. You approve before you pay.</p>
+    <div class="tile">
+      <div class="t-body">
+        <span class="kicker">Human + Agent · Sample first</span>
+        <h4>UGC Ads</h4>
+        <p>Send your product link and an ad you like. We research it, script it, and send back a finished UGC video.</p>
+        <div class="row"><span class="price">Pay only if you like it</span><span class="go">Start a sample →</span></div>
+      </div>
+      <div class="thumb">▶</div>
+    </div>
+    <div class="notes">Serif headlines, sans body · italic accent word · underline links instead of buttons</div>
+  </div>
+</div>
+
+<!-- B -->
+<div class="dir">
+  <div class="meta">
+    <span class="label">Direction B</span>
+    <h2>Dark Premium</h2>
+    <p>Ink-black canvas, cream type, terracotta glow. The most "funded startup" look and the biggest departure. Video samples look outstanding on dark. Risk: loses the warm, human, approachable feel that suits a human-in-the-loop marketplace.</p>
+  </div>
+  <div class="frame db">
+    <h3>Work, <span>delivered.</span></h3>
+    <p class="sub">Pick a service. An agent does the work, a human expert owns the outcome. You approve before you pay.</p>
+    <div class="tile">
+      <div class="t-body">
+        <span class="kicker">Human + Agent · Sample first</span>
+        <h4>UGC Ads</h4>
+        <p>Send your product link and an ad you like. We research it, script it, and send back a finished UGC video.</p>
+        <div class="row"><span class="price">Pay only if you like it</span><span class="go">Start a sample</span></div>
+      </div>
+      <div class="thumb">▶</div>
+    </div>
+    <div class="notes">Dark canvas · glass tiles · pill CTAs · best-in-class for video samples</div>
+  </div>
+</div>
+
+<!-- C -->
+<div class="dir">
+  <div class="meta">
+    <span class="label">Direction C</span>
+    <h2>Swiss Catalog</h2>
+    <p>White, hairline rules, uppercase grotesque, numbered SKUs in a strict grid. Treats services like a product catalog, which is exactly what a marketplace is. Very confident, very fundable, slightly colder. Pairs well with a serif accent later.</p>
+  </div>
+  <div class="frame dc">
+    <div class="top">
+      <div class="catline"><span>Midsesh — Services</span><span>06 SKUs</span></div>
+      <h3>Work,<br><span>Delivered.</span></h3>
+    </div>
+    <div class="grid">
+      <div class="cell first">
+        <span class="no">01 · Human + Agent</span>
+        <h4>UGC Ads</h4>
+        <p>Product link and a reference ad in. Finished UGC video out. Pay only if you like it.</p>
+        <div class="row"><span class="price">Sample first</span><span class="go">Start →</span></div>
+      </div>
+      <div class="cell">
+        <span class="no">02 · Human + Agent</span>
+        <h4>LinkedIn Marketeer</h4>
+        <p>Posts, comments, and outreach in your voice, human reviewed.</p>
+        <div class="row"><span class="price">TBD</span><span class="go">Details →</span></div>
+      </div>
+      <div class="cell">
+        <span class="no">03 · Agent · Free</span>
+        <h4>RateMyWipe</h4>
+        <p>Your wipe coding rated 1 to 5, with the skill packs to level up. Open source.</p>
+        <div class="row"><span class="price">Free</span><span class="go">Rate it →</span></div>
+      </div>
+    </div>
+    <div class="notes">Hairline grid · numbered SKUs · uppercase grotesque · catalog confidence</div>
+  </div>
+</div>
+
+<div class="verdict">
+  <b>Recommendation:</b> Direction A as the base. It keeps the brand equity you already approved, reads premium enough for a fundraise, and is the cheapest to port. Borrow two things from B and C: use a dark section behind the UGC sample videos (samples glow on dark, the rest stays warm), and adopt C's numbered SKU labels (01 to 06) as a quiet catalog signal inside the existing tile design. If you want one swing for the fences before the raise, A with a dark video section is it.
+</div>
+
+</body>
+</html>

@@ -1,0 +1,191 @@
+/* The hero. One column on a phone: headline, sub, search bar, chip row, four
+   steps, all inside one screen. Mobile first, so the base rules are the phone
+   and the min-width block relaxes them. Tokens come from globals.css.
+
+   The budget is the whole design here. A normal marketing hero breathes at
+   32px between blocks and costs two screens; this one has to end with the
+   fourth step still visible on a 390 by 844 phone, so the type scale is tight
+   and the gaps are the smallest ones that still separate the blocks. */
+
+.hero {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  /* The page column, so the four steps at the bottom of the hero start and end
+     on the same axis as every section below them. Before this the hero was
+     pinned to 720 while the sections widened at desktop, which put the first
+     heading on the page 160px inside all the others.
+
+     The blocks above the steps do not want this width: a headline and a search
+     bar stretched to 1040 read as a banner. They keep the 720 column through
+     .column below, which is also the chat window's width, so opening the chat
+     still does not move the page sideways. */
+  max-width: calc(var(--page-max) + var(--page-gutter) * 2);
+  margin: 0 auto;
+  padding: 24px var(--page-gutter) 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* The hero's own reading column. Everything except the steps sits in it. */
+.column {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+/* ---------- Headline ---------- */
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  text-align: center;
+  animation: rise 260ms var(--ease-out) both;
+}
+
+.headline {
+  font-size: clamp(27px, 7vw, 34px);
+  line-height: 1.16;
+  font-weight: 650;
+  letter-spacing: -0.024em;
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+.sub {
+  max-width: 32em;
+  margin: 0 auto;
+  font-size: 14.5px;
+  line-height: 1.45;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+
+/* ---------- The search bar ---------- */
+/* The one thing on the page you are meant to touch. It is a glass pill on the
+   sand rather than a panel, so the aurora behind it still shows through. */
+
+.form {
+  margin-top: 18px;
+  animation: rise 260ms var(--ease-out) 60ms both;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 7px 7px 16px;
+  border-radius: 999px;
+  cursor: text;
+  background: var(--glass-strong);
+  border: 1px solid rgba(33, 30, 26, .10);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .9),
+    0 10px 26px rgba(45, 32, 22, .08);
+  transition: border-color 180ms var(--ease-out);
+}
+
+.bar:focus-within { border-color: rgba(196, 89, 60, .45); }
+
+/* Keyboard focus gets a ring; a tap or a click gets the border alone, because
+   a ring on every touch reads as an error state. */
+.bar:has(.input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  /* 16px or iOS Safari zooms the whole page on focus. */
+  font-size: 16px;
+  line-height: 1.4;
+  color: var(--ink);
+  caret-color: var(--accent);
+}
+
+.input::placeholder { color: var(--ink-3); }
+
+.go {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border: none;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(168, 69, 44, .32);
+  transition: transform 160ms var(--ease-out), background 160ms var(--ease-out);
+}
+
+.go:active { transform: scale(0.97); }
+
+.go:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .go:hover { background: var(--accent-deep); }
+}
+
+/* ---------- Slots ---------- */
+/* TryChips and HowItWorks were both spaced for a page that scrolls. Inside the
+   hero they are stacked blocks in a fixed budget, so the wrappers trim the
+   padding they brought with them. Element selectors, so neither component has
+   to expose a class for this. */
+
+.chips {
+  animation: rise 260ms var(--ease-out) 120ms both;
+}
+
+.chips > div { padding: 14px 0 6px; }
+
+.steps {
+  animation: rise 260ms var(--ease-out) 180ms both;
+}
+
+/* Both selectors carry the :last-of-type the section uses for its own bottom
+   padding, otherwise that rule outranks these. */
+.steps > section,
+.steps > section:last-of-type {
+  padding: 12px 0 16px;
+  gap: 13px;
+}
+
+/* ---------- Entrance ---------- */
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- Wider than a phone ---------- */
+
+@media (min-width: 561px) {
+  .hero { padding-top: 40px; }
+  .head { gap: 9px; }
+  .sub { font-size: 15.5px; }
+  .form { margin-top: 20px; }
+  .bar { padding: 8px 8px 8px 20px; }
+  .go { width: 42px; height: 42px; }
+  .chips > div { padding: 16px 0 6px; }
+  .steps > section,
+  .steps > section:last-of-type { padding: 18px 0 16px; }
+}
+
+/* globals.css already stops every animation for these visitors. Repeated here
+   so this file is honest on its own. */
+@media (prefers-reduced-motion: reduce) {
+  .head, .form, .chips, .steps { animation: none; }
+  .go, .bar { transition: none; }
+}

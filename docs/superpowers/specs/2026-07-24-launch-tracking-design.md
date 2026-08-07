@@ -62,7 +62,7 @@ transition points, all carrying `flow`:
 | `email_shown` | phase enters `email` |
 | `intro_submitted` | `submitIntro` succeeds (plus `kind`, `count`) |
 | `choice_shown` | dev flow phase enters `choice` |
-| `install_clicked` | GetUnstuck copy (plus `tool`) |
+| `mcp_install_copied` | GetUnstuck copy (plus `tool`, `command`) |
 | `dev_email_submitted` | GetUnstuck email sent |
 
 Names are snake_case and stable. Renaming later splits history in PostHog.

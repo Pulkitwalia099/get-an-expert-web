@@ -1,82 +1,100 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+import { useState } from 'react';
+import { track } from '@/lib/analytics';
+import styles from '@/components/ExpertSignup.module.css';
+import type { Flow } from '@/components/flows';
+import { isValidEmail } from '@/lib/email';
+import { NO_CAPTURE } from '@/lib/replay';
 
-// The join form: pick a craft, leave an email. Backend wiring is a follow-up;
-// for now it validates and confirms locally. Nothing is stored.
+// The intros route trims longer text anyway; stopping here keeps the request
+// small and the field honest about how much it wants.
+const MAX_NEED_CHARS = 600;
 
-const CATEGORIES = [
-  'LinkedIn or X ghostwriting',
-  'Cold email',
-  'Email marketing',
-  'Video and UGC',
-  'Reddit marketing',
-  'Clay and enrichment',
-  'Something else',
-];
-
-export default function ExpertSignup() {
-  const [category, setCategory] = useState<string | null>(null);
-  const [other, setOther] = useState('');
+// The freelancer branch. Someone who wants work rather than help gets a short
+// application in the same thread instead of a dead end. Owns its API call;
+// the parent only reacts to the outcome.
+export default function ExpertSignup({
+  flow,
+  sessionId,
+  onSent,
+  onFailed,
+}: {
+  flow: Flow;
+  sessionId: string;
+  onSent: (email: string) => void;
+  onFailed: () => void;
+}) {
   const [email, setEmail] = useState('');
-  const [done, setDone] = useState(false);
+  const [need, setNeed] = useState('');
+  const [invalid, setInvalid] = useState(false);
+  const [sending, setSending] = useState(false);
 
-  const validEmail = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim());
-  const isOther = category === 'Something else';
-  const craft = isOther ? other.trim() : category;
-
-  function submit(e: FormEvent) {
-    e.preventDefault();
-    if (!validEmail) return;
-    setDone(true);
-  }
-
-  if (done) {
-    return (
-      <p className="exp-a">
-        Thanks. We have your email{craft ? ` and your craft, ${craft.toLowerCase()}` : ''}. We will
-        reach out soon to build your first agent with you.
-      </p>
-    );
+  async function submit() {
+    const address = email.trim();
+    const lines = need.trim();
+    if (!isValidEmail(address) || lines.length === 0) {
+      setInvalid(true);
+      window.setTimeout(() => setInvalid(false), 500);
+      return;
+    }
+    setSending(true);
+    try {
+      const res = await fetch('/api/intros', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'expert',
+          email: address,
+          need: lines.slice(0, MAX_NEED_CHARS),
+          sessionId,
+          flow,
+        }),
+      });
+      if (!res.ok) throw new Error(`intros ${res.status}`);
+      track('expert_signup_submitted', { flow });
+      onSent(address);
+    } catch {
+      onFailed();
+    }
+    setSending(false);
   }
 
   return (
-    <form onSubmit={submit}>
-      <div className="exp-cats">
-        {CATEGORIES.map((c) => (
-          <button
-            key={c}
-            type="button"
-            className={`tool-tab${category === c ? ' on' : ''}`}
-            onClick={() => setCategory(category === c ? null : c)}
-          >
-            {c}
-          </button>
-        ))}
-      </div>
-      {isOther ? (
+    <div className={styles.card}>
+      <div className={styles.title}>Tell us where to reach you</div>
+      <div className={`${styles.field}${invalid ? ` ${styles.invalid}` : ''}`}>
         <input
-          type="text"
-          className="intro-input exp-other"
-          placeholder="Tell us your craft…"
-          value={other}
-          onChange={(e) => setOther(e.target.value)}
-          aria-label="Your craft"
-        />
-      ) : null}
-      <div className="intro-email">
-        <input
+          className={NO_CAPTURE}
           type="email"
           inputMode="email"
-          placeholder="you@work.com"
+          autoComplete="email"
+          placeholder="you@company.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           aria-label="Your email"
         />
-        <button type="submit" className="go" disabled={!validEmail}>
-          Join as an expert
-        </button>
       </div>
-    </form>
+      <textarea
+        className={`${styles.lines}${invalid ? ` ${styles.invalid}` : ''}`}
+        rows={3}
+        maxLength={MAX_NEED_CHARS}
+        placeholder="What you do, and who you usually do it for. One or two lines."
+        value={need}
+        onChange={(e) => setNeed(e.target.value)}
+        aria-label="What you do"
+      />
+      <button
+        type="button"
+        className={styles.go}
+        disabled={sending}
+        onClick={() => void submit()}
+      >
+        {sending ? 'Sending…' : 'Send it'}
+      </button>
+      <div className={styles.note}>
+        If there is a fit, you hear from us by email.
+      </div>
+    </div>
   );
 }

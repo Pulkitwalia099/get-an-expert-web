@@ -1,0 +1,157 @@
+/* Overlays, mobile-first: bottom sheets on phones, centered cards on desktop. */
+
+.overlay {
+  position: fixed; inset: 0; z-index: 10; display: flex; align-items: flex-end; justify-content: center;
+  background: rgba(20, 20, 22, 0.32);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+}
+
+.sheet, .bookSheet, .askSheet {
+  position: relative; width: 100%; max-height: 94dvh; overflow-y: auto;
+  display: flex; flex-direction: column;
+  border-radius: 22px 22px 0 0; background: var(--glass-strong);
+  -webkit-backdrop-filter: blur(44px) saturate(170%); backdrop-filter: blur(44px) saturate(170%);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.3);
+}
+/* The ask dialog centers on every screen size, like a native alert. */
+.center { align-items: center; padding: 20px; }
+.askSheet { width: min(360px, 100%); border-radius: 24px; padding: 0 20px 24px; max-height: 86dvh; }
+
+/* Sticky rather than absolute: the sheet scrolls, and an absolute close button
+   scrolled away with it, stranding anyone who had read to the bottom.
+   It takes a real row at the top, so nothing sits under it and the sheet gets
+   its breathing room from the same place. */
+.x {
+  position: sticky; top: 10px; z-index: 6; align-self: flex-end; flex: none;
+  margin: 10px 12px 0 0; width: 34px; height: 34px; padding: 0;
+  border: 1px solid rgba(0, 0, 0, 0.09); border-radius: 50%; cursor: pointer;
+  background: rgba(242, 242, 245, 0.92);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  color: var(--ink-2); font-size: 13px; line-height: 1;
+  display: grid; place-items: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  transition: transform 160ms var(--ease-out), background 160ms ease;
+}
+.x:active { transform: scale(0.92); }
+
+/* ---------- Detail ---------- */
+/* The clip closes the sheet, so it runs the full width inside the padding
+   rather than sitting in a corner as a thumbnail. */
+.embedCol { position: relative; width: 100%; border-radius: 16px; overflow: hidden; background: #101014; }
+.embed { display: block; width: 100%; aspect-ratio: 9 / 14; border: 0; background: #fff; }
+.replay { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line); }
+
+.detailBody { padding: 6px 18px 24px; display: flex; flex-direction: column; }
+.detailBody h2 { font-size: 20px; font-weight: 650; letter-spacing: -0.02em; }
+.credit { margin-top: 5px; font-size: 11.5px; color: var(--ink-3); }
+.credit b { color: var(--ink-2); font-weight: 560; }
+
+.list { margin-top: 10px; display: flex; flex-direction: column; gap: 9px; }
+.list > div { display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; line-height: 1.4; color: var(--ink-2); }
+.check { flex: none; width: 15px; height: 15px; margin-top: 1px; color: var(--accent); }
+
+.listHead {
+  margin-top: 18px; font-size: 12px; font-weight: 640; letter-spacing: 0.05em;
+  text-transform: uppercase; color: var(--ink-3);
+}
+
+/* The sheet said what you get and then asked for your calendar, with nothing
+   in between about what the time was for. These are that missing middle.
+   Numbered rather than ticked, because unlike the checklist above this is a
+   sequence and the order is the information. */
+.steps { margin-top: 10px; display: flex; flex-direction: column; gap: 9px; }
+.steps > div {
+  display: flex; gap: 9px; align-items: flex-start;
+  font-size: 12.5px; line-height: 1.4; color: var(--ink-2);
+}
+/* The tint is mixed from --accent rather than read from --accent-tint. The
+   setups page redefines --accent to blue and leaves --accent-tint alone, so
+   the named token still holds the warm global value: a rust chip behind a blue
+   numeral. Mixing from the same variable the text uses keeps the two together
+   whatever --accent is in scope. */
+.stepNum {
+  flex: none; width: 15px; height: 15px; margin-top: 1px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: color-mix(in srgb, var(--accent) 11%, transparent);
+  color: var(--accent);
+  font-size: 9.5px; font-weight: 680; line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.payNote {
+  margin-top: 16px; padding: 11px 13px; border-radius: 13px; font-size: 12.5px; line-height: 1.45;
+  background: rgba(48, 176, 88, 0.09); border: 1px solid rgba(48, 176, 88, 0.24); color: var(--ink-2);
+}
+
+.detailFoot { margin-top: 18px; display: flex; align-items: center; gap: 9px; }
+.bigPrice { font-size: 20px; font-weight: 640; margin-right: 2px; }
+.bigPrice s { font-size: 13px; font-weight: 480; color: var(--ink-3); margin-right: 5px; text-decoration-thickness: 1px; }
+.bigCta {
+  flex: 1; padding: 12px 0; text-align: center; font-size: 14px; font-weight: 600; color: #fff;
+  border: none; border-radius: 13px; cursor: pointer;
+  background: linear-gradient(180deg, #2b8cff, var(--accent-deep));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 10px 24px -8px rgba(10, 122, 255, 0.6);
+  transition: transform 160ms var(--ease-out);
+}
+.bigCta:active { transform: scale(0.97); }
+.bigCta:disabled { opacity: 0.55; }
+
+/* ---------- Booking ----------
+   The booking step takes the whole phone screen. It is the last thing before
+   a conversion, and a month grid plus a slot list inside a 94dvh sheet means
+   scrolling a calendar inside a scrolling sheet. */
+.bookSheet {
+  padding: 0 16px 16px; display: flex; flex-direction: column; gap: 16px;
+  height: 100dvh; max-height: 100dvh; border-radius: 0;
+}
+
+.bookHead { display: flex; flex-direction: column; gap: 12px; }
+.bookHead h3 { font-size: 18px; font-weight: 640; letter-spacing: -0.018em; line-height: 1.25; }
+
+.bookPicked {
+  display: flex; align-items: center; gap: 11px; padding: 9px 11px; border-radius: 14px;
+  background: rgba(255, 255, 255, 0.6); border: 1px solid var(--line);
+}
+.bookPicked img { flex: none; border-radius: 8px; object-fit: cover; }
+.bookPicked h4 { font-size: 13px; font-weight: 620; line-height: 1.25; }
+.bookPicked p { font-size: 11.5px; color: var(--ink-3); margin-top: 2px; }
+
+.bookPay {
+  padding: 10px 12px; border-radius: 13px; font-size: 12.5px; line-height: 1.45;
+  background: rgba(48, 176, 88, 0.09); border: 1px solid rgba(48, 176, 88, 0.24); color: var(--ink-2);
+}
+.bookPay b { color: #1f8a45; font-weight: 630; }
+
+/* Cal renders its own iframe in here and manages its own height. */
+.calWrap { flex: 1; min-height: 320px; display: flex; }
+.calWrap > div { width: 100%; }
+
+/* ---------- Wider screens ---------- */
+@media (min-width: 880px) {
+  .overlay { align-items: center; padding: 24px; }
+
+  .sheet {
+    width: min(560px, 100%); max-height: 90dvh; border-radius: 26px;
+    box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.4);
+  }
+  .detailBody { padding: 8px 30px 32px; }
+  .embedCol { width: min(360px, 100%); margin: 0 auto; }
+  .detailBody h2 { font-size: 22px; }
+
+  .bookSheet {
+    width: min(720px, 100%); height: auto; max-height: 92dvh; border-radius: 26px;
+    padding: 0 28px 28px; gap: 20px;
+    box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.4);
+  }
+  .bookHead h3 { font-size: 20px; }
+
+  .askSheet {
+    width: min(430px, 100%); border-radius: 26px; padding: 0 26px 28px;
+    box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bigCta, .x { transition: none; }
+}

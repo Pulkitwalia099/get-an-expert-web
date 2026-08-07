@@ -1,0 +1,285 @@
+/* /register. Its own stylesheet because nothing here is a section on the home
+   page: it is a form, and form controls need sizes the marketing sections
+   never define. Tokens come from globals.css, so it stays on the same palette
+   without redeclaring a single colour. */
+
+.tracks {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  border: 0;
+  padding: 0;
+  /* The lead paragraph above sets no bottom margin of its own, so the gap
+     between the intro and the first question lives here. */
+  margin: 30px 0 28px;
+}
+
+.legend {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-3);
+  padding: 0;
+  margin-bottom: 10px;
+}
+
+.track {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-align: left;
+  padding: 14px 16px;
+  border: 1px solid var(--line-2);
+  border-radius: 12px;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    border-color 160ms var(--ease-out, ease),
+    background 160ms var(--ease-out, ease);
+}
+
+.track:active { transform: scale(0.99); }
+
+.trackOn {
+  border-color: var(--accent);
+  background: var(--accent-tint);
+}
+
+.trackLabel {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.trackBlurb {
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-bottom: 44px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.hint {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--ink-3);
+}
+
+.input,
+.textarea {
+  width: 100%;
+  font: inherit;
+  font-size: 14px;
+  color: var(--ink);
+  background: #fff;
+  border: 1px solid var(--line-2);
+  border-radius: 10px;
+  padding: 11px 12px;
+  /* 16px on the focused control would zoom iOS; 14px with this transform off
+     does not, because the rule below only lifts it at the breakpoint where a
+     phone keyboard is not in play. */
+  -webkit-appearance: none;
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 108px;
+  line-height: 1.5;
+}
+
+.input:focus-visible,
+.textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-color: transparent;
+}
+
+.submit {
+  align-self: start;
+  font: inherit;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--accent);
+  border: 0;
+  border-radius: 999px;
+  padding: 12px 26px;
+  cursor: pointer;
+  transition: background 160ms var(--ease-out, ease);
+}
+
+.submit:active { transform: scale(0.97); }
+.submit:disabled { opacity: 0.6; cursor: default; }
+
+/* ---------- The contact panel ---------- */
+
+/* The row of secondary links that used to live here is gone, and so are the
+   rules that drew it. Book a demo is a button in the closer now, and the only
+   thing this stylesheet still owns below the hero is the panel it opens. */
+
+/* The panel arrives rather than appears. Ease out and under 300ms, transform
+   and opacity only, and nothing to animate at all for anyone who has asked
+   for less motion. */
+.panel {
+  animation: panelIn 240ms var(--ease-out) both;
+}
+
+@keyframes panelIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel { animation: none; }
+}
+
+.error {
+  font-size: 12.5px;
+  color: var(--accent-deep);
+}
+
+.note {
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+.done {
+  padding: 28px 0 44px;
+}
+
+.doneTitle {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+
+.doneBody {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  max-width: 34em;
+}
+
+/* ---------- What happens next ---------- */
+
+.steps { margin-bottom: 44px; }
+
+.stepsTitle {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  margin-bottom: 18px;
+}
+
+.stepList {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  list-style: none;
+}
+
+/* Numbered, unlike the vetting list on the home page, because these genuinely
+   happen in this order and the order is the information. */
+.step {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.stepNum {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--accent-tint);
+  color: var(--accent-deep);
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.stepBody {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.stepWhen {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.stepWhat {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.stepDetail {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ink-2);
+  max-width: 42em;
+}
+
+/* ---------- What it costs ---------- */
+
+.terms {
+  border-top: 1px solid var(--line);
+  padding-top: 24px;
+}
+
+.termsTitle {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  margin-bottom: 10px;
+}
+
+.termsBody {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--ink-2);
+  max-width: 42em;
+  margin-bottom: 10px;
+}
+
+.termsBody strong {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+@media (min-width: 640px) {
+  .tracks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .input, .textarea { font-size: 14.5px; }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .track:hover { border-color: var(--ink-3); }
+  .trackOn:hover { border-color: var(--accent); }
+  .submit:hover { background: var(--accent-deep); }
+}

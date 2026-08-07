@@ -3,25 +3,73 @@ import type { NextConfig } from 'next';
 // script-src needs 'unsafe-inline' for the Next.js runtime bootstrap and
 // style-src for styled-jsx; everything else is locked to self. img-src
 // allows https and data because expert thumbnails come from SerpAPI CDNs.
+//
+// PostHog analytics runs in the browser and talks to its own hosts, so those
+// origins are allowed explicitly: connect-src for event capture and remote
+// config, script-src for the lazily loaded session-replay recorder, and
+// worker-src for the blob web worker that recorder spins up. Without these the
+// default 'self' policy silently blocks every analytics call and nothing is
+// ever recorded.
+//
+// The live call and the booking picker are both third party iframes, and both
+// were dead on arrival before these entries existed. There was no frame-src at
+// all, so it fell back to default-src 'self' and the browser refused to create
+// either frame. Daily also needs a websocket for signalling and blob media for
+// audio playback, and Cal serves its embed loader from its own host.
+const POSTHOG = 'https://us.i.posthog.com https://us-assets.i.posthog.com';
+
+// The room subdomain for this Daily account. Permissions-Policy does not
+// accept wildcards, so the exact origin is named again below.
+const DAILY_ROOM_ORIGIN = 'https://midsesh.daily.co';
+const DAILY = 'https://*.daily.co wss://*.daily.co';
+const CAL = 'https://app.cal.com https://cal.com';
+
+// Every card on /setups embeds TikTok's official player in an iframe. Without
+// this the browser refuses the frame and shows its own "This content is
+// blocked" panel where the video should be, which is what shipped: the whole
+// page is videos, and none of them played.
+const TIKTOK = 'https://www.tiktok.com';
+
+// The waitlist form on /classic posts to an API that still lives on the older
+// v2 deployment, so it is a cross origin fetch from this app's point of view.
+// connect-src did not name it, the browser blocked the request before it left
+// the page, and the form's own catch reported it as the waitlist being
+// unreachable. The API itself was up the whole time.
+const WAITLIST_API = 'https://get-an-expert-v2.vercel.app';
+
 const CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline'",
+  `script-src 'self' 'unsafe-inline' ${POSTHOG} https://app.cal.com`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' https: data:",
+  "img-src 'self' https: data: blob:",
   "font-src 'self' data:",
-  "connect-src 'self'",
+  `connect-src 'self' ${POSTHOG} ${DAILY} ${CAL} ${WAITLIST_API}`,
+  `frame-src 'self' ${DAILY} ${CAL} ${TIKTOK}`,
+  `media-src 'self' blob: ${DAILY}`,
+  "worker-src 'self' blob:",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
   "frame-ancestors 'none'",
 ].join('; ');
 
+// An empty allowlist means nobody, including this site. microphone=() denied
+// the mic to the call iframe no matter what Daily asked for, because a parent
+// policy always beats an iframe's own allow attribute. Camera stays denied on
+// purpose: these calls are audio only.
+const PERMISSIONS_POLICY = [
+  'camera=()',
+  `microphone=(self "${DAILY_ROOM_ORIGIN}")`,
+  `autoplay=(self "${DAILY_ROOM_ORIGIN}")`,
+  'geolocation=()',
+].join(', ');
+
 const SECURITY_HEADERS = [
   { key: 'Content-Security-Policy', value: CSP },
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'X-Frame-Options', value: 'DENY' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-  { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+  { key: 'Permissions-Policy', value: PERMISSIONS_POLICY },
   { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains' },
 ];
 
@@ -31,6 +79,17 @@ const nextConfig: NextConfig = {
   },
   async headers() {
     return [{ source: '/(.*)', headers: SECURITY_HEADERS }];
+  },
+  // People type and share the singular, and got a 404. It points straight at
+  // /get rather than /setups so it is one hop, not two.
+  //
+  // Now temporary, where it used to be permanent. A permanent redirect is
+  // cached by the browser and is close to impossible to take back: everyone who
+  // hit /setup while it pointed at the root will keep landing on the root, which
+  // is the ask page now, and nothing served from here can reach them. That is
+  // the cost of guessing a destination will never move, and it moved.
+  async redirects() {
+    return [{ source: '/setup', destination: '/get', permanent: false }];
   },
 };
 

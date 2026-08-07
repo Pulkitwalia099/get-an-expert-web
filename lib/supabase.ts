@@ -36,30 +36,62 @@ function headers(cfg: Config, extra: Record<string, string> = {}): Record<string
   };
 }
 
-async function write(
+export interface WriteResult {
+  ok: boolean;
+  /** null when the request never reached Postgres, or Supabase is unset. */
+  status: number | null;
+}
+
+/**
+ * Insert, reporting whether it landed.
+ *
+ * Most writes here are fire and forget, because a lost analytics row must
+ * never break a conversation. An order is not one of those: somebody who
+ * pressed a button and was told yes has to actually have an order, so the
+ * caller needs the answer. `resolveOn` upserts, `ignoreDuplicatesOn` makes the
+ * insert idempotent against a unique index, which is how a credit grant can be
+ * written on every sign in without granting twice.
+ */
+export async function insertRows(
   table: string,
   rows: object | object[],
-  opts: { upsertOn?: string } = {},
-): Promise<void> {
+  opts: { resolveOn?: string; ignoreDuplicatesOn?: string } = {},
+): Promise<WriteResult> {
   const cfg = config();
-  if (!cfg) return;
-  const query = opts.upsertOn ? `?on_conflict=${opts.upsertOn}` : '';
-  const prefer = opts.upsertOn
-    ? 'return=minimal,resolution=merge-duplicates'
-    : 'return=minimal';
+  if (!cfg) return { ok: false, status: null };
+
+  const conflict = opts.resolveOn ?? opts.ignoreDuplicatesOn;
+  const query = conflict ? `?on_conflict=${conflict}` : '';
+  const resolution = opts.resolveOn
+    ? ',resolution=merge-duplicates'
+    : opts.ignoreDuplicatesOn
+      ? ',resolution=ignore-duplicates'
+      : '';
+
   try {
     const res = await fetch(`${cfg.url}/rest/v1/${table}${query}`, {
       method: 'POST',
-      headers: headers(cfg, { Prefer: prefer }),
+      headers: headers(cfg, { Prefer: `return=minimal${resolution}` }),
       body: JSON.stringify(rows),
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
     if (!res.ok) {
       console.error(`[midsesh:supabase] ${table} write failed`, res.status, await res.text());
+      return { ok: false, status: res.status };
     }
+    return { ok: true, status: res.status };
   } catch (err) {
     console.error(`[midsesh:supabase] ${table} write failed`, err);
+    return { ok: false, status: null };
   }
+}
+
+async function write(
+  table: string,
+  rows: object | object[],
+  opts: { upsertOn?: string } = {},
+): Promise<void> {
+  await insertRows(table, rows, { resolveOn: opts.upsertOn });
 }
 
 // Calls a Postgres function. Returns null when unconfigured or on any
@@ -206,12 +238,21 @@ export async function recordSearch(
 export interface LeadRecord {
   email: string;
   name: string | null;
-  kind: 'intros' | 'custom';
+  // 'expert' is a freelancer applying to join, not a client asking for
+  // help. Requires the migration widening the leads kind check constraint.
+  // 'contact' is the contact card, 'register' is someone offering their own
+  // skills or their agents. Both require the migration widening the check.
+  kind: 'intros' | 'custom' | 'expert' | 'contact' | 'register';
   selected: string[];
   need: string | null;
-  brief: Brief;
+  // Null for a lead that never ran the client intake, such as an expert
+  // application. The column is nullable.
+  brief: Brief | null;
   consent: boolean;
   flow?: 'main' | 'dev';
+  // Structured answers from /register, which asks four things no column
+  // covers. Omitted for every other kind.
+  details?: Record<string, string> | null;
 }
 
 export async function recordLead(sessionId: string | null, lead: LeadRecord): Promise<void> {
@@ -226,5 +267,51 @@ export async function recordLead(sessionId: string | null, lead: LeadRecord): Pr
     consent: lead.consent,
   };
   if (lead.flow === 'dev') row.flow = 'dev';
+  // Only sent when there is something in it, so a row written before the
+  // details migration lands is still a valid insert.
+  if (lead.details) row.details = lead.details;
   await write('leads', row);
+}
+
+export interface SetupRequestRow {
+  link: string;
+  contact?: string;
+}
+
+// "Seen a setup we're missing?" submissions. These used to exist only in the
+// Vercel log, which rolls off, so a reel link plus an email address was
+// effectively thrown away.
+export async function recordSetupRequest(request: SetupRequestRow): Promise<void> {
+  await write('setup_requests', {
+    link: request.link,
+    contact: request.contact ?? null,
+  });
+}
+
+export interface SetupBookingRow {
+  calBookingUid: string;
+  setupSlug: string | null;
+  attendeeEmail: string | null;
+  attendeeName: string | null;
+  startsAt: string | null;
+  status: 'booked' | 'cancelled' | 'rescheduled';
+  payload: unknown;
+}
+
+// One row per Cal booking. Upserted on the Cal uid so a cancellation or a
+// reschedule updates the booking it belongs to instead of adding a second row.
+export async function recordSetupBooking(booking: SetupBookingRow): Promise<void> {
+  await write(
+    'setup_bookings',
+    {
+      cal_booking_uid: booking.calBookingUid,
+      setup_slug: booking.setupSlug,
+      attendee_email: booking.attendeeEmail,
+      attendee_name: booking.attendeeName,
+      starts_at: booking.startsAt,
+      status: booking.status,
+      payload: booking.payload,
+    },
+    { upsertOn: 'cal_booking_uid' },
+  );
 }

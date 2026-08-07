@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wireframe — Home</title>
+<style>
+  :root { --line:#999; --fill:#e8e8e8; --bg:#f4f4f4; --ink:#333; --note:#b00; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: ui-monospace, Menlo, monospace; background:var(--bg); color:var(--ink); font-size:14px; line-height:1.5; }
+  .wrap { max-width:1100px; margin:0 auto; padding:0 20px; }
+  .block { border:1.5px dashed var(--line); background:#fff; margin:18px 0; padding:20px; position:relative; }
+  .tag { position:absolute; top:-11px; left:12px; background:var(--note); color:#fff; font-size:10px; padding:2px 8px; letter-spacing:1px; text-transform:uppercase; }
+  .box { background:var(--fill); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; color:#666; text-align:center; padding:14px; }
+  .row { display:flex; gap:14px; }
+  .row > * { flex:1; }
+  h1.ph { font-size:26px; background:var(--fill); display:inline-block; padding:4px 14px; }
+  .ph-line { background:var(--fill); height:14px; margin:8px auto; }
+  .tile { border:1.5px solid var(--line); background:#fff; padding:16px; display:flex; flex-direction:column; gap:10px; min-height:230px; }
+  .tile .badge { align-self:flex-start; border:1px solid var(--ink); font-size:10px; padding:2px 7px; letter-spacing:1px; }
+  .tile .name { font-weight:bold; font-size:16px; border-bottom:1px solid var(--line); padding-bottom:8px; }
+  .tile .desc { color:#666; font-size:12px; flex:1; }
+  .tile .price { border:1px dashed var(--line); padding:6px 10px; font-size:12px; }
+  .tile .cta { background:var(--ink); color:#fff; text-align:center; padding:8px; font-size:12px; }
+  .tile.free .badge { border-style:double; }
+  .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  .hero { text-align:center; padding:56px 20px 40px; }
+  .search { max-width:640px; margin:24px auto 0; height:52px; }
+  .chips { display:flex; gap:10px; justify-content:center; margin-top:16px; flex-wrap:wrap; }
+  .chip { border:1px solid var(--line); background:#fff; padding:5px 14px; font-size:11px; color:#666; }
+  .sitebar { display:flex; justify-content:space-between; padding:16px 0; }
+  .btn { border:1.5px solid var(--ink); padding:8px 20px; display:inline-block; background:#fff; }
+  .btn.solid { background:var(--ink); color:#fff; }
+  .num { width:34px; height:34px; border:1.5px solid var(--ink); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 10px; font-weight:bold; }
+  .center { text-align:center; }
+  @media (max-width:760px){ .grid { grid-template-columns:1fr; } .row { flex-direction:column; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- SITEBAR -->
+  <div class="sitebar">
+    <div class="box" style="padding:6px 16px;">LOGO + wordmark</div>
+    <div class="row" style="flex:0; gap:18px; align-items:center; color:#666; font-size:12px;">
+      <span>Contact</span><span>Privacy</span><span class="btn" style="padding:4px 14px;">Sign in</span>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="block hero">
+    <span class="tag">Hero — positioning</span>
+    <h1 class="ph">H1: marketplace positioning line<br>(e.g. "Agents do the work. Experts own the outcome.")</h1>
+    <div class="ph-line" style="width:70%;"></div>
+    <div class="ph-line" style="width:55%;"></div>
+    <div class="box search">SEARCH BAR — "Or just describe what you need done" (existing expert flow entry)</div>
+    <div class="chips">
+      <span class="chip">example chip</span><span class="chip">example chip</span>
+      <span class="chip">example chip</span><span class="chip">example chip</span>
+    </div>
+  </div>
+
+  <!-- SERVICES GRID -->
+  <div class="block">
+    <span class="tag">Services — the 6 SKU tiles</span>
+    <div class="center" style="margin-bottom:6px;"><h1 class="ph" style="font-size:20px;">H2: "What we deliver" (working title)</h1></div>
+    <div class="ph-line" style="width:50%;"></div>
+    <div class="grid" style="margin-top:20px;">
+
+      <div class="tile">
+        <span class="badge">HUMAN + AGENT</span>
+        <div class="name">1 · UGC Ads</div>
+        <div class="desc">Input: product link + an ad you like + optional model pref.<br>Output: researched, scripted, produced UGC video.</div>
+        <div class="price">Pay only if you like it · single price TBD · subscription from $10/video</div>
+        <div class="box" style="padding:20px;">[SAMPLE VIDEO THUMB]</div>
+        <a class="cta" href="ugc.html" style="text-decoration:none;">Start a sample → (links to detail wireframe)</a>
+      </div>
+
+      <div class="tile">
+        <span class="badge">HUMAN + AGENT</span>
+        <div class="name">2 · LinkedIn Marketeer</div>
+        <div class="desc">Input: TBD.<br>Output: TBD.</div>
+        <div class="price">Price TBD</div>
+        <div class="cta">See details →</div>
+      </div>
+
+      <div class="tile free">
+        <span class="badge">AGENT · FREE</span>
+        <div class="name">3 · RateMyWipe</div>
+        <div class="desc">Input: your Claude session transcripts (open-source, runs on your session).<br>Output: wipe-coding level 1–5, weak-area breakdown, skill packs + repos to level up.</div>
+        <div class="price">Free · open source on GitHub</div>
+        <div class="cta">Rate my wipe →</div>
+      </div>
+
+      <div class="tile">
+        <span class="badge">AGENT + HUMAN QA</span>
+        <div class="name">4 · Voice Outbound</div>
+        <div class="desc">Input: your call list + script.<br>Output: calls made, leads generated and qualified.</div>
+        <div class="price">Price TBD (per call / per qualified lead / monthly)</div>
+        <div class="box" style="padding:16px;">[TALK TO OUR VOICE AGENT — live demo]</div>
+        <div class="cta">See details →</div>
+      </div>
+
+      <div class="tile">
+        <span class="badge">HUMAN + AGENT</span>
+        <div class="name">5 · Video Editing</div>
+        <div class="desc">Input: your raw videos.<br>Output: edited video, ready to post.</div>
+        <div class="price">Price TBD</div>
+        <div class="cta">See details →</div>
+      </div>
+
+      <div class="tile">
+        <span class="badge">HUMAN + AGENT</span>
+        <div class="name">6 · Product Explainer Videos</div>
+        <div class="desc">Input: your product + launch context.<br>Output: explainer video from fixed templates.</div>
+        <div class="price">Fixed price per template · gallery TBD</div>
+        <div class="cta">See details →</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div class="block">
+    <span class="tag">How it works — marketplace version</span>
+    <div class="center" style="margin-bottom:20px;"><h1 class="ph" style="font-size:20px;">H2: How it works</h1></div>
+    <div class="row">
+      <div class="center"><div class="num">1</div><div class="box">Pick a service</div></div>
+      <div class="center"><div class="num">2</div><div class="box">Give the input</div></div>
+      <div class="center"><div class="num">3</div><div class="box">Agent + expert deliver</div></div>
+      <div class="center"><div class="num">4</div><div class="box">Approve, then pay</div></div>
+    </div>
+  </div>
+
+  <!-- POSITIONING STRIP -->
+  <div class="block center">
+    <span class="tag">Why not self-serve</span>
+    <div class="ph-line" style="width:60%;"></div>
+    <div class="ph-line" style="width:45%;"></div>
+    <div style="color:#666; font-size:12px; margin-top:10px;">("No tools to learn, no subscriptions to figure out. You do your work best, we handle the rest.")</div>
+  </div>
+
+  <!-- PROOF -->
+  <div class="block">
+    <span class="tag">Proof — existing outcomes section</span>
+    <div class="center" style="margin-bottom:16px;"><h1 class="ph" style="font-size:20px;">H2: What done looks like · labeled EXAMPLES</h1></div>
+    <div class="row">
+      <div class="box" style="min-height:120px;">outcome card</div>
+      <div class="box" style="min-height:120px;">outcome card</div>
+      <div class="box" style="min-height:120px;">outcome card</div>
+      <div class="box" style="min-height:120px;">outcome card</div>
+    </div>
+  </div>
+
+  <!-- SECONDARY PATH -->
+  <div class="block center">
+    <span class="tag">Secondary product — expert search</span>
+    <div class="ph-line" style="width:55%;"> </div>
+    <div style="color:#666; font-size:12px; margin:10px 0 16px;">"Looking for a human AI expert instead?"</div>
+    <span class="btn">Search experts →</span>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="block center" style="color:#666; font-size:12px;">
+    <span class="tag">Footer</span>
+    wordmark · Contact · Privacy · backing logos (Harvard i-lab / Rock Venture Catalyst / Founders Inc)
+  </div>
+
+</div>
+</body>
+</html>

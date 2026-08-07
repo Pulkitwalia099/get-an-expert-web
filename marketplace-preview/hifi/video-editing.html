@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hi-fi · Video Editing detail</title>
+<style>
+  :root {
+    --bg: #F6F3ED; --ink: #211E1A; --ink-2: #5F594E; --ink-3: #8B8375;
+    --line: rgba(33,30,26,.08);
+    --glass: rgba(255,255,255,.55); --glass-strong: rgba(255,255,255,.78);
+    --accent: #C4593C; --accent-deep: #9E3F24; --accent-tint: rgba(196,89,60,.09);
+    --amber: #B97A1A;
+    --ease-out: cubic-bezier(0.23,1,0.32,1); --spring: cubic-bezier(0.34,1.56,0.64,1);
+    --radius-card: 16px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
+    color: var(--ink); background: var(--bg);
+    -webkit-font-smoothing: antialiased; letter-spacing: -0.004em;
+  }
+  .bg { position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(52vw 44vh at 16% 8%,  rgba(255,196,156,.52), transparent 68%),
+      radial-gradient(46vw 42vh at 86% 12%, rgba(206,190,255,.46), transparent 70%),
+      radial-gradient(58vw 50vh at 50% 104%, rgba(168,206,255,.42), transparent 70%);
+  }
+  .page { position: relative; z-index: 1; }
+  .sitebar { display:flex; align-items:center; justify-content:space-between; padding:18px clamp(18px,4vw,40px); }
+  .sitemark { display:flex; align-items:center; gap:7px; font-size:15px; font-weight:700; text-decoration:none; color:inherit; }
+  .worb { width:17px; height:17px; border-radius:50%; background:linear-gradient(140deg,#E8A184,var(--accent));
+    color:#fff; font-size:9px; display:inline-grid; place-items:center; }
+  .sitenav { display:flex; gap:18px; font-size:13.5px; }
+  .sitenav a { color:var(--ink-2); text-decoration:none; }
+
+  section.block { padding: clamp(36px,6vh,64px) 16px; }
+  .wrap { width: min(880px,100%); margin:0 auto; }
+  .eyebrow { display:block; font-size:11.5px; font-weight:650; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); }
+
+  /* Header */
+  .dhead { text-align:center; padding-top: clamp(28px,5vh,56px); }
+  .badge { display:inline-block; font-size:10.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--accent-deep); background:var(--accent-tint); border:1px solid rgba(158,63,36,.28);
+    border-radius:999px; padding:4px 12px; }
+  .dhead h1 { margin-top:16px; font-size:clamp(30px,5vw,42px); font-weight:750; letter-spacing:-0.03em; }
+  .dhead .promise { margin:12px auto 0; max-width:540px; font-size:clamp(15px,2.2vw,17px); color:var(--ink-2); line-height:1.5; }
+  .priceline { margin-top:16px; font-size:14px; font-weight:700; }
+  .priceline span { color:var(--ink-3); font-weight:400; }
+  .btn { display:inline-block; font-size:15px; font-weight:650; border-radius:999px; padding:13px 30px; text-decoration:none;
+    transition: transform 160ms var(--ease-out), box-shadow 160ms var(--ease-out); }
+  .btn.solid { background:var(--accent-deep); color:#fff; box-shadow:0 8px 20px -6px rgba(158,63,36,.5); }
+  .btn.ghost { color:var(--accent-deep); border:1px solid rgba(158,63,36,.3); background:var(--glass-strong); }
+  @media (hover:hover) and (pointer:fine) {
+    .btn.solid:hover { transform: translateY(-2px) scale(1.02); }
+  }
+  .btn:active { transform: scale(0.97); }
+  .btnrow { margin-top:22px; display:flex; gap:10px; justify-content:center; align-items:center; flex-wrap:wrap; }
+  .nocard { font-size:12.5px; color:var(--ink-3); }
+
+  .shead { text-align:center; margin-bottom:28px; }
+  .shead h2 { margin-top:10px; font-size:clamp(21px,3.4vw,27px); font-weight:700; letter-spacing:-0.02em; }
+
+  /* You give / You get */
+  .io-flow { display:grid; gap:16px; grid-template-columns:1fr; align-items:center; }
+  @media (min-width:721px){ .io-flow { grid-template-columns:1fr 44px 1fr; } }
+  .instack { display:flex; flex-direction:column; gap:10px; }
+  .incard { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:14px;
+    padding:11px 13px; display:flex; gap:12px; align-items:center;
+    box-shadow:0 8px 20px -10px rgba(45,32,22,.15); }
+  .incard .meta { min-width:0; }
+  .incard .t1 { font-size:13px; font-weight:650; }
+  .incard .t2 { font-size:11.5px; color:var(--ink-3); margin-top:1px; }
+  .th { flex:none; border-radius:9px; overflow:hidden; position:relative; }
+  /* raw clips thumb: a stack of unedited frames */
+  .th-raw { width:52px; height:44px; border-radius:9px; display:flex; gap:2px; }
+  .th-raw i { flex:1; border-radius:4px; }
+  .th-raw i:nth-child(1) { background:linear-gradient(160deg,#4A3B30,#211E1A); }
+  .th-raw i:nth-child(2) { background:linear-gradient(160deg,#31404E,#211E1A); }
+  .th-raw i:nth-child(3) { background:linear-gradient(160deg,#4A3A52,#211E1A); }
+  /* reference thumb */
+  .th-ref { width:44px; height:44px; border-radius:10px;
+    background:linear-gradient(160deg,#2E4A5E,#211E1A 70%);
+    display:grid; place-items:center; color:rgba(246,243,237,.9); font-size:13px; }
+  /* brand kit thumb */
+  .th-brand { width:44px; height:44px; border-radius:10px; background:#fff; border:1px solid rgba(33,30,26,.14);
+    display:flex; align-items:center; justify-content:center; gap:3px; }
+  .th-brand i { width:8px; height:8px; border-radius:50%; }
+  .th-brand i:nth-child(1) { background:var(--accent); }
+  .th-brand i:nth-child(2) { background:var(--ink); }
+  .th-brand i:nth-child(3) { background:var(--amber); }
+  .io-arrow { text-align:center; font-size:20px; color:var(--accent-deep); font-weight:700; }
+  @media (max-width:720px){ .io-arrow { transform:rotate(90deg); } }
+
+  /* Output: finished video + its timeline */
+  .outwrap { max-width:320px; margin:0 auto; width:100%; }
+  .outcard { position:relative; aspect-ratio:16/10; width:100%;
+    border-radius:14px 14px 0 0; overflow:hidden; display:grid; place-items:center;
+    background:linear-gradient(160deg,#4A3B30,#211E1A 60%,#5A3423); }
+  .outcard .play { width:48px; height:48px; border-radius:50%; background:rgba(246,243,237,.94);
+    display:grid; place-items:center; color:var(--accent-deep); font-size:15px;
+    box-shadow:0 10px 26px rgba(0,0,0,.4); }
+  .outcard .ready { position:absolute; right:11px; top:11px; font-size:9.5px; font-weight:700;
+    letter-spacing:.08em; color:#2F7A3D; background:rgba(246,243,237,.94); border-radius:999px; padding:3px 9px; }
+  .outcard .cap { position:absolute; left:11px; bottom:11px; font-size:11px; color:rgba(246,243,237,.92);
+    background:rgba(33,30,26,.55); border-radius:999px; padding:3px 10px; }
+  .timeline { background:#fff; border:1px solid rgba(33,30,26,.12); border-top:none;
+    border-radius:0 0 14px 14px; padding:12px; display:flex; flex-direction:column; gap:7px;
+    box-shadow:0 20px 42px -16px rgba(45,32,22,.32); }
+  .track { display:flex; align-items:center; gap:9px; }
+  .track .tlab { flex:none; width:52px; font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-3); }
+  .track .lane { flex:1; display:flex; gap:2px; height:13px; }
+  .track .lane b { border-radius:3px; }
+  .lane-v b:nth-child(1) { flex:3; background:rgba(158,63,36,.5); }
+  .lane-v b:nth-child(2) { flex:2; background:rgba(158,63,36,.34); }
+  .lane-v b:nth-child(3) { flex:4; background:rgba(158,63,36,.5); }
+  .lane-v b:nth-child(4) { flex:2; background:rgba(158,63,36,.34); }
+  .lane-c b { background:rgba(33,30,26,.14); height:7px; align-self:center; }
+  .lane-c b:nth-child(1) { flex:2; } .lane-c b:nth-child(2) { flex:1; }
+  .lane-c b:nth-child(3) { flex:3; } .lane-c b:nth-child(4) { flex:2; }
+  .lane-a { align-items:center; }
+  .lane-a b { background:rgba(62,155,79,.35); align-self:center; }
+  .lane-a b:nth-child(1) { flex:5; height:9px; } .lane-a b:nth-child(2) { flex:4; height:5px; }
+  .lane-a b:nth-child(3) { flex:2; height:11px; }
+
+  /* Steps */
+  .how2 { display:grid; gap:12px; grid-template-columns:1fr; align-items:stretch; }
+  @media (min-width:560px){ .how2 { grid-template-columns:1fr 1fr; } }
+  @media (min-width:900px){ .how2 { grid-template-columns:repeat(4,1fr); } }
+  .h2c { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:14px;
+    padding:18px 14px; text-align:center; box-shadow:0 8px 20px -10px rgba(45,32,22,.14); }
+  .h2c .em { font-size:26px; line-height:1; }
+  .h2c h3 { margin-top:9px; font-size:15px; font-weight:700; }
+  .h2c p { margin-top:4px; font-size:12.5px; color:var(--ink-2); line-height:1.4; }
+  .h2c.main { background:var(--accent-tint); border:1.5px solid rgba(158,63,36,.45); }
+  .h2c.main h3 { color:var(--accent-deep); }
+
+  /* What is handled */
+  .covers { display:grid; gap:10px; grid-template-columns:1fr; }
+  @media (min-width:560px){ .covers { grid-template-columns:1fr 1fr; } }
+  @media (min-width:900px){ .covers { grid-template-columns:repeat(3,1fr); } }
+  .cov { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:12px;
+    padding:13px 15px; display:flex; gap:10px; align-items:baseline; }
+  .cov .ck { flex:none; color:#2F7A3D; font-size:12px; font-weight:700; }
+  .cov .cn { font-size:13.5px; font-weight:650; }
+  .cov .cd { font-size:12px; color:var(--ink-3); margin-top:2px; }
+
+  /* Samples: empty state, no content yet */
+  .samples { display:grid; gap:14px; grid-template-columns:1fr; }
+  @media (min-width:721px){ .samples { grid-template-columns:repeat(3,1fr); } }
+  .slot { aspect-ratio:16/11; border-radius:var(--radius-card);
+    border:1.5px dashed rgba(33,30,26,.2); background:rgba(255,255,255,.42);
+    display:grid; place-items:center; text-align:center; padding:18px; }
+  .slot .sn { font-size:12.5px; color:var(--ink-3); line-height:1.5; }
+  .slot .sn b { display:block; font-size:13.5px; font-weight:650; color:var(--ink-2); margin-bottom:4px; }
+  .emptynote { margin-top:16px; text-align:center; font-size:13.5px; color:var(--ink-2); }
+
+  /* Pricing */
+  .tiers { display:grid; gap:14px; grid-template-columns:1fr; }
+  @media (min-width:721px){ .tiers { grid-template-columns:1fr 1fr; } }
+  .tier { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:var(--radius-card);
+    padding:22px; box-shadow:0 10px 26px -12px rgba(45,32,22,.15); display:flex; flex-direction:column; gap:8px; }
+  .tier .tname { font-size:13px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--ink-2); }
+  .tier .tprice { font-size:24px; font-weight:750; letter-spacing:-0.02em; }
+  .tier .tprice small { font-size:13px; font-weight:400; color:var(--ink-3); }
+  .tier p { font-size:13.5px; color:var(--ink-2); line-height:1.45; flex:1; }
+
+  /* Guarantee */
+  .guarantee { text-align:center; background:var(--glass); border:1px solid var(--line);
+    border-radius:var(--radius-card); padding:30px 22px; }
+  .guarantee h2 { font-size:clamp(19px,3vw,24px); font-weight:700; letter-spacing:-0.02em; max-width:580px; margin:0 auto; }
+  .guarantee p { margin-top:10px; color:var(--ink-2); font-size:14.5px; }
+
+  /* Intake */
+  .form { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:var(--radius-card);
+    padding:24px; box-shadow:0 10px 26px -12px rgba(45,32,22,.15); }
+  .field { margin-bottom:16px; }
+  .field label { display:block; font-size:13px; font-weight:650; margin-bottom:6px; }
+  .field label small { color:var(--ink-3); font-weight:400; }
+  .field input, .field textarea {
+    width:100%; border:1px solid rgba(33,30,26,.14); border-radius:10px; background:#fff;
+    font:inherit; font-size:14px; padding:11px 13px; color:var(--ink); outline:none; }
+  .field input:focus, .field textarea:focus { border-color:rgba(158,63,36,.5); }
+  .field textarea { min-height:84px; resize:vertical; }
+  .upload { border:1.5px dashed rgba(33,30,26,.2); border-radius:10px; padding:16px; text-align:center;
+    font-size:13px; color:var(--ink-2); background:rgba(255,255,255,.6); }
+  .formnote { text-align:center; font-size:12.5px; color:var(--ink-3); margin-top:12px; }
+
+  /* FAQ */
+  .faq details { border-bottom:1px solid var(--line); padding:14px 2px; }
+  .faq summary { font-size:14.5px; font-weight:650; cursor:pointer; list-style:none; }
+  .faq summary::after { content:"+"; float:right; color:var(--ink-3); }
+  .faq details[open] summary::after { content:"–"; }
+  .faq details p { margin-top:8px; font-size:13.5px; color:var(--ink-2); line-height:1.5; }
+  .tbd { color:var(--amber); font-size:12px; font-weight:650; }
+
+  .cross { text-align:center; }
+  .foot { text-align:center; color:var(--ink-3); font-size:12.5px; padding:26px 16px 40px; }
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="page">
+
+  <header class="sitebar">
+    <a class="sitemark" href="index.html"><span class="worb">✳︎</span>midsesh</a>
+    <nav class="sitenav"><a href="index.html">All services</a><a href="#">Contact</a><a href="#">Sign in</a></nav>
+  </header>
+
+  <!-- 1 · Header -->
+  <section class="block dhead">
+    <div class="wrap">
+      <span class="badge">Human + Agent</span>
+      <h1>Video Editing</h1>
+      <p class="promise">Send raw footage. Get back an edited video, ready to post. Cuts, captions, and sound handled.</p>
+      <div class="priceline">Price <span class="tbd">TBD</span></div>
+      <div class="btnrow">
+        <a class="btn solid" href="#start">Send footage</a>
+        <span class="nocard">No card needed</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 · You give / You get -->
+  <section class="block">
+    <div class="wrap">
+      <div class="shead"><span class="eyebrow">Input, output</span><h2>Raw footage in. A file you can post out.</h2></div>
+      <div class="io-flow">
+        <div class="instack">
+          <div class="incard">
+            <div class="th th-raw"><i></i><i></i><i></i></div>
+            <div class="meta">
+              <div class="t1">Your raw footage</div>
+              <div class="t2">a link to the folder, however messy</div>
+            </div>
+          </div>
+          <div class="incard">
+            <div class="th th-ref">▶</div>
+            <div class="meta">
+              <div class="t1">An edit you like</div>
+              <div class="t2">the pacing and style we match</div>
+            </div>
+          </div>
+          <div class="incard">
+            <div class="th th-brand"><i></i><i></i><i></i></div>
+            <div class="meta">
+              <div class="t1">Fonts, colours, logo</div>
+              <div class="t2">optional, if you have them</div>
+            </div>
+          </div>
+        </div>
+        <div class="io-arrow">→</div>
+        <div class="outwrap">
+          <div class="outcard">
+            <span class="ready">READY TO POST</span>
+            <span class="play">▶</span>
+            <span class="cap">Your edit · 2:14</span>
+          </div>
+          <div class="timeline">
+            <div class="track"><span class="tlab">Video</span><span class="lane lane-v"><b></b><b></b><b></b><b></b></span></div>
+            <div class="track"><span class="tlab">Captions</span><span class="lane lane-c"><b></b><b></b><b></b><b></b></span></div>
+            <div class="track"><span class="tlab">Sound</span><span class="lane lane-a"><b></b><b></b><b></b></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 · How it works -->
+  <section class="block">
+    <div class="wrap">
+      <div class="shead"><span class="eyebrow">How it works</span><h2>An editor finishes every cut.</h2></div>
+      <div class="how2">
+        <div class="h2c"><div class="em">📤</div><h3>You send footage</h3><p>A link to the folder. No naming, no trimming first.</p></div>
+        <div class="h2c"><div class="em">✂️</div><h3>The agent cuts</h3><p>Selects, sequences, and captions the first pass.</p></div>
+        <div class="h2c main"><div class="em">🎧</div><h3>An editor finishes it</h3><p>Pacing, sound, and colour, by a person.</p></div>
+        <div class="h2c"><div class="em">📦</div><h3>You get the file</h3><p>In the formats you post in.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 · What is handled -->
+  <section class="block">
+    <div class="wrap">
+      <div class="shead"><span class="eyebrow">Scope</span><h2>What is handled</h2></div>
+      <div class="covers">
+        <div class="cov"><span class="ck">✓</span><div><div class="cn">Cuts and sequencing</div><div class="cd">Selects pulled from everything you send</div></div></div>
+        <div class="cov"><span class="ck">✓</span><div><div class="cn">Captions</div><div class="cd">Burned in or as a file</div></div></div>
+        <div class="cov"><span class="ck">✓</span><div><div class="cn">Sound</div><div class="cd">Levels, noise, music bed</div></div></div>
+        <div class="cov"><span class="ck">✓</span><div><div class="cn">Colour</div><div class="cd">Matched across clips and cameras</div></div></div>
+        <div class="cov"><span class="ck">✓</span><div><div class="cn">Titles and lower thirds</div><div class="cd">In your fonts and colours</div></div></div>
+        <div class="cov"><span class="ck">✓</span><div><div class="cn">Formats</div><div class="cd">Landscape, vertical, square <span class="tbd">TBD</span></div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 · Samples: nothing to show yet -->
+  <section class="block">
+    <div class="wrap">
+      <div class="shead"><span class="eyebrow">Samples</span><h2>Nothing to show here yet</h2></div>
+      <div class="samples">
+        <div class="slot"><div class="sn"><b>Before and after</b>Raw footage next to the finished cut</div></div>
+        <div class="slot"><div class="sn"><b>A long form edit</b>Podcast or interview, cut down</div></div>
+        <div class="slot"><div class="sn"><b>A short form edit</b>Vertical, captioned, under a minute</div></div>
+      </div>
+      <div class="emptynote">We are not going to fill this with someone else's work. Real edits go here once the first ones are delivered. <span class="tbd">TBD</span></div>
+    </div>
+  </section>
+
+  <!-- 6 · Pricing -->
+  <section class="block">
+    <div class="wrap">
+      <div class="shead"><span class="eyebrow">Pricing</span><h2>Two models on the table</h2></div>
+      <div class="tiers">
+        <div class="tier">
+          <div class="tname">Per video</div>
+          <div class="tprice">$ — <small><span class="tbd">TBD</span></small></div>
+          <p>One price for a finished video inside a stated length. Simple to quote, and long footage costs us more than short.</p>
+        </div>
+        <div class="tier">
+          <div class="tname">Per finished minute</div>
+          <div class="tprice">$ — <small><span class="tbd">TBD</span></small></div>
+          <p>Priced on the length of what you get back, not the length of what you send. Fairer on both sides, slower to quote.</p>
+        </div>
+      </div>
+      <div class="formnote">The model is not decided yet. These are the two under consideration. <span class="tbd">Open question</span></div>
+    </div>
+  </section>
+
+  <!-- 7 · Guarantee -->
+  <section class="block">
+    <div class="wrap">
+      <div class="guarantee">
+        <h2>An editor signs off on every cut before it reaches you.</h2>
+        <p>The agent does the sorting and the first pass, which is the slow part. The decisions about pacing and what stays in are made by a person. <span class="tbd">Revision rounds TBD</span></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 · Intake form -->
+  <section class="block" id="start">
+    <div class="wrap">
+      <div class="shead"><span class="eyebrow">Send footage</span><h2>Two minutes of input</h2></div>
+      <div class="form">
+        <div class="field">
+          <label>Link to your footage</label>
+          <input type="url" placeholder="Drive, Dropbox, Frame.io, anywhere we can download from">
+        </div>
+        <div class="field">
+          <label>An edit you like</label>
+          <input type="url" placeholder="Link to a video with the pacing you want">
+        </div>
+        <div class="field">
+          <label>Where is it going and how long should it be</label>
+          <input type="text" placeholder="e.g. YouTube, about 8 minutes. Also a vertical cut.">
+        </div>
+        <div class="field">
+          <label>Fonts, colours, logo <small>optional</small></label>
+          <div class="upload">Drop your brand files, or leave this and we will keep it plain</div>
+        </div>
+        <div class="field">
+          <label>Anything else we should know <small>optional</small></label>
+          <textarea placeholder="Deadline, sections to cut, music you have rights to"></textarea>
+        </div>
+        <div class="btnrow"><a class="btn solid" href="#">Send footage</a></div>
+        <div class="formnote">We come back with a quote and a turnaround before any editing starts. <span class="tbd">SLA TBD</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9 · FAQ -->
+  <section class="block">
+    <div class="wrap">
+      <div class="shead"><span class="eyebrow">FAQ</span><h2>The fine print, plainly</h2></div>
+      <div class="faq">
+        <details><summary>How much footage can I send?</summary><p><span class="tbd">TBD</span> There will be a limit, because ten hours of footage for a two minute edit is a different job to twenty minutes of it.</p></details>
+        <details><summary>How long does it take?</summary><p><span class="tbd">TBD</span> Quoted with the price, before editing starts, so you know before you commit.</p></details>
+        <details><summary>How many revisions do I get?</summary><p><span class="tbd">TBD</span> Working proposal is one round included, more priced separately.</p></details>
+        <details><summary>What formats do I get back?</summary><p>The ones you name in the intake form. A landscape cut and a vertical cut of the same video is a normal ask. <span class="tbd">Whether that is one price or two is TBD</span></p></details>
+        <details><summary>What about music rights?</summary><p><span class="tbd">TBD</span> If you have licensed tracks, send them. Otherwise we use music that is cleared for what you are doing.</p></details>
+        <details><summary>Who actually edits it?</summary><p>The agent does the selects, the first cut, and the captions. A human editor makes the calls on pacing and finish, and is accountable for what you receive.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10 · Cross-sell -->
+  <section class="block cross">
+    <div class="wrap">
+      <div class="btnrow">
+        <a class="btn ghost" href="index.html">Browse all services</a>
+        <a class="btn ghost" href="#">Ask for something custom</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="foot">midsesh · Contact · Privacy</div>
+
+</div>
+</body>
+</html>

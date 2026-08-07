@@ -2,15 +2,66 @@
 // expert search; 'dev' is /stuck, which skips the marketplace search and
 // ends on the install-or-email choice instead of expert cards.
 
-export type Flow = 'main' | 'dev';
+export type Flow = 'main' | 'dev' | 'ask';
+
+// The eight things we match people to. Used by the starter chips and by the
+// examples list below the window, so a chip and an example agree on wording.
+//
+// 'writing' is gone and 'security' took its slot. Posts, homepage copy and
+// blog drafts are go to market work that happened to be filed on their own,
+// and folding them into marketing frees the eighth slot without making the
+// filter row any longer than it already is on a phone.
+//
+// The keys are deliberately not renamed to match the new labels. 'marketing'
+// reads Growth & GTM and 'data' reads Data & intelligence, because a key is
+// referenced by every example, every chip and a colour token, and renaming one
+// to match a label buys nothing a reader ever sees.
+export type CategoryKey =
+  | 'design'
+  | 'web'
+  | 'video'
+  | 'ai'
+  | 'marketing'
+  | 'security'
+  | 'data'
+  | 'admin';
+
+// Order is the argument. This list used to open on design and web, which are
+// the two things a visitor can now do themselves with Claude Code, and buried
+// growth at five and AI at four. Leading on the work that still needs a person
+// is the whole point of the reorder.
+export const CATEGORIES: { key: CategoryKey; label: string }[] = [
+  { key: 'marketing', label: 'Growth & GTM' },
+  { key: 'ai', label: 'AI & automation' },
+  { key: 'video', label: 'Video & motion' },
+  { key: 'security', label: 'Security' },
+  { key: 'data', label: 'Data & intelligence' },
+  { key: 'web', label: 'Web & apps' },
+  { key: 'design', label: 'Design & brand' },
+  { key: 'admin', label: 'Admin & professional' },
+];
+
+// A starter chip carries two lengths of the same idea. `label` has to survive
+// a 390px marquee, so it stays short; `message` is what actually gets sent as
+// the visitor's opening line, so it has to read like something a person typed.
+// Sending the label would give the model two or three words to work with.
+export interface Suggestion {
+  label: string;
+  message: string;
+  category: CategoryKey;
+}
 
 export interface FlowConfig {
   tag: string | null;
   headline: string;
   sub: string | null;
-  // Starter chips. The last one can be a soft opener (see elseChip) that
-  // just starts the conversation instead of sending itself as the need.
-  suggestions: string[];
+  // Starter chips. The catch-all lives in elseChip, not here, because it
+  // opens the conversation instead of sending itself as the need.
+  suggestions: Suggestion[];
+  // Cycled through the empty composer, typed rather than swapped. The longest
+  // and most specific asks go here: this is the only place the page shows how
+  // much detail is welcome. Keep every line true to what we actually match.
+  placeholders: string[];
   elseChip: string | null;
   elseOpener: string;
   welcomePlaceholder: string;
@@ -69,47 +120,149 @@ export const FLOWS: Record<Flow, FlowConfig> = {
   main: {
     tag: null,
     headline: 'What kind of expert are you looking for?',
-    sub: 'Tell us what you need. We find the right person and make the intro.',
+    sub: 'Tell us what you need. We find the right expert and make the intro.',
     // Broad and varied on purpose, so no visitor feels the tool is built
     // for someone else. "Something else" covers the rest.
     suggestions: [
-      'AI engineer',
-      'Web & app dev',
-      'Designer',
-      'Video editor',
-      'Lawyer',
-      'Marketing',
+      { label: 'Designer', message: 'I need a designer', category: 'design' },
+      { label: 'Web & app dev', message: 'I need a web or app developer', category: 'web' },
+      { label: 'Video editor', message: 'I need a video editor', category: 'video' },
+      { label: 'AI engineer', message: 'I need an AI engineer', category: 'ai' },
+      { label: 'Marketing', message: 'I need a marketer', category: 'marketing' },
+      { label: 'Lawyer', message: 'I need a lawyer', category: 'admin' },
+    ],
+    placeholders: [
+      'I need a designer for a logo and brand kit',
+      'I need a developer to build my website',
+      'I need an editor for my YouTube videos',
+      'I need someone to build an AI agent',
+      'I need help with cold outreach',
     ],
     elseChip: 'Something else',
     elseOpener: 'Tell me what you need, in a sentence.',
     welcomePlaceholder: "I'm looking for…",
-    searchingStatus: ['Scanning profiles…', 'Checking availability…', 'Ranking matches…'],
+    // Held in order across the wait, not cycled. Each line is a real phase of
+    // the work, so reaching the last one means the search is nearly done
+    // rather than that the list has looped again.
+    searchingStatus: [
+      'Searching for people who do this',
+      'Reading their profiles',
+      'Checking each one against your brief',
+      'Writing up why they fit',
+    ],
     foundText:
       'These are the top matches. Who would you like an intro to? You can pick more than one.',
     ending: 'cards',
     teaserIntro: null,
   },
   dev: {
-    tag: 'devs',
-    headline: 'Stuck in Claude Code or Codex?',
-    sub: 'Two questions, then a human who unsticks AI coding sessions every day.',
+    // No tag. This stopped being the page for one audience when it became the
+    // front door; a "devs" badge over a general intake reads as the wrong room.
+    tag: null,
+    headline: 'What are you working on?',
+    // The sub-line has to answer "what is this" for someone who arrived from an
+    // ad on a phone and has never heard of midsesh. The previous line stopped at
+    // being matched, which is a middle step: it described what we do rather than
+    // what the visitor ends up with. The expert is the subject here, and "takes
+    // it off your plate" is the ending the old line was missing.
+    sub: 'Talk it through, then an expert who has done it many times before takes it off your plate.',
+    // The old set was five verbs about code you had already written, which
+    // asked every visitor to have started before they arrived. Someone after a
+    // logo or a website read five doors and none said their name. These are
+    // outcomes instead, and they spread across every category we match, so the
+    // page stops looking like it was built for one kind of person.
+    // The copy the root page has always shipped. Kept byte for byte in meaning
+    // when the Suggestion shape changed: label and message are the same string
+    // here, because these were written to be sent verbatim.
     suggestions: [
-      'Agent is looping',
-      'Broke my repo',
-      "MCP won't connect",
-      'Burning tokens, no progress',
+      { label: 'Improve what I built', message: 'Improve what I built', category: 'web' },
+      { label: 'Fix what’s broken', message: 'Fix what’s broken', category: 'web' },
+      { label: 'Build something new', message: 'Build something new', category: 'web' },
+      { label: 'Automate a manual task', message: 'Automate a manual task', category: 'ai' },
+      { label: 'Make it faster', message: 'Make it faster', category: 'web' },
     ],
-    elseChip: null,
-    elseOpener: '',
-    welcomePlaceholder: "What's it stuck on?",
+    placeholders: ['I’m working on…'],
+    elseChip: 'Something else',
+    elseOpener: 'Tell me what you need, in a sentence.',
+    welcomePlaceholder: 'I’m working on…',
     searchingStatus: [
-      'Finding someone who’s online now…',
-      'Checking who’s free…',
+      'Looking for the right person…',
+      'Checking who has done this…',
     ],
-    foundText:
-      'Found one. An expert who has fixed this exact kind of thing is online now. Two ways to connect:',
+    foundText: 'Found one. Two ways to connect:',
     ending: 'choice',
-    teaserIntro:
-      'Senior engineer who unsticks agent loops, MCP setups, and runaway sessions every day.',
+    // Fallback only. The model writes a per-visitor line when it has one, so
+    // this has to stay true for any need and never mention code.
+    teaserIntro: 'An expert who has done this kind of work before.',
+  },
+
+  // /ask. Same machinery as dev, different front door: the hero owns the
+  // headline and the chips, so this copy is written for a search bar rather
+  // than a chat window.
+  ask: {
+    tag: null,
+    headline: 'What do you want done?',
+    // The offer leads. "Free first session" was the actual promise for months
+    // and appeared on no surface, while the line spent its length on "has done
+    // it many times before", which is a vetting claim the hero cannot back up.
+    // That claim moved down to Trust, which says how the vetting works, so the
+    // hero is shorter now and says the thing that gets someone to type.
+    //
+    // "Call", not "session". Session was doing three jobs on one page: the free
+    // thing here, a paid 60 or 90 minute setup in the grid below, and the
+    // coding session an expert joins at the end of the chat. A visitor read
+    // "first session is free" next to eleven $11 setups and could not tell
+    // which was true. The free thing is a 15 minute call, so it says call.
+    sub: 'Your first call is free. Talk it through, then an expert takes it off your plate.',
+    // Ordered by where the demand actually is, not by what reads nicest. The
+    // setups people already buy are automation and growth first, so those lead
+    // and design sits further down. Label has to survive a 390px row; message
+    // is what actually gets sent, so it has to read like a person typed it.
+    suggestions: [
+      { label: 'Automations', message: 'Automate a task I do by hand every week', category: 'ai' },
+      { label: 'AI agent', message: 'Build an AI agent for my business', category: 'ai' },
+      { label: 'Cold outreach', message: 'Set up cold outreach that gets replies', category: 'marketing' },
+      { label: 'Content', message: 'Get my content written and posted every week', category: 'marketing' },
+      { label: 'Website', message: 'Make a professional website for my business', category: 'web' },
+      { label: 'Video edit', message: 'Turn my raw footage into a finished video', category: 'video' },
+      { label: 'Fix a bug', message: 'Fix something in my app that keeps breaking', category: 'web' },
+      { label: 'Mobile app', message: 'Build a mobile app from my idea', category: 'web' },
+      { label: 'Logo & brand', message: 'Get a logo and brand kit designed', category: 'design' },
+    ],
+    // Longer and more specific than the chips on purpose. The chips say what is
+    // on offer; these say how much detail is welcome.
+    placeholders: [
+      'Automate the report I build by hand every Monday',
+      'Build an AI agent that answers customer emails',
+      'Post my content everywhere without writing it twice',
+      'Turn 4 hours of footage into a 10 minute video',
+      'Make a professional website for my business',
+    ],
+    elseChip: 'Something else',
+    elseOpener: 'Tell me what you need, in a sentence.',
+    welcomePlaceholder: 'I need…',
+    // Describes a marketplace sweep, because that is what is happening behind
+    // it. The old pair implied one person was being looked up, and cycled.
+    searchingStatus: [
+      'Searching for people who do this',
+      'Reading their profiles',
+      'Checking each one against your brief',
+      'Writing up why they fit',
+    ],
+    // Unused on this flow now that it ends on cards: the count is written per
+    // search in useExpertSearch, because "found 8" and "found 3" are
+    // different sentences. Kept true to the ending so it does not mislead a
+    // reader of this file.
+    foundText: 'These are the closest matches.',
+    // The front door shows the matches now, rather than ending on the choice
+    // between an install and an email. Somebody who has just described what
+    // they need is at the moment they most want to see who exists, and this
+    // page was answering that with a card about two ways to connect.
+    //
+    // The free call is not lost with it. The offer to talk to a human fires
+    // off a finished brief in Chat, not off this ending, so it still arrives
+    // in the thread alongside the cards.
+    ending: 'cards',
+    teaserIntro: 'An expert who has done this kind of work before.',
   },
 };

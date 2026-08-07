@@ -10,3 +10,14 @@ next-env.d.ts
 .env.*.local
 .DS_Store
 npm-debug.log*
+
+# eval run reports
+evals/.last-run.json
+.gstack/
+
+# Internal notes kept out of a public repo.
+docs/handoff.md
+.env*
+
+# Supabase CLI link cache. Holds a pooler connection string with credentials.
+supabase/.temp/

@@ -1,0 +1,508 @@
+/* Shared styling for the sections below the hero: HowItWorks, Setups and
+   Examples. Scoped here so nothing has to out-specify the window rules in
+   globals.css. Tokens come from globals.css.
+   Mobile first: the base rules are the phone, the min-width block widens.
+   Setups and Examples share .cardItem, .card and the meta row, so a change to
+   either one lands on both. Check both before editing those. */
+
+.section {
+  position: relative;
+  z-index: 1;
+  /* Reads the page token rather than repeating a number. This was a hard 720
+     and it silently outranked the wider column at desktop: .below grew, every
+     section inside it did not, and the two stopped sharing an edge. */
+  width: min(var(--page-max), 100%);
+  margin: 0 auto;
+  padding: 34px 14px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Last section on the page carries the bottom breathing room. */
+.section:last-of-type { padding-bottom: 48px; }
+
+.head { display: flex; flex-direction: column; gap: 6px; }
+
+.title {
+  font-size: 17.5px;
+  font-weight: 600;
+  letter-spacing: -0.018em;
+  color: var(--ink);
+}
+
+.sub {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+/* ---------- How it works: four numbered steps ---------- */
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px 18px;
+  list-style: none;
+}
+
+/* Not cards. Boxed steps with a tinted bar across the top is the single most
+   generated-looking pattern there is, and it was doing no work: four numbered
+   rows already read as a sequence because they are numbered. What is left is
+   type and space, which is the whole point. */
+.step {
+  position: relative;
+  padding: 0 0 0 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+
+.stepNum {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .10em;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.stepTitle {
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.stepBody {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+/* ---------- Trust: what every expert goes through ---------- */
+
+/* Same rule as .step above, for the same reason: no boxes, no tinted bars, no
+   icons. Three claims about people are carried by type and space or they are
+   not believed. Single column on a phone, because these lines are longer than
+   the steps and two of them side by side at 390px would set four words a row. */
+.checks {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+  list-style: none;
+}
+
+/* Icon in its own column, spanning both text rows, so the title and the body
+   share one left edge and the icon hangs beside them rather than pushing the
+   body out of line with the title. */
+.check {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  column-gap: 11px;
+  row-gap: 3px;
+  align-items: start;
+  padding: 0 0 0 2px;
+}
+
+.checkIcon {
+  grid-row: 1 / span 2;
+  width: 18px;
+  height: 18px;
+  color: var(--accent);
+  /* Optical, not mathematical: nudged to sit on the title's cap height. */
+  margin-top: 1px;
+}
+
+.checkTitle {
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.checkBody {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+/* ---------- Where we come from ---------- */
+
+/* Quieter than .checks on purpose. This answers a smaller question than the
+   one above it, and three institution names set at the weight of a claim we
+   made ourselves would read as leaning on them. */
+/* Three across at every width, including 390px. The tile is fixed and only the
+   label reflows, so the row never breaks: the narrowest cell still fits a 36px
+   mark and a two line name. */
+.backerStrip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px 10px;
+  list-style: none;
+  align-items: start;
+}
+
+.backerCell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  text-align: center;
+  min-width: 0;
+}
+
+/* White ground on purpose. The Harvard shield ships with no alpha channel, so
+   its white background is part of the image; on a white tile it disappears,
+   and the two square marks cover their tile so it is never seen behind them.
+   contain, not cover, or the shield loses the point off its bottom. */
+.backerMark {
+  width: 36px;
+  height: 36px;
+  flex: none;
+  display: block;
+  object-fit: contain;
+  background: #fff;
+  border-radius: 8px;
+  /* The supplied squares have hard corners of their own, so the radius has to
+     clip the image rather than only the box behind it. */
+  overflow: hidden;
+}
+
+.backerText {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.backerLabel {
+  font-size: 11.5px;
+  line-height: 1.35;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  color: var(--ink-2);
+  text-wrap: balance;
+}
+
+/* Hidden below the desktop tier. Three cells across a 390px screen already
+   wrap the name onto two lines; a third line under each turns a strip you
+   glance at into a block you have to read. Shown at 1024 where the column is
+   wide enough that it costs nothing. */
+.backerNote {
+  display: none;
+  font-size: 10.5px;
+  line-height: 1.3;
+  color: var(--ink-3);
+}
+
+/* ---------- Examples: filters, cards, show more ---------- */
+
+/* Scrolls sideways on a narrow screen instead of wrapping to four lines. */
+.filters {
+  display: flex;
+  gap: 7px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  padding: 2px 0;
+  margin: -2px 0;
+}
+.filters::-webkit-scrollbar { display: none; }
+
+.filter {
+  flex: none;
+  white-space: nowrap;
+  border: 1px solid rgba(33, 30, 26, .11);
+  background: rgba(255, 255, 255, .5);
+  color: var(--ink-2);
+  font-size: 12.5px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 160ms var(--ease-out), background 160ms ease,
+    border-color 160ms ease, color 160ms ease;
+}
+
+.filter:active { transform: scale(0.97); }
+
+/* A selected filter wears its own category colour, so the chip you picked and
+   the cards it left behind are visibly the same thing. "All" has no category
+   and falls back to ink, which is also what any future category gets before it
+   is given a hue. */
+.filterOn {
+  background: var(--cat, var(--ink));
+  border-color: var(--cat, var(--ink));
+  color: #FBF7F0;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  list-style: none;
+  align-content: start;
+}
+
+/* The grid cell. Holds the entrance animation so the card inside it is free to
+   use transform for the press, and the two never fight over one property. */
+.cardItem {
+  display: flex;
+  /* Runs on mount, which includes remounting after a filter change, so
+     narrowing the list confirms itself without a separate transition. */
+  animation: card-in 220ms var(--ease-out) backwards;
+}
+
+/* One quiet surface. The left rail and the colour wash went the same way as
+   the step bars: with eight hues on screen at once the page read as a swatch
+   sheet rather than a list of work. The category label carries the colour on
+   its own, which is enough to group them. */
+.card {
+  position: relative;
+  width: 100%;
+  background: rgba(255, 255, 255, .68);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  padding: 13px 15px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  /* It is a button now, so it has to be told to look like the card it was. */
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  /* No 300ms wait for a double tap, and no grey system flash on top of our own
+     press state. */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 180ms var(--ease-out), border-color 180ms var(--ease-out),
+    transform 160ms var(--ease-out);
+}
+
+/* Down while the thumb is still on it. data-pressed is written on pointerdown,
+   so the card never waits for the release to acknowledge the touch. :active is
+   the keyboard path, where Enter and Space have no pointer to listen for. It
+   also overrides the global button:active, which presses to 0.96. */
+.card[data-pressed='true'],
+/* Two routes to the same press, because the two sections ask differently.
+   Examples leans on :active; Setups drives it from pointer events so the state
+   survives a drag off the card. */
+.card:active,
+.card[data-pressed='true'] { transform: scale(0.97); }
+
+/* Examples put the arrow beside the copy rather than under it, so that row
+   turns and the text column takes the space that is left. */
+.cardRow { flex-direction: row; align-items: center; gap: 12px; }
+
+.cardBody {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* Setups: a labelled affordance, because eleven of them can each afford a word
+   and "Get this" says what the tap does before you commit to it. Painted on at
+   full opacity, never revealed on hover: most of these visitors are on a phone
+   and would never see it. */
+.cardPill {
+  margin-left: auto;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px 4px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--line-2);
+  background: rgba(255, 255, 255, .6);
+  color: var(--ink);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  transition: transform 160ms var(--ease-out), background 160ms var(--ease-out);
+}
+
+/* Examples: the same promise with no word on it. Thirty two cards each holding
+   a label would shout, so the shape carries it. */
+.cardGo {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid var(--line-2);
+  background: rgba(255, 255, 255, .6);
+  color: var(--ink-2);
+  transition: transform 160ms var(--ease-out), background 160ms var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card:hover { background: rgba(255, 255, 255, .86); border-color: rgba(33, 30, 26, .16); }
+  /* One nudge, on the affordance itself, in the direction the card is about to
+     take you. Declared once here rather than also on the arrow inside the pill,
+     or the two stack and the glyph drifts twice as far as the pill it sits in. */
+  .card:hover .cardGo,
+  .card:hover .cardPill {
+    transform: translateX(2px);
+    background: rgba(255, 255, 255, .92);
+  }
+}
+
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.cardItem:nth-child(2) { animation-delay: 30ms; }
+.cardItem:nth-child(3) { animation-delay: 60ms; }
+.cardItem:nth-child(4) { animation-delay: 90ms; }
+.cardItem:nth-child(5) { animation-delay: 120ms; }
+.cardItem:nth-child(6) { animation-delay: 150ms; }
+.cardItem:nth-child(7) { animation-delay: 180ms; }
+.cardItem:nth-child(n + 8) { animation-delay: 210ms; }
+
+
+.cardCat {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--cat, var(--ink-3));
+}
+
+/* Price and duration. Sits on its own line under the outcome so the card still
+   reads title first, and the struck sale price never crowds the copy. */
+.cardMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.metaPrice { color: var(--cat, var(--ink-2)); font-weight: 650; }
+.metaPrice s { color: var(--ink-3); font-weight: 500; margin-right: 3px; }
+
+/* Quieter than the price it explains. It is a label on the number, not a
+   second number, so it must not compete with it. */
+.metaSale { color: var(--ink-3); }
+
+/* What the welcome credit does to this price. Weight rather than colour: the
+   price beside it already wears the category hue, and a second colour in a
+   three item row turns a fact into a sticker. Ink is darker than the rest of
+   the meta line, which is enough to make it the part you read. */
+.metaCredit {
+  color: var(--ink);
+  font-weight: 650;
+}
+
+.metaDot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--ink-3);
+  opacity: .55;
+}
+
+.cardAsk {
+  font-size: 13.5px;
+  line-height: 1.45;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.cardOut {
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+
+.moreRow { display: flex; justify-content: center; }
+
+.more {
+  border: 1px solid rgba(196, 89, 60, .3);
+  background: transparent;
+  color: var(--accent-deep);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 160ms var(--ease-out), background 160ms ease;
+}
+
+.more:active { transform: scale(0.97); }
+
+/* Visible keyboard focus on everything you can tab to. */
+.filter:focus-visible,
+.card:focus-visible,
+.more:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---------- Wider than a phone ---------- */
+@media (min-width: 561px) {
+  .section { padding: 44px 16px 8px; gap: 18px; }
+  .section:last-of-type { padding-bottom: 64px; }
+  .title { font-size: 19px; }
+  .steps { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 26px; }
+  /* Three, because there are three. This was four while the section had four
+     items, and cutting one left an empty fourth column: the three remaining
+     bodies were squeezed to a quarter width each and the row stopped short of
+     the right edge, so it lined up with nothing else on the page. */
+  .checks { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 26px; }
+  /* Already three across on a phone. Wider screens only get more air between
+     the cells, so the strip does not stretch into three lonely columns. */
+  .backerStrip { gap: 0 26px; justify-content: start; }
+  .backerCell { flex-direction: row; align-items: center; gap: 11px; text-align: left; }
+  /* An ask plus its outcome reads fine at half width, and 32 single file
+     cards is a very long scroll. Held height stops the grid collapsing
+     when a filter narrows the list. */
+  .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); min-height: 220px; }
+}
+
+/* ---------- Desktop ---------- */
+/* The page had one breakpoint, at 561px, so a 1440px screen was served the
+   same 720px column as a tablet and left 344px empty on either side. The
+   column widens once, in --page-max, and the card grids take the room.
+   Everything that reads that token keeps the same outer edges, so the site
+   bar, every section heading and every grid still start and end on one axis.
+
+   Three across rather than four: a fourth column at this width drops each
+   card under 250px, which is narrower than the two column layout it replaced
+   and puts the title on three lines. Both card grids use three, and so do the
+   vetting steps and the backer strip, so those four sections share their
+   inner grid lines and not only their edges. "How it works" stays on four
+   because it has exactly four items and a sequence should not wrap.
+
+   The column itself widens in globals.css, because a CSS module cannot carry
+   a bare :root rule: Next requires every selector in a module to contain a
+   local class. */
+@media (min-width: 1024px) {
+  .cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .steps, .checks, .backerStrip { gap: 0 32px; }
+  /* .below already pays the page gutter, and .section was paying it a second
+     time. That put every section 16px inside the hero's own steps, which take
+     no horizontal padding, so the first heading on the page sat on a different
+     line from all the ones under it. The gutter belongs to the column, once. */
+  .section { padding-left: 0; padding-right: 0; }
+  .backerNote { display: block; }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .filter:not(.filterOn):hover {
+    background: rgba(255, 255, 255, .85);
+    border-color: rgba(33, 30, 26, .18);
+    color: var(--ink);
+    transform: translateY(-1px);
+  }
+  .more:hover { background: var(--accent-tint); }
+}

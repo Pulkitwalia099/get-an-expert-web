@@ -1,0 +1,83 @@
+/* The growth wrapper. The layer itself (.page-overlay in globals.css) still
+   owns the fixed sizing and the scrim; this box owns the entrance.
+
+   Why a wrapper at all: the overlay has to look like it came out of the card
+   that was tapped, and that means a transform-origin somewhere in the layer's
+   own coordinate space. Putting it on the window would tie the origin to the
+   window's box, which is 720px wide and centred, so a card near the bottom of
+   the page would need an origin far outside it.
+
+   Absolute and inset 0 on purpose. That makes this box exactly the padding box
+   of the fixed layer, whose top left corner is the top left of the visual
+   viewport, so an origin captured from a client rect maps straight onto it
+   without measuring anything. `padding: inherit` copies whatever gutters the
+   layer is using, phone or desktop, so the window keeps the width and the
+   height clamp it had when it was a direct child. */
+.grow {
+  position: absolute;
+  inset: 0;
+  padding: inherit;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+
+  /* The scrim sits under this box and fills the same area, so this one has to
+     be invisible to taps or tapping outside the window would hit nothing and
+     the only way out would be the X. The window turns them back on. */
+  pointer-events: none;
+
+  /* --origin-x and --origin-y are viewport pixels, written by Overlay.tsx.
+     --vv-top is how far iOS has pushed the visual viewport down, which is the
+     one offset between this box and the viewport. It is 0 at the moment
+     anything opens, so this only matters if a keyboard is already up. */
+  transform-origin: var(--origin-x, 50%) calc(var(--origin-y, 50%) - var(--vv-top, 0px));
+
+  /* backwards, not both: the finished state is the natural state, and leaving a
+     permanent scale(1) on the parent of a backdrop-filtered panel keeps it on
+     its own composited layer for the rest of the visit. */
+  animation: overlay-grow 220ms var(--ease-out) backwards;
+}
+
+.grow > * {
+  pointer-events: auto;
+}
+
+/* 0.9 rather than something smaller. From a card the size of a phone tile the
+   window only has to look like it came from there, and a deeper scale turns a
+   200ms move into something you watch happen. Never from 0: that has no
+   direction, it is just an object arriving. */
+@keyframes overlay-grow {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Asked for less motion, so the growth is dropped rather than shortened. A
+   fast scale is still a scale. What is left is the cross fade, which carries
+   the same information without moving anything.
+
+   !important is load bearing, and only because of globals.css, which zeroes
+   every animation on the page with `* { animation: none !important }` under
+   this same query. Without it this rule is inert and the layer appears with no
+   transition at all. */
+@media (prefers-reduced-motion: reduce) {
+  .grow {
+    animation: overlay-fade 160ms var(--ease-out) backwards !important;
+  }
+}
+
+@keyframes overlay-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
