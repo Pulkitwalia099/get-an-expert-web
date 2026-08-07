@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Direction A · Ledger</title>
+<style>
+  :root {
+    --paper:#F4F0E8; --paper-2:#EDE7DB; --card:#FFFCF7;
+    --ink:#1B1815; --ink-2:#57503f; --ink-3:#8C8477;
+    --rule:rgba(27,24,21,.14); --rule-soft:rgba(27,24,21,.075);
+    --clay:#C4593C; --clay-deep:#9E3F24; --clay-tint:rgba(196,89,60,.06);
+    --amber:#9C6A0C;
+    --ease:cubic-bezier(0.23,1,0.32,1);
+    --r:10px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family:-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
+    background:var(--paper); color:var(--ink);
+    -webkit-font-smoothing:antialiased; letter-spacing:-0.006em;
+  }
+  /* One warm halo, top only. No lilac, no blue, no full-page gradient. */
+  .bg { position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:
+      radial-gradient(78vw 52vh at 8% -12%, rgba(196,89,60,.13), transparent 64%),
+      radial-gradient(56vw 40vh at 96% -6%, rgba(196,140,60,.10), transparent 68%); }
+  /* Paper grain. Very low, but it is what stops flat cream reading as flat white. */
+  .grain { position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E"); }
+  .page { position:relative; z-index:1; }
+  .wrap { width:min(1120px,100%); margin:0 auto; padding:0 clamp(18px,4vw,32px); }
+
+  /* Type ramp: six sizes, no more.
+     92 display / 38 section / 21 card / 16 body / 13.5 small / 11.5 micro */
+  .micro { font-size:11.5px; font-weight:680; letter-spacing:.16em; text-transform:uppercase; }
+
+  .sitebar { padding:20px 0 18px; display:flex; align-items:center; justify-content:space-between;
+    border-bottom:1px solid var(--rule); }
+  .sitemark { display:flex; align-items:baseline; gap:8px; font-size:15px; font-weight:760; letter-spacing:-0.02em;
+    text-decoration:none; color:inherit; }
+  .sitemark i { width:6px; height:6px; border-radius:50%; background:var(--clay); display:block; transform:translateY(-1px); }
+  .sitenav { display:flex; gap:22px; font-size:13.5px; }
+  .sitenav a { color:var(--ink-2); text-decoration:none; }
+
+  /* ---------- Hero: left, big, with an index beside it ---------- */
+  .hero { padding:clamp(46px,8vh,88px) 0 clamp(40px,6vh,64px); display:grid; gap:40px;
+    grid-template-columns:1fr; align-items:end; }
+  @media (min-width:900px){ .hero { grid-template-columns:minmax(0,1.55fr) minmax(0,.85fr); gap:56px; } }
+  .hero h1 { font-size:clamp(46px,8vw,92px); font-weight:790; letter-spacing:-0.052em; line-height:.94; }
+  .hero .sub { margin-top:20px; max-width:30ch; font-size:clamp(16px,1.5vw,18px); line-height:1.5; color:var(--ink-2); }
+  .findbar { margin-top:30px; display:flex; max-width:520px; border:1px solid var(--ink);
+    border-radius:var(--r); background:var(--card); overflow:hidden; }
+  .findbar input { flex:1; min-width:0; border:none; outline:none; background:transparent;
+    font:inherit; font-size:15.5px; padding:14px 16px; color:var(--ink); }
+  .findbar input::placeholder { color:var(--ink-3); }
+  .findbar button { flex:none; border:none; background:var(--ink); color:var(--paper);
+    font:inherit; font-size:14px; font-weight:660; padding:0 20px; cursor:pointer;
+    transition:transform 140ms var(--ease), background 140ms var(--ease); }
+  @media (hover:hover) and (pointer:fine){ .findbar button:hover { background:var(--clay-deep); } }
+  .findbar button:active { transform:scale(0.97); }
+  .herometa { margin-top:16px; font-size:13.5px; color:var(--ink-3); }
+
+  .idx { border-top:1px solid var(--ink); padding-top:14px; }
+  .idx .micro { color:var(--ink-3); }
+  .idx ol { list-style:none; margin-top:12px; }
+  .idx li { display:flex; gap:12px; align-items:baseline; padding:7px 0; border-bottom:1px solid var(--rule-soft); }
+  .idx li:last-child { border-bottom:none; }
+  .idx .n { font-size:11.5px; color:var(--clay); font-weight:700; font-variant-numeric:tabular-nums; }
+  .idx a { font-size:14px; color:var(--ink-2); text-decoration:none; }
+  @media (hover:hover) and (pointer:fine){ .idx a:hover { color:var(--clay-deep); } }
+
+  /* ---------- Section head: left, on a rule ---------- */
+  .sec { padding:clamp(48px,7vh,80px) 0 0; }
+  .shead { border-top:1px solid var(--ink); padding-top:16px;
+    display:grid; gap:14px; grid-template-columns:1fr; }
+  @media (min-width:900px){ .shead { grid-template-columns:minmax(0,1fr) minmax(0,.72fr); gap:48px; align-items:start; } }
+  .shead .micro { color:var(--clay-deep); }
+  .shead h2 { margin-top:10px; font-size:clamp(28px,4vw,38px); font-weight:760; letter-spacing:-0.035em; line-height:1.06; }
+  .shead p { font-size:15.5px; line-height:1.55; color:var(--ink-2); max-width:44ch; }
+  @media (min-width:900px){ .shead p { padding-top:26px; } }
+
+  /* ---------- SKU catalogue: rows, not floating cards ---------- */
+  .cat { margin-top:34px; }
+  .row { display:grid; gap:16px; grid-template-columns:1fr; align-items:start;
+    padding:22px 0; border-top:1px solid var(--rule-soft); text-decoration:none; color:inherit;
+    position:relative; transition:background 160ms var(--ease); }
+  .row:first-child { border-top:1px solid var(--rule); }
+  .row:last-child { border-bottom:1px solid var(--rule); }
+  @media (min-width:760px){
+    .row { grid-template-columns:30px 78px minmax(0,1fr) 196px 22px; gap:22px; align-items:center; padding:20px 0; }
+  }
+  @media (hover:hover) and (pointer:fine){
+    .row:hover { background:var(--clay-tint); }
+    .row:hover .arw { transform:translateX(4px); color:var(--clay-deep); }
+  }
+  .row:active { transform:scale(0.995); }
+  .row .n { font-size:12px; font-weight:700; color:var(--clay); font-variant-numeric:tabular-nums; letter-spacing:.04em; }
+  .thumb { width:78px; height:78px; border-radius:var(--r); overflow:hidden; position:relative;
+    border:1px solid var(--rule); background:var(--card); flex:none; }
+  @media (max-width:759px){ .thumb { width:64px; height:64px; } }
+  .thumb video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  .thumb.mark { display:grid; place-items:center; background:var(--clay-tint); border-color:rgba(158,63,36,.2);
+    color:var(--clay-deep); font-size:26px; font-weight:780; letter-spacing:-0.04em; }
+  /* LinkedIn post skeleton, same footprint */
+  .thumb.post { padding:8px; display:flex; flex-direction:column; gap:5px; background:#fff; }
+  .pk-h { display:flex; gap:5px; align-items:center; }
+  .pk-av { width:14px; height:14px; border-radius:50%; background:rgba(27,24,21,.16); flex:none; }
+  .pk-l { height:3px; border-radius:2px; background:rgba(27,24,21,.13); }
+  .pk-m { flex:1; border-radius:4px; background:rgba(27,24,21,.07); }
+  .pk-d { width:5px; height:5px; border-radius:50%; background:#0A66C2; }
+
+  .rmain h3 { font-size:21px; font-weight:730; letter-spacing:-0.025em; }
+  .rtop { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .rmain p { margin-top:5px; font-size:14.5px; line-height:1.5; color:var(--ink-2); max-width:52ch; }
+  .badge { font-size:10px; font-weight:730; letter-spacing:.1em; text-transform:uppercase;
+    padding:3px 8px; border-radius:4px; white-space:nowrap; }
+  .b-ha { color:#fff; background:var(--clay-deep); }
+  .b-ag { color:var(--ink-2); background:transparent; border:1px solid var(--rule); }
+  .b-free { color:#2C6B37; background:transparent; border:1px solid rgba(44,107,55,.35); }
+  .rprice { font-size:15px; font-weight:730; letter-spacing:-0.015em; }
+  @media (min-width:760px){ .rprice { text-align:right; } }
+  .rprice small { display:block; font-size:12.5px; font-weight:420; color:var(--ink-3); margin-top:3px; letter-spacing:0; }
+  .rprice .tbd { color:var(--amber); }
+  .arw { font-size:16px; color:var(--ink-3); transition:transform 180ms var(--ease), color 180ms var(--ease); }
+  @media (max-width:759px){ .arw { display:none; } }
+  .livetag { display:inline-flex; align-items:center; gap:6px; margin-top:8px;
+    font-size:11.5px; font-weight:640; color:var(--ink-2); }
+  .livetag i { width:6px; height:6px; border-radius:50%; background:#2C6B37; }
+
+  /* ---------- Steps: numbered, ruled, no boxes ---------- */
+  .steps { margin-top:34px; display:grid; gap:0; grid-template-columns:1fr; }
+  @media (min-width:760px){ .steps { grid-template-columns:repeat(4,1fr); gap:0 28px; } }
+  .step { padding:20px 0; border-top:1px solid var(--rule); }
+  .step .n { font-size:11.5px; font-weight:700; color:var(--clay); font-variant-numeric:tabular-nums; }
+  .step h3 { margin-top:8px; font-size:16px; font-weight:720; letter-spacing:-0.02em; }
+  .step p { margin-top:5px; font-size:14px; line-height:1.5; color:var(--ink-2); }
+
+  /* ---------- Dark anchor band ---------- */
+  .anchor { margin-top:clamp(56px,8vh,96px); background:var(--ink); color:var(--paper);
+    padding:clamp(44px,7vh,76px) 0; }
+  .anchor h2 { font-size:clamp(26px,3.6vw,40px); font-weight:760; letter-spacing:-0.04em; line-height:1.1; max-width:20ch; }
+  .anchor p { margin-top:14px; font-size:16px; line-height:1.55; color:rgba(244,240,232,.66); max-width:46ch; }
+  .anchor .btnrow { margin-top:26px; }
+  .btn { display:inline-block; font-size:14.5px; font-weight:680; text-decoration:none; border-radius:var(--r);
+    padding:12px 22px; transition:transform 150ms var(--ease), background 150ms var(--ease); }
+  .btn:active { transform:scale(0.97); }
+  .btn.solid { background:var(--clay); color:#fff; }
+  @media (hover:hover) and (pointer:fine){ .btn.solid:hover { background:var(--clay-deep); } }
+  .btn.line { border:1px solid var(--rule); color:var(--ink); }
+  .btn.oncream { background:var(--ink); color:var(--paper); }
+  .btn.ondark { border:1px solid rgba(244,240,232,.3); color:var(--paper); }
+  @media (hover:hover) and (pointer:fine){ .btn.ondark:hover { background:rgba(244,240,232,.1); } }
+
+  .foot { padding:26px 0 44px; font-size:12.5px; color:var(--ink-3); border-top:1px solid var(--rule); margin-top:56px; }
+
+  /* ================= VOICE PAGE ================= */
+  .dhead { padding:clamp(44px,7vh,80px) 0 0; display:grid; gap:34px; grid-template-columns:1fr; }
+  @media (min-width:900px){ .dhead { grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); gap:56px; align-items:end; } }
+  .dhead .lbl { display:flex; align-items:center; gap:12px; color:var(--ink-3); }
+  .dhead .lbl:after { content:""; flex:1; height:1px; background:var(--rule); }
+  .dhead h1 { margin-top:14px; font-size:clamp(42px,6.6vw,74px); font-weight:790; letter-spacing:-0.05em; line-height:.97; }
+  .dhead .promise { margin-top:16px; max-width:38ch; font-size:16.5px; line-height:1.5; color:var(--ink-2); }
+  .dhead .priceline { margin-top:22px; padding-top:16px; border-top:1px solid var(--rule);
+    font-size:15px; font-weight:730; }
+  .dhead .priceline .tbd { color:var(--amber); }
+  .dhead .btnrow { margin-top:18px; display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+  .dhead .nocard { font-size:13px; color:var(--ink-3); }
+
+  /* Demo: a bar with a clay edge, not a floating pill */
+  .demo { border:1px solid var(--rule); border-left:3px solid var(--clay); border-radius:0 var(--r) var(--r) 0;
+    background:var(--card); padding:18px 20px; display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+  .demo .dt1 { font-size:15px; font-weight:730; display:flex; align-items:center; gap:8px; letter-spacing:-0.02em; }
+  .demo .live { width:7px; height:7px; border-radius:50%; background:#2C6B37; }
+  .demo .dt2 { font-size:13px; color:var(--ink-2); margin-top:4px; line-height:1.45; }
+  .demo .tbd { color:var(--amber); font-weight:640; }
+  .demo .dcall { margin-left:auto; flex:none; font:inherit; font-size:13.5px; font-weight:680; cursor:pointer;
+    background:var(--ink); color:var(--paper); border:none; border-radius:var(--r); padding:11px 20px;
+    transition:transform 150ms var(--ease), background 150ms var(--ease); }
+  @media (hover:hover) and (pointer:fine){ .demo .dcall:hover { background:var(--clay-deep); } }
+  .demo .dcall:active { transform:scale(0.97); }
+
+  /* Input / output */
+  .io { margin-top:34px; display:grid; gap:26px; grid-template-columns:1fr; align-items:center; }
+  @media (min-width:860px){ .io { grid-template-columns:minmax(0,1fr) 40px minmax(0,.86fr); gap:22px; } }
+  .inrow { display:flex; gap:14px; align-items:center; padding:15px 0; border-top:1px solid var(--rule-soft); }
+  .inrow:first-child { border-top:1px solid var(--rule); }
+  .inrow:last-child { border-bottom:1px solid var(--rule); }
+  .inrow .t1 { font-size:15px; font-weight:700; letter-spacing:-0.02em; }
+  .inrow .t2 { font-size:12.5px; color:var(--ink-3); margin-top:2px; }
+  .ico { flex:none; width:38px; height:38px; border-radius:8px; border:1px solid var(--rule); background:var(--card);
+    display:flex; flex-direction:column; justify-content:center; gap:3px; padding:0 7px; overflow:hidden; }
+  .ico.list { gap:0; padding:0; }
+  .ico.list i { flex:1; border-bottom:1px solid rgba(27,24,21,.09); }
+  .ico.list i:nth-child(odd){ background:rgba(27,24,21,.04); }
+  .ico.doc i { height:3px; border-radius:2px; background:rgba(27,24,21,.2); }
+  .ico.doc i:nth-child(2){ width:66%; } .ico.doc i:last-child{ width:46%; }
+  .ico.chk { display:grid; place-items:center; background:var(--clay-tint); border-color:rgba(158,63,36,.24);
+    color:var(--clay-deep); font-size:16px; font-weight:760; }
+  .ioarw { display:none; }
+  @media (min-width:860px){ .ioarw { display:block; text-align:center; font-size:20px; color:var(--clay); } }
+
+  /* Output card: flat, one clay rule at the top. No shadow anywhere on this page. */
+  .out { border:1px solid var(--rule); border-top:3px solid var(--clay); background:var(--card);
+    border-radius:0 0 var(--r) var(--r); padding:18px; display:flex; flex-direction:column; gap:14px; }
+  .out .otop { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .out .tag { font-size:10px; font-weight:730; letter-spacing:.1em; color:#2C6B37;
+    border:1px solid rgba(44,107,55,.35); border-radius:4px; padding:3px 7px; }
+  .out .who { display:flex; align-items:center; gap:10px; }
+  .out .av { width:30px; height:30px; border-radius:50%; background:rgba(27,24,21,.14); flex:none; }
+  .out .nm { height:6px; width:74px; border-radius:3px; background:rgba(27,24,21,.17); }
+  .out .sb { height:5px; width:50px; border-radius:3px; background:rgba(27,24,21,.09); margin-top:5px; }
+  /* Solid clay bars at full strength. The 38% version read as pink mush. */
+  .wave { display:flex; align-items:flex-end; gap:2.5px; height:38px; }
+  .wave i { flex:1; border-radius:1px; background:var(--clay); opacity:.9; min-height:2px; }
+  .out .meta { display:flex; justify-content:space-between; font-size:11.5px; color:var(--ink-3); }
+  .out .notes { border-top:1px solid var(--rule-soft); padding-top:12px; display:flex; flex-direction:column; gap:7px; }
+  .out .notes .micro { color:var(--ink-3); font-size:10.5px; }
+  .out .ln { height:5px; border-radius:3px; background:rgba(27,24,21,.11); }
+  .out .flag { font-size:13px; font-weight:700; color:#2C6B37; letter-spacing:-0.01em; }
+
+  /* Emoji step cards, kept as content. Ruled, not boxed. */
+  .how { margin-top:34px; display:grid; gap:0 28px; grid-template-columns:1fr; }
+  @media (min-width:760px){ .how { grid-template-columns:repeat(4,1fr); } }
+  .hc { padding:20px 0; border-top:1px solid var(--rule); }
+  .hc.main { border-top:3px solid var(--clay); }
+  .hc .em { font-size:24px; line-height:1; }
+  .hc h3 { margin-top:10px; font-size:16px; font-weight:720; letter-spacing:-0.02em; }
+  .hc.main h3 { color:var(--clay-deep); }
+  .hc p { margin-top:5px; font-size:13.5px; line-height:1.5; color:var(--ink-2); }
+  .hc .tbd { color:var(--amber); font-weight:640; }
+
+  /* Pricing: columns divided by rules. No card boxes. */
+  .tiers { margin-top:34px; display:grid; gap:0; grid-template-columns:1fr; }
+  @media (min-width:760px){ .tiers { grid-template-columns:repeat(3,1fr); } }
+  .tier { padding:24px 0; border-top:1px solid var(--rule); }
+  @media (min-width:760px){
+    .tier { padding:24px 28px; border-left:1px solid var(--rule-soft); border-top:1px solid var(--ink); }
+    .tier:first-child { border-left:none; padding-left:0; }
+    .tier:last-child { padding-right:0; }
+  }
+  .tier .tname { font-size:11.5px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); }
+  .tier .tprice { margin-top:12px; font-size:38px; font-weight:780; letter-spacing:-0.045em; color:var(--amber); line-height:1; }
+  .tier p { margin-top:12px; font-size:14px; line-height:1.55; color:var(--ink-2); }
+  .note { margin-top:22px; font-size:13.5px; color:var(--ink-3); }
+  .note .tbd { color:var(--amber); font-weight:640; }
+</style>
+</head>
+<body>
+<div class="bg"></div><div class="grain"></div>
+<div class="page">
+
+<!-- ==================== HOME ==================== -->
+<div data-view="home">
+  <div class="wrap">
+    <header class="sitebar">
+      <a class="sitemark" href="#"><i></i>midsesh</a>
+      <nav class="sitenav"><a href="#">Contact</a><a href="#">Privacy</a><a href="#">Sign in</a></nav>
+    </header>
+
+    <section class="hero">
+      <div>
+        <h1>Work,<br>delivered.</h1>
+        <p class="sub">Pick a service. An agent does the work, a human expert owns the outcome. You approve before you pay.</p>
+        <div class="findbar">
+          <input type="text" placeholder="Or describe what you need done">
+          <button>Find</button>
+        </div>
+        <div class="herometa">Six services. Fixed scope, stated price, defined output.</div>
+      </div>
+      <div class="idx">
+        <span class="micro">The catalogue</span>
+        <ol>
+          <li><span class="n">01</span><a href="#">UGC Ads</a></li>
+          <li><span class="n">02</span><a href="#">LinkedIn Marketeer</a></li>
+          <li><span class="n">03</span><a href="#">RateMyWipe</a></li>
+          <li><span class="n">04</span><a href="#">Voice Outbound</a></li>
+          <li><span class="n">05</span><a href="#">Video Editing</a></li>
+          <li><span class="n">06</span><a href="#">Product Explainer Videos</a></li>
+        </ol>
+      </div>
+    </section>
+  </div>
+
+  <div class="wrap">
+    <section class="sec">
+      <div class="shead">
+        <div>
+          <span class="micro">01 / Services</span>
+          <h2>Six ways to take work off your plate</h2>
+        </div>
+        <p>Fixed scope, stated price, defined output. Every service is run by an agent with a human expert accountable for the result.</p>
+      </div>
+
+      <div class="cat">
+        <a class="row" href="ugc.html">
+          <span class="n">01</span>
+          <div class="thumb"><video src="assets/midsesh-promo.mp4" autoplay muted loop playsinline></video></div>
+          <div class="rmain">
+            <div class="rtop"><h3>UGC Ads</h3><span class="badge b-ha">Human + Agent</span></div>
+            <p>Send your product link and an ad you like. We research it, script it, and send back a finished UGC video within 24 hours.</p>
+          </div>
+          <div class="rprice">$29 first ad<small>Packs from $395 a month</small></div>
+          <span class="arw">&rarr;</span>
+        </a>
+
+        <a class="row" href="linkedin.html">
+          <span class="n">02</span>
+          <div class="thumb post">
+            <div class="pk-h"><span class="pk-av"></span><span class="pk-l" style="width:26px"></span></div>
+            <div class="pk-l"></div><div class="pk-l" style="width:72%"></div>
+            <div class="pk-m"></div>
+            <div class="pk-h"><span class="pk-d"></span><span class="pk-l" style="width:14px"></span><span class="pk-l" style="width:14px"></span></div>
+          </div>
+          <div class="rmain">
+            <div class="rtop"><h3>LinkedIn Marketeer</h3><span class="badge b-ha">Human + Agent</span></div>
+            <p>Your LinkedIn all handled by our agents. Posts, comments, and engagements all reviewed by a human before anything ships.</p>
+          </div>
+          <div class="rprice">$100<small>per 10k impressions in your audience</small></div>
+          <span class="arw">&rarr;</span>
+        </a>
+
+        <a class="row" href="ratemywipe.html">
+          <span class="n">03</span>
+          <div class="thumb mark">R</div>
+          <div class="rmain">
+            <div class="rtop"><h3>RateMyWipe</h3><span class="badge b-free">Agent · Free</span></div>
+            <p>Our agent reads your AI coding transcripts and rates your wipe coding from 1 to 5, with the exact skill packs and repos to level up.</p>
+          </div>
+          <div class="rprice">Free<small>Open source on GitHub</small></div>
+          <span class="arw">&rarr;</span>
+        </a>
+
+        <a class="row" href="voice.html">
+          <span class="n">04</span>
+          <div class="thumb mark">V</div>
+          <div class="rmain">
+            <div class="rtop"><h3>Voice Outbound</h3><span class="badge b-ag">Agent + Human QA</span></div>
+            <p>Give us your call list and script. The voice agent makes the calls, qualifies the leads, and sends you the notes.</p>
+            <span class="livetag"><i></i>Talk to the agent before you buy</span>
+          </div>
+          <div class="rprice"><span class="tbd">Price TBD</span></div>
+          <span class="arw">&rarr;</span>
+        </a>
+
+        <a class="row" href="video-editing.html">
+          <span class="n">05</span>
+          <div class="thumb mark">E</div>
+          <div class="rmain">
+            <div class="rtop"><h3>Video Editing</h3><span class="badge b-ha">Human + Agent</span></div>
+            <p>Send raw footage. Get back an edited video, ready to post. Cuts, captions, and sound handled.</p>
+          </div>
+          <div class="rprice"><span class="tbd">Price TBD</span></div>
+          <span class="arw">&rarr;</span>
+        </a>
+
+        <a class="row" href="explainer.html">
+          <span class="n">06</span>
+          <div class="thumb mark">P</div>
+          <div class="rmain">
+            <div class="rtop"><h3>Product Explainer Videos</h3><span class="badge b-ha">Human + Agent</span></div>
+            <p>Pick a template, send your product, get a launch-ready explainer video at a fixed price per template.</p>
+          </div>
+          <div class="rprice">Fixed per template<small><span class="tbd">Prices TBD</span></small></div>
+          <span class="arw">&rarr;</span>
+        </a>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="shead">
+        <div>
+          <span class="micro">02 / How it works</span>
+          <h2>You approve. Then you pay.</h2>
+        </div>
+      </div>
+      <div class="steps">
+        <div class="step"><div class="n">01</div><h3>Pick a service</h3><p>Each one has a fixed scope, a stated price, and a defined output.</p></div>
+        <div class="step"><div class="n">02</div><h3>Give the input</h3><p>A short structured form. Links, files, a brief. Two minutes, not a project setup.</p></div>
+        <div class="step"><div class="n">03</div><h3>Agent and expert deliver</h3><p>The agent does the work. A human expert reviews it and owns the outcome.</p></div>
+        <div class="step"><div class="n">04</div><h3>Approve, then pay</h3><p>You see the output first. On sample-first services you pay only if you want it.</p></div>
+      </div>
+    </section>
+  </div>
+
+  <section class="anchor">
+    <div class="wrap">
+      <h2>Not another tool to learn. Not a subscription to figure out.</h2>
+      <p>You do your work best. We handle the rest, and we get paid for outputs, not access.</p>
+      <div class="btnrow"><a class="btn ondark" href="#">Looking for a human AI expert instead? &rarr;</a></div>
+    </div>
+  </section>
+
+  <div class="wrap"><div class="foot">midsesh · Contact · Privacy</div></div>
+</div>
+
+<!-- ==================== VOICE ==================== -->
+<div data-view="voice" hidden>
+  <div class="wrap">
+    <header class="sitebar">
+      <a class="sitemark" href="#"><i></i>midsesh</a>
+      <nav class="sitenav"><a href="#">All services</a><a href="#">Contact</a><a href="#">Sign in</a></nav>
+    </header>
+
+    <section class="dhead">
+      <div>
+        <span class="micro lbl">Agent + Human QA</span>
+        <h1>Voice Outbound</h1>
+        <p class="promise">Give us your call list and script. The voice agent makes the calls, qualifies the leads, and sends you the notes.</p>
+        <div class="priceline">Price <span class="tbd">TBD</span></div>
+        <div class="btnrow">
+          <a class="btn oncream" href="#">Start a run</a>
+          <span class="nocard">Hear the agent first</span>
+        </div>
+      </div>
+      <div class="demo">
+        <div>
+          <div class="dt1"><span class="live"></span>Talk to the agent</div>
+          <div class="dt2">Same voice that calls your list. Judge it before you buy. <span class="tbd">Demo TBD</span></div>
+        </div>
+        <button class="dcall">Call now</button>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="shead">
+        <div>
+          <span class="micro">01 / Input, output</span>
+          <h2>A list in. Qualified leads out.</h2>
+        </div>
+      </div>
+      <div class="io">
+        <div>
+          <div class="inrow">
+            <div class="ico list"><i></i><i></i><i></i><i></i><i></i></div>
+            <div><div class="t1">Your call list</div><div class="t2">CSV of names and numbers</div></div>
+          </div>
+          <div class="inrow">
+            <div class="ico doc"><i></i><i></i><i></i></div>
+            <div><div class="t1">Your script</div><div class="t2">or a transcript of a call that worked</div></div>
+          </div>
+          <div class="inrow">
+            <div class="ico chk">&check;</div>
+            <div><div class="t1">What counts as qualified</div><div class="t2">your criteria, not ours</div></div>
+          </div>
+        </div>
+        <div class="ioarw">&rarr;</div>
+        <div class="out">
+          <div class="otop">
+            <div class="who"><div class="av"></div><div><div class="nm"></div><div class="sb"></div></div></div>
+            <span class="tag">QUALIFIED</span>
+          </div>
+          <div class="wave">
+            <i style="height:18%"></i><i style="height:34%"></i><i style="height:62%"></i><i style="height:41%"></i>
+            <i style="height:78%"></i><i style="height:52%"></i><i style="height:88%"></i><i style="height:36%"></i>
+            <i style="height:64%"></i><i style="height:94%"></i><i style="height:44%"></i><i style="height:70%"></i>
+            <i style="height:28%"></i><i style="height:58%"></i><i style="height:82%"></i><i style="height:39%"></i>
+            <i style="height:66%"></i><i style="height:47%"></i><i style="height:74%"></i><i style="height:31%"></i>
+            <i style="height:55%"></i><i style="height:86%"></i><i style="height:42%"></i><i style="height:24%"></i>
+            <i style="height:60%"></i><i style="height:33%"></i><i style="height:16%"></i>
+          </div>
+          <div class="meta"><span>Call 3:12</span><span>Recording + transcript</span></div>
+          <div class="notes">
+            <span class="micro">Notes</span>
+            <div class="ln"></div><div class="ln" style="width:78%"></div><div class="ln" style="width:56%"></div>
+            <div class="flag">Meeting booked for Thursday</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="shead">
+        <div>
+          <span class="micro">02 / How it works</span>
+          <h2>The agent calls. A person checks.</h2>
+        </div>
+      </div>
+      <div class="how">
+        <div class="hc"><div class="em">📇</div><h3>We load your list</h3><p>Numbers, script, and your qualifying criteria.</p></div>
+        <div class="hc"><div class="em">☎️</div><h3>The agent calls</h3><p>Through the list, on the hours you set.</p></div>
+        <div class="hc main"><div class="em">🧑‍⚖️</div><h3>A human checks the calls</h3><p>Before any lead is marked qualified. <span class="tbd">Scope TBD</span></p></div>
+        <div class="hc"><div class="em">📋</div><h3>You get the notes</h3><p>Outcome, notes, and the recording for each call.</p></div>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="shead">
+        <div>
+          <span class="micro">03 / Pricing</span>
+          <h2>Three models on the table</h2>
+        </div>
+        <p>The model is not decided yet. These are the three under consideration, with the trade-off written out.</p>
+      </div>
+      <div class="tiers">
+        <div class="tier">
+          <div class="tname">Per call</div>
+          <div class="tprice">TBD</div>
+          <p>You pay for dials made, whoever picks up. Cheapest per unit, and the risk of a bad list sits with you.</p>
+        </div>
+        <div class="tier">
+          <div class="tname">Per qualified lead</div>
+          <div class="tprice">TBD</div>
+          <p>You pay only for leads that clear your criteria. The risk of a bad list sits with us.</p>
+        </div>
+        <div class="tier">
+          <div class="tname">Monthly</div>
+          <div class="tprice">TBD</div>
+          <p>A set volume of calls a month at a flat rate. Predictable for both sides once volume is known.</p>
+        </div>
+      </div>
+      <div class="note">Pick one and it replaces this section. <span class="tbd">Open question</span></div>
+    </section>
+  </div>
+
+  <section class="anchor">
+    <div class="wrap">
+      <h2>Talk to the agent before you buy.</h2>
+      <p>The demo on this page is the same voice that calls your list. You judge the quality yourself, before anything is scheduled and before you send us a single number.</p>
+      <div class="btnrow"><a class="btn solid" href="#">Call the agent</a></div>
+    </div>
+  </section>
+
+  <div class="wrap"><div class="foot">midsesh · Contact · Privacy</div></div>
+</div>
+
+</div>
+<script>
+  var p = new URLSearchParams(location.search).get('p') || 'home';
+  document.querySelectorAll('[data-view]').forEach(function(el){ el.hidden = el.dataset.view !== p; });
+  // Measure the BODY box, not documentElement.scrollHeight. The parent sets the
+  // iframe's height from this number, and scrollHeight is floored by the viewport,
+  // so reporting it feeds the parent's own value straight back and the frame never
+  // grows past its first guess.
+  function reportH(){
+    try { parent.postMessage({ dirHeight: Math.ceil(document.body.getBoundingClientRect().height), src: location.href }, '*'); } catch(e){}
+  }
+  addEventListener('load', reportH);
+  addEventListener('resize', reportH);
+  if (window.ResizeObserver) new ResizeObserver(reportH).observe(document.body);
+  setTimeout(reportH, 400); setTimeout(reportH, 1200);
+</script>
+</body>
+</html>

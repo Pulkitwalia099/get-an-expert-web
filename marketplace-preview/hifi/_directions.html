@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Three directions on real content</title>
+<style>
+  :root {
+    --shell:#16161A; --shell-2:#1E1E23; --shell-3:#2A2A31;
+    --edge:rgba(255,255,255,.12); --edge-soft:rgba(255,255,255,.07);
+    --fg:#EDEBE6; --fg-2:#9B978F; --fg-3:#6E6A63;
+    --hot:#E0A56E;
+    --ease:cubic-bezier(0.23,1,0.32,1);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { background:var(--shell); }
+  body {
+    font-family:-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
+    color:var(--fg); -webkit-font-smoothing:antialiased; letter-spacing:-0.006em;
+  }
+
+  .bar { position:sticky; top:0; z-index:20; background:rgba(22,22,26,.92);
+    backdrop-filter:blur(14px); border-bottom:1px solid var(--edge);
+    display:flex; align-items:center; gap:18px; flex-wrap:wrap; padding:11px clamp(12px,2vw,20px); }
+  .title { font-size:13.5px; font-weight:700; letter-spacing:-0.02em; white-space:nowrap; }
+  .title span { color:var(--fg-3); font-weight:400; margin-left:8px; }
+
+  .seg { display:flex; background:var(--shell-2); border:1px solid var(--edge-soft); border-radius:8px; padding:3px; gap:2px; }
+  .seg button { font:inherit; font-size:12.5px; font-weight:620; color:var(--fg-2); background:transparent;
+    border:none; border-radius:6px; padding:6px 12px; cursor:pointer; white-space:nowrap;
+    transition:color 140ms var(--ease), background 140ms var(--ease), transform 140ms var(--ease); }
+  @media (hover:hover) and (pointer:fine){ .seg button:hover { color:var(--fg); } }
+  .seg button:active { transform:scale(0.97); }
+  .seg button[aria-pressed="true"] { background:var(--shell-3); color:var(--fg); }
+  .seg.dirs button[aria-pressed="true"] { background:var(--hot); color:#1B1512; }
+  .seg.dirs[data-hidden="1"] { display:none; }
+  .hint { margin-left:auto; font-size:11.5px; color:var(--fg-3); white-space:nowrap; }
+  .hint b { color:var(--fg-2); font-weight:600; }
+  @media (max-width:860px){ .hint { display:none; } }
+
+  .stage { padding:14px clamp(12px,2vw,20px) 70px; }
+  .grid { display:grid; gap:14px; grid-template-columns:repeat(3,minmax(0,1fr)); align-items:start; }
+  .grid[data-mode="full"] { grid-template-columns:minmax(0,1fr); }
+  .grid[data-mode="full"] .col[data-off="1"] { display:none; }
+  /* Three columns of a 1360px render need real width. Below that, stack. */
+  @media (max-width:900px){ .grid { grid-template-columns:minmax(0,1fr); gap:26px; } }
+
+  .col { min-width:0; }
+  .colhead { display:flex; align-items:baseline; gap:10px; padding:0 2px 9px; }
+  .colhead .k { font-size:11px; font-weight:760; letter-spacing:.12em; text-transform:uppercase; color:var(--hot); }
+  .colhead .nm { font-size:13.5px; font-weight:700; letter-spacing:-0.02em; }
+  .colhead .desc { font-size:11.5px; color:var(--fg-3); min-width:0; overflow:hidden;
+    text-overflow:ellipsis; white-space:nowrap; }
+  .colhead .open { margin-left:auto; font-size:11.5px; color:var(--fg-2); text-decoration:none;
+    border:1px solid var(--edge); border-radius:6px; padding:4px 9px; white-space:nowrap;
+    transition:transform 140ms var(--ease), border-color 140ms var(--ease), color 140ms var(--ease); }
+  @media (hover:hover) and (pointer:fine){ .colhead .open:hover { color:var(--fg); border-color:var(--fg-3); } }
+  .colhead .open:active { transform:scale(0.97); }
+
+  .frame { position:relative; overflow:hidden; border:1px solid var(--edge);
+    border-radius:10px; background:#F4F0E8; }
+  .frame iframe { display:block; border:0; transform-origin:top left; }
+  .why { margin-top:9px; font-size:12px; line-height:1.5; color:var(--fg-2); padding:0 2px; }
+  .why b { color:var(--fg); font-weight:640; }
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <div class="title">Three directions <span>cream and terracotta, freeze lifted</span></div>
+
+  <div class="seg" id="pageSeg">
+    <button data-page="home" aria-pressed="true">Home</button>
+    <button data-page="voice" aria-pressed="false">Voice Outbound</button>
+  </div>
+
+  <div class="seg" id="modeSeg">
+    <button data-mode="compare" aria-pressed="true">Side by side</button>
+    <button data-mode="full" aria-pressed="false">Full size</button>
+  </div>
+
+  <div class="seg dirs" id="dirSeg" data-hidden="1">
+    <button data-dir="a" aria-pressed="true">A</button>
+    <button data-dir="b" aria-pressed="false">B</button>
+    <button data-dir="c" aria-pressed="false">C</button>
+  </div>
+
+  <div class="hint">Keys <b>1 2 3</b> a direction · <b>0</b> compare · <b>H V</b> page</div>
+</header>
+
+<main class="stage">
+  <div class="grid" id="grid" data-mode="compare">
+
+    <section class="col" data-dir="a">
+      <div class="colhead">
+        <span class="k">A</span><span class="nm">Ledger</span>
+        <span class="desc">Catalogue rows, left aligned, no aurora</span>
+        <a class="open" href="_dir-a.html" target="_blank" rel="noopener">Open</a>
+      </div>
+      <div class="frame"><iframe src="_dir-a.html?p=home" title="Direction A"></iframe></div>
+      <p class="why"><b>Aurora deleted.</b> Flat cream, paper grain, one warm halo. The six services stop being floating cards and become a ruled index with prices in a column you can scan. Terracotta is structural: numerals, rules, the arrow. One ink-dark band as an anchor. No shadows anywhere.</p>
+    </section>
+
+    <section class="col" data-dir="b" data-off="1">
+      <div class="colhead">
+        <span class="k">B</span><span class="nm">Studio</span>
+        <span class="desc">Same shape, warm aurora, real card hierarchy</span>
+        <a class="open" href="_dir-b.html" target="_blank" rel="noopener">Open</a>
+      </div>
+      <div class="frame"><iframe src="_dir-b.html?p=home" title="Direction B"></iframe></div>
+      <p class="why"><b>Closest to what you have.</b> The aurora keeps its softness but every stop turns warm, with a vignette so cream still owns the edges. Cards get three real weights instead of one, two-layer shadows instead of haze, and the sections alternate into bands so the page has a rhythm.</p>
+    </section>
+
+    <section class="col" data-dir="c" data-off="1">
+      <div class="colhead">
+        <span class="k">C</span><span class="nm">Terracotta</span>
+        <span class="desc">Brand colour becomes a surface, not an accent</span>
+        <a class="open" href="_dir-c.html" target="_blank" rel="noopener">Open</a>
+      </div>
+      <div class="frame"><iframe src="_dir-c.html?p=home" title="Direction C"></iframe></div>
+      <p class="why"><b>Terracotta leads.</b> The hero is a full terracotta panel and everything under it goes quiet: flat cream, hairline rules, zero shadows. A terracotta block returns roughly every three sections. The accent that was doing 1% of the work now carries the page.</p>
+    </section>
+
+  </div>
+</main>
+
+<script>
+(function(){
+  var BASE_W = 1360;             // logical desktop width each direction renders at
+  var grid    = document.getElementById('grid');
+  var pageSeg = document.getElementById('pageSeg');
+  var modeSeg = document.getElementById('modeSeg');
+  var dirSeg  = document.getElementById('dirSeg');
+  var cols    = [].slice.call(grid.querySelectorAll('.col'));
+  var state   = { page:'home', mode:'compare', dir:'a' };
+  var heights = { a:2600, b:2600, c:2600 };
+
+  function colOf(dir){ return cols.filter(function(c){ return c.dataset.dir === dir; })[0]; }
+
+  // Scale a 1360px-wide render down into whatever the column actually is, then
+  // set the clipping frame to the scaled height so the whole page scrolls as one.
+  function layout(){
+    cols.forEach(function(col){
+      var dir = col.dataset.dir;
+      var frame = col.querySelector('.frame');
+      var f = col.querySelector('iframe');
+      var h = heights[dir] || 2600;
+      var w = frame.clientWidth;
+      if (!w) return;
+      var s = state.mode === 'full' ? 1 : w / BASE_W;
+      f.style.width  = (state.mode === 'full' ? w : BASE_W) + 'px';
+      f.style.height = h + 'px';
+      f.style.transform = 'scale(' + s + ')';
+      frame.style.height = Math.round(h * s) + 'px';
+    });
+  }
+
+  function render(){
+    grid.dataset.mode = state.mode;
+    cols.forEach(function(col){
+      col.dataset.off = (state.mode === 'full' && col.dataset.dir !== state.dir) ? '1' : '0';
+    });
+    dirSeg.dataset.hidden = state.mode === 'full' ? '0' : '1';
+    [].forEach.call(pageSeg.children, function(b){ b.setAttribute('aria-pressed', String(b.dataset.page === state.page)); });
+    [].forEach.call(modeSeg.children, function(b){ b.setAttribute('aria-pressed', String(b.dataset.mode === state.mode)); });
+    [].forEach.call(dirSeg.children,  function(b){ b.setAttribute('aria-pressed', String(b.dataset.dir  === state.dir));  });
+    requestAnimationFrame(layout);
+  }
+
+  function setPage(p){
+    if (state.page === p) return;
+    state.page = p;
+    cols.forEach(function(col){
+      var f = col.querySelector('iframe');
+      f.src = '_dir-' + col.dataset.dir + '.html?p=' + p;
+    });
+    render();
+  }
+
+  pageSeg.addEventListener('click', function(e){
+    var b = e.target.closest('button'); if (b) setPage(b.dataset.page);
+  });
+  modeSeg.addEventListener('click', function(e){
+    var b = e.target.closest('button'); if (b) { state.mode = b.dataset.mode; render(); }
+  });
+  dirSeg.addEventListener('click', function(e){
+    var b = e.target.closest('button'); if (b) { state.dir = b.dataset.dir; render(); }
+  });
+
+  addEventListener('keydown', function(e){
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    var k = e.key.toLowerCase();
+    if (k === '1' || k === '2' || k === '3') { state.mode = 'full'; state.dir = 'abc'[+k - 1]; render(); }
+    else if (k === '0') { state.mode = 'compare'; render(); }
+    else if (k === 'h') setPage('home');
+    else if (k === 'v') setPage('voice');
+  });
+
+  // Each direction reports its own document height so the frame never guesses.
+  addEventListener('message', function(e){
+    if (!e.data || typeof e.data.dirHeight !== 'number') return;
+    var hit = cols.filter(function(c){ return c.querySelector('iframe').contentWindow === e.source; })[0];
+    if (!hit) return;
+    heights[hit.dataset.dir] = e.data.dirHeight;
+    layout();
+  });
+
+  addEventListener('resize', layout);
+  render();
+})();
+</script>
+</body>
+</html>
