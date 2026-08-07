@@ -3,13 +3,6 @@
 import { useState } from 'react';
 import { track } from '@/lib/analytics';
 import { useMe } from '@/components/useMe';
-import { SIGNUP_CREDIT_CENTS, coversEveryPrice, formatCents } from '@/lib/credit-math';
-import { MAIN_SETUPS } from '@/lib/setups';
-
-// Whether every setup in the catalog is covered by the welcome credit. Read
-// once at module scope: the catalog is static, so this is a constant that
-// happens to be computed rather than something to work out per render.
-const FIRST_FREE = coversEveryPrice(MAIN_SETUPS.map((s) => s.price));
 
 // Sign in, or who you are signed in as, in the site bar.
 //
@@ -26,14 +19,11 @@ export default function AccountLink() {
 
   if (!me || !me.available) return null;
 
-  // Signed out, this is an offer rather than a chore. "Sign in" describes
-  // paperwork and reads as one more nav link beside Contact and Privacy.
-  //
-  // It names the outcome, not the mechanism. "Get $75 credit" makes a person
-  // do arithmetic against a price they have not seen yet; "First setup free"
-  // is a thing they can act on. The claim is checked against the catalog
-  // rather than typed, so a price rise or a smaller grant changes the words
-  // instead of quietly making them a lie.
+  // This used to read "First setup free", naming the outcome rather than the
+  // mechanism. That was the right call while the setups catalog was the
+  // product being sold from this bar. The marketplace is the front door now,
+  // and the sentence advertises a different product to everyone who lands on
+  // it, which is worse than plain. So: the mechanism, deliberately.
   if (!me.signedIn) {
     return (
       <a
@@ -41,7 +31,7 @@ export default function AccountLink() {
         href="/api/auth/google"
         onClick={() => track('signin_started', { source: 'sitebar' })}
       >
-        {FIRST_FREE ? 'First setup free' : `Get ${formatCents(SIGNUP_CREDIT_CENTS)} credit`}
+        Sign in
       </a>
     );
   }

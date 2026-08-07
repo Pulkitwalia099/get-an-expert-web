@@ -10,6 +10,89 @@ live Next.js app. Read the progress log below, then continue from
 
 ## 0. Progress log
 
+### Session 6 (2026-08-07): the redesign is over. The existing system stays.
+
+**This supersedes session 5 entirely. The design freeze is back on.**
+
+- **DECISION, made by the user on 2026-08-07 by looking at rendered pages.** The
+  cream `#F6F3ED` / terracotta `#C4593C` system, glass cards, aurora background
+  and 16px radii **stay exactly as they are**, on the home page and on all six
+  detail pages. Nothing about the visual system changes.
+- **Two redesigns have now been built and rejected.** Swiss Industrial Print in
+  session 5 (PR #31 closed, branch `claude/swiss-marketplace-preview-amfbza`
+  abandoned). Then three cream directions in session 6: **A Ledger** (aurora
+  deleted, flat cream with paper grain, SKUs as a ruled catalogue, ink-dark
+  anchor band, no shadows), **B Studio** (aurora recoloured all warm with a
+  vignette, three card elevation tiers, two-layer shadows, alternating bands)
+  and **C Terracotta** (full terracotta hero panel, quiet cream below it).
+  All three were rendered on real home and Voice Outbound content and all three
+  were rejected.
+- **Do not propose a fourth.** Not brutalist, not industrial, not macro-grotesk,
+  and not another pass at cream. The HARD RULE in "Sessions 1 and 2" below is
+  the governing rule again, in full, with no exception. `SWISS-HANDOFF.md` is
+  now dead; keep it only as a record of what was tried.
+- **The three direction files were deleted.** They live in history at `ee1d8e8`
+  on branch `design/cream-directions` if anyone ever wants to see what was
+  rejected. Nothing references them.
+
+**Two real bugs were found and fixed on the way, and these survive:**
+
+- **The home tile contradicted the UGC page on price and on guarantee.** It said
+  "Pay only if you like it" and "Subscriptions from $10 per video" against a
+  page promising $29 first ad, packs at $395 / $890 / $1,690, and a 30% hook
+  rate replacement. The tile now reads `$29 first ad` / `Packs from $395 a
+  month`, the chip reads `30% hook rate promise`, and the body line ends at
+  "within 24 hours". Matches `710b988`.
+- **`.foot` was doing double duty in `index.html`**, as both the page footer and
+  the SKU card footer. The page footer's `text-align:center`, muted `--ink-3`
+  colour and 40px bottom padding were therefore landing on every price in the
+  grid, which is why prices rendered grey and centred instead of reading as
+  prices. Page footer renamed to `.pagefoot`. **If you add a card footer to any
+  other page, check for the same collision first.**
+
+Verified: 0px horizontal overflow at 390px on all seven pages.
+
+### Session 5 (2026-08-06): Swiss Industrial was chosen, then rejected in session 6
+
+**Historical. Do not act on this entry. See session 6 above.**
+
+- **DECISION, made by the user on 2026-08-06.** The visual system moves to
+  **Swiss Industrial Print**, the light substrate of the `industrial-brutalist-ui`
+  language in github.com/leonxlnx/taste-skill. Warm cream and terracotta are
+  retired. Ground `#F4F4F0`, carbon ink `#050505`, hazard red `#E61919` as the
+  only accent, zero border radius, no shadows, no gradients, no glass.
+- **The freeze is deliberately lifted for this work only.** The HARD RULE in
+  "Sessions 1 and 2" below still governs everything it does not cover, and the
+  new system gets frozen the same way once it is built. Do not treat this as
+  permission to improvise generally.
+- **Everything for the rebuild is in `SWISS-HANDOFF.md`.** The spec with real
+  values, the measured contrast table, the seven things already decided, the
+  five that need the user's eye, the build order and the verification list.
+  Open it before writing any code.
+- **The user decides by looking, not by reading questions.** Session 6 builds
+  `hifi/_decisions.html` first, renders all five open decisions side by side on
+  real content, and asks once. Do not open with a list of questions.
+- **How we got here.** Sessions 1 to 4 built the pages inside the old system.
+  A review against github.com/pbakaus/impeccable and taste-skill measured the
+  set and found: 26 font sizes with 10 between 10.5px and 15px, 13 corner radii
+  with 24 places bypassing the `--radius-card` token, an eyebrow above every
+  section on 6 of 7 pages, all 36 section heads centred, and all five brand
+  colours sitting inside the palette family taste-skill names as the AI default
+  for craft brands. Five design languages were rendered on real content and the
+  user picked Swiss Industrial.
+- **Audit items still to apply, tracked as T9 in the plan.** Item 03 (radii)
+  and item 04 (centred heads) are resolved by the language itself. Items 01
+  (one eyebrow per three sections), 02 (consolidated type ramp) and 05 (no em
+  dash in the `$ —` placeholder) still have to be done by hand. Items E2 (div
+  built fake previews) and E4 (six one-line cards) were left as the user's call
+  and should be raised again once the new language is in place.
+- **Nothing was converted in this session.** No page CSS changed. The only
+  files touched were `SWISS-HANDOFF.md`, this log, and `START-HERE.md`.
+- **Measured, so it is not an open question:** hazard red `#E61919` on paper
+  `#F4F4F0` is 4.22:1, which fails AA for body text. Red is legal for large
+  type, rules, fills and icons only. White on red is 4.65:1, so red buttons
+  with white labels are fine.
+
 ### Session 4 (2026-08-06): UGC offer redraft
 
 - **`hifi/ugc.html` fully redrafted around a new offer.** The old pricing said
@@ -342,16 +425,18 @@ live Next.js app. Read the progress log below, then continue from
   mobile, are in `hifi/shots/`. If you need to re-shoot, start the static
   server (`.claude/launch.json` has a `marketplace-preview` entry on port
   4319) and shoot against `http://localhost:4319`, not `file://`.
-- **Next session starts at:** UGC Ads is done and committed. Pick one:
-  1. **The next SKU.** LinkedIn Marketeer is the closest to ready since Rohit
-     wrote the copy and the price. Voice Outbound, Video Editing and Explainer
-     all still need a price decision, and each lays its options out on its own
-     page so it is a read-and-pick rather than a blank.
-  2. **Unblock the UGC launch.** Items 1a to 1f in section 7. 1f is the real
-     one: nothing can take the $29.
-  3. **Phase E, the port into Next.js:** six `/services/<slug>` routes plus the
-     tiles component on `app/page.tsx`. Guardrails in section 6. Note the video
-     assets are ~20MB in git and should move to blob storage in the port.
+- ~~Next session starts at the Swiss Industrial rebuild.~~ **Cancelled on
+  2026-08-07. There is no rebuild. See session 6.** The queue is now, in order:
+  - **The three open prices**, which are the only reason a visitor cannot find
+    out what a service costs: Voice Outbound (section 7 item 3), Video Editing
+    (item 4) and Explainer templates (item 5). Each page already renders the
+    options with their trade-offs, so these are a read-and-pick.
+  - **Unblocking the UGC launch**, items 1a to 1f. 1f is the hard one: there is
+    no payment path for the $29 at all.
+  - **Phase E, the Next.js port** with six `/services/<slug>` routes. The ~20MB
+    of video in `hifi/assets/` moves to blob storage during that port.
+  - Small and unclaimed: the `$ —` price placeholder still uses an em dash in
+    `voice.html`, `video-editing.html` and `explainer.html` (audit item 05).
 - **LinkedIn tile (done, session 2):** Rohit's commit b48a3a5 built the
   LinkedIn Marketeer flagship tile (2-span, post-screenshot skeleton,
   $100 per 10k impressions pricing). Taste pass in commit 5a7e4d1: copy
