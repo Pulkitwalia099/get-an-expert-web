@@ -140,6 +140,17 @@ button:active { transform: scale(0.96); }
 
 /* ---------- Background: soft aurora + grain ---------- */
 .bg {
+  /* pointer-events: none is not optional. This is a fixed, full-viewport,
+     positioned layer, so it paints above every non-positioned block in the
+     document and, left clickable, swallows the pointer over all of them. On
+     the marketplace grid that meant the cards took no hover and no click at
+     all: no lift, no CTA colour change, nothing on tap. The site bar kept
+     working only because each control in it carries its own z-index: 1, which
+     is how the bug stayed invisible.
+
+     .grain directly below already had this. It was the same trap, found once
+     and fixed on one of the two layers. */
+  pointer-events: none;
   position: fixed; inset: 0; z-index: 0;
   background:
     radial-gradient(52vw 44vh at 16% 8%,  rgba(255, 196, 156, .52), transparent 68%),

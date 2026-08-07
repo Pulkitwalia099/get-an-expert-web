@@ -16,6 +16,14 @@
   var EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
   var CONTACT = 'midsesh.social@gmail.com';
 
+  /* Which service this form belongs to, taken from the tab title so a new page
+     needs no wiring here. The suffix is dropped because this string becomes the
+     subject line of the alert email, and "AI UGC Campaign Engine · midsesh"
+     tells the person reading it one thing they already know. */
+  function serviceName() {
+    return document.title.replace(/ · midsesh$/, '').trim();
+  }
+
   function labelFor(el) {
     var wrap = el.closest('.field');
     var lab = wrap && wrap.querySelector('label');
@@ -90,7 +98,7 @@
          tells whoever reads it nothing about what they asked for. */
       var notify = form.dataset.notify === '1';
       var message = notify
-        ? 'Notify me when ' + document.title.replace(/^Hi-fi · /, '') + ' opens.'
+        ? 'Notify me when ' + serviceName() + ' opens.'
         : collect(form);
       if (!message) {
         fail('Fill in at least one field so we know what you need.');
@@ -108,7 +116,7 @@
           type: 'contact',
           name: '',
           email: email,
-          purpose: document.title.replace(/^Hi-fi · /, ''),
+          purpose: serviceName(),
           message: message,
         }),
       })
