@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Marketplace hero 1 · Aurora split</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=Instrument+Serif:ital@0;1&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
+<style>
+  :root{
+    --bg:#F6F3ED; --ink:#211E1A; --ink2:#5F594E; --ink3:#8B8375;
+    --line:rgba(33,30,26,.08); --glass:rgba(255,255,255,.55); --glass2:rgba(255,255,255,.78);
+    --accent:#C4593C; --accent-deep:#9E3F24; --accent-tint:rgba(196,89,60,.09);
+    --amber:#B97A1A; --green:#2F7A3D; --li:#0A66C2;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{width:1440px;height:900px;overflow:hidden;font-family:'Inter',-apple-system,system-ui,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;letter-spacing:-0.004em}
+  .bg{position:fixed;inset:0;background:
+    radial-gradient(52vw 44vh at 16% 8%, rgba(255,196,156,.52), transparent 68%),
+    radial-gradient(46vw 42vh at 86% 12%, rgba(206,190,255,.46), transparent 70%),
+    radial-gradient(58vw 50vh at 50% 104%, rgba(168,206,255,.42), transparent 70%)}
+  .grain{position:fixed;inset:0;opacity:.05;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E")}
+
+  .nav{position:relative;z-index:3;display:flex;align-items:center;justify-content:space-between;padding:26px 56px}
+  .mark{display:flex;align-items:center;gap:9px;font-size:17px;font-weight:700;letter-spacing:-0.02em}
+  .orb{width:22px;height:22px;border-radius:50%;background:linear-gradient(140deg,#E8A184,var(--accent));color:#fff;font-size:11px;display:grid;place-items:center;box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 3px 8px rgba(158,63,36,.3)}
+  .nav nav{display:flex;align-items:center;gap:30px;font-size:14.5px;color:var(--ink2);font-weight:500}
+  .signin{padding:9px 20px;border-radius:99px;background:var(--ink);color:#fff;font-weight:600;font-size:14px;box-shadow:0 6px 16px rgba(33,30,26,.18)}
+
+  .wrap{position:relative;z-index:2;display:grid;grid-template-columns:620px 1fr;gap:56px;padding:34px 0 0 96px;align-items:start}
+
+  .badge{display:inline-flex;align-items:center;gap:9px;padding:8px 16px;border-radius:99px;background:var(--glass2);border:1px solid rgba(255,255,255,.7);box-shadow:0 6px 18px rgba(45,32,22,.07);font-size:13px;font-weight:650;color:var(--ink2)}
+  .badge b{color:var(--accent-deep);font-weight:750;letter-spacing:.06em;font-size:11px}
+  h1{margin-top:26px;font-size:104px;line-height:1;letter-spacing:-0.045em;font-weight:750}
+  h1 span{color:var(--accent)}
+  .sub{margin-top:24px;font-size:20.5px;line-height:1.5;color:var(--ink2);max-width:560px}
+  .sub b{color:var(--ink);font-weight:600}
+  .ctas{margin-top:32px;display:flex;align-items:center;gap:14px}
+  .cta{display:inline-flex;align-items:center;gap:9px;padding:16px 30px;border-radius:99px;font-size:16.5px;font-weight:650}
+  .cta.p{background:var(--accent);color:#fff;box-shadow:0 12px 28px -6px rgba(158,63,36,.5)}
+  .cta.g{background:rgba(255,255,255,.55);border:1px solid rgba(33,30,26,.12);color:var(--ink)}
+  .trial{margin-top:16px;font-size:14px;color:var(--ink3)}
+  .trial b{color:var(--green);font-weight:650}
+
+  .steps{display:flex;gap:30px;margin-top:44px}
+  .step{max-width:132px}
+  .num{font-size:12px;font-weight:750;color:var(--accent);letter-spacing:.08em}
+  .step h4{font-size:13.5px;font-weight:650;margin-top:6px;letter-spacing:-0.01em}
+  .step p{font-size:12px;color:var(--ink3);margin-top:4px;line-height:1.4}
+
+  /* right: three SKU cards */
+  .stage{position:relative;height:800px}
+  .card{position:absolute;border-radius:16px;background:var(--glass2);backdrop-filter:blur(30px);border:1px solid rgba(255,255,255,.85);box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 26px 60px -18px rgba(45,32,22,.3)}
+  .chiprow{display:flex;gap:7px}
+  .chip{font-size:10px;font-weight:750;letter-spacing:.08em;text-transform:uppercase;padding:5px 10px;border-radius:99px;background:var(--accent-tint);color:var(--accent-deep)}
+  .chip.sf{background:rgba(185,122,26,.12);color:var(--amber)}
+  .chip.qa{background:rgba(47,122,61,.1);color:var(--green)}
+  .card h3{font-size:19px;font-weight:700;letter-spacing:-0.015em;margin-top:11px}
+  .card .desc{font-size:13px;color:var(--ink2);line-height:1.45;margin-top:6px}
+  .price{margin-top:12px;font-size:14.5px;font-weight:750}
+  .price small{display:block;font-size:11.5px;font-weight:400;color:var(--ink3);margin-top:2px}
+
+  .c-ugc{top:8px;left:0;width:452px;padding:18px;transform:rotate(-1.8deg);z-index:3}
+  .ugcrow{display:flex;gap:16px;margin-top:4px}
+  .vid{flex:none;width:100px;height:132px;border-radius:12px;position:relative;overflow:hidden;background:linear-gradient(160deg,#E8A184 0%,#C4593C 55%,#7A3520 100%);box-shadow:0 10px 22px -8px rgba(158,63,36,.5)}
+  .vid::after{content:"";position:absolute;left:36px;top:52px;border-left:16px solid rgba(255,255,255,.95);border-top:10px solid transparent;border-bottom:10px solid transparent}
+  .vid i{position:absolute;left:8px;bottom:8px;font-style:normal;font-size:10px;font-weight:650;color:#fff;background:rgba(0,0,0,.35);padding:3px 7px;border-radius:99px}
+  .meter{margin-top:12px;padding:10px 12px;border-radius:11px;background:rgba(255,255,255,.65);border:1px solid var(--line)}
+  .meter .t{font-size:11px;font-weight:650;color:var(--ink2)}
+  .meter .t b{color:var(--green)}
+  .track{position:relative;height:6px;border-radius:3px;background:rgba(33,30,26,.09);margin-top:7px}
+  .fill{position:absolute;left:0;top:0;bottom:0;width:62%;border-radius:3px;background:linear-gradient(90deg,var(--amber),var(--green))}
+  .mark30{position:absolute;left:62%;top:-3px;width:2px;height:12px;background:var(--ink)}
+
+  .c-li{top:296px;left:64px;width:430px;padding:18px;transform:rotate(1.4deg);z-index:2}
+  .post{margin-top:10px;padding:12px;border-radius:11px;background:#fff;border:1px solid var(--line)}
+  .prow{display:flex;align-items:center;gap:9px}
+  .pava{width:28px;height:28px;border-radius:50%;background:linear-gradient(140deg,#B9CBE2,#6B8BB1)}
+  .pl{height:7px;border-radius:4px;background:rgba(33,30,26,.1)}
+  .pl.a{width:110px}.pl.b{width:70px;margin-top:5px}
+  .plines{margin-top:11px;display:grid;gap:6px}
+  .pl.c{width:94%}.pl.e{width:56%}
+  .preact{display:flex;align-items:center;gap:7px;margin-top:11px;font-size:11px;font-weight:650;color:var(--ink3)}
+  .dotli{width:15px;height:15px;border-radius:50%;background:var(--li);display:inline-grid;place-items:center;color:#fff;font-size:8px;font-weight:800}
+
+  .c-ve{top:576px;left:8px;width:452px;padding:18px;transform:rotate(-1deg);z-index:1}
+  .tl{margin-top:12px;display:flex;gap:5px;align-items:center;position:relative;padding:9px;border-radius:11px;background:rgba(255,255,255,.65);border:1px solid var(--line)}
+  .clip{height:26px;border-radius:6px}
+  .k1{width:74px;background:#D9A78E}.k2{width:46px;background:#C7B9E2}.k3{width:96px;background:#A8C6E6}.k4{width:60px;background:#E6CBA8}.k5{width:38px;background:#D9A78E}
+  .head{position:absolute;left:150px;top:4px;bottom:4px;width:2.5px;border-radius:2px;background:var(--accent)}
+  .head::before{content:"";position:absolute;top:-1px;left:-4px;border-top:7px solid var(--accent);border-left:5px solid transparent;border-right:5px solid transparent}
+
+  .float{position:absolute;z-index:4;display:flex;align-items:center;gap:10px;border-radius:14px;background:var(--glass2);border:1px solid rgba(255,255,255,.9);box-shadow:0 16px 40px -8px rgba(45,32,22,.22);padding:12px 16px;backdrop-filter:blur(20px)}
+  .f1{right:64px;top:236px;transform:rotate(2deg)}
+  .fcheck{width:30px;height:30px;border-radius:50%;background:rgba(47,122,61,.12);color:var(--green);display:grid;place-items:center;font-size:14px;font-weight:800}
+  .f1 .t{font-size:12.5px;font-weight:650}
+  .f1 .s{font-size:11.5px;color:var(--ink3);margin-top:1px}
+</style>
+</head>
+<body>
+  <div class="bg"></div><div class="grain"></div>
+  <header class="nav">
+    <span class="mark"><span class="orb">✳</span>midsesh</span>
+    <nav><span>Services</span><span>How it works</span><span>For experts</span><span class="signin">Sign in</span></nav>
+  </header>
+  <main class="wrap">
+    <section>
+      <span class="badge"><b>HUMAN + AGENT</b> on every service</span>
+      <h1>Work,<br>delivered<span>.</span></h1>
+      <p class="sub">Pick a service. An agent does the work, <b>a human expert owns the outcome</b>, and you approve before you pay. Fixed scope, stated price, defined output.</p>
+      <div class="ctas">
+        <span class="cta p">Browse the services</span>
+        <span class="cta g">For experts</span>
+      </div>
+      <p class="trial"><b>$29</b> tries the flagship UGC ad, credited to your first month.</p>
+      <div class="steps">
+        <div class="step"><div class="num">01</div><h4>Pick a service</h4><p>Fixed scope and a stated price.</p></div>
+        <div class="step"><div class="num">02</div><h4>Give the input</h4><p>Links, files, a brief. Two minutes.</p></div>
+        <div class="step"><div class="num">03</div><h4>Agent and expert deliver</h4><p>The agent works, the expert reviews.</p></div>
+        <div class="step"><div class="num">04</div><h4>Approve, then pay</h4><p>You see the output first.</p></div>
+      </div>
+    </section>
+    <section class="stage">
+      <div class="card c-ugc">
+        <div class="chiprow"><span class="chip">Human + Agent</span><span class="chip sf">Sample first</span></div>
+        <h3>UGC Ads</h3>
+        <div class="ugcrow">
+          <div class="vid"><i>0:14</i></div>
+          <div>
+            <p class="desc">Product link, an ad you like, and the objective in. A finished UGC ad back in 24 hours.</p>
+            <div class="price">$29 first ad<small>credited to your first month</small></div>
+          </div>
+        </div>
+        <div class="meter"><div class="t">Hook rate floor <b>30%</b>. Any ad under it is replaced free.</div><div class="track"><div class="fill"></div><i class="mark30"></i></div></div>
+      </div>
+      <div class="card c-li">
+        <div class="chiprow"><span class="chip">Human + Agent</span></div>
+        <h3>LinkedIn Marketeer</h3>
+        <p class="desc">Posts, comments and engagement, human reviewed.</p>
+        <div class="post">
+          <div class="prow"><span class="pava"></span><div><div class="pl a"></div><div class="pl b"></div></div></div>
+          <div class="plines"><div class="pl c"></div><div class="pl e"></div></div>
+          <div class="preact"><span class="dotli">in</span>1,240 impressions this week</div>
+        </div>
+        <div class="price">$100 per 10k impressions<small>in your relevant audience</small></div>
+      </div>
+      <div class="card c-ve">
+        <div class="chiprow"><span class="chip">Human + Agent</span></div>
+        <h3>Video Editing</h3>
+        <p class="desc">Raw footage in. An edited video back, ready to post.</p>
+        <div class="tl"><span class="clip k1"></span><span class="clip k2"></span><span class="clip k3"></span><span class="clip k4"></span><span class="clip k5"></span><span class="head"></span></div>
+      </div>
+      <div class="float f1"><span class="fcheck">✓</span><div><div class="t">Expert sign off</div><div class="s">before anything ships</div></div></div>
+    </section>
+  </main>
+</body>
+</html>
