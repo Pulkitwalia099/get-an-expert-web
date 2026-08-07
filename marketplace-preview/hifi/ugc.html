@@ -197,15 +197,6 @@
   .byline .bt a { color:var(--accent-deep); font-weight:650; text-decoration:none;
     border-bottom:1px solid rgba(158,63,36,.35); }
 
-  /* Hook rate scale */
-  .scale { display:grid; gap:8px; grid-template-columns:repeat(2,1fr); margin-top:20px; }
-  @media (min-width:560px){ .scale { grid-template-columns:repeat(4,1fr); } }
-  .sc { background:rgba(255,255,255,.7); border:1px solid rgba(33,30,26,.12); border-radius:12px; padding:12px 10px; }
-  .sc b { display:block; font-size:20px; font-weight:750; letter-spacing:-0.02em; }
-  .sc span { display:block; font-size:11.5px; color:var(--ink-3); margin-top:2px; line-height:1.3; }
-  .sc.us { background:var(--accent-tint); border:1.5px solid rgba(158,63,36,.45); }
-  .sc.us b { color:var(--accent-deep); }
-
   /* Pricing */
   .tiers { display:grid; gap:14px; grid-template-columns:1fr; }
   @media (min-width:721px){ .tiers { grid-template-columns:repeat(3,1fr); } }
@@ -226,12 +217,7 @@
     border:1px solid rgba(158,63,36,.3); border-radius:999px; padding:9px; text-decoration:none; }
   .tier .tcta.solid { background:var(--accent-deep); color:#fff; }
 
-  /* Guarantee */
-  .guarantee { text-align:center; background:var(--glass); border:1px solid var(--line);
     border-radius:var(--radius-card); padding:30px 22px; }
-  .guarantee h2 { font-size:clamp(19px,3vw,24px); font-weight:700; letter-spacing:-0.02em; max-width:580px; margin:0 auto; }
-  .guarantee p { margin-top:10px; color:var(--ink-2); font-size:14.5px; }
-  .guarantee .limit { margin-top:14px; font-size:13px; color:var(--ink-3); max-width:520px; margin-left:auto; margin-right:auto; }
 
   /* Intake */
   .form { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:var(--radius-card);
@@ -288,9 +274,6 @@
       <span class="badge">Human + Agent</span><span class="samplechip">Sample first</span>
       <h1>UGC Ads</h1>
       <p class="promise">Send your product link, an ad you like, and what you want the ad to do. We research your category, script it, and send back a finished UGC ad.</p>
-      <div class="btnrow">
-        <a class="btn ghost" href="#samples">See what comes back</a>
-      </div>
     </div>
   </section>
 
@@ -341,7 +324,7 @@
   <!-- 2b · Worked example -->
   <section class="block">
     <div class="wrap">
-      <div class="shead"><span class="eyebrow">A real one</span><h2>The ad they sent. The ad they got.</h2></div>
+      <div class="shead"><span class="eyebrow">Worked example</span><h2>A real work sample</h2></div>
       <div class="compare">
         <div class="cpanel">
           <span class="lab">What they sent us</span>
@@ -349,7 +332,7 @@
             <video class="sync" src="assets/reference-sync.mp4" autoplay muted playsinline preload="auto"></video>
             <span class="metric">143.7K likes</span>
           </div>
-          <p class="credit">Someone else's post, used as the brief. Original by <a href="https://www.instagram.com/p/DbOGyXlNIed/" target="_blank" rel="noopener">@valerii.murr</a></p>
+          <p class="credit">The reel that was trending, by <a href="https://www.instagram.com/p/DbOGyXlNIed/" target="_blank" rel="noopener">@valerii.murr</a>. That was the inspiration.</p>
         </div>
         <div class="io-arrow">→</div>
         <div class="cpanel">
@@ -357,7 +340,7 @@
           <div class="cvid">
             <video class="sync" src="assets/outcome-sync.mp4" autoplay muted playsinline preload="auto"></video>
           </div>
-          <p class="credit">Same format, their product, their model.</p>
+          <p class="credit">Same format, same hook, the client's model.</p>
         </div>
       </div>
     </div>
@@ -372,10 +355,6 @@
         <div class="h2c"><div class="em">✍️</div><h3>We script and direct</h3><p>Hook, actor and pacing, set by your objective.</p></div>
         <div class="h2c main"><div class="em">🎬</div><h3>We make four, ship one</h3><p>Binning three is the point. Credits make that unaffordable.</p></div>
         <div class="h2c"><div class="em">🔁</div><h3>Next month builds on the winner</h3><p>You tell us what performed. We build around it.</p></div>
-      </div>
-      <div class="byline">
-        <span class="av" title="photo TBD"></span>
-        <span class="bt">Ads by <a href="https://www.instagram.com/blurred_ai/" target="_blank" rel="noopener">@blurred_ai</a> · 246K followers <span class="tbd">photo TBD</span></span>
       </div>
     </div>
   </section>
@@ -425,7 +404,6 @@
             <div><i>Ads</i><b>1</b></div>
             <div><i>You give us</i><b>3 things</b></div>
             <div><i>Back in</i><b>24 hours</b></div>
-            <div><i>Hook rate promise</i><b>No</b></div>
             <div><i>Credited if you subscribe</i><b>Yes</b></div>
           </div>
           <a class="tcta" href="#start">Get your first ad</a>
@@ -438,7 +416,6 @@
             <div><i>Objectives</i><b>2 a cycle</b></div>
             <div><i>Cycle</i><b>Monthly</b></div>
             <div><i>Starts with</i><b>A call</b></div>
-            <div><i>Hook rate promise</i><b>Yes</b></div>
           </div>
           <a class="tcta solid" href="#">Book a call</a>
         </div>
@@ -454,7 +431,6 @@
               <div><i>Objectives</i><b>All four</b></div>
               <div><i>Cycle</i><b>Monthly</b></div>
               <div><i>What won report</i><b>Yes</b></div>
-              <div><i>Hook rate promise</i><b>Yes</b></div>
             </div>
             <a class="tcta" href="#">Book a call</a>
           </div>
@@ -466,31 +442,25 @@
               <div><i>Objectives</i><b>All four</b></div>
               <div><i>Cycle</i><b>Weekly</b></div>
               <div><i>What won report</i><b>Weekly</b></div>
-              <div><i>Hook rate promise</i><b>Yes</b></div>
             </div>
             <a class="tcta" href="#">Book a call</a>
           </div>
         </div>
       </details>
       <p class="snote">Pause or cancel anytime.</p>
-    </div>
-  </section>
-
-  <!-- 7 · Guarantee -->
-  <section class="block">
-    <div class="wrap">
-      <div class="guarantee">
-        <h2>Any ad under a 30% hook rate, we replace free until it clears.</h2>
-        <p>Hook rate is the share of people still watching at three seconds. It is the one number your creative controls.</p>
-        <div class="scale">
-          <div class="sc"><b>20%</b><span>Failing</span></div>
-          <div class="sc"><b>28%</b><span>Meta median</span></div>
-          <div class="sc us"><b>30%</b><span>Our floor</span></div>
-          <div class="sc"><b>40%</b><span>Top 10%</span></div>
-        </div>
+      <!-- Moved out of "How it works", where it read as a credit line on the
+           samples. It belongs to the offer: this names the person accountable
+           for what a subscriber receives. "Leads", not "makes": the samples are
+           company work and he runs the video side. Do not turn this into a
+           personal authorship claim over each clip without checking who cut
+           them. Photo is still open, question 1a. -->
+      <div class="byline">
+        <span class="av" title="photo TBD"></span>
+        <span class="bt">The expert behind this is <a href="https://www.instagram.com/blurred_ai/" target="_blank" rel="noopener">@blurred_ai</a>, who leads our video side · 246K followers <span class="tbd">photo TBD</span></span>
       </div>
     </div>
   </section>
+
 
   <!-- 8 · Intake form -->
   <section class="block" id="start">
@@ -534,15 +504,19 @@
     <div class="wrap">
       <div class="shead"><span class="eyebrow">FAQ</span><h2>The fine print, plainly</h2></div>
       <div class="faq">
-        <details><summary>How does the hook rate promise work?</summary><p>Read the number in your own ads manager and tell us. Under 30% and we make another, free, until it clears. Applies to every monthly pack, not to the $29 first ad. We do not promise sales, cost per acquisition or return on ad spend, because those depend on your price, offer and landing page.</p></details>
+        <!-- The hook rate promise is gone from the offer, so its FAQ went with
+             it. This entry keeps the one sentence that was inside it: the
+             sales/CPA/ROAS disclaimer. It was deliberately placed there in
+             session 4 and deleting the guarantee should not silently delete it. -->
+        <details><summary>Do you promise results?</summary><p>No. We do not promise sales, cost per acquisition or return on ad spend, because those depend on your price, offer and landing page. What you are buying is the ad.</p></details>
         <details><summary>Why make four and send one?</summary><p>Judgment is what you are paying for. Generation is cheap for us and metered for you, so buying credits means running everything you made, including the two that should have been binned.</p></details>
         <details><summary>Who actually makes it?</summary><p>The agent researches, drafts and generates. A human picks the angle, directs the output and rejects most of it. Both are named above.</p></details>
         <details><summary>Which categories do you turn down?</summary><p>Regulated health claims, fitness transformations, finance, and anything needing real lived experience on camera. AI actors underperform there and get rejected more often. We say so rather than take the money.</p></details>
-        <details><summary>Do I need to give you ad account access?</summary><p>No. You report the hook rate yourself. Access is optional and only speeds up the what won report.</p></details>
+        <details><summary>Do I need to give you ad account access?</summary><p>No. Access is optional, and it only speeds up the what won report.</p></details>
         <details><summary>How fast is the first ad?</summary><p>In your inbox within 24 hours of a complete brief.</p></details>
         <details><summary>Why is the first ad watermarked?</summary><p>So you can judge it before anyone runs it. Say yes and we send the clean file, and the $29 comes off your first month.</p></details>
-        <details><summary>Revisions and ownership?</summary><p>Full usage rights once paid. <span class="tbd">TBD</span> Working proposal: one revision round per ad on a monthly pack.</p></details>
-        <details><summary>Can I pick the actor?</summary><p><span class="tbd">TBD</span> Not on the $29 ad. On a monthly pack we agree the casting on the call.</p></details>
+        <details><summary>Revisions and ownership?</summary><p>Full usage rights once paid. One revision on the $29 ad. Up to two revisions per ad on a monthly pack.</p></details>
+        <details><summary>Can I pick the actor?</summary><p>Not on the $29 ad. On a monthly pack we agree the casting on the call.</p></details>
         <details><summary>What happens after I subscribe?</summary><p>A call first. We take the full brief there, agree the objectives for the cycle, and set the casting. The three-field form is only for the $29 ad.</p></details>
       </div>
     </div>
@@ -552,8 +526,10 @@
   <section class="block cross">
     <div class="wrap">
       <div class="btnrow">
+        <!-- "Ask for something custom" removed. The chat on the home page is
+             what handles a custom ask, so a second door here was a dead link
+             competing with it. -->
         <a class="btn ghost" href="index.html">Browse all services</a>
-        <a class="btn ghost" href="#">Ask for something custom</a>
       </div>
     </div>
   </section>
