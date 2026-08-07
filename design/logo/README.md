@@ -18,6 +18,17 @@ The site renders the mark from `components/SeamMark.tsx`, which draws the ink
 arch with `currentColor` so it follows the text color around it. The files
 here are the fixed-color exports for use outside the app.
 
+Three places generate the mark rather than importing it, and each has a reason:
+`app/icon.svg` is the favicon, `app/opengraph-image.tsx` is the social card, and
+the static pages under `public/services/` and `marketplace-preview/hifi/` inline
+it because they have no build step to import through. Changing the mark means
+changing all of them, which is what the identical path data in each is for.
+
+The social card is drawn with JSX `svg` paths, not an `<img>` holding the same
+svg as a data URI. The renderer behind `ImageResponse` silently ignores the
+second form and returns a valid png with a hole where the logo should be, so
+that card has to be checked by eye rather than by status code.
+
 ## Color
 
 The kit uses the site tokens and nothing else.
