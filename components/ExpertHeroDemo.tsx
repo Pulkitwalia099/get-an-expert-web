@@ -2,14 +2,20 @@
 // LinkedIn post: on the left the way experts use AI today, a chat where the
 // person does every step between prompts; on the right the same job
 // agentized, sub-agents running the steps and the expert dropping feedback
-// at the review points. Server component: the loop is pure CSS keyframes
-// (xd* rules in globals.css), so there is no client JS and reduced-motion
-// browsers get the finished picture instead of the loop.
+// at the review points.
 //
-// Class contract with globals.css: .xa1 to .xa5 stage chat items into the
-// five phases of a 15 second cycle, .xg1 to .xg5 do the same for graph
-// nodes, .ca1 to .ca5 swap the caption line, .xd-youc pulses during the
-// review phase. Phase timing lives entirely in the CSS.
+// Each panel plays on demand. A visually hidden checkbox is the play
+// state: unchecked shows the finished scene with a play button, checked
+// runs the loop with a pause control. Play, pause and the loop itself are
+// all CSS (xd* rules in globals.css), so this stays a server component and
+// the controls work even on a static snapshot of the page. Reduced-motion
+// browsers get the finished picture and no controls.
+//
+// Class contract with globals.css: .xd-toggle is the checkbox, .xd-play
+// and .xd-stop the labels, .xa1 to .xa5 stage chat items into the five
+// phases of a 15 second cycle, .xg1 to .xg5 do the same for graph nodes,
+// .ca1 to .ca5 swap the caption line, .xd-youc pulses during the review
+// phase. Phase timing lives entirely in the CSS.
 
 const A_CAPTIONS = [
   'You ask for research',
@@ -40,13 +46,29 @@ function CaptionLine({ items, prefix }: { items: string[]; prefix: string }) {
   );
 }
 
+// The play state and its two faces. The labels are decoration around the
+// checkbox, so the checkbox carries the accessible name and the state.
+function PlayToggle({ id }: { id: string }) {
+  return <input type="checkbox" id={id} className="xd-toggle" aria-label="Play the demo" />;
+}
+
+function PlayControls({ id }: { id: string }) {
+  return (
+    <>
+      <label htmlFor={id} className="xd-play" aria-hidden="true" />
+      <label htmlFor={id} className="xd-stop" aria-hidden="true" />
+    </>
+  );
+}
+
 function ChatTodayPanel() {
   return (
     <div className="xd-panel">
       <div className="xd-head">
         <span className="xd-title">Your AI today</span>
-        <span className="xd-sub">You ask. The AI answers. Every step in between is still yours.</span>
+        <span className="xd-sub">You use a chat and disconnected tools. Every step in between is still yours.</span>
       </div>
+      <PlayToggle id="xd-play-today" />
       <div className="xd-win" aria-hidden="true">
         <div className="xd-lights">
           <i />
@@ -69,6 +91,7 @@ function ChatTodayPanel() {
         </div>
         <div className="xd-chip xa4">you rewrite the draft in your voice</div>
         <div className="xd-chip xa5">you scroll LinkedIn to see what works</div>
+        <PlayControls id="xd-play-today" />
       </div>
       <CaptionLine items={A_CAPTIONS} prefix="ca" />
     </div>
@@ -122,6 +145,7 @@ function AgentizedPanel() {
         <span className="xd-title">Your work, agentized</span>
         <span className="xd-sub">Sub-agents run the steps. You give feedback at the review points.</span>
       </div>
+      <PlayToggle id="xd-play-agentized" />
       <div className="xd-win xd-win-graph" aria-hidden="true">
         <svg viewBox="0 0 440 262" className="xd-graph">
           <defs>
@@ -175,6 +199,7 @@ function AgentizedPanel() {
             </text>
           </g>
         </svg>
+        <PlayControls id="xd-play-agentized" />
       </div>
       <CaptionLine items={B_CAPTIONS} prefix="cb" />
     </div>

@@ -1841,16 +1841,19 @@ a.cta { text-decoration: none; display: inline-block; }
 .exp-join p { margin-bottom: 14px; }
 
 /* ---------- Experts hero demo (ExpertHeroDemo) ---------- */
-/* Two looping panels on one 15s CSS cycle split into five 3s phases.
-   Chat items (.xa1-.xa5) pop in at their phase and hold until the loop
-   clears; graph parts (.xg1-.xg5) brighten the same way but dim instead of
-   vanishing; one caption line (.ca1-.ca5, .cb1-.cb5) narrates the phase. */
+/* Two panels that play on demand. The .xd-toggle checkbox is the play
+   state: unchecked shows the finished scene with a big play button,
+   checked runs a 15s CSS cycle split into five 3s phases. Chat items
+   (.xa1-.xa5) pop in at their phase and hold until the loop clears; graph
+   parts (.xg1-.xg5) brighten the same way but dim instead of vanishing;
+   one caption line (.ca1-.ca5, .cb1-.cb5) narrates the phase. */
 .xd {
   margin-top: 30px;
   display: grid; gap: 16px; grid-template-columns: 1fr 1fr; align-items: stretch;
 }
 @media (max-width: 720px) { .xd { grid-template-columns: 1fr; } }
 .xd-panel {
+  position: relative;
   display: flex; flex-direction: column;
   padding: 18px 18px 16px;
   background: rgba(255, 255, 255, .5);
@@ -1863,12 +1866,60 @@ a.cta { text-decoration: none; display: inline-block; }
 .xd-title { display: block; font-size: 15px; font-weight: 650; color: var(--ink); }
 .xd-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--ink-3); line-height: 1.45; }
 
+/* The play state, focusable but not visible. */
+.xd-toggle {
+  position: absolute; width: 1px; height: 1px;
+  margin: -1px; padding: 0; border: 0;
+  clip-path: inset(50%); overflow: hidden;
+}
+
 .xd-win {
+  position: relative;
   flex: 1; min-height: 296px;
   background: #fff; border: 1px solid #DAD3C7; border-radius: 14px;
   padding: 13px 14px 12px;
   display: flex; flex-direction: column; gap: 8px;
 }
+
+/* Play: a big centered button over the resting scene. */
+.xd-play {
+  position: absolute; left: 50%; top: 50%;
+  width: 56px; height: 56px; margin: -28px 0 0 -28px;
+  border-radius: 50%; cursor: pointer;
+  background: var(--accent-deep);
+  box-shadow: 0 10px 26px -8px rgba(158, 63, 36, .65), 0 0 0 7px rgba(255, 255, 255, .55);
+  transition: transform 160ms var(--ease-out);
+}
+.xd-play::before {
+  content: ""; position: absolute; left: 22px; top: 18px;
+  border-left: 16px solid #fff;
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+}
+@media (hover: hover) and (pointer: fine) {
+  .xd-play:hover { transform: scale(1.07); }
+}
+/* Pause: a small corner control while the loop runs. */
+.xd-stop {
+  position: absolute; right: 10px; bottom: 10px;
+  width: 30px; height: 30px;
+  border-radius: 50%; cursor: pointer;
+  background: rgba(33, 30, 26, .55);
+}
+.xd-stop::before {
+  content: ""; position: absolute; left: 11px; top: 9px;
+  width: 3px; height: 12px; background: #fff; border-radius: 1px;
+  box-shadow: 5px 0 0 #fff;
+}
+.xd-toggle:checked ~ .xd-win .xd-play { display: none; }
+.xd-toggle:not(:checked) ~ .xd-win .xd-stop { display: none; }
+.xd-toggle:focus-visible ~ .xd-win .xd-play,
+.xd-toggle:focus-visible ~ .xd-win .xd-stop {
+  outline: 2px solid var(--accent-deep); outline-offset: 3px;
+}
+
+/* At rest the finished scene shows, narrated by the closing caption. */
+.xd-toggle:not(:checked) ~ .xd-cap span:last-child { opacity: 1; }
 .xd-lights { display: flex; gap: 5px; margin-bottom: 3px; }
 .xd-lights i { width: 9px; height: 9px; border-radius: 50%; }
 .xd-lights i:nth-child(1) { background: #FF5F57; }
@@ -1917,11 +1968,11 @@ a.cta { text-decoration: none; display: inline-block; }
 @keyframes xd-pop-3 { 0%, 40% { opacity: 0; transform: translateY(5px); } 42.5%, 96% { opacity: 1; transform: none; } 99.5%, 100% { opacity: 0; } }
 @keyframes xd-pop-4 { 0%, 60% { opacity: 0; transform: translateY(5px); } 62.5%, 96% { opacity: 1; transform: none; } 99.5%, 100% { opacity: 0; } }
 @keyframes xd-pop-5 { 0%, 80% { opacity: 0; transform: translateY(5px); } 82.5%, 96% { opacity: 1; transform: none; } 99.5%, 100% { opacity: 0; } }
-.xa1 { animation: xd-pop-1 15s infinite; }
-.xa2 { animation: xd-pop-2 15s infinite; }
-.xa3 { animation: xd-pop-3 15s infinite; }
-.xa4 { animation: xd-pop-4 15s infinite; }
-.xa5 { animation: xd-pop-5 15s infinite; }
+.xd-toggle:checked ~ .xd-win .xa1 { animation: xd-pop-1 15s infinite; }
+.xd-toggle:checked ~ .xd-win .xa2 { animation: xd-pop-2 15s infinite; }
+.xd-toggle:checked ~ .xd-win .xa3 { animation: xd-pop-3 15s infinite; }
+.xd-toggle:checked ~ .xd-win .xa4 { animation: xd-pop-4 15s infinite; }
+.xd-toggle:checked ~ .xd-win .xa5 { animation: xd-pop-5 15s infinite; }
 
 /* Graph parts: same staging, but the machine stays faintly visible. */
 @keyframes xd-dim-1 { 0% { opacity: .28; } 2.5%, 96% { opacity: 1; } 100% { opacity: .28; } }
@@ -1929,11 +1980,11 @@ a.cta { text-decoration: none; display: inline-block; }
 @keyframes xd-dim-3 { 0%, 40% { opacity: .28; } 42.5%, 96% { opacity: 1; } 100% { opacity: .28; } }
 @keyframes xd-dim-4 { 0%, 60% { opacity: .28; } 62.5%, 96% { opacity: 1; } 100% { opacity: .28; } }
 @keyframes xd-dim-5 { 0%, 80% { opacity: .28; } 82.5%, 96% { opacity: 1; } 100% { opacity: .28; } }
-.xg1 { animation: xd-dim-1 15s infinite; }
-.xg2 { animation: xd-dim-2 15s infinite; }
-.xg3 { animation: xd-dim-3 15s infinite; }
-.xg4 { animation: xd-dim-4 15s infinite; }
-.xg5 { animation: xd-dim-5 15s infinite; }
+.xd-toggle:checked ~ .xd-win .xg1 { animation: xd-dim-1 15s infinite; }
+.xd-toggle:checked ~ .xd-win .xg2 { animation: xd-dim-2 15s infinite; }
+.xd-toggle:checked ~ .xd-win .xg3 { animation: xd-dim-3 15s infinite; }
+.xd-toggle:checked ~ .xd-win .xg4 { animation: xd-dim-4 15s infinite; }
+.xd-toggle:checked ~ .xd-win .xg5 { animation: xd-dim-5 15s infinite; }
 
 /* The YOU node breathes twice during the review phase. */
 @keyframes xd-you-pulse {
@@ -1943,7 +1994,7 @@ a.cta { text-decoration: none; display: inline-block; }
   72% { transform: scale(1.07); }
   76%, 100% { transform: scale(1); }
 }
-.xd-youc { animation: xd-you-pulse 15s infinite; transform-origin: center; transform-box: fill-box; }
+.xd-toggle:checked ~ .xd-win .xd-youc { animation: xd-you-pulse 15s infinite; transform-origin: center; transform-box: fill-box; }
 
 /* Captions: only the current phase shows. */
 @keyframes xd-cap-1 { 0%, 18% { opacity: 1; } 21%, 100% { opacity: 0; } }
@@ -1951,11 +2002,11 @@ a.cta { text-decoration: none; display: inline-block; }
 @keyframes xd-cap-3 { 0%, 39% { opacity: 0; } 42%, 58% { opacity: 1; } 61%, 100% { opacity: 0; } }
 @keyframes xd-cap-4 { 0%, 59% { opacity: 0; } 62%, 78% { opacity: 1; } 81%, 100% { opacity: 0; } }
 @keyframes xd-cap-5 { 0%, 79% { opacity: 0; } 82%, 98% { opacity: 1; } 100% { opacity: 0; } }
-.ca1, .cb1 { animation: xd-cap-1 15s infinite; }
-.ca2, .cb2 { animation: xd-cap-2 15s infinite; }
-.ca3, .cb3 { animation: xd-cap-3 15s infinite; }
-.ca4, .cb4 { animation: xd-cap-4 15s infinite; }
-.ca5, .cb5 { animation: xd-cap-5 15s infinite; }
+.xd-toggle:checked ~ .xd-cap .ca1, .xd-toggle:checked ~ .xd-cap .cb1 { animation: xd-cap-1 15s infinite; }
+.xd-toggle:checked ~ .xd-cap .ca2, .xd-toggle:checked ~ .xd-cap .cb2 { animation: xd-cap-2 15s infinite; }
+.xd-toggle:checked ~ .xd-cap .ca3, .xd-toggle:checked ~ .xd-cap .cb3 { animation: xd-cap-3 15s infinite; }
+.xd-toggle:checked ~ .xd-cap .ca4, .xd-toggle:checked ~ .xd-cap .cb4 { animation: xd-cap-4 15s infinite; }
+.xd-toggle:checked ~ .xd-cap .ca5, .xd-toggle:checked ~ .xd-cap .cb5 { animation: xd-cap-5 15s infinite; }
 
 /* ---------- Experts machine diagram animation ---------- */
 /* The big workflow plays itself: eight stages on a 16s loop, each part
@@ -1991,11 +2042,13 @@ a.cta { text-decoration: none; display: inline-block; }
 }
 .mm-youp { animation: mm-dim-7 16s infinite, mm-you-pulse 16s infinite; transform-origin: center; transform-box: fill-box; }
 
-/* Reduced motion: no loops, show the finished frame of every animation. */
+/* Reduced motion: no loops and no play controls, show the finished frame
+   of every animation. */
 @media (prefers-reduced-motion: reduce) {
   .xd-bub, .xd-chip, .xd-g, .xd-youc, .xd-cap span, .mm-g, .mm-youp { animation: none !important; }
-  .xd-bub, .xd-chip, .xd-g, .mm-g { opacity: 1; }
+  .xd-bub, .xd-chip, .xd-g, .mm-g { opacity: 1 !important; }
+  .xd-toggle, .xd-play, .xd-stop { display: none !important; }
   .xd-cap { min-height: 0; }
-  .xd-cap span { position: static; opacity: 1; }
+  .xd-cap span { position: static; opacity: 1 !important; }
   .xd-cap { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
 }

@@ -80,7 +80,7 @@ export default function Experts() {
 
         {/* 3. The details: pricing in one line */}
         <section className="exp-section">
-          <h2>What you earn</h2>
+          <h2>Our model</h2>
           <p>You keep 90 percent of every sale. We take 10. That is the whole model.</p>
           <ul className="exp-earn">
             <li>

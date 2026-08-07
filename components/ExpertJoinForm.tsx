@@ -74,7 +74,7 @@ export default function ExpertJoinForm() {
           aria-label="Your email"
         />
         <button type="submit" className="go" disabled={!validEmail}>
-          Join as an expert
+          Get on the list
         </button>
       </div>
     </form>
