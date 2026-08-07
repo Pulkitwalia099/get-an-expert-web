@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Concept C · Terminal</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=Instrument+Serif:ital@0;1&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
+<style>
+  :root{
+    --bg:#0A0908; --ink:#EDE7DC; --ink2:#9A9184; --ink3:#5E574D;
+    --accent:#FF7A50; --amber:#F0B03C; --green:#7ED87E; --blue:#7AAFD4;
+    --line:rgba(237,231,220,.1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{width:1440px;height:900px;overflow:hidden;background:var(--bg);color:var(--ink);font-family:'JetBrains Mono',monospace;-webkit-font-smoothing:antialiased}
+  .scan{position:fixed;inset:0;background:repeating-linear-gradient(180deg,transparent 0 3px,rgba(255,255,255,.012) 3px 4px)}
+  .glow{position:fixed;left:50%;top:36%;transform:translate(-50%,-50%);width:1100px;height:600px;background:radial-gradient(closest-side,rgba(255,122,80,.10),transparent 70%)}
+  .vin{position:fixed;inset:0;background:radial-gradient(1200px 800px at 50% 40%,transparent 60%,rgba(0,0,0,.5))}
+
+  .nav{position:relative;z-index:3;display:flex;align-items:center;justify-content:space-between;padding:24px 56px;font-size:13.5px}
+  .mark{font-weight:700;letter-spacing:-0.01em;font-size:15px}
+  .mark span{color:var(--accent)}
+  .nav nav{display:flex;gap:30px;color:var(--ink2)}
+  .nav nav b{color:var(--ink);font-weight:500}
+  .signin{padding:7px 16px;border:1px solid var(--line);border-radius:6px;color:var(--ink)}
+
+  .hero{position:relative;z-index:2;text-align:center;margin-top:26px}
+  .kicker{font-size:13px;color:var(--amber);letter-spacing:.12em;font-weight:500}
+  h1{margin-top:16px;font-size:62px;line-height:1.08;letter-spacing:-0.035em;font-weight:700}
+  h1 .dim{color:var(--ink3)}
+  h1 .gr{color:var(--green)}
+  .sub{margin:18px auto 0;font-size:15.5px;line-height:1.65;color:var(--ink2);max-width:780px;font-family:'JetBrains Mono',monospace}
+  .sub b{color:var(--ink);font-weight:500}
+
+  .term{position:relative;z-index:2;width:940px;margin:34px auto 0;border-radius:12px;background:#12100E;border:1px solid rgba(237,231,220,.14);box-shadow:0 0 0 1px rgba(0,0,0,.6),0 40px 110px -20px rgba(0,0,0,.85),0 0 80px rgba(255,122,80,.07);overflow:hidden}
+  .tbar{height:40px;display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--line);background:rgba(237,231,220,.025)}
+  .lights{display:flex;gap:7px}.lights i{width:11px;height:11px;border-radius:50%;display:block;opacity:.85}
+  .r{background:#FF5F57}.y{background:#FEBC2E}.g{background:#28C840}
+  .ttl{position:absolute;left:50%;transform:translateX(-50%);font-size:12px;color:var(--ink3)}
+  .body{padding:22px 26px 24px;font-size:13.8px;line-height:1.9;text-align:left}
+  .p{color:var(--amber)} .cmd{color:var(--ink)} .out{color:var(--ink2)} .ok{color:var(--green)} .ac{color:var(--accent)} .bl{color:var(--blue)} .dim{color:var(--ink3)}
+  .caret{display:inline-block;width:8px;height:16px;background:var(--accent);vertical-align:-2px;margin-left:2px}
+  table{border-collapse:collapse;margin:8px 0 10px;width:100%}
+  td,th{padding:3px 18px 3px 0;font-weight:400;text-align:left;font-size:13.2px}
+  th{color:var(--ink3);font-size:11.5px;letter-spacing:.1em}
+  .bar{display:inline-block;height:8px;border-radius:2px;background:linear-gradient(90deg,var(--accent),var(--amber));vertical-align:middle}
+
+  .foot{position:relative;z-index:2;display:flex;justify-content:center;gap:44px;margin-top:28px;font-size:13px;color:#8F877A}
+  .foot b{color:var(--ink);font-weight:500}
+  .foot .k{color:var(--green)}
+</style>
+</head>
+<body>
+  <div class="glow"></div><div class="scan"></div><div class="vin"></div>
+  <header class="nav">
+    <span class="mark"><span>✳</span> midsesh</span>
+    <nav><b>~/how-it-works</b><span>~/setups</span><span>~/for-experts</span><span class="signin">sign in →</span></nav>
+  </header>
+  <main class="hero">
+    <div class="kicker">// HUMANS AS A SERVICE · FIRST CALL FREE</div>
+    <h1>Type what you need.<br><span class="gr">A vetted human ships it.</span></h1>
+    <p class="sub">One sentence. We search live profiles, verify the work is real, and send you <b>a name and a price in &lt; 24h</b>. No listings to crawl, no bidding war.</p>
+    <div class="term">
+      <div class="tbar"><span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span><span class="ttl">midsesh — request — 116×28</span></div>
+      <div class="body">
+<div><span class="p">➜</span> <span class="cmd">midsesh new</span></div>
+<div><span class="dim">?</span> <span class="out">what do you want done</span></div>
+<div><span class="p">&gt;</span> <span class="cmd">automate the report I build by hand every Monday</span><span class="caret"></span></div>
+<div><span class="out">  scanning</span> <span class="bl">serpapi</span> <span class="dim">·</span> <span class="bl">exa</span> <span class="dim">·</span> <span class="bl">github</span> <span class="dim">····································</span> <span class="ok">done in 3.8s</span></div>
+<table>
+  <tr><th>MATCH</th><th>ROLE</th><th>PROOF</th><th>FIT</th><th>QUOTE</th><th></th></tr>
+  <tr><td class="ac">[1] maya_k</td><td class="cmd">automation engineer</td><td class="out">n8n · 142 public repos</td><td><span class="bar" style="width:72px"></span></td><td class="cmd">$140</td><td class="ok">✓ code_verified</td></tr>
+  <tr><td class="ac">[2] daniel_r</td><td class="cmd">ops consultant</td><td class="out">9 yrs · fintech reports</td><td><span class="bar" style="width:58px"></span></td><td class="cmd">$180</td><td class="ok">✓ vetted</td></tr>
+  <tr><td class="ac">[3] sofia_l</td><td class="cmd">data engineer</td><td class="out">airflow · dbt · sheets</td><td><span class="bar" style="width:47px"></span></td><td class="cmd">$95</td><td class="ok">✓ vetted</td></tr>
+</table>
+<div><span class="p">➜</span> <span class="cmd">midsesh intro 1</span></div>
+<div><span class="ok">  ✓ intro sent</span> <span class="out">· maya replies in &lt; 24h · first call is free · NDA on file</span></div>
+      </div>
+    </div>
+    <div class="foot">
+      <span><b class="k">100%</b> <b>of experts</b> met + work-tested</span>
+      <span><b>614</b> requests matched this month</span>
+      <span><b>$0</b> until you say go</span>
+      <span><b class="k">✓</b> every intro is a real person</span>
+    </div>
+  </main>
+</body>
+</html>

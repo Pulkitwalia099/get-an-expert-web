@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Concept B · Dark spotlight</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=Instrument+Serif:ital@0;1&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
+<style>
+  :root{
+    --bg:#0C0A09; --panel:#171310; --ink:#F5F1EA; --ink2:#B7AEA2; --ink3:#7A7267;
+    --accent:#E06A44; --accent2:#FFB07A; --amber:#F0A93C; --green:#5BBF6E;
+    --line:rgba(245,241,234,.09);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{width:1440px;height:900px;overflow:hidden;background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .grid{position:fixed;inset:0;background-image:radial-gradient(rgba(245,241,234,.10) 1px,transparent 1px);background-size:26px 26px;mask-image:radial-gradient(900px 620px at 50% 6%,#000 30%,transparent 75%)}
+  .spot{position:fixed;inset:0;background:
+    radial-gradient(760px 480px at 50% -8%, rgba(224,106,68,.28), transparent 65%),
+    radial-gradient(1100px 640px at 50% 4%, rgba(240,169,60,.12), transparent 60%)}
+  .beam{position:fixed;left:50%;top:0;width:2px;height:104px;transform:translateX(-50%);background:linear-gradient(180deg,rgba(255,176,122,.75),transparent)}
+
+  .nav{position:relative;z-index:4;display:flex;align-items:center;justify-content:space-between;padding:24px 60px}
+  .mark{display:flex;align-items:center;gap:9px;font-size:16.5px;font-weight:700;letter-spacing:-0.02em}
+  .orb{width:21px;height:21px;border-radius:50%;background:linear-gradient(140deg,#FFB07A,var(--accent));color:#160B07;font-size:11px;display:grid;place-items:center;box-shadow:0 0 18px rgba(224,106,68,.55)}
+  .nav nav{display:flex;align-items:center;gap:28px;font-size:14px;color:var(--ink2);font-weight:500}
+  .signin{padding:8px 18px;border-radius:99px;background:var(--ink);color:#171006;font-weight:650;font-size:13.5px}
+
+  .hero{position:relative;z-index:3;text-align:center;padding-top:34px}
+  .badge{display:inline-flex;align-items:center;gap:9px;padding:7px 15px;border-radius:99px;border:1px solid rgba(255,176,122,.32);background:rgba(224,106,68,.09);font-size:13px;font-weight:600;color:var(--accent2)}
+  .badge .n{color:var(--ink);font-weight:700}
+  h1{margin-top:24px;font-size:88px;line-height:1.01;letter-spacing:-0.042em;font-weight:750}
+  h1 .grad{background:linear-gradient(105deg,#FFD9A8 8%,#FF9E6B 45%,#E06A44 85%);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{margin:22px auto 0;font-size:19px;line-height:1.55;color:var(--ink2);max-width:710px}
+  .sub b{color:var(--ink);font-weight:600}
+  .ctas{margin-top:30px;display:flex;gap:14px;justify-content:center}
+  .cta{display:inline-flex;align-items:center;gap:9px;padding:15px 30px;border-radius:14px;font-size:16px;font-weight:650;letter-spacing:-0.01em}
+  .cta.p{background:linear-gradient(180deg,#F0794F,#D4552F);color:#fff;box-shadow:0 0 0 1px rgba(255,255,255,.12) inset,0 14px 40px -8px rgba(224,106,68,.65),0 0 60px rgba(224,106,68,.28)}
+  .cta.s{background:rgba(245,241,234,.06);border:1px solid var(--line);color:var(--ink2)}
+  .proof{margin-top:26px;display:flex;justify-content:center;gap:36px;font-size:13.5px;color:var(--ink3);font-weight:550}
+  .proof b{color:var(--ink2)}
+  .proof .gr{color:var(--green)}
+
+  /* product in glowing frame with perspective */
+  .stagewrap{position:relative;z-index:2;margin-top:44px;perspective:1400px;display:flex;justify-content:center}
+  .glow{position:absolute;top:30px;left:50%;transform:translateX(-50%);width:980px;height:320px;background:radial-gradient(closest-side,rgba(224,106,68,.4),rgba(240,169,60,.14),transparent);filter:blur(30px)}
+  .frame{position:relative;width:1020px;border-radius:18px 18px 0 0;transform:rotateX(16deg) scale(.98);transform-origin:top center;background:linear-gradient(180deg,#1D1815,#15110E);border:1px solid rgba(255,176,122,.22);border-bottom:none;box-shadow:0 -1px 0 rgba(255,255,255,.09) inset,0 30px 120px -20px rgba(0,0,0,.8);overflow:hidden}
+  .frame::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,#0C0A09 96%)}
+  .browserbar{height:44px;display:flex;align-items:center;gap:14px;padding:0 18px;border-bottom:1px solid var(--line)}
+  .lights{display:flex;gap:7px}.lights i{width:11px;height:11px;border-radius:50%;display:block;opacity:.9}
+  .r{background:#FF5F57}.y{background:#FEBC2E}.g{background:#28C840}
+  .url{margin:0 auto;display:flex;align-items:center;gap:8px;padding:6px 46px;border-radius:8px;background:rgba(245,241,234,.06);font-size:12.5px;color:var(--ink3)}
+  .lock{font-size:10px}
+  .app{display:grid;grid-template-columns:1fr 330px;gap:0;height:330px}
+  .thread{padding:22px 26px;display:flex;flex-direction:column;gap:11px;border-right:1px solid var(--line)}
+  .msg{max-width:78%;padding:10px 14px;border-radius:13px;font-size:13px;line-height:1.45}
+  .user{align-self:flex-end;background:#F5F1EA;color:#17130F;border-bottom-right-radius:4px}
+  .bot{align-self:flex-start;background:rgba(245,241,234,.07);border:1px solid var(--line);color:var(--ink2);border-bottom-left-radius:4px}
+  .status{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--amber);font-weight:600}
+  .ring{width:12px;height:12px;border-radius:50%;border:2px solid rgba(240,169,60,.9);border-top-color:transparent}
+  .composer{margin-top:auto;display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:12px;background:rgba(245,241,234,.05);border:1px solid var(--line);font-size:13px;color:var(--ink3)}
+  .send{margin-left:auto;width:26px;height:26px;border-radius:8px;background:var(--accent);display:grid;place-items:center;color:#fff;font-size:12px}
+  .side{padding:18px 20px}
+  .side h6{font-size:11px;letter-spacing:.09em;color:var(--ink3);font-weight:700;margin-bottom:12px}
+  .exp{display:flex;gap:10px;align-items:center;padding:11px;border-radius:12px;background:rgba(245,241,234,.05);border:1px solid var(--line);margin-bottom:9px}
+  .ava{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:12px;font-weight:700;color:#fff;flex:none}
+  .a1{background:linear-gradient(140deg,#7A9CC6,#4A6B96)}.a2{background:linear-gradient(140deg,#C69A7A,#96604A)}.a3{background:linear-gradient(140deg,#8CB89A,#4F7D5D)}
+  .exp .n{font-size:12.5px;font-weight:650;color:var(--ink)}
+  .exp .r2{font-size:11px;color:var(--ink3);margin-top:1px}
+  .price{margin-left:auto;font-size:12px;font-weight:700;color:var(--accent2)}
+
+  .chipf{position:absolute;z-index:5;border-radius:12px;background:rgba(23,19,16,.92);border:1px solid rgba(255,176,122,.28);padding:11px 15px;box-shadow:0 18px 50px -10px rgba(0,0,0,.8),0 0 30px rgba(224,106,68,.12);backdrop-filter:blur(8px)}
+  .chipf .t{font-size:11px;color:var(--ink3);font-weight:600;letter-spacing:.05em}
+  .chipf .v{font-size:14px;font-weight:700;margin-top:3px;color:var(--ink)}
+  .c1{left:168px;top:598px;transform:rotate(-3deg)}
+  .c2{right:160px;top:582px;transform:rotate(2.5deg)}
+  .c2 .v span{color:var(--green)}
+  .c3{right:206px;top:748px;transform:rotate(-2deg)}
+  .c3 .v span{color:var(--amber)}
+</style>
+</head>
+<body>
+  <div class="grid"></div><div class="spot"></div><div class="beam"></div>
+  <header class="nav">
+    <span class="mark"><span class="orb">✳</span>midsesh</span>
+    <nav><span>How it works</span><span>Setups</span><span>For experts</span><span class="signin">Sign in</span></nav>
+  </header>
+  <main class="hero">
+    <span class="badge">✦ <span class="n">614 requests</span> matched to a human this month</span>
+    <h1>Describe it once.<br><span class="grad">It gets done.</span></h1>
+    <p class="sub">One sentence in, and we search live profiles for someone who has already done it. <b>A name and a price within 24 hours.</b> Your first call is free.</p>
+    <div class="ctas">
+      <span class="cta p">Tell us what you need <svg width="15" height="15" viewBox="0 0 14 14" fill="none"><path d="M2.5 7h9M8 3.5 11.5 7 8 10.5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <span class="cta s">How it works</span>
+    </div>
+    <div class="proof"><span><b class="gr">●</b> <b>Every expert</b> met, tested, NDA signed</span><span><b>24h</b> to a name and a price</span><span><b>$0</b> for the first call</span></div>
+  </main>
+  <div class="stagewrap">
+    <div class="glow"></div>
+    <div class="frame">
+      <div class="browserbar"><span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span><span class="url"><span class="lock">🔒</span>midsesh.com</span></div>
+      <div class="app">
+        <div class="thread">
+          <div class="msg user">Turn 4 hours of raw footage into a 10 minute video, every week</div>
+          <div class="msg bot">Got it. Where does the finished cut go: YouTube, a course, internal?</div>
+          <div class="msg user">YouTube, we post every Thursday</div>
+          <div class="status"><span class="ring"></span>Searching live profiles · 41 matches · ranking now</div>
+          <div class="composer">Reply to midsesh…<span class="send">↑</span></div>
+        </div>
+        <div class="side">
+          <h6>TOP MATCHES</h6>
+          <div class="exp"><span class="ava a1">JT</span><div><div class="n">Jonas T. ✓</div><div class="r2">YouTube editor · 140M views cut</div></div><span class="price">$120</span></div>
+          <div class="exp"><span class="ava a2">PR</span><div><div class="n">Priya R. ✓</div><div class="r2">Doc-style edits · Premiere, Resolve</div></div><span class="price">$95</span></div>
+          <div class="exp"><span class="ava a3">AM</span><div><div class="n">Alex M. ✓</div><div class="r2">Retention editing · 6 yrs</div></div><span class="price">$150</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="chipf c1"><div class="t">AVG MATCH TIME</div><div class="v">38 seconds</div></div>
+  <div class="chipf c2"><div class="t">INTRO STATUS</div><div class="v"><span>●</span> Jonas accepted</div></div>
+  <div class="chipf c3"><div class="t">QUOTE RECEIVED</div><div class="v"><span>$120</span> · weekly edit</div></div>
+</body>
+</html>
