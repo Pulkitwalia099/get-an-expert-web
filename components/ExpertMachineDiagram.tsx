@@ -1,9 +1,7 @@
-// The "wow" diagram: one expert's work, agentized. Shown as a LinkedIn
-// example on the page, with copy making clear it is one shape of many.
-// Dense enough to feel like a serious machine, trimmed enough to survive a
-// phone screen: three research agents in parallel, competing hooks with a
-// judge, drafting and voice, two checks, then everything stops at YOU.
-// Palette matches globals.css.
+// The "wow" diagram: one expert's work, agentized, shown as a LinkedIn
+// example. Two layouts of the same 15-node machine: landscape for desktop,
+// portrait for phones, swapped by CSS (.d-desktop / .d-mobile). Dense enough
+// to feel like a serious machine, always ending at YOU.
 
 type Kind = 'end' | 'agent' | 'gate' | 'you' | 'mem';
 
@@ -17,30 +15,13 @@ interface Node {
   kind: Kind;
 }
 
-const N: Record<string, Node> = {
-  topic: { x: 62, y: 280, w: 96, h: 52, label: 'Topic in', kind: 'end' },
-
-  trend: { x: 215, y: 110, w: 128, h: 50, label: 'Trend scan', sub: 'agent', kind: 'agent' },
-  audience: { x: 215, y: 230, w: 128, h: 50, label: 'Audience mine', sub: 'agent', kind: 'agent' },
-  deep: { x: 215, y: 350, w: 128, h: 50, label: 'Deep research', sub: 'agent', kind: 'agent' },
-  merge: { x: 380, y: 230, w: 122, h: 52, label: 'Insight merge', sub: 'agent', kind: 'agent' },
-
-  hookA: { x: 540, y: 90, w: 100, h: 44, label: 'Hook A', sub: 'agent', kind: 'agent' },
-  hookB: { x: 540, y: 170, w: 100, h: 44, label: 'Hook B', sub: 'agent', kind: 'agent' },
-  hookC: { x: 540, y: 250, w: 100, h: 44, label: 'Hook C', sub: 'agent', kind: 'agent' },
-  judge: { x: 670, y: 170, w: 108, h: 48, label: 'Hook judge', sub: 'agent', kind: 'agent' },
-  draft: { x: 540, y: 360, w: 100, h: 48, label: 'Draft', sub: 'agent', kind: 'agent' },
-  voice: { x: 670, y: 360, w: 112, h: 48, label: 'Voice match', sub: 'agent', kind: 'agent' },
-
-  fact: { x: 810, y: 180, w: 110, h: 44, label: 'Fact check', kind: 'gate' },
-  tone: { x: 810, y: 300, w: 110, h: 44, label: 'Tone check', kind: 'gate' },
-
-  you: { x: 945, y: 240, w: 130, h: 80, label: 'YOU', sub: 'final say', kind: 'you' },
-  live: { x: 945, y: 80, w: 104, h: 50, label: 'Post live', kind: 'end' },
-
-  voiceMem: { x: 540, y: 510, w: 126, h: 48, label: 'Voice memory', sub: 'memory', kind: 'mem' },
-  engage: { x: 810, y: 510, w: 140, h: 48, label: 'Engagement data', sub: 'memory', kind: 'mem' },
-};
+interface Layout {
+  viewBox: string;
+  nodes: Record<string, Node>;
+  lanes: Array<{ x: number; y: number; label: string; anchor: 'middle' | 'start' }>;
+  dashed: string[];
+  labels: Array<{ x: number; y: number; text: string; anchor: 'middle' | 'start' | 'end' }>;
+}
 
 const FILL: Record<Kind, string> = {
   end: '#F7E7E0',
@@ -63,16 +44,6 @@ const INK: Record<Kind, string> = {
   you: '#FFFFFF',
   mem: '#5F594E',
 };
-
-// Where a line from node a toward node b leaves a's rectangle.
-function anchor(a: Node, b: Node) {
-  const dx = b.x - a.x;
-  const dy = b.y - a.y;
-  const sx = dx === 0 ? Infinity : a.w / 2 / Math.abs(dx);
-  const sy = dy === 0 ? Infinity : a.h / 2 / Math.abs(dy);
-  const t = Math.min(sx, sy);
-  return { x: a.x + dx * t, y: a.y + dy * t };
-}
 
 const FLOW: Array<[string, string]> = [
   ['topic', 'trend'],
@@ -97,53 +68,135 @@ const FLOW: Array<[string, string]> = [
   ['you', 'live'],
 ];
 
-const LANES = [
-  { x: 215, label: '1 · Research' },
-  { x: 605, label: '2 · Write' },
-  { x: 810, label: '3 · Check' },
-  { x: 945, label: '4 · You' },
-];
+const LANDSCAPE: Layout = {
+  viewBox: '0 0 1020 600',
+  nodes: {
+    topic: { x: 62, y: 280, w: 96, h: 52, label: 'Topic in', kind: 'end' },
+    trend: { x: 215, y: 110, w: 128, h: 50, label: 'Trend scan', sub: 'agent', kind: 'agent' },
+    audience: { x: 215, y: 230, w: 128, h: 50, label: 'Audience mine', sub: 'agent', kind: 'agent' },
+    deep: { x: 215, y: 350, w: 128, h: 50, label: 'Deep research', sub: 'agent', kind: 'agent' },
+    merge: { x: 380, y: 230, w: 122, h: 52, label: 'Insight merge', sub: 'agent', kind: 'agent' },
+    hookA: { x: 540, y: 90, w: 100, h: 44, label: 'Hook A', sub: 'agent', kind: 'agent' },
+    hookB: { x: 540, y: 170, w: 100, h: 44, label: 'Hook B', sub: 'agent', kind: 'agent' },
+    hookC: { x: 540, y: 250, w: 100, h: 44, label: 'Hook C', sub: 'agent', kind: 'agent' },
+    judge: { x: 670, y: 170, w: 108, h: 48, label: 'Hook judge', sub: 'agent', kind: 'agent' },
+    draft: { x: 540, y: 360, w: 100, h: 48, label: 'Draft', sub: 'agent', kind: 'agent' },
+    voice: { x: 670, y: 360, w: 112, h: 48, label: 'Voice match', sub: 'agent', kind: 'agent' },
+    fact: { x: 810, y: 180, w: 110, h: 44, label: 'Fact check', kind: 'gate' },
+    tone: { x: 810, y: 300, w: 110, h: 44, label: 'Tone check', kind: 'gate' },
+    you: { x: 945, y: 240, w: 130, h: 80, label: 'YOU', sub: 'final say', kind: 'you' },
+    live: { x: 945, y: 80, w: 104, h: 50, label: 'Post live', kind: 'end' },
+    voiceMem: { x: 540, y: 510, w: 126, h: 48, label: 'Voice memory', sub: 'memory', kind: 'mem' },
+    engage: { x: 810, y: 510, w: 140, h: 48, label: 'Engagement data', sub: 'memory', kind: 'mem' },
+  },
+  lanes: [
+    { x: 215, y: 24, label: '1 · RESEARCH', anchor: 'middle' },
+    { x: 605, y: 24, label: '2 · WRITE', anchor: 'middle' },
+    { x: 810, y: 24, label: '3 · CHECK', anchor: 'middle' },
+    { x: 945, y: 24, label: '4 · YOU', anchor: 'middle' },
+  ],
+  dashed: [
+    'M945 282 Q945 512 608 512',
+    'M565 486 Q610 440 650 388',
+    'M997 82 Q1030 320 883 500',
+    'M740 522 Q400 570 378 260',
+  ],
+  labels: [
+    { x: 925, y: 368, text: 'your edits teach it', anchor: 'end' },
+    { x: 620, y: 576, text: 'what worked comes back', anchor: 'middle' },
+  ],
+};
 
-export default function ExpertMachineDiagram() {
+const PORTRAIT: Layout = {
+  viewBox: '0 0 480 1010',
+  nodes: {
+    topic: { x: 240, y: 40, w: 110, h: 50, label: 'Topic in', kind: 'end' },
+    trend: { x: 90, y: 130, w: 120, h: 48, label: 'Trend scan', sub: 'agent', kind: 'agent' },
+    audience: { x: 240, y: 130, w: 128, h: 48, label: 'Audience mine', sub: 'agent', kind: 'agent' },
+    deep: { x: 390, y: 130, w: 120, h: 48, label: 'Deep research', sub: 'agent', kind: 'agent' },
+    merge: { x: 240, y: 230, w: 122, h: 50, label: 'Insight merge', sub: 'agent', kind: 'agent' },
+    hookA: { x: 90, y: 330, w: 96, h: 44, label: 'Hook A', sub: 'agent', kind: 'agent' },
+    hookB: { x: 240, y: 330, w: 96, h: 44, label: 'Hook B', sub: 'agent', kind: 'agent' },
+    hookC: { x: 390, y: 330, w: 96, h: 44, label: 'Hook C', sub: 'agent', kind: 'agent' },
+    judge: { x: 240, y: 420, w: 108, h: 46, label: 'Hook judge', sub: 'agent', kind: 'agent' },
+    draft: { x: 140, y: 505, w: 96, h: 46, label: 'Draft', sub: 'agent', kind: 'agent' },
+    voice: { x: 340, y: 505, w: 110, h: 46, label: 'Voice match', sub: 'agent', kind: 'agent' },
+    fact: { x: 140, y: 600, w: 104, h: 42, label: 'Fact check', kind: 'gate' },
+    tone: { x: 340, y: 600, w: 104, h: 42, label: 'Tone check', kind: 'gate' },
+    you: { x: 240, y: 720, w: 140, h: 80, label: 'YOU', sub: 'final say', kind: 'you' },
+    live: { x: 240, y: 850, w: 110, h: 48, label: 'Post live', kind: 'end' },
+    voiceMem: { x: 150, y: 945, w: 130, h: 46, label: 'Voice memory', sub: 'memory', kind: 'mem' },
+    engage: { x: 355, y: 945, w: 150, h: 46, label: 'Engagement data', sub: 'memory', kind: 'mem' },
+  },
+  lanes: [
+    { x: 16, y: 95, label: '1 · RESEARCH', anchor: 'start' },
+    { x: 16, y: 296, label: '2 · WRITE', anchor: 'start' },
+    { x: 16, y: 566, label: '3 · CHECK', anchor: 'start' },
+    { x: 16, y: 668, label: '4 · YOU', anchor: 'start' },
+  ],
+  dashed: [
+    'M215 762 Q150 830 150 919',
+    'M268 872 Q355 895 355 919',
+    'M278 945 L218 945',
+    'M85 935 Q0 550 176 235',
+  ],
+  labels: [{ x: 240, y: 998, text: 'it learns from your every edit', anchor: 'middle' }],
+};
+
+function MachineSvg({ layout, id, className }: { layout: Layout; id: string; className: string }) {
+  const { nodes, lanes, dashed, labels } = layout;
+
+  // Where a line from node a toward node b leaves a's rectangle.
+  const anchorPt = (a: Node, b: Node) => {
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const sx = dx === 0 ? Infinity : a.w / 2 / Math.abs(dx);
+    const sy = dy === 0 ? Infinity : a.h / 2 / Math.abs(dy);
+    const t = Math.min(sx, sy);
+    return { x: a.x + dx * t, y: a.y + dy * t };
+  };
+
   return (
     <svg
-      viewBox="0 0 1020 600"
+      viewBox={layout.viewBox}
+      className={className}
       role="img"
-      aria-label="One expert's work, agentized, using a LinkedIn post as the example. A topic fans out to three research agents in parallel. Their findings merge, three hook agents compete and a judge picks the winner, a draft agent writes and a voice match agent applies your voice, then fact and tone checks run. Everything stops at you, the final say, before the post goes live. Below, voice memory and engagement data feed back, so the machine learns from your edits."
+      aria-label="One expert's work, agentized, using a LinkedIn post as the example. A topic fans out to three research agents in parallel. Their findings merge, three hook agents compete and a judge picks the winner, a draft agent writes and a voice match agent applies your voice, then fact and tone checks run. Everything stops at you, the final say, before the post goes live. Voice memory and engagement data feed back, so the machine learns from your edits."
     >
       <defs>
-        <marker id="m-a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+        <marker id={`${id}-a`} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
           <path d="M0 0 L10 5 L0 10 z" fill="#C4593C" />
         </marker>
-        <marker id="m-d" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+        <marker id={`${id}-d`} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
           <path d="M0 0 L10 5 L0 10 z" fill="#8B8375" />
         </marker>
       </defs>
 
-      {LANES.map((l) => (
-        <text key={l.label} x={l.x} y="24" textAnchor="middle" fontSize="11.5" fontWeight="700" letterSpacing="0.08em" fill="#8B8375">
-          {l.label.toUpperCase()}
+      {lanes.map((l) => (
+        <text key={l.label} x={l.x} y={l.y} textAnchor={l.anchor} fontSize="11.5" fontWeight="700" letterSpacing="0.08em" fill="#8B8375">
+          {l.label}
         </text>
       ))}
 
       {FLOW.map(([a, b]) => {
-        const p1 = anchor(N[a], N[b]);
-        const p2 = anchor(N[b], N[a]);
+        const p1 = anchorPt(nodes[a], nodes[b]);
+        const p2 = anchorPt(nodes[b], nodes[a]);
         return (
-          <line key={`${a}-${b}`} x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} stroke="#C4593C" strokeWidth="1.7" opacity="0.85" markerEnd="url(#m-a)" />
+          <line key={`${a}-${b}`} x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} stroke="#C4593C" strokeWidth="1.7" opacity="0.85" markerEnd={`url(#${id}-a)`} />
         );
       })}
 
-      {/* Learning loops, dashed grey: your edits and live results feed back in */}
-      <path d="M945 282 Q945 512 608 512" fill="none" stroke="#8B8375" strokeWidth="1.7" strokeDasharray="5 5" markerEnd="url(#m-d)" />
-      <path d="M565 486 Q610 440 650 388" fill="none" stroke="#8B8375" strokeWidth="1.7" strokeDasharray="5 5" markerEnd="url(#m-d)" />
-      <path d="M997 82 Q1030 320 883 500" fill="none" stroke="#8B8375" strokeWidth="1.7" strokeDasharray="5 5" markerEnd="url(#m-d)" />
-      <path d="M740 522 Q400 570 378 260" fill="none" stroke="#8B8375" strokeWidth="1.7" strokeDasharray="5 5" markerEnd="url(#m-d)" />
+      {dashed.map((d) => (
+        <path key={d} d={d} fill="none" stroke="#8B8375" strokeWidth="1.7" strokeDasharray="5 5" markerEnd={`url(#${id}-d)`} />
+      ))}
 
-      <text x="925" y="368" textAnchor="end" fontSize="11.5" fontWeight="600" fill="#8B8375">your edits teach it</text>
-      <text x="620" y="576" textAnchor="middle" fontSize="11.5" fontWeight="600" fill="#8B8375">what worked comes back</text>
+      {labels.map((l) => (
+        <text key={l.text} x={l.x} y={l.y} textAnchor={l.anchor} fontSize="11.5" fontWeight="600" fill="#8B8375">
+          {l.text}
+        </text>
+      ))}
 
-      {Object.entries(N).map(([key, n]) => (
+      {Object.entries(nodes).map(([key, n]) => (
         <g key={key}>
           <rect
             x={n.x - n.w / 2}
@@ -173,5 +226,14 @@ export default function ExpertMachineDiagram() {
         </g>
       ))}
     </svg>
+  );
+}
+
+export default function ExpertMachineDiagram() {
+  return (
+    <>
+      <MachineSvg layout={LANDSCAPE} id="mml" className="d-desktop" />
+      <MachineSvg layout={PORTRAIT} id="mmp" className="d-mobile" />
+    </>
   );
 }

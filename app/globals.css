@@ -738,13 +738,24 @@ div.sav {
 .exp-figure::-webkit-scrollbar { display: none; }
 .exp-figure svg { display: block; width: 100%; min-width: 600px; height: auto; }
 /* The dense machine diagram breaks out of the text column so the whole
-   machine, ending at YOU, is visible without scrolling on desktop. Phones
-   still scroll it sideways inside the card. */
+   machine, ending at YOU, is visible without scrolling on desktop. */
 .exp-figure.wide {
   width: min(1000px, calc(100vw - 32px));
   position: relative; left: 50%; transform: translateX(-50%);
 }
 .exp-figure.wide svg { min-width: 860px; }
+/* Every diagram ships landscape and portrait variants. Desktop shows the
+   landscape one; under 560px the portrait variant swaps in, full width, so
+   phones never scroll a diagram sideways. */
+.exp-figure svg.d-mobile,
+.exp-figure.wide svg.d-mobile { display: none; min-width: 0; }
+@media (max-width: 560px) {
+  .exp-figure svg.d-desktop,
+  .exp-figure.wide svg.d-desktop { display: none; }
+  .exp-figure svg.d-mobile,
+  .exp-figure.wide svg.d-mobile { display: block; }
+  .exp-figure.wide { width: 100%; left: auto; transform: none; }
+}
 
 /* Join form: category chips above the email row. */
 .exp-cats { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 12px; }
