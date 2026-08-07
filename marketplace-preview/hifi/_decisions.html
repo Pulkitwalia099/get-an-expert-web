@@ -258,11 +258,11 @@
   <div class="sheet in">
     <span>YOUR ANSWER</span>
     <span class="slots">
-      <span class="slot" id="s-A">A—</span>
-      <span class="slot" id="s-B">B—</span>
-      <span class="slot" id="s-C">C—</span>
-      <span class="slot" id="s-D">D—</span>
-      <span class="slot" id="s-E">E—</span>
+      <span class="slot" id="s-A">A_</span>
+      <span class="slot" id="s-B">B_</span>
+      <span class="slot" id="s-C">C_</span>
+      <span class="slot" id="s-D">D_</span>
+      <span class="slot" id="s-E">E_</span>
     </span>
     <span class="hint" id="hint">CLICK A PANEL IN EACH ROW. READ THE LINE BACK TO ME.</span>
   </div>
@@ -546,7 +546,7 @@
     ['A','B','C','D','E'].forEach(function(g){
       var el = document.getElementById('s-'+g);
       if (picks[g]) { el.textContent = picks[g]; el.classList.add('set'); done++; }
-      else { el.textContent = g+'—'; el.classList.remove('set'); }
+      else { el.textContent = g+'_'; el.classList.remove('set'); }
     });
     var hint = document.getElementById('hint');
     var foot = document.getElementById('footline');
