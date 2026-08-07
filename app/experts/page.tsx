@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import ExpertSignup from '@/components/ExpertSignup';
+import ExpertJoinForm from '@/components/ExpertJoinForm';
 import { ChatVsAgentsDiagram, WorkflowLoopDiagram } from '@/components/ExpertDiagrams';
 import ExpertMachineDiagram from '@/components/ExpertMachineDiagram';
 
@@ -132,7 +132,7 @@ export default function Experts() {
           <h2>Join as an expert</h2>
           <div className="exp-join">
             <p>Pick what you are great at. We reach out and build your first agent with you.</p>
-            <ExpertSignup />
+            <ExpertJoinForm />
           </div>
         </section>
       </main>

@@ -1,0 +1,79 @@
+/* The freelancer application card. Matches the intro form in globals.css,
+   scoped here so the two can move independently. */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+  background: rgba(255, 255, 255, .6);
+  border: 1px solid rgba(255, 255, 255, .7);
+  outline: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  padding: 14px 15px;
+  box-shadow: 0 10px 26px rgba(45, 32, 22, .07);
+  animation: card-in 260ms var(--ease-out);
+}
+
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.title { font-size: 13.5px; font-weight: 600; color: var(--ink); }
+
+.field {
+  display: flex; align-items: center;
+  padding: 5px 12px;
+  background: var(--glass-strong);
+  border: 1px solid rgba(33, 30, 26, .12);
+  border-radius: 12px;
+  transition: border-color 160ms ease;
+}
+
+.field input {
+  flex: 1; min-width: 0; border: none; outline: none; background: transparent;
+  padding: 5px 0;
+  font: inherit; font-size: 14px; color: var(--ink); caret-color: var(--accent);
+}
+
+.lines {
+  border: 1px solid rgba(33, 30, 26, .12); outline: none;
+  background: var(--glass-strong);
+  border-radius: 12px; padding: 10px 12px;
+  font: inherit; font-size: 14px; line-height: 1.5; color: var(--ink);
+  caret-color: var(--accent); resize: none;
+  transition: border-color 160ms ease;
+}
+
+.field input::placeholder,
+.lines::placeholder { color: var(--ink-3); }
+
+.invalid {
+  border-color: rgba(196, 89, 60, .6);
+  animation: shake 320ms var(--ease-out);
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+.go {
+  align-self: flex-start;
+  border: none; cursor: pointer;
+  font-size: 12.5px; font-weight: 600;
+  padding: 8px 16px; border-radius: 999px;
+  background: var(--accent); color: #fff;
+  box-shadow: 0 4px 10px rgba(168, 69, 44, .35);
+  transition: transform 140ms var(--ease-out), background 140ms ease, opacity 140ms ease;
+}
+
+.go:disabled { opacity: .6; cursor: default; }
+
+.note { font-size: 12px; line-height: 1.5; color: var(--ink-3); }
+
+@media (hover: hover) and (pointer: fine) {
+  .go:not(:disabled):hover { background: var(--accent-deep); }
+}

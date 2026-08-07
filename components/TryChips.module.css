@@ -1,0 +1,111 @@
+/* The starter chips. Styled here rather than in globals.css because the row
+   scrolls sideways, unlike the wrapped .chips grid the rest of the app uses.
+
+   On a 390px screen nine wrapped chips cost four lines and push the search bar
+   under the fold. One scrolling line costs one. */
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  padding: 16px 0 8px;
+  animation: try-in 260ms var(--ease-out) both;
+}
+
+@keyframes try-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* "Try:" sits outside the scroller so it stays put while the chips move. */
+.rail {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  padding-left: 8px;
+}
+
+.label {
+  flex: none;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-3);
+  letter-spacing: 0.01em;
+}
+
+/* Only the right edge fades, and it is doing a job: with no scrollbar it is
+   the only thing saying the row continues. A matching left fade would sit over
+   the first chip at rest, which read as a rendering bug rather than a hint. */
+.viewport {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 26px), transparent);
+  mask-image: linear-gradient(90deg, #000 calc(100% - 26px), transparent);
+}
+
+.viewport::-webkit-scrollbar { display: none; }
+
+.track {
+  display: flex;
+  gap: 8px;
+  width: max-content;
+  padding: 3px 8px 3px 0;
+}
+
+.chip {
+  flex: none;
+  white-space: nowrap;
+  border: 1px solid rgba(33, 30, 26, .11);
+  background: rgba(255, 255, 255, .5);
+  color: var(--ink-2);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 7px 13px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 160ms var(--ease-out), background 160ms ease,
+    border-color 160ms ease, color 160ms ease;
+}
+
+.else {
+  border: 1px dashed rgba(33, 30, 26, .16);
+  background: transparent;
+  color: var(--ink-3);
+  font-size: 12.5px;
+  font-weight: 500;
+  padding: 6px 13px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 160ms var(--ease-out), background 160ms ease,
+    border-color 160ms ease, color 160ms ease;
+}
+
+.chip:active, .else:active { transform: scale(0.97); }
+
+.chip:focus-visible, .else:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .chip:hover {
+    background: rgba(255, 255, 255, .85);
+    border-color: rgba(33, 30, 26, .18);
+    color: var(--ink);
+  }
+  .else:hover {
+    border-color: rgba(33, 30, 26, .26);
+    color: var(--ink-2);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wrap { animation: none; }
+}

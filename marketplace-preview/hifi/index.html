@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hi-fi · Marketplace home + tiles</title>
+<style>
+  :root {
+    --bg: #F6F3ED; --ink: #211E1A; --ink-2: #5F594E; --ink-3: #8B8375;
+    --line: rgba(33,30,26,.08);
+    --glass: rgba(255,255,255,.55); --glass-strong: rgba(255,255,255,.78);
+    --accent: #C4593C; --accent-deep: #9E3F24; --accent-tint: rgba(196,89,60,.09);
+    --amber: #B97A1A;
+    --ease-out: cubic-bezier(0.23,1,0.32,1); --spring: cubic-bezier(0.34,1.56,0.64,1);
+    --radius-card: 16px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
+    color: var(--ink); background: var(--bg);
+    -webkit-font-smoothing: antialiased; letter-spacing: -0.004em;
+  }
+  .bg { position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(52vw 44vh at 16% 8%,  rgba(255,196,156,.52), transparent 68%),
+      radial-gradient(46vw 42vh at 86% 12%, rgba(206,190,255,.46), transparent 70%),
+      radial-gradient(58vw 50vh at 50% 104%, rgba(168,206,255,.42), transparent 70%);
+  }
+  .page { position: relative; z-index: 1; }
+
+  .sitebar { display:flex; align-items:center; justify-content:space-between; padding:18px clamp(18px,4vw,40px); }
+  .sitemark { display:flex; align-items:center; gap:7px; font-size:15px; font-weight:700; }
+  .worb { width:17px; height:17px; border-radius:50%;
+    background: linear-gradient(140deg,#E8A184,var(--accent)); color:#fff; font-size:9px;
+    display:inline-grid; place-items:center; }
+  .sitenav { display:flex; gap:18px; font-size:13.5px; }
+  .sitenav a { color:var(--ink-2); text-decoration:none; }
+
+  .hero { padding: clamp(40px,7vh,80px) 16px 8px; text-align:center; }
+  .hero h1 { font-size: clamp(32px,5.4vw,46px); font-weight:750; letter-spacing:-0.03em; line-height:1.08; }
+  .hero .sub { margin:14px auto 0; font-size:clamp(15px,2.2vw,17px); color:var(--ink-2); line-height:1.5; max-width:520px; }
+  .bar { margin:28px auto 0; width:min(620px,100%); display:flex; align-items:center; gap:8px;
+    padding:8px 8px 8px 18px; background:var(--glass-strong);
+    border:1px solid rgba(33,30,26,.10); border-radius:999px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 14px 34px -10px rgba(45,32,22,.16); }
+  .bar input { flex:1; min-width:0; border:none; outline:none; background:transparent; font:inherit; font-size:16px; color:var(--ink); }
+  .bar input::placeholder { color:var(--ink-3); }
+  .go { flex:none; width:36px; height:36px; border-radius:50%; border:none;
+    background:var(--accent-deep); color:#fff; display:grid; place-items:center; font-size:16px; }
+
+  section.block { padding: clamp(48px,8vh,88px) 16px; }
+  .wrap { width: min(1060px,100%); margin:0 auto; }
+  .shead { text-align:center; margin-bottom:36px; }
+  .eyebrow { display:block; font-size:11.5px; font-weight:650; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); }
+  .shead h2 { margin-top:10px; font-size:clamp(23px,3.6vw,30px); font-weight:700; letter-spacing:-0.02em; }
+  .shead p { margin-top:8px; color:var(--ink-2); font-size:15px; max-width:560px; margin-left:auto; margin-right:auto; }
+
+  /* ---------- SKU tiles ---------- */
+  .skus { display:grid; gap:14px; grid-template-columns:1fr; }
+  @media (min-width:721px) { .skus { grid-template-columns:repeat(3,1fr); grid-auto-flow:dense; } }
+  .sku {
+    background:var(--glass-strong); border:1px solid rgba(33,30,26,.09);
+    border-radius:var(--radius-card); padding:20px;
+    display:flex; flex-direction:column; gap:9px;
+    box-shadow: 0 10px 26px -12px rgba(45,32,22,.15);
+    transition: transform .25s var(--spring), box-shadow .25s;
+    text-decoration:none; color:inherit;
+  }
+  @media (hover:hover) and (pointer:fine) {
+    .sku:hover { transform:translateY(-3px); box-shadow:0 18px 36px -14px rgba(45,32,22,.22); }
+  }
+  .sku:active { transform:scale(0.99); }
+  .sku .toprow { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .badge { font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+    border-radius:999px; padding:4px 10px; }
+  .b-ha { color:var(--accent-deep); background:var(--accent-tint); border:1px solid rgba(158,63,36,.28); }
+  .b-ag { color:var(--ink-2); background:rgba(33,30,26,.05); border:1px solid rgba(33,30,26,.14); }
+  .b-free { color:#2F7A3D; background:rgba(62,155,79,.10); border:1px solid rgba(62,155,79,.3); }
+  .sku h3 { font-size:17px; font-weight:700; letter-spacing:-0.01em; }
+  .sku p { font-size:13.5px; color:var(--ink-2); line-height:1.5; flex:1; }
+  .sku .foot { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:4px; }
+  .sku .price { font-size:13.5px; font-weight:750; }
+  .sku .price small { display:block; font-size:11px; font-weight:400; color:var(--ink-3); margin-top:2px; }
+  .sku .get { font-size:13px; font-weight:650; color:var(--accent-deep); white-space:nowrap; }
+
+  /* Flagship UGC tile spans two columns and carries a sample frame */
+  .sku.flagship { grid-column: span 1; }
+  @media (min-width:721px) { .sku.flagship { grid-column: span 2; flex-direction:row; gap:18px; } }
+  .sku.flagship .fbody { flex:1; display:flex; flex-direction:column; gap:9px; min-width:0; }
+  .samplechip { display:inline-flex; align-items:center; gap:6px; width:fit-content;
+    font-size:11px; font-weight:650; color:var(--amber);
+    background:rgba(185,122,26,.09); border:1px solid rgba(185,122,26,.3);
+    border-radius:999px; padding:4px 10px; }
+  .vthumb { flex:none; width:100%; margin-top:4px; aspect-ratio:16/9; border-radius:12px; position:relative; overflow:hidden;
+    background: linear-gradient(150deg,#3A2E26,#211E1A 55%, #4A2E20); display:grid; place-items:center; }
+  .vthumb video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  @media (min-width:721px) { .vthumb { width:240px; aspect-ratio:9/12; margin-top:0; align-self:stretch; } }
+  .vthumb .play { width:46px; height:46px; border-radius:50%; background:rgba(246,243,237,.92);
+    display:grid; place-items:center; color:var(--accent-deep); font-size:15px;
+    box-shadow:0 8px 20px rgba(0,0,0,.35); }
+  .vthumb .cap { position:absolute; left:10px; bottom:10px; font-size:10.5px; color:rgba(246,243,237,.85);
+    background:rgba(33,30,26,.55); border-radius:999px; padding:3px 9px; }
+
+  /* Post screenshot slot. Same footprint as .vthumb, light instead of dark.
+     To drop the real post in: <img class="postimg" src="shots/linkedin-post.png" alt="">
+     inside .pthumb, and delete the .pk-* skeleton nodes. */
+  .pthumb { flex:none; width:100%; margin-top:4px; aspect-ratio:4/3; border-radius:12px;
+    position:relative; overflow:hidden; background:#fff; border:1px solid rgba(33,30,26,.12);
+    padding:13px; display:flex; flex-direction:column; gap:8px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.9); }
+  @media (min-width:721px) { .pthumb { width:240px; aspect-ratio:9/12; margin-top:0; align-self:stretch; } }
+  .pthumb .postimg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  .pk-head { display:flex; align-items:center; gap:9px; }
+  .pk-av { flex:none; width:28px; height:28px; border-radius:50%;
+    background:radial-gradient(circle at 34% 30%, #E8C9B0, #A87B5A 70%, #6B4A33); }
+  .pk-name { height:6px; width:62px; border-radius:3px; background:rgba(33,30,26,.17); }
+  .pk-sub { height:5px; width:48px; border-radius:3px; background:rgba(33,30,26,.09); margin-top:5px; }
+  .pk-line { height:5px; border-radius:3px; background:rgba(33,30,26,.10); }
+  .pk-media { flex:1; min-height:46px; border-radius:8px; margin-top:2px;
+    background:linear-gradient(140deg, rgba(33,30,26,.07), rgba(33,30,26,.03));
+    border:1px solid rgba(33,30,26,.06); }
+  .pk-bar { margin-top:auto; display:flex; gap:6px; align-items:center;
+    border-top:1px solid rgba(33,30,26,.08); padding-top:10px; }
+  .pk-dot { flex:none; width:8px; height:8px; border-radius:50%; background:#0A66C2; opacity:.85; }
+  .pk-pill { height:7px; width:26px; border-radius:4px; background:rgba(33,30,26,.09); }
+  .pk-tbd { position:absolute; right:9px; top:9px; font-size:9.5px; font-weight:650; color:var(--amber);
+    background:rgba(185,122,26,.10); border:1px solid rgba(185,122,26,.3);
+    border-radius:999px; padding:3px 8px; }
+
+  .livedemo { margin-top:2px; display:flex; align-items:center; gap:8px; width:fit-content;
+    font-size:12px; font-weight:600; color:var(--ink);
+    border:1px dashed rgba(33,30,26,.25); border-radius:999px; padding:6px 12px; }
+  .livedemo .dot { width:7px; height:7px; border-radius:50%; background:#3E9B4F; }
+
+  /* ---------- How it works ---------- */
+  .steps4 { display:grid; gap:26px 20px; grid-template-columns:1fr; }
+  @media (min-width:560px){ .steps4 { grid-template-columns:1fr 1fr; } }
+  @media (min-width:900px){ .steps4 { grid-template-columns:repeat(4,1fr); } }
+  .step4 .n { font-size:12px; color:var(--ink-3); letter-spacing:.06em; }
+  .step4 h3 { margin-top:6px; font-size:16px; font-weight:700; }
+  .step4 p { margin-top:5px; font-size:13.5px; color:var(--ink-2); line-height:1.45; }
+
+  .strip { text-align:center; }
+  .strip h2 { font-size:clamp(20px,3vw,26px); font-weight:700; letter-spacing:-0.02em; max-width:640px; margin:0 auto; }
+  .strip p { margin:12px auto 0; color:var(--ink-2); font-size:15px; max-width:520px; }
+  .btnrow { margin-top:22px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+  .btn { font-size:14px; font-weight:650; border-radius:999px; padding:10px 22px; text-decoration:none;
+    transition: transform 160ms var(--ease-out); }
+  .btn:active { transform: scale(0.97); }
+  .btn.solid { background:var(--accent-deep); color:#fff; box-shadow:0 6px 16px -6px rgba(158,63,36,.5); }
+  .btn.ghost { color:var(--accent-deep); border:1px solid rgba(158,63,36,.3); background:var(--glass-strong); }
+
+  .foot { text-align:center; color:var(--ink-3); font-size:12.5px; padding:30px 16px 40px; }
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="page">
+
+  <header class="sitebar">
+    <span class="sitemark"><span class="worb">✳︎</span>midsesh</span>
+    <nav class="sitenav"><a href="#">Contact</a><a href="#">Privacy</a><a href="#">Sign in</a></nav>
+  </header>
+
+  <section class="hero">
+    <h1>Work, delivered.</h1>
+    <p class="sub">Pick a service. An agent does the work, a human expert owns the outcome. You approve before you pay.</p>
+    <div class="bar">
+      <input type="text" placeholder="Or describe what you need done">
+      <button class="go">→</button>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
+      <div class="shead">
+        <span class="eyebrow">Services</span>
+        <h2>Six ways to take work off your plate</h2>
+        <p>Fixed scope, stated price, defined output. Every service is run by an agent with a human expert accountable for the result.</p>
+      </div>
+      <div class="skus">
+
+        <!-- 1 · UGC Ads (flagship, complete) -->
+        <a class="sku flagship" href="ugc.html">
+          <div class="fbody">
+            <div class="toprow">
+              <span class="badge b-ha">Human + Agent</span>
+              <span class="samplechip">Sample first</span>
+            </div>
+            <h3>UGC Ads</h3>
+            <p>Send your product link and an ad you like. We research it, script it, and send back a finished UGC video. Watch it first. Pay only if you want it.</p>
+            <div class="foot">
+              <span class="price">Pay only if you like it<small>Subscriptions from $10 per video</small></span>
+              <span class="get">Start a sample →</span>
+            </div>
+          </div>
+          <div class="vthumb">
+            <video src="assets/midsesh-promo.mp4" autoplay muted loop playsinline></video>
+          </div>
+        </a>
+
+        <!-- 2 · LinkedIn Marketeer -->
+        <a class="sku flagship" href="linkedin.html">
+          <div class="fbody">
+            <div class="toprow">
+              <span class="badge b-ha">Human + Agent</span>
+            </div>
+            <h3>LinkedIn Marketeer</h3>
+            <p>Your LinkedIn all handled by our agents. Posts, comments, and engagements all reviewed by a human before anything ships.</p>
+            <div class="foot">
+              <span class="price">Pay per 10k impressions<small>$100 per 10k in your relevant audience</small></span>
+              <span class="get">See details →</span>
+            </div>
+          </div>
+          <div class="pthumb">
+            <span class="pk-tbd">Screenshot TBD</span>
+            <div class="pk-head">
+              <div class="pk-av"></div>
+              <div><div class="pk-name"></div><div class="pk-sub"></div></div>
+            </div>
+            <div class="pk-line"></div>
+            <div class="pk-line"></div>
+            <div class="pk-line" style="width:68%;"></div>
+            <div class="pk-media"></div>
+            <div class="pk-bar"><span class="pk-dot"></span><span class="pk-pill"></span><span class="pk-pill"></span><span class="pk-pill"></span></div>
+          </div>
+        </a>
+
+        <!-- 3 · RateMyWipe -->
+        <a class="sku" href="ratemywipe.html">
+          <div class="toprow"><span class="badge b-free">Agent · Free</span></div>
+          <h3>RateMyWipe</h3>
+          <p>Our agent reads your AI coding transcripts and rates your wipe coding from 1 to 5. You get a breakdown of weak areas and the exact skill packs and repos to level up. Open source.</p>
+          <div class="foot">
+            <span class="price">Free<small>Open source on GitHub</small></span>
+            <span class="get">Rate my wipe →</span>
+          </div>
+        </a>
+
+        <!-- 4 · Voice Outbound -->
+        <a class="sku" href="voice.html">
+          <div class="toprow"><span class="badge b-ag">Agent + Human QA</span></div>
+          <h3>Voice Outbound</h3>
+          <p>Give us your call list and script. The voice agent makes the calls, qualifies the leads, and sends you the notes.</p>
+          <span class="livedemo"><span class="dot"></span>Talk to the agent before you buy</span>
+          <div class="foot">
+            <span class="price">Price TBD</span>
+            <span class="get">See details →</span>
+          </div>
+        </a>
+
+        <!-- 5 · Video Editing -->
+        <a class="sku" href="video-editing.html">
+          <div class="toprow"><span class="badge b-ha">Human + Agent</span></div>
+          <h3>Video Editing</h3>
+          <p>Send raw footage. Get back an edited video, ready to post. Cuts, captions, and sound handled.</p>
+          <div class="foot">
+            <span class="price">Price TBD</span>
+            <span class="get">See details →</span>
+          </div>
+        </a>
+
+        <!-- 6 · Explainer Videos -->
+        <a class="sku" href="explainer.html">
+          <div class="toprow"><span class="badge b-ha">Human + Agent</span></div>
+          <h3>Product Explainer Videos</h3>
+          <p>Pick a template, send your product, get a launch-ready explainer video at a fixed price per template.</p>
+          <div class="foot">
+            <span class="price">Fixed price per template</span>
+            <span class="get">See details →</span>
+          </div>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
+      <div class="shead">
+        <span class="eyebrow">How it works</span>
+        <h2>You approve. Then you pay.</h2>
+      </div>
+      <div class="steps4">
+        <div class="step4"><div class="n">01</div><h3>Pick a service</h3><p>Each one has a fixed scope, a stated price, and a defined output.</p></div>
+        <div class="step4"><div class="n">02</div><h3>Give the input</h3><p>A short structured form. Links, files, a brief. Two minutes, not a project setup.</p></div>
+        <div class="step4"><div class="n">03</div><h3>Agent and expert deliver</h3><p>The agent does the work. A human expert reviews it and owns the outcome.</p></div>
+        <div class="step4"><div class="n">04</div><h3>Approve, then pay</h3><p>You see the output first. On sample-first services you pay only if you want it.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block strip">
+    <div class="wrap">
+      <h2>Not another tool to learn. Not a subscription to figure out.</h2>
+      <p>You do your work best. We handle the rest, and we get paid for outputs, not access.</p>
+      <div class="btnrow">
+        <a class="btn ghost" href="#">Looking for a human AI expert instead? →</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="foot">midsesh · Contact · Privacy</div>
+
+</div>
+</body>
+</html>

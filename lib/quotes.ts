@@ -1,0 +1,265 @@
+import { createHmac, timingSafeEqual } from 'node:crypto';
+import { insertRows, selectRows } from '@/lib/supabase';
+import { readMatchSet, type MatchSet } from '@/lib/matches';
+import type { Brief, ExpertRecord } from '@/lib/types';
+
+// What somebody asked us to go and get, and the small piece of state that has
+// to survive a round trip to Google.
+//
+// The order of the gate is deliberate: people tick the profiles they want
+// while every name is still withheld, and only then are they asked to sign in.
+// That means the selection is made before the browser leaves the site and has
+// to still be there when it comes back, so it is put in a signed cookie rather
+// than trusted to survive in a tab.
+
+if (typeof window !== 'undefined') {
+  throw new Error('lib/quotes is server-only and must never reach the client');
+}
+
+export const INTENT_COOKIE = 'midsesh_intent';
+
+// Long enough to read a consent screen and pick an account, short enough that
+// a cookie left on a shared machine is worth nothing an hour later.
+export const INTENT_MAX_AGE = 15 * 60;
+
+export const MAX_SLOTS = 8;
+
+// The labels live in lib/quote-status.ts, which is browser safe. They are
+// re-exported here so a server caller still has one import, exactly as
+// lib/credits.ts re-exports the arithmetic from lib/credit-math.ts.
+//
+// A client component must import them from that module, never from this one:
+// this file throws the moment it reaches a browser, and one such import is
+// what broke the dashboard after sign in.
+export {
+  STATUS_LABELS,
+  STATUS_NOTES,
+  type QuoteStatus,
+} from '@/lib/quote-status';
+
+import type { QuoteStatus } from '@/lib/quote-status';
+
+function secret(): string | null {
+  return process.env.SESSION_SECRET || null;
+}
+
+function b64url(input: Buffer | string): string {
+  return Buffer.from(input).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+function fromB64url(input: string): Buffer {
+  return Buffer.from(input.replace(/-/g, '+').replace(/_/g, '/'), 'base64');
+}
+
+function sameValue(a: string, b: string): boolean {
+  const left = Buffer.from(a);
+  const right = Buffer.from(b);
+  return left.length === right.length && timingSafeEqual(left, right);
+}
+
+export interface Intent {
+  setId: string;
+  slots: number[];
+}
+
+interface IntentPayload extends Intent {
+  exp: number;
+}
+
+/**
+ * Only ever whole numbers in range, deduplicated, sorted, and capped.
+ *
+ * Sorted because the slots go into the idempotency key: picking 3 then 1 and
+ * picking 1 then 3 are the same request, and an unsorted key would let the
+ * second one through as a new one.
+ */
+export function parseSlots(input: unknown): number[] {
+  if (!Array.isArray(input)) return [];
+  const slots = new Set<number>();
+  for (const raw of input) {
+    const n = typeof raw === 'number' ? raw : Number(raw);
+    if (!Number.isInteger(n) || n < 1 || n > MAX_SLOTS) continue;
+    slots.add(n);
+  }
+  return [...slots].sort((a, b) => a - b).slice(0, MAX_SLOTS);
+}
+
+/** The signed cookie value, or null when no session secret is configured. */
+export function signIntent(intent: Intent, now = Date.now()): string | null {
+  const key = secret();
+  if (!key) return null;
+  const payload: IntentPayload = { ...intent, exp: Math.floor(now / 1000) + INTENT_MAX_AGE };
+  const body = b64url(JSON.stringify(payload));
+  return `${body}.${b64url(createHmac('sha256', key).update(body).digest())}`;
+}
+
+/** What the cookie says, or null for anything tampered with or expired. */
+export function readIntent(cookie: string | undefined, now = Date.now()): Intent | null {
+  const key = secret();
+  if (!key || !cookie) return null;
+
+  const cut = cookie.lastIndexOf('.');
+  if (cut <= 0) return null;
+  const body = cookie.slice(0, cut);
+  if (!sameValue(cookie.slice(cut + 1), b64url(createHmac('sha256', key).update(body).digest()))) {
+    return null;
+  }
+
+  let payload: IntentPayload;
+  try {
+    payload = JSON.parse(fromB64url(body).toString('utf8')) as IntentPayload;
+  } catch {
+    return null;
+  }
+  if (!payload.exp || payload.exp * 1000 <= now) return null;
+  if (typeof payload.setId !== 'string') return null;
+
+  const slots = parseSlots(payload.slots);
+  if (slots.length === 0) return null;
+  return { setId: payload.setId, slots };
+}
+
+/**
+ * The idempotency key for a request.
+ *
+ * Derived from the selection rather than random, so the same person asking for
+ * the same people twice writes one row. The auth callback and a retried fetch
+ * both land here, and the unique index on (set_id, ref) is what turns the
+ * second one into a no-op instead of a second round of outreach.
+ */
+export function refFor(slots: number[]): string {
+  return `gate:${slots.join('-')}`;
+}
+
+export interface CreateInput {
+  setId: string;
+  slots: number[];
+  sub: string | null;
+  email: string;
+  name?: string | null;
+}
+
+/**
+ * Write the request. Returns whether it landed.
+ *
+ * Not fire and forget, unlike most writes in this codebase. Somebody who
+ * pressed a button and was told their request is in has to actually have one,
+ * so a failure here has to reach the screen rather than the log.
+ */
+export async function createQuoteRequest(input: CreateInput): Promise<boolean> {
+  if (input.slots.length === 0) return false;
+  const res = await insertRows(
+    'quote_requests',
+    {
+      set_id: input.setId,
+      sub: input.sub,
+      email: input.email.trim().toLowerCase(),
+      name: input.name?.trim() || null,
+      slots: input.slots,
+      status: 'open',
+      ref: refFor(input.slots),
+    },
+    { ignoreDuplicatesOn: 'set_id,ref' },
+  );
+  return res.ok;
+}
+
+interface RequestRow {
+  id: string;
+  set_id: string;
+  slots: number[];
+  status: QuoteStatus;
+  created_at: string;
+}
+
+export interface QuoteRequest {
+  id: string;
+  setId: string;
+  slots: number[];
+  status: QuoteStatus;
+  createdAt: string;
+  brief: Brief | null;
+  query: string;
+  /** Everyone in the set, picked or not. The account owns all of them. */
+  experts: ExpertRecord[];
+}
+
+/**
+ * Every request this account has made, newest first.
+ *
+ * Two round trips rather than one embedded query: the sets are fetched by id
+ * after the requests are known. Embedding would be one call, but a nested
+ * PostgREST select fails silently into an empty array when a relationship is
+ * not what you assumed, and an empty dashboard is exactly the failure nobody
+ * would notice.
+ */
+export async function listQuoteRequests(sub: string, limit = 20): Promise<QuoteRequest[]> {
+  const rows = await selectRows<RequestRow>(
+    'quote_requests',
+    `sub=eq.${encodeURIComponent(sub)}&select=id,set_id,slots,status,created_at&order=created_at.desc&limit=${limit}`,
+  );
+  if (!rows || rows.length === 0) return [];
+
+  const sets = new Map<string, MatchSet>();
+  await Promise.all(
+    [...new Set(rows.map((r) => r.set_id))].map(async (id) => {
+      const set = await readMatchSet(id);
+      if (set) sets.set(id, set);
+    }),
+  );
+
+  return rows.map((row) => {
+    const set = sets.get(row.set_id);
+    return {
+      id: row.id,
+      setId: row.set_id,
+      slots: row.slots ?? [],
+      status: row.status,
+      createdAt: row.created_at,
+      brief: set?.brief ?? null,
+      query: set?.query ?? '',
+      experts: set?.records ?? [],
+    };
+  });
+}
+
+// A field the model filled in to say it had nothing to fill in. These read
+// as blanks on a form when they reach a screen, and one of them is the intake
+// talking about the visitor in the third person.
+const BLANK_WORDS = String.raw`not disclosed|undisclosed|unknown|none|n\/?a|unspecified|not (stated|specified|given|provided)`;
+
+const UNINFORMATIVE = new RegExp(String.raw`^(${BLANK_WORDS})\b`, 'i');
+
+// The same admission tucked into an aside: "B2B sales and outbound (offer and
+// target buyer not disclosed)". The field is useful, the parenthetical is the
+// model noting what it did not get, and only one of those belongs in a
+// heading the visitor reads.
+const BLANK_ASIDE = new RegExp(String.raw`\s*\([^)]*\b(${BLANK_WORDS})\b[^)]*\)`, 'gi');
+
+function informative(value: string | undefined): string {
+  const v = (value ?? '').replace(BLANK_ASIDE, '').trim().replace(/[.,;:]+$/, '');
+  if (!v || UNINFORMATIVE.test(v)) return '';
+  return v;
+}
+
+/**
+ * A brief written back as the line somebody would recognise their search by.
+ *
+ * Deliberately short, and deliberately not the whole brief. `specifics` is
+ * written for the expert and for the search, so it carries things a visitor
+ * should never be handed back: "Visitor declined to share what they sell",
+ * "Business/topic area not disclosed". Printing it turned a dashboard heading
+ * into a five line dossier with notes about the reader in it.
+ *
+ * What is left is what they would use to pick this search out of a list.
+ */
+export function briefLine(brief: Brief | null, fallback: string): string {
+  if (!brief) return fallback || 'Your search';
+  const head = [informative(brief.expert_type), informative(brief.domain)]
+    .filter(Boolean)
+    .join(' · ');
+  if (head) return head;
+  // Nothing usable in the brief, so fall back to the search query, which is
+  // always a few plain words because that is what it was written to be.
+  return informative(brief.search_query) || fallback || 'Your search';
+}

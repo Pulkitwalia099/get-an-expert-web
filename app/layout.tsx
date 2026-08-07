@@ -4,7 +4,7 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: 'midsesh',
-  description: 'Describe what you need. Meet the human expert who has done it before.',
+  description: 'Describe what you need. An agent that has done it before picks it up.',
 };
 
 export const viewport: Viewport = {

@@ -256,7 +256,7 @@ footer{text-align:center;margin-top:42px;font-size:13.5px;color:var(--faint)}
 <div class="wrap">
   <div class="hero">
     <span class="kick">Get An Expert</span>
-    <h1>A real human,<br><span class="grad">inside the AI you already use.</span></h1>
+    <h1>An agent,<br><span class="grad">inside the AI you already use.</span></h1>
     <p>Free to set up. Pick one below.</p>
   </div>
 
@@ -272,7 +272,7 @@ footer{text-align:center;margin-top:42px;font-size:13.5px;color:var(--faint)}
       <span class="ico">&#128187;</span>
       <span class="badge b2">Installs on your computer</span>
       <h3>I want help in my project</h3>
-      <p class="d">A real person joins your coding session and works in your project. You approve everything.</p>
+      <p class="d">An agent joins your coding session and works in your project. You approve everything.</p>
       <span class="w">Claude Code &middot; Codex &middot; Cursor</span>
     </button>
   </div>
@@ -433,7 +433,7 @@ const ROUTES = {
 <span class="g">Get An Expert is ready.</span>`) },
       { t:"Approve what the expert can touch", lead:"You pick each one separately, and you can take any of them back at any moment.",
         body: CONSENT + call("good","&#128065;","You see everything","A live log shows every action the expert takes.") },
-      DONE("Type /get-an-expert in any project when you want a human."),
+      DONE("Type /get-an-expert in any project when you want one."),
     ]},
     { id:"codex", name:"Codex", c:"#0F172A", i:"X", steps:[
       { t:"Open your Codex settings file", lead:"It lives at ~/.codex/config.toml.",
@@ -446,11 +446,11 @@ command = <span class="s">"npx"</span>
 args = [<span class="s">"-y"</span>, <span class="s">"get-an-expert-agent@latest"</span>]
 startup_timeout_sec = <span class="s">60</span>`) },
       { t:"Restart Codex", lead:"Codex only reads that file when it starts.", body: RESTART("Codex") },
-      { t:"Ask for an expert", lead:"Say you want a human expert to look at this.",
+      { t:"Ask for an expert", lead:"Say you want an expert to look at this.",
         body: WAIT1 + trm("First run", `<span class="y">Setting up Get An Expert. One time...</span>
 <span class="g">Get An Expert is ready.</span>`) },
       { t:"Approve what the expert can touch", lead:"Pick each one separately. Revoke any at any moment.", body: CONSENT },
-      DONE("Ask for a human expert any time you are stuck."),
+      DONE("Ask for an expert any time you are stuck."),
     ]},
     { id:"cursor", name:"Cursor", c:"#3A5A8C", i:"Cu", steps:[
       { t:"Open your Cursor settings file", lead:"It lives at ~/.cursor/mcp.json.",
@@ -466,9 +466,9 @@ startup_timeout_sec = <span class="s">60</span>`) },
   }
 }`) },
       { t:"Restart Cursor", lead:"Cursor only reads that file at startup.", body: RESTART("Cursor") },
-      { t:"Ask for an expert", lead:"Say you want a human expert to look at this.", body: WAIT1 },
+      { t:"Ask for an expert", lead:"Say you want an expert to look at this.", body: WAIT1 },
       { t:"Approve what the expert can touch", lead:"Pick each one separately. Revoke any at any moment.", body: CONSENT },
-      DONE("Ask for a human expert any time you are stuck."),
+      DONE("Ask for an expert any time you are stuck."),
     ]},
   ]},
 };
