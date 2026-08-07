@@ -1,6 +1,6 @@
 # Get-an-Expert Web — Marketplace Pivot: Session Handoff
 
-**Last updated:** 2026-08-06 (session 3 close-out)
+**Last updated:** 2026-08-06 (session 4 close-out, UGC Ads shipped in 710b988)
 **Read this first in any new session. It is the single source of truth.**
 
 **New session?** Clone/pull https://github.com/Pulkitwalia099/get-an-expert-web
@@ -10,7 +10,7 @@ live Next.js app. Read the progress log below, then continue from
 
 ## 0. Progress log
 
-### Session 4 (2026-08-06) — UGC offer redraft
+### Session 4 (2026-08-06): UGC offer redraft
 
 - **`hifi/ugc.html` fully redrafted around a new offer.** The old pricing said
   HUMAN + AGENT while charging $10 to $15 a video, which is at or below what a
@@ -342,15 +342,16 @@ live Next.js app. Read the progress log below, then continue from
   mobile, are in `hifi/shots/`. If you need to re-shoot, start the static
   server (`.claude/launch.json` has a `marketplace-preview` entry on port
   4319) and shoot against `http://localhost:4319`, not `file://`.
-- **Next session starts at:** your review of the four new detail pages, then
-  one of these, in rough order of value:
-  1. **Answer the open questions in section 7.** Five of the eight still block
-     real prices. Voice and Video Editing now lay their options out on the
-     page, so those two are a read-and-pick rather than a blank.
-  2. **Real content into the placeholders:** LinkedIn post screenshot, UGC
-     sample videos, Voice call recordings, first Video Editing before/after.
+- **Next session starts at:** UGC Ads is done and committed. Pick one:
+  1. **The next SKU.** LinkedIn Marketeer is the closest to ready since Rohit
+     wrote the copy and the price. Voice Outbound, Video Editing and Explainer
+     all still need a price decision, and each lays its options out on its own
+     page so it is a read-and-pick rather than a blank.
+  2. **Unblock the UGC launch.** Items 1a to 1f in section 7. 1f is the real
+     one: nothing can take the $29.
   3. **Phase E, the port into Next.js:** six `/services/<slug>` routes plus the
-     tiles component on `app/page.tsx`. Guardrails in section 6.
+     tiles component on `app/page.tsx`. Guardrails in section 6. Note the video
+     assets are ~20MB in git and should move to blob storage in the port.
 - **LinkedIn tile (done, session 2):** Rohit's commit b48a3a5 built the
   LinkedIn Marketeer flagship tile (2-span, post-screenshot skeleton,
   $100 per 10k impressions pricing). Taste pass in commit 5a7e4d1: copy
@@ -387,7 +388,7 @@ six it is, grid handles any count.
 
 | # | SKU | Badge | Input | Output | Price | Sample hook |
 |---|-----|-------|-------|--------|-------|-------------|
-| 1 | **UGC Ads** (flagship, build first) | HUMAN + AGENT | Product link, a UGC ad you like, optional model photo/brief | Research, script, finished UGC video | Single price TBD; subscription $15/video at 3/week, $10/video at 10/week | Sample first: pay only if you like it |
+| 1 | **UGC Ads** (flagship, BUILT, committed 710b988) | HUMAN + AGENT | Product link, a UGC ad you like, objective | Research, script, finished UGC ad | $29 first ad credited to month 1; packs $395 / $890 / $1,690 a month | $29 sample, then a 30% hook rate promise |
 | 2 | **LinkedIn Marketeer** | HUMAN + AGENT (assumed) | TBD | TBD | TBD | TBD |
 | 3 | **RateMyWipe** | AGENT | Your Claude session transcripts (open-source tool on GitHub, user runs it on their cloud session) | Wipe-coding level 1-5, breakdown by skill area (planning, reviewing, running tools, etc.), prescribed skill packs/repos to level up | **FREE** | It IS the free sample/lead magnet |
 | 4 | **Voice Outbound** ("voice port") | AGENT + HUMAN QA (assumed) | Call list + script/transcript | Outbound calls done: leads generated and qualified | TBD | On-site voice agent you can talk to, to judge quality |
@@ -473,7 +474,13 @@ harden into a fake number by accident.
 
 | # | Question | Status | Where it shows |
 |---|----------|--------|----------------|
-| 1 | Single UGC video price (post-sample one-time price)? | open | ugc.html pricing |
+| 1 | UGC pricing | **ANSWERED.** $29 first ad, packs $395/$890/$1,690 | ugc.html pricing |
+| 1a | UGC: photo of the AI video lead for the byline | open | ugc.html byline, amber |
+| 1b | UGC: "Book a call" link target, all three pack CTAs point at `#` | open | ugc.html pricing |
+| 1c | UGC: permission from @valerii.murr, or swap to an Instagram embed | open, blocks going public | ugc.html worked example |
+| 1d | UGC: written client sign-off to show their ads | open, blocks going public | ugc.html samples |
+| 1e | UGC: revisions policy, ownership, actor selection | open | ugc.html FAQ, amber |
+| 1f | UGC: **there is no payment path for the $29 at all** | open, blocks launch | repo has no Stripe |
 | 2 | LinkedIn Marketeer input and output detail | mostly answered by Rohit; price is $100 per 10k | linkedin.html |
 | 3 | Voice Outbound price model, and is the demo real or recorded? | open, **three options now written out with their trade-offs** | voice.html pricing + demo strip |
 | 4 | Video Editing: per video or per finished minute? Sample content? | open, **two options now written out**; no samples exist | video-editing.html pricing + samples |
