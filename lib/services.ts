@@ -33,11 +33,11 @@ export type Service = {
 export const SERVICES: Service[] = [
   {
     slug: 'ugc-ads',
-    name: 'UGC Campaign Engine',
+    name: 'AI UGC Campaign Engine',
     badge: 'Human + Agent',
     status: 'live',
     blurb:
-      'Send your product link and an ad you like. We research it, script it, and send back a finished UGC video within 24 hours.',
+      'Send your product link and an ad you like. We research it, script it, and send back a finished ad within 24 hours. The actors are AI, not hired creators.',
     price: '$29 first ad',
     priceNote: 'Packs from $395 a month',
     priceOpen: false,
