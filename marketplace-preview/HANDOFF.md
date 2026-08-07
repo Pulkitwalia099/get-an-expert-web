@@ -10,6 +10,45 @@ live Next.js app. Read the progress log below, then continue from
 
 ## 0. Progress log
 
+### Session 5 (2026-08-07): home hero chosen and built
+
+- **Rohit picked a hero.** Three rounds of concepts live in
+  `design/hero-concepts/` at the repo root: four YC-style directions for the
+  old positioning, three for the marketplace, then three treatments of
+  "Work, delivered." with real assets. The winner is V1: split layout, ink
+  headline with a terracotta full stop, the three lead services as cards.
+- **`hifi/index.html` hero rebuilt to V1.** Headline left with badge, sub,
+  two CTAs and the search bar. Right side is three cards: UGC Ads playing
+  `assets/sample-1.mp4` for real (autoplay muted loop, a progress bar driven
+  by timeupdate, a working sound toggle, poster
+  `assets/sample-1-poster.jpg` so headless shots and first paint never show
+  black), LinkedIn Marketeer showing the real `assets/li-post-1.png` post
+  with its verified 254,950 impressions, and Video Editing keeping the
+  abstract timeline because its page owns the no-borrowed-work rule.
+- **No pricing in the hero, per Rohit.** Prices stay on the tiles and detail
+  pages. The stale UGC tile price ("from $10 per video", superseded by the
+  session 4 offer on ugc.html) is still there and still stale; hero only
+  this session, so it remains an open item.
+- **Deliberate deviations, decided by Rohit visually:** the home h1 now runs
+  at display size, clamp(44px,7.4vw,100px), where the frozen home value was
+  clamp(32px,5.4vw,46px). The detail page h1 rule is untouched. The steps
+  row from the approved mockup is NOT duplicated in the hero because the
+  identical four steps sit one scroll down in How it works.
+- **Locked IA preserved:** sitebar untouched, search bar stays in the hero
+  as the route into the expert flow, section order unchanged. "For experts"
+  links to the live midsesh.com/experts since the preview folder has no
+  experts page.
+- **`assets/li-post-1.png` is byte-identical to the copy on the
+  linkedin-marketeer-v2 branch**, verified with cmp, so the two branches
+  merge clean.
+- **Verified, not assumed:** no horizontal overflow at 320 and 390, checked
+  with an element-by-element probe and eyeballed full-resolution shots, and
+  layout confirmed at 1440. Shots re-taken at exact page height, desktop
+  1440x2997 and mobile 390x5123. `npm test` 582 green, `npm run build`
+  clean. Screenshot note: new headless Chrome clamps windows to about 500px
+  wide and silently crops narrower captures; the mobile shots came from the
+  Playwright headless shell, which honors exact sizes.
+
 ### Session 4 (2026-08-06): UGC offer redraft
 
 - **`hifi/ugc.html` fully redrafted around a new offer.** The old pricing said
