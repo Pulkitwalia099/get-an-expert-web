@@ -2,6 +2,12 @@
 // example. Two layouts of the same 15-node machine: landscape for desktop,
 // portrait for phones, swapped by CSS (.d-desktop / .d-mobile). Dense enough
 // to feel like a serious machine, always ending at YOU.
+//
+// The machine plays itself: every node and edge carries an .mm1-.mm8 class
+// and the mm-dim keyframes in globals.css light the pipeline up stage by
+// stage on a 16 second loop, topic to research to merge to hooks to draft
+// to checks to YOU to live, with the memory loops last. Reduced motion
+// shows the whole machine lit.
 
 type Kind = 'end' | 'agent' | 'gate' | 'you' | 'mem';
 
@@ -45,6 +51,28 @@ const INK: Record<Kind, string> = {
   mem: '#5F594E',
 };
 
+// Which of the eight animation stages a node joins. Edges take the stage
+// of the node they point at, so an arrow appears with its destination.
+const NODE_PHASE: Record<string, number> = {
+  topic: 1,
+  trend: 2,
+  audience: 2,
+  deep: 2,
+  merge: 3,
+  hookA: 4,
+  hookB: 4,
+  hookC: 4,
+  judge: 4,
+  draft: 5,
+  voice: 5,
+  fact: 6,
+  tone: 6,
+  you: 7,
+  live: 8,
+  voiceMem: 8,
+  engage: 8,
+};
+
 const FLOW: Array<[string, string]> = [
   ['topic', 'trend'],
   ['topic', 'audience'],
@@ -69,21 +97,21 @@ const FLOW: Array<[string, string]> = [
 ];
 
 const LANDSCAPE: Layout = {
-  viewBox: '0 0 1020 600',
+  viewBox: '0 0 1032 600',
   nodes: {
     topic: { x: 62, y: 280, w: 96, h: 52, label: 'Topic in', kind: 'end' },
     trend: { x: 215, y: 110, w: 128, h: 50, label: 'Trend scan', sub: 'agent', kind: 'agent' },
     audience: { x: 215, y: 230, w: 128, h: 50, label: 'Audience mine', sub: 'agent', kind: 'agent' },
     deep: { x: 215, y: 350, w: 128, h: 50, label: 'Deep research', sub: 'agent', kind: 'agent' },
-    merge: { x: 380, y: 230, w: 122, h: 52, label: 'Insight merge', sub: 'agent', kind: 'agent' },
+    merge: { x: 380, y: 230, w: 122, h: 52, label: 'Insight merge', sub: 'expert review', kind: 'agent' },
     hookA: { x: 540, y: 90, w: 100, h: 44, label: 'Hook A', sub: 'agent', kind: 'agent' },
     hookB: { x: 540, y: 170, w: 100, h: 44, label: 'Hook B', sub: 'agent', kind: 'agent' },
     hookC: { x: 540, y: 250, w: 100, h: 44, label: 'Hook C', sub: 'agent', kind: 'agent' },
-    judge: { x: 670, y: 170, w: 108, h: 48, label: 'Hook judge', sub: 'agent', kind: 'agent' },
+    judge: { x: 670, y: 170, w: 108, h: 48, label: 'Hook judge', sub: 'expert review', kind: 'agent' },
     draft: { x: 540, y: 360, w: 100, h: 48, label: 'Draft', sub: 'agent', kind: 'agent' },
-    voice: { x: 670, y: 360, w: 112, h: 48, label: 'Voice match', sub: 'agent', kind: 'agent' },
-    fact: { x: 810, y: 180, w: 110, h: 44, label: 'Fact check', kind: 'gate' },
-    tone: { x: 810, y: 300, w: 110, h: 44, label: 'Tone check', kind: 'gate' },
+    voice: { x: 670, y: 360, w: 112, h: 48, label: 'Voice match', sub: 'expert review', kind: 'agent' },
+    fact: { x: 810, y: 180, w: 110, h: 44, label: 'Fact check', sub: 'expert review', kind: 'gate' },
+    tone: { x: 810, y: 300, w: 110, h: 44, label: 'Tone check', sub: 'expert review', kind: 'gate' },
     you: { x: 945, y: 240, w: 130, h: 80, label: 'YOU', sub: 'final say', kind: 'you' },
     live: { x: 945, y: 80, w: 104, h: 50, label: 'Post live', kind: 'end' },
     voiceMem: { x: 540, y: 510, w: 126, h: 48, label: 'Voice memory', sub: 'memory', kind: 'mem' },
@@ -95,12 +123,16 @@ const LANDSCAPE: Layout = {
     { x: 810, y: 24, label: '3 · CHECK', anchor: 'middle' },
     { x: 945, y: 24, label: '4 · YOU', anchor: 'middle' },
   ],
+  // Learning loops, routed through the empty lanes below and beside the
+  // grid so no path crosses a box: YOU down and left into voice memory,
+  // voice memory up into the voice agent, the live post around the right
+  // edge into engagement data.
   dashed: [
-    'M945 282 Q945 512 608 512',
-    'M565 486 Q610 440 650 388',
-    'M997 82 Q1030 320 883 500',
+    'M945 284 L945 540 Q945 574 911 574 L640 574 Q590 574 586 538',
+    'M583 484 Q622 448 655 390',
+    'M997 88 Q1018 92 1018 132 L1018 468 Q1018 510 972 510 L884 510',
   ],
-  labels: [{ x: 925, y: 368, text: 'your edits teach it', anchor: 'end' }],
+  labels: [{ x: 770, y: 564, text: 'your edits teach your agents', anchor: 'middle' }],
 };
 
 const PORTRAIT: Layout = {
@@ -110,15 +142,17 @@ const PORTRAIT: Layout = {
     trend: { x: 90, y: 130, w: 120, h: 48, label: 'Trend scan', sub: 'agent', kind: 'agent' },
     audience: { x: 240, y: 130, w: 128, h: 48, label: 'Audience mine', sub: 'agent', kind: 'agent' },
     deep: { x: 390, y: 130, w: 120, h: 48, label: 'Deep research', sub: 'agent', kind: 'agent' },
-    merge: { x: 240, y: 230, w: 122, h: 50, label: 'Insight merge', sub: 'agent', kind: 'agent' },
+    merge: { x: 240, y: 230, w: 122, h: 50, label: 'Insight merge', sub: 'expert review', kind: 'agent' },
     hookA: { x: 90, y: 330, w: 96, h: 44, label: 'Hook A', sub: 'agent', kind: 'agent' },
     hookB: { x: 240, y: 330, w: 96, h: 44, label: 'Hook B', sub: 'agent', kind: 'agent' },
     hookC: { x: 390, y: 330, w: 96, h: 44, label: 'Hook C', sub: 'agent', kind: 'agent' },
-    judge: { x: 240, y: 420, w: 108, h: 46, label: 'Hook judge', sub: 'agent', kind: 'agent' },
-    draft: { x: 140, y: 505, w: 96, h: 46, label: 'Draft', sub: 'agent', kind: 'agent' },
-    voice: { x: 340, y: 505, w: 110, h: 46, label: 'Voice match', sub: 'agent', kind: 'agent' },
-    fact: { x: 140, y: 600, w: 104, h: 42, label: 'Fact check', kind: 'gate' },
-    tone: { x: 340, y: 600, w: 104, h: 42, label: 'Tone check', kind: 'gate' },
+    judge: { x: 240, y: 420, w: 108, h: 46, label: 'Hook judge', sub: 'expert review', kind: 'agent' },
+    // Draft sits beside the judge so the merge-to-draft edge threads the
+    // gap between Hook A and Hook B instead of crossing either box.
+    draft: { x: 90, y: 420, w: 96, h: 46, label: 'Draft', sub: 'agent', kind: 'agent' },
+    voice: { x: 240, y: 505, w: 110, h: 46, label: 'Voice match', sub: 'expert review', kind: 'agent' },
+    fact: { x: 140, y: 600, w: 104, h: 42, label: 'Fact check', sub: 'expert review', kind: 'gate' },
+    tone: { x: 340, y: 600, w: 104, h: 42, label: 'Tone check', sub: 'expert review', kind: 'gate' },
     you: { x: 240, y: 720, w: 140, h: 80, label: 'YOU', sub: 'final say', kind: 'you' },
     live: { x: 240, y: 850, w: 110, h: 48, label: 'Post live', kind: 'end' },
     voiceMem: { x: 150, y: 945, w: 130, h: 46, label: 'Voice memory', sub: 'memory', kind: 'mem' },
@@ -130,12 +164,14 @@ const PORTRAIT: Layout = {
     { x: 16, y: 566, label: '3 · CHECK', anchor: 'start' },
     { x: 16, y: 668, label: '4 · YOU', anchor: 'start' },
   ],
+  // Same learning loops as landscape, minus voice memory into the voice
+  // agent, which has no clear lane on a phone. Both curves run through the
+  // empty margins beside the YOU and live boxes.
   dashed: [
     'M215 762 Q150 830 150 919',
-    'M268 872 Q355 895 355 919',
-    'M278 945 L218 945',
+    'M268 876 Q355 898 355 919',
   ],
-  labels: [{ x: 240, y: 998, text: 'it learns from your every edit', anchor: 'middle' }],
+  labels: [{ x: 240, y: 998, text: 'your edits teach your agents', anchor: 'middle' }],
 };
 
 function MachineSvg({ layout, id, className }: { layout: Layout; id: string; className: string }) {
@@ -156,7 +192,7 @@ function MachineSvg({ layout, id, className }: { layout: Layout; id: string; cla
       viewBox={layout.viewBox}
       className={className}
       role="img"
-      aria-label="One expert's work, agentized, using a LinkedIn post as the example. A topic fans out to three research agents in parallel. Their findings merge, three hook agents compete and a judge picks the winner, a draft agent writes and a voice match agent applies your voice, then fact and tone checks run. Everything stops at you, the final say, before the post goes live. Your edits flow into voice memory and live results into engagement data, so the machine learns from you."
+      aria-label="One expert's work, agentized, using a LinkedIn post as the example. A topic fans out to three research agents in parallel. Their findings merge, three hook agents compete and a judge picks the winner, a draft agent writes and a voice match agent applies your voice, then fact and tone checks run. The merge, the judge, the voice match and both checks are marked expert review: places where you, the expert, look at the work. Everything stops at you, the final say, before the post goes live. Your edits flow into voice memory and live results into engagement data, so your agents learn from you."
     >
       <defs>
         <marker id={`${id}-a`} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
@@ -177,22 +213,22 @@ function MachineSvg({ layout, id, className }: { layout: Layout; id: string; cla
         const p1 = anchorPt(nodes[a], nodes[b]);
         const p2 = anchorPt(nodes[b], nodes[a]);
         return (
-          <line key={`${a}-${b}`} x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} stroke="#C4593C" strokeWidth="1.7" opacity="0.85" markerEnd={`url(#${id}-a)`} />
+          <line key={`${a}-${b}`} className={`mm-g mm${NODE_PHASE[b]}`} x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} stroke="#C4593C" strokeWidth="1.7" opacity="0.85" markerEnd={`url(#${id}-a)`} />
         );
       })}
 
       {dashed.map((d) => (
-        <path key={d} d={d} fill="none" stroke="#8B8375" strokeWidth="1.7" strokeDasharray="5 5" markerEnd={`url(#${id}-d)`} />
+        <path key={d} className="mm-g mm8" d={d} fill="none" stroke="#8B8375" strokeWidth="1.7" strokeDasharray="5 5" markerEnd={`url(#${id}-d)`} />
       ))}
 
       {labels.map((l) => (
-        <text key={l.text} x={l.x} y={l.y} textAnchor={l.anchor} fontSize="11.5" fontWeight="600" fill="#8B8375">
+        <text key={l.text} className="mm-g mm8" x={l.x} y={l.y} textAnchor={l.anchor} fontSize="11.5" fontWeight="600" fill="#8B8375">
           {l.text}
         </text>
       ))}
 
       {Object.entries(nodes).map(([key, n]) => (
-        <g key={key}>
+        <g key={key} className={`mm-g mm${NODE_PHASE[key]}${n.kind === 'you' ? ' mm-youp' : ''}`}>
           <rect
             x={n.x - n.w / 2}
             y={n.y - n.h / 2}
@@ -214,7 +250,14 @@ function MachineSvg({ layout, id, className }: { layout: Layout; id: string; cla
             {n.label}
           </text>
           {n.sub ? (
-            <text x={n.x} y={n.y + 16} textAnchor="middle" fontSize="10" fill={n.kind === 'you' ? 'rgba(255,255,255,.85)' : '#8B8375'}>
+            <text
+              x={n.x}
+              y={n.y + 16}
+              textAnchor="middle"
+              fontSize="10"
+              fontWeight={n.sub === 'expert review' ? 600 : 400}
+              fill={n.kind === 'you' ? 'rgba(255,255,255,.85)' : n.sub === 'expert review' ? '#A8452C' : '#8B8375'}
+            >
               {n.sub}
             </text>
           ) : null}
