@@ -5,208 +5,266 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Hi-fi · Voice Outbound detail</title>
 <style>
-  :root {
-    --bg: #F6F3ED; --ink: #211E1A; --ink-2: #5F594E; --ink-3: #8B8375;
-    --line: rgba(33,30,26,.08);
-    --glass: rgba(255,255,255,.55); --glass-strong: rgba(255,255,255,.78);
-    --accent: #C4593C; --accent-deep: #9E3F24; --accent-tint: rgba(196,89,60,.09);
-    --amber: #B97A1A;
-    --ease-out: cubic-bezier(0.23,1,0.32,1); --spring: cubic-bezier(0.34,1.56,0.64,1);
-    --radius-card: 16px;
-  }
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
-    color: var(--ink); background: var(--bg);
-    -webkit-font-smoothing: antialiased; letter-spacing: -0.004em;
-  }
-  .bg { position: fixed; inset: 0; z-index: 0;
-    background:
-      radial-gradient(52vw 44vh at 16% 8%,  rgba(255,196,156,.52), transparent 68%),
-      radial-gradient(46vw 42vh at 86% 12%, rgba(206,190,255,.46), transparent 70%),
-      radial-gradient(58vw 50vh at 50% 104%, rgba(168,206,255,.42), transparent 70%);
-  }
-  .page { position: relative; z-index: 1; }
-  .sitebar { display:flex; align-items:center; justify-content:space-between; padding:18px clamp(18px,4vw,40px); }
-  .sitemark { display:flex; align-items:center; gap:7px; font-size:15px; font-weight:700; text-decoration:none; color:inherit; }
-  .worb { width:17px; height:17px; border-radius:50%; background:linear-gradient(140deg,#E8A184,var(--accent));
-    color:#fff; font-size:9px; display:inline-grid; place-items:center; }
-  .sitenav { display:flex; gap:18px; font-size:13.5px; }
-  .sitenav a { color:var(--ink-2); text-decoration:none; }
+  /* Self-hosted latin subsets. Inter is the fallback for the macro face, so a
+     visitor without Helvetica Neue gets a real weight instead of a synthesised
+     Arial. IBM Plex Mono carries every label, unit and figure. */
+  @font-face{font-family:'Inter';font-style:normal;font-weight:400 900;
+    font-display:swap;src:url(assets/fonts/inter-400_900.woff2) format('woff2');}
+  @font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:400;
+    font-display:swap;src:url(assets/fonts/ibmplexmono-400.woff2) format('woff2');}
+  @font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:600;
+    font-display:swap;src:url(assets/fonts/ibmplexmono-600.woff2) format('woff2');}
+  @font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:700;
+    font-display:swap;src:url(assets/fonts/ibmplexmono-700.woff2) format('woff2');}
 
-  section.block { padding: clamp(36px,6vh,64px) 16px; }
-  .wrap { width: min(880px,100%); margin:0 auto; }
-  .eyebrow { display:block; font-size:11.5px; font-weight:650; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); }
-
-  /* Header */
-  .dhead { text-align:center; padding-top: clamp(28px,5vh,56px); }
-  .badge { display:inline-block; font-size:10.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
-    color:var(--ink-2); background:rgba(33,30,26,.05); border:1px solid rgba(33,30,26,.14);
-    border-radius:999px; padding:4px 12px; }
-  .dhead h1 { margin-top:16px; font-size:clamp(30px,5vw,42px); font-weight:750; letter-spacing:-0.03em; }
-  .dhead .promise { margin:12px auto 0; max-width:540px; font-size:clamp(15px,2.2vw,17px); color:var(--ink-2); line-height:1.5; }
-  .priceline { margin-top:16px; font-size:14px; font-weight:700; }
-  .priceline span { color:var(--ink-3); font-weight:400; }
-  .btn { display:inline-block; font-size:15px; font-weight:650; border-radius:999px; padding:13px 30px; text-decoration:none;
-    transition: transform 160ms var(--ease-out), box-shadow 160ms var(--ease-out); }
-  .btn.solid { background:var(--accent-deep); color:#fff; box-shadow:0 8px 20px -6px rgba(158,63,36,.5); }
-  .btn.ghost { color:var(--accent-deep); border:1px solid rgba(158,63,36,.3); background:var(--glass-strong); }
-  @media (hover:hover) and (pointer:fine) {
-    .btn.solid:hover { transform: translateY(-2px) scale(1.02); }
+  :root{
+    --paper:#F4F4F0; --paper-2:#EAE8E3;
+    --ink:#0A0A0A; --ink-2:#4A4A45; --ink-3:#8E8C84;
+    /* B2: red is the only accent and it means unresolved, nothing else. */
+    --red:#E61919;
+    /* A3: Helvetica Neue first for the machines that have it, Inter self-hosted
+       for the ones that do not. 700 because Helvetica Neue has no regular-width
+       Black, so both paths have to agree at Bold.
+       Bare "Helvetica" is deliberately NOT in this stack: Windows substitutes it
+       to Arial and Linux fontconfig aliases it, so it would swallow the fallback
+       and hand those visitors the synthesised Arial this stack exists to avoid. */
+    --grotesk:'Helvetica Neue','Inter',Arial,sans-serif;
+    --mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,monospace;
+    --ease-out:cubic-bezier(0.23,1,0.32,1);
   }
-  .btn:active { transform: scale(0.97); }
-  .btnrow { margin-top:22px; display:flex; gap:10px; justify-content:center; align-items:center; flex-wrap:wrap; }
-  .nocard { font-size:12.5px; color:var(--ink-3); }
+  *{margin:0;padding:0;box-sizing:border-box;border-radius:0;}
+  body{font-family:var(--grotesk);color:var(--ink);background:var(--paper);
+    -webkit-font-smoothing:antialiased;font-size:14px;line-height:1.5;}
 
-  .shead { text-align:center; margin-bottom:28px; }
-  .shead h2 { margin-top:10px; font-size:clamp(21px,3.4vw,27px); font-weight:700; letter-spacing:-0.02em; }
+  /* C1: paper grain, global, over everything and under nothing interactive. */
+  .grain{position:fixed;inset:0;z-index:9;pointer-events:none;opacity:.55;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='4' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='180' height='180' filter='url(%23n)' opacity='0.4'/></svg>");}
+  .page{position:relative;z-index:1;}
+
+  .mono{font-family:var(--mono);text-transform:uppercase;letter-spacing:.09em;}
+  .macro{font-family:var(--grotesk);font-weight:700;text-transform:uppercase;
+    letter-spacing:-.035em;line-height:.92;}
+
+  /* Sitebar. D1: lowercase wordmark, and the gradient orb is gone. */
+  .sitebar{display:flex;align-items:center;justify-content:space-between;gap:14px;
+    flex-wrap:wrap;padding:16px clamp(16px,3.4vw,32px);border-bottom:2px solid var(--ink);}
+  .sitemark{font-family:var(--grotesk);font-weight:700;font-size:22px;letter-spacing:-.035em;
+    text-decoration:none;color:var(--ink);line-height:1;}
+  .sitenav{display:flex;gap:16px;font-family:var(--mono);font-size:10px;
+    text-transform:uppercase;letter-spacing:.11em;}
+  .sitenav a{color:var(--ink-2);text-decoration:none;padding-bottom:1px;
+    border-bottom:1px solid transparent;}
+  @media(hover:hover) and (pointer:fine){.sitenav a:hover{color:var(--ink);border-bottom-color:var(--ink);}}
+
+  section.block{padding:clamp(30px,5.2vh,54px) clamp(16px,3.4vw,32px);
+    border-bottom:1px solid var(--ink);}
+  section.block:last-of-type{border-bottom:none;}
+  .wrap{width:min(1080px,100%);margin:0 auto;}
+  .prose{max-width:62ch;}
+
+  /* Section heads: mono label ranged left against the macro line. */
+  .shead{display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:26px;}
+  @media(min-width:760px){.shead{grid-template-columns:150px 1fr;gap:0 24px;align-items:start;}}
+  .eyebrow{font-family:var(--mono);font-size:10px;text-transform:uppercase;
+    letter-spacing:.12em;color:var(--ink-3);padding-top:.42em;}
+  .shead h2{font-family:var(--grotesk);font-weight:700;text-transform:uppercase;
+    font-size:clamp(22px,4vw,38px);letter-spacing:-.035em;line-height:.95;text-wrap:balance;}
+
+  /* Header. Sits on the same 150px label column as every section head, so the
+     H1 and the section H2s share one left edge instead of two. */
+  .dhead{padding-top:clamp(26px,4.4vh,46px);}
+  @media(min-width:760px){
+    .dhead .wrap{display:grid;grid-template-columns:150px 1fr;gap:0 24px;align-items:start;}
+    .dhead .badge{margin-top:.5em;}
+    .dhead h1{margin-top:0;}
+  }
+  .badge{display:inline-block;font-family:var(--mono);font-size:10px;font-weight:600;
+    letter-spacing:.13em;text-transform:uppercase;color:var(--paper);background:var(--ink);
+    padding:4px 10px;}
+  .dhead h1{margin-top:18px;font-family:var(--grotesk);font-weight:700;text-transform:uppercase;
+    font-size:clamp(40px,9vw,96px);letter-spacing:-.045em;line-height:.86;}
+  .dhead .promise{margin-top:18px;max-width:56ch;font-size:clamp(14px,1.7vw,17px);
+    color:var(--ink-2);line-height:1.5;}
+  .priceline{margin-top:20px;padding-top:12px;border-top:1px solid var(--ink);
+    font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.1em;
+    display:flex;gap:10px;align-items:baseline;}
+
+  /* Controls. Press feedback is an inversion, not a lift. */
+  .btn{display:inline-block;font-family:var(--mono);font-size:11px;font-weight:600;
+    text-transform:uppercase;letter-spacing:.11em;padding:13px 24px;text-decoration:none;
+    border:1px solid var(--ink);transition:background 160ms var(--ease-out),color 160ms var(--ease-out);}
+  .btn.solid{background:var(--ink);color:var(--paper);}
+  .btn.ghost{background:transparent;color:var(--ink);}
+  @media(hover:hover) and (pointer:fine){
+    .btn.solid:hover{background:var(--paper);color:var(--ink);}
+    .btn.ghost:hover{background:var(--ink);color:var(--paper);}
+  }
+  .btn:focus-visible,.dcall:focus-visible{outline:3px solid var(--red);outline-offset:2px;}
+  .btnrow{margin-top:22px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+  .nocard{font-family:var(--mono);font-size:10px;text-transform:uppercase;
+    letter-spacing:.1em;color:var(--ink-3);}
 
   /* Live demo strip */
-  .demo { margin-top:26px; background:var(--glass-strong); border:1px solid rgba(33,30,26,.09);
-    border-radius:var(--radius-card); padding:18px 20px; display:flex; align-items:center; gap:16px;
-    flex-wrap:wrap; justify-content:center; text-align:left;
-    box-shadow:0 12px 28px -14px rgba(45,32,22,.2); }
-  .demo .ring { flex:none; width:46px; height:46px; border-radius:50%; background:var(--accent-tint);
-    border:1px solid rgba(158,63,36,.28); display:grid; place-items:center; font-size:19px; }
-  .demo .dtext { min-width:0; }
-  .demo .dt1 { font-size:14px; font-weight:700; display:flex; align-items:center; gap:7px; }
-  .demo .live { width:7px; height:7px; border-radius:50%; background:#2F7A3D; }
-  .demo .dt2 { font-size:12.5px; color:var(--ink-2); margin-top:3px; }
-  .demo .dcall { flex:none; font-size:13.5px; font-weight:650; color:#fff; background:var(--accent-deep);
-    border:none; border-radius:999px; padding:11px 22px; cursor:pointer; font-family:inherit;
-    transition: transform 160ms var(--ease-out); }
-  @media (hover:hover) and (pointer:fine) { .demo .dcall:hover { transform: translateY(-2px); } }
-  .demo .dcall:active { transform: scale(0.97); }
+  .demo{margin-top:28px;border:1px solid var(--ink);padding:16px;display:flex;
+    align-items:center;gap:16px;flex-wrap:wrap;}
+  .demo .ring{flex:none;width:44px;height:44px;border:1px solid var(--ink);
+    display:grid;place-items:center;}
+  .demo .dtext{min-width:0;flex:1 1 220px;}
+  .demo .dt1{font-family:var(--grotesk);font-weight:700;font-size:14px;text-transform:uppercase;
+    letter-spacing:-.01em;display:flex;align-items:center;gap:8px;}
+  .demo .live{width:8px;height:8px;background:var(--ink);flex:none;}
+  .demo .dt2{font-size:12.5px;color:var(--ink-2);margin-top:4px;line-height:1.45;}
+  .dcall{flex:none;font-family:var(--mono);font-size:11px;font-weight:600;text-transform:uppercase;
+    letter-spacing:.11em;color:var(--paper);background:var(--ink);border:1px solid var(--ink);
+    padding:12px 20px;cursor:pointer;transition:background 160ms var(--ease-out),color 160ms var(--ease-out);}
+  @media(hover:hover) and (pointer:fine){.dcall:hover{background:var(--paper);color:var(--ink);}}
 
   /* You give / You get */
-  .io-flow { display:grid; gap:16px; grid-template-columns:1fr; align-items:center; }
-  @media (min-width:721px){ .io-flow { grid-template-columns:1fr 44px 1fr; } }
-  .instack { display:flex; flex-direction:column; gap:10px; }
-  .incard { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:14px;
-    padding:11px 13px; display:flex; gap:12px; align-items:center;
-    box-shadow:0 8px 20px -10px rgba(45,32,22,.15); }
-  .incard .meta { min-width:0; }
-  .incard .t1 { font-size:13px; font-weight:650; }
-  .incard .t2 { font-size:11.5px; color:var(--ink-3); margin-top:1px; }
-  .th { flex:none; border-radius:9px; overflow:hidden; position:relative; }
-  /* call list thumb */
-  .th-list { width:44px; height:44px; border-radius:10px; background:#fff; border:1px solid rgba(33,30,26,.14);
-    display:flex; flex-direction:column; gap:0; overflow:hidden; }
-  .th-list i { flex:1; border-bottom:1px solid rgba(33,30,26,.08); }
-  .th-list i:nth-child(odd) { background:rgba(33,30,26,.035); }
-  .th-list i:last-child { border-bottom:none; }
-  /* script thumb */
-  .th-doc { width:44px; height:44px; border-radius:10px; background:#fff; border:1px solid rgba(33,30,26,.14);
-    display:flex; flex-direction:column; gap:4px; justify-content:center; padding:0 8px; }
-  .th-doc i { height:3px; border-radius:2px; background:rgba(33,30,26,.18); }
-  .th-doc i:nth-child(2) { width:70%; }
-  .th-doc i:last-child { width:50%; }
-  /* criteria thumb */
-  .th-check { width:44px; height:44px; border-radius:10px; background:var(--accent-tint);
-    border:1px solid rgba(158,63,36,.22); display:grid; place-items:center;
-    color:var(--accent-deep); font-size:17px; font-weight:700; }
-  .io-arrow { text-align:center; font-size:20px; color:var(--accent-deep); font-weight:700; }
-  @media (max-width:720px){ .io-arrow { transform:rotate(90deg); } }
+  .io-flow{display:grid;gap:18px;grid-template-columns:1fr;align-items:center;}
+  @media(min-width:721px){.io-flow{grid-template-columns:1fr 48px 1fr;}}
+  .instack{display:grid;gap:1px;background:var(--ink);border:1px solid var(--ink);}
+  .incard{background:var(--paper);padding:13px;display:flex;gap:13px;align-items:center;}
+  .incard .meta{min-width:0;}
+  .incard .t1{font-family:var(--grotesk);font-weight:700;font-size:13px;
+    text-transform:uppercase;letter-spacing:-.005em;}
+  .incard .t2{font-family:var(--mono);font-size:10px;text-transform:uppercase;
+    letter-spacing:.07em;color:var(--ink-3);margin-top:4px;}
+  .th{flex:none;width:44px;height:44px;border:1px solid var(--ink);background:var(--paper-2);}
+  .th-list{display:flex;flex-direction:column;}
+  .th-list i{flex:1;border-bottom:1px solid var(--ink);}
+  .th-list i:nth-child(odd){background:rgba(10,10,10,.09);}
+  .th-list i:last-child{border-bottom:none;}
+  .th-doc{display:flex;flex-direction:column;gap:5px;justify-content:center;padding:0 8px;}
+  .th-doc i{height:3px;background:var(--ink);}
+  .th-doc i:nth-child(2){width:70%;} .th-doc i:last-child{width:50%;}
+  .th-check{display:grid;place-items:center;background:var(--ink);color:var(--paper);}
+  .io-arrow{display:grid;place-items:center;color:var(--ink);}
+  @media(max-width:720px){.io-arrow{transform:rotate(90deg);}}
+  .io-arrow svg{width:34px;height:34px;stroke:currentColor;fill:none;stroke-width:1.6;}
 
   /* Call summary card (the output) */
-  .callcard { position:relative; max-width:300px; margin:0 auto; width:100%;
-    background:#fff; border:1px solid rgba(33,30,26,.12); border-radius:16px; padding:17px;
-    box-shadow:0 20px 42px -16px rgba(45,32,22,.32);
-    display:flex; flex-direction:column; gap:12px; }
-  .cc-tag { position:absolute; right:12px; top:12px; font-size:9.5px; font-weight:700; letter-spacing:.08em;
-    color:#2F7A3D; background:rgba(62,155,79,.12); border:1px solid rgba(62,155,79,.3);
-    border-radius:999px; padding:3px 9px; }
-  .cc-who { display:flex; align-items:center; gap:10px; }
-  .cc-av { flex:none; width:32px; height:32px; border-radius:50%;
-    background:radial-gradient(circle at 34% 30%, #C9D9E8, #5A7B98 72%, #33475C); }
-  .cc-name { height:6px; width:70px; border-radius:3px; background:rgba(33,30,26,.17); }
-  .cc-sub { height:5px; width:52px; border-radius:3px; background:rgba(33,30,26,.09); margin-top:5px; }
-  .wave { display:flex; align-items:center; justify-content:space-between; gap:2px; height:34px; }
-  .wave i { flex:1; max-width:4px; border-radius:2px; background:rgba(158,63,36,.38); min-height:3px; }
-  .cc-meta { display:flex; align-items:center; justify-content:space-between;
-    font-size:11px; color:var(--ink-3); }
-  .cc-notes { border-top:1px solid rgba(33,30,26,.08); padding-top:11px;
-    display:flex; flex-direction:column; gap:6px; }
-  .cc-notes b { font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); }
-  .cc-line { height:5px; border-radius:3px; background:rgba(33,30,26,.10); }
-  .cc-flag { font-size:11.5px; font-weight:650; color:#2F7A3D; }
+  .callcard{position:relative;max-width:320px;margin:0 auto;width:100%;
+    background:var(--paper);border:1px solid var(--ink);padding:16px;
+    display:flex;flex-direction:column;gap:13px;}
+  /* B2: qualified is the product, so it is solid ink and never red. */
+  .cc-tag{position:absolute;right:12px;top:12px;font-family:var(--mono);font-size:9px;
+    font-weight:700;letter-spacing:.12em;color:var(--paper);background:var(--ink);padding:3px 7px;}
+  .cc-who{display:flex;align-items:center;gap:11px;}
+  .cc-av{flex:none;width:34px;height:34px;
+    background:radial-gradient(circle at 34% 28%,#D8D8D2,#6E6E66 66%,#22221E);}
+  .cc-name{height:6px;width:72px;background:var(--ink);}
+  .cc-sub{height:5px;width:52px;background:#B9B7B0;margin-top:5px;}
+  .wave{display:flex;align-items:flex-end;justify-content:space-between;gap:2px;height:34px;}
+  .wave i{flex:1;max-width:4px;background:var(--ink);min-height:2px;}
+  .cc-meta{display:flex;justify-content:space-between;gap:8px;font-family:var(--mono);
+    font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-2);}
+  .cc-notes{border-top:1px solid var(--ink);padding-top:11px;display:flex;
+    flex-direction:column;gap:7px;}
+  .cc-notes b{font-family:var(--mono);font-size:9.5px;font-weight:600;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--ink-3);}
+  .cc-line{height:5px;background:rgba(10,10,10,.16);}
+  .cc-flag{font-family:var(--grotesk);font-weight:700;font-size:11.5px;text-transform:uppercase;
+    letter-spacing:.01em;color:var(--ink);}
 
-  /* Steps */
-  .how2 { display:grid; gap:12px; grid-template-columns:1fr; align-items:stretch; }
-  @media (min-width:560px){ .how2 { grid-template-columns:1fr 1fr; } }
-  @media (min-width:900px){ .how2 { grid-template-columns:repeat(4,1fr); } }
-  .h2c { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:14px;
-    padding:18px 14px; text-align:center; box-shadow:0 8px 20px -10px rgba(45,32,22,.14); }
-  .h2c .em { font-size:26px; line-height:1; }
-  .h2c h3 { margin-top:9px; font-size:15px; font-weight:700; }
-  .h2c p { margin-top:4px; font-size:12.5px; color:var(--ink-2); line-height:1.4; }
-  .h2c.main { background:var(--accent-tint); border:1.5px solid rgba(158,63,36,.45); }
-  .h2c.main h3 { color:var(--accent-deep); }
+  /* Steps. E3: drawn marks, one colour, no font dependency. */
+  .how2{display:grid;gap:1px;grid-template-columns:1fr;background:var(--ink);
+    border:1px solid var(--ink);}
+  @media(min-width:560px){.how2{grid-template-columns:1fr 1fr;}}
+  @media(min-width:900px){.how2{grid-template-columns:repeat(4,1fr);}}
+  .h2c{background:var(--paper);padding:18px 15px 20px;display:flex;flex-direction:column;gap:9px;}
+  .h2c .mark{height:26px;}
+  .h2c .mark svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:1.6;
+    shape-rendering:geometricPrecision;display:block;}
+  .h2c h3{font-family:var(--grotesk);font-weight:700;font-size:13px;text-transform:uppercase;
+    letter-spacing:-.005em;line-height:1.2;}
+  .h2c p{font-size:12.5px;color:var(--ink-2);line-height:1.45;}
+  .h2c.main{background:var(--ink);color:var(--paper);}
+  .h2c.main p{color:#C9C7BF;}
 
   /* Sample calls */
-  .samples { display:grid; gap:14px; grid-template-columns:1fr; }
-  @media (min-width:721px){ .samples { grid-template-columns:repeat(3,1fr); } }
-  .clip { background:#fff; border:1px solid rgba(33,30,26,.12); border-radius:var(--radius-card);
-    padding:18px; box-shadow:0 14px 30px -14px rgba(45,32,22,.24);
-    display:flex; flex-direction:column; gap:12px; }
-  .clip .ctop { display:flex; align-items:center; justify-content:space-between; gap:8px; }
-  .clip .cplay { flex:none; width:34px; height:34px; border-radius:50%; background:var(--accent-deep);
-    color:#fff; display:grid; place-items:center; font-size:12px; }
-  .clip .cdur { font-size:11.5px; color:var(--ink-3); }
-  .clip .ctitle { font-size:13.5px; font-weight:650; }
-  .clip .cout { font-size:11.5px; font-weight:650; }
-  .clip .cout.yes { color:#2F7A3D; }
-  .clip .cout.no { color:var(--ink-3); }
+  .samples{display:grid;gap:1px;grid-template-columns:1fr;background:var(--ink);
+    border:1px solid var(--ink);}
+  @media(min-width:721px){.samples{grid-template-columns:repeat(3,1fr);}}
+  .clip{background:var(--paper);padding:17px;display:flex;flex-direction:column;gap:13px;}
+  .clip .ctop{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .cplay{flex:none;width:32px;height:32px;background:var(--ink);color:var(--paper);
+    display:grid;place-items:center;}
+  .cplay svg{width:11px;height:11px;fill:currentColor;display:block;}
+  /* 16 bars across a full-width card read as tick marks when capped, so let
+     them fill. The call card keeps its cap because it has 27 in a narrow box. */
+  .clip .wave{height:40px;}
+  .clip .wave i{max-width:none;}
+  .clip .cdur{font-family:var(--mono);font-size:10px;letter-spacing:.09em;color:var(--ink-3);}
+  .clip .ctitle{font-family:var(--grotesk);font-weight:700;font-size:13px;
+    text-transform:uppercase;letter-spacing:-.005em;}
+  /* B2: the outcome is ink either way, weight and mute carry the difference. */
+  .clip .cout{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.09em;
+    padding-top:9px;border-top:1px solid var(--ink);}
+  .clip .cout.yes{color:var(--ink);font-weight:600;}
+  .clip .cout.no{color:var(--ink-3);font-weight:400;}
 
   /* Pricing */
-  .tiers { display:grid; gap:14px; grid-template-columns:1fr; }
-  @media (min-width:721px){ .tiers { grid-template-columns:repeat(3,1fr); } }
-  .tier { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:var(--radius-card);
-    padding:22px; box-shadow:0 10px 26px -12px rgba(45,32,22,.15); display:flex; flex-direction:column; gap:8px; }
-  .tier .tname { font-size:13px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--ink-2); }
-  .tier .tprice { font-size:24px; font-weight:750; letter-spacing:-0.02em; }
-  .tier .tprice small { font-size:13px; font-weight:400; color:var(--ink-3); }
-  .tier p { font-size:13.5px; color:var(--ink-2); line-height:1.45; flex:1; }
+  .tiers{display:grid;gap:1px;grid-template-columns:1fr;background:var(--ink);
+    border:1px solid var(--ink);}
+  @media(min-width:721px){.tiers{grid-template-columns:repeat(3,1fr);}}
+  .tier{background:var(--paper);padding:20px;display:flex;flex-direction:column;gap:10px;}
+  .tier .tname{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--ink-2);}
+  .tier .tprice{font-family:var(--grotesk);font-weight:700;font-size:34px;letter-spacing:-.04em;
+    line-height:1;display:flex;align-items:baseline;gap:9px;}
+  .tier p{font-size:12.5px;color:var(--ink-2);line-height:1.5;flex:1;}
 
   /* Guarantee */
-  .guarantee { text-align:center; background:var(--glass); border:1px solid var(--line);
-    border-radius:var(--radius-card); padding:30px 22px; }
-  .guarantee h2 { font-size:clamp(19px,3vw,24px); font-weight:700; letter-spacing:-0.02em; max-width:580px; margin:0 auto; }
-  .guarantee p { margin-top:10px; color:var(--ink-2); font-size:14.5px; }
+  .guarantee{border:1px solid var(--ink);padding:28px 22px;}
+  .guarantee h2{font-family:var(--grotesk);font-weight:700;text-transform:uppercase;
+    font-size:clamp(20px,3.4vw,32px);letter-spacing:-.035em;line-height:.98;max-width:22ch;}
+  .guarantee p{margin-top:14px;color:var(--ink-2);font-size:14px;max-width:62ch;line-height:1.5;}
 
   /* Intake */
-  .form { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:var(--radius-card);
-    padding:24px; box-shadow:0 10px 26px -12px rgba(45,32,22,.15); }
-  .field { margin-bottom:16px; }
-  .field label { display:block; font-size:13px; font-weight:650; margin-bottom:6px; }
-  .field label small { color:var(--ink-3); font-weight:400; }
-  .field input, .field textarea {
-    width:100%; border:1px solid rgba(33,30,26,.14); border-radius:10px; background:#fff;
-    font:inherit; font-size:14px; padding:11px 13px; color:var(--ink); outline:none; }
-  .field input:focus, .field textarea:focus { border-color:rgba(158,63,36,.5); }
-  .field textarea { min-height:84px; resize:vertical; }
-  .upload { border:1.5px dashed rgba(33,30,26,.2); border-radius:10px; padding:16px; text-align:center;
-    font-size:13px; color:var(--ink-2); background:rgba(255,255,255,.6); }
-  .formnote { text-align:center; font-size:12.5px; color:var(--ink-3); margin-top:12px; }
+  .form{border:1px solid var(--ink);padding:22px;}
+  .field{margin-bottom:18px;}
+  .field label{display:block;font-family:var(--mono);font-size:10px;font-weight:600;
+    text-transform:uppercase;letter-spacing:.11em;margin-bottom:7px;}
+  .field label small{color:var(--ink-3);font-weight:400;letter-spacing:.09em;}
+  .field input,.field textarea{width:100%;border:1px solid var(--ink);background:var(--paper);
+    font-family:var(--grotesk);font-size:14px;padding:11px 12px;color:var(--ink);outline:none;}
+  .field input:focus,.field textarea:focus{outline:3px solid var(--red);outline-offset:-1px;}
+  .field textarea{min-height:88px;resize:vertical;}
+  .upload{border:1px dashed var(--ink);padding:18px;font-family:var(--mono);font-size:10px;
+    text-transform:uppercase;letter-spacing:.09em;color:var(--ink-2);line-height:1.6;}
+  .formnote{margin-top:14px;font-family:var(--mono);font-size:10px;text-transform:uppercase;
+    letter-spacing:.09em;color:var(--ink-3);line-height:1.6;}
 
   /* FAQ */
-  .faq details { border-bottom:1px solid var(--line); padding:14px 2px; }
-  .faq summary { font-size:14.5px; font-weight:650; cursor:pointer; list-style:none; }
-  .faq summary::after { content:"+"; float:right; color:var(--ink-3); }
-  .faq details[open] summary::after { content:"–"; }
-  .faq details p { margin-top:8px; font-size:13.5px; color:var(--ink-2); line-height:1.5; }
-  .tbd { color:var(--amber); font-size:12px; font-weight:650; }
+  .faq details{border-top:1px solid var(--ink);padding:14px 2px;}
+  .faq details:last-child{border-bottom:1px solid var(--ink);}
+  .faq summary{font-family:var(--grotesk);font-weight:700;font-size:13.5px;text-transform:uppercase;
+    letter-spacing:-.005em;cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:14px;}
+  .faq summary::-webkit-details-marker{display:none;}
+  .faq summary::after{content:"+";font-family:var(--mono);color:var(--ink-3);flex:none;}
+  .faq details[open] summary::after{content:"\2212";}
+  .faq summary:focus-visible{outline:3px solid var(--red);outline-offset:2px;}
+  .faq details p{margin-top:9px;font-size:13px;color:var(--ink-2);line-height:1.55;max-width:70ch;}
 
-  .cross { text-align:center; }
-  .foot { text-align:center; color:var(--ink-3); font-size:12.5px; padding:26px 16px 40px; }
+  /* B2: red is reserved for what is not settled, and nothing else on the page. */
+  .tbd{font-family:var(--mono);font-size:10px;font-weight:700;text-transform:uppercase;
+    letter-spacing:.11em;color:var(--red);border:1px solid var(--red);padding:2px 6px;
+    white-space:nowrap;}
+  .tier .tprice .tbd{font-size:11px;}
+
+  .foot{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.11em;
+    color:var(--ink-3);padding:24px clamp(16px,3.4vw,32px) 40px;border-top:2px solid var(--ink);
+    display:flex;gap:16px;flex-wrap:wrap;}
+
+  @media(prefers-reduced-motion:reduce){*{transition:none!important;}}
 </style>
 </head>
 <body>
-<div class="bg"></div>
+<div class="grain"></div>
 <div class="page">
 
   <header class="sitebar">
-    <a class="sitemark" href="index.html"><span class="worb">✳︎</span>midsesh</a>
+    <a class="sitemark" href="index.html">midsesh</a>
     <nav class="sitenav"><a href="index.html">All services</a><a href="#">Contact</a><a href="#">Sign in</a></nav>
   </header>
 
@@ -214,21 +272,25 @@
   <section class="block dhead">
     <div class="wrap">
       <span class="badge">Agent + Human QA</span>
-      <h1>Voice Outbound</h1>
+      <div class="hgroup">
+      <h1>Voice<br>Outbound</h1>
       <p class="promise">Give us your call list and script. The voice agent makes the calls, qualifies the leads, and sends you the notes.</p>
-      <div class="priceline">Price <span class="tbd">TBD</span></div>
+      <div class="priceline"><span>Price</span> <span class="tbd">TBD</span></div>
       <div class="btnrow">
         <a class="btn solid" href="#start">Start a run</a>
         <span class="nocard">Hear the agent first</span>
       </div>
 
       <div class="demo">
-        <div class="ring">☎️</div>
+        <div class="ring">
+          <svg viewBox="0 0 26 26" aria-hidden="true" style="width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.6"><path d="M4.5 3.5h5l2 6-3 2c1.2 3.4 3.6 5.8 7 7l2-3 6 2v5h-3C10.9 22.5 3.5 15.1 3.5 6.5v-3z"/></svg>
+        </div>
         <div class="dtext">
           <div class="dt1"><span class="live"></span>Talk to the agent</div>
           <div class="dt2">Same voice that calls your list. Judge it before you buy. <span class="tbd">Demo TBD</span></div>
         </div>
         <button class="dcall">Call now</button>
+      </div>
       </div>
     </div>
   </section>
@@ -254,14 +316,18 @@
             </div>
           </div>
           <div class="incard">
-            <div class="th th-check">✓</div>
+            <div class="th th-check">
+              <svg viewBox="0 0 26 26" aria-hidden="true" style="width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2"><path d="M6 13.5l4.5 4.5L20 8"/></svg>
+            </div>
             <div class="meta">
               <div class="t1">What counts as qualified</div>
               <div class="t2">your criteria, not ours</div>
             </div>
           </div>
         </div>
-        <div class="io-arrow">→</div>
+        <div class="io-arrow">
+          <svg viewBox="0 0 34 34" aria-hidden="true"><path d="M3 17h26M22 10l7 7-7 7"/></svg>
+        </div>
         <div class="callcard">
           <span class="cc-tag">QUALIFIED</span>
           <div class="cc-who">
@@ -295,10 +361,22 @@
     <div class="wrap">
       <div class="shead"><span class="eyebrow">How it works</span><h2>The agent calls. A person checks.</h2></div>
       <div class="how2">
-        <div class="h2c"><div class="em">📇</div><h3>We load your list</h3><p>Numbers, script, and your qualifying criteria.</p></div>
-        <div class="h2c"><div class="em">☎️</div><h3>The agent calls</h3><p>Through the list, on the hours you set.</p></div>
-        <div class="h2c main"><div class="em">🧑‍⚖️</div><h3>A human checks the calls</h3><p>Before any lead is marked qualified. <span class="tbd">Scope TBD</span></p></div>
-        <div class="h2c"><div class="em">📋</div><h3>You get the notes</h3><p>Outcome, notes, and the recording for each call.</p></div>
+        <div class="h2c">
+          <span class="mark"><svg viewBox="0 0 26 26" aria-hidden="true"><rect x="2.5" y="4.5" width="21" height="17"/><path d="M2.5 9.5h21M2.5 14.5h21M2.5 19.5h21M8.5 4.5v17"/></svg></span>
+          <h3>We load your list</h3><p>Numbers, script, and your qualifying criteria.</p>
+        </div>
+        <div class="h2c">
+          <span class="mark"><svg viewBox="0 0 26 26" aria-hidden="true"><path d="M4.5 3.5h5l2 6-3 2c1.2 3.4 3.6 5.8 7 7l2-3 6 2v5h-3C10.9 22.5 3.5 15.1 3.5 6.5v-3z"/></svg></span>
+          <h3>The agent calls</h3><p>Through the list, on the hours you set.</p>
+        </div>
+        <div class="h2c main">
+          <span class="mark"><svg viewBox="0 0 26 26" aria-hidden="true"><rect x="3.5" y="3.5" width="19" height="19"/><path d="M7.5 13.5l4 4 7-8"/></svg></span>
+          <h3>A human checks the calls</h3><p>Before any lead is marked qualified. <span class="tbd">Scope TBD</span></p>
+        </div>
+        <div class="h2c">
+          <span class="mark"><svg viewBox="0 0 26 26" aria-hidden="true"><path d="M5.5 3.5h15v19h-15z"/><path d="M9.5 1.5h7v4h-7z"/><path d="M9 11.5h8M9 15.5h8M9 19h5"/></svg></span>
+          <h3>You get the notes</h3><p>Outcome, notes, and the recording for each call.</p>
+        </div>
       </div>
     </div>
   </section>
@@ -309,7 +387,7 @@
       <div class="shead"><span class="eyebrow">Samples</span><h2>What the calls sound like</h2></div>
       <div class="samples">
         <div class="clip">
-          <div class="ctop"><span class="cplay">▶</span><span class="cdur">3:12</span></div>
+          <div class="ctop"><span class="cplay"><svg viewBox="0 0 11 11" aria-hidden="true"><path d="M1 0.5l9 5-9 5z"/></svg></span><span class="cdur">3:12</span></div>
           <div class="wave">
             <i style="height:22%"></i><i style="height:58%"></i><i style="height:84%"></i><i style="height:37%"></i>
             <i style="height:66%"></i><i style="height:45%"></i><i style="height:91%"></i><i style="height:29%"></i>
@@ -320,7 +398,7 @@
           <div class="cout yes">Meeting booked</div>
         </div>
         <div class="clip">
-          <div class="ctop"><span class="cplay">▶</span><span class="cdur">1:48</span></div>
+          <div class="ctop"><span class="cplay"><svg viewBox="0 0 11 11" aria-hidden="true"><path d="M1 0.5l9 5-9 5z"/></svg></span><span class="cdur">1:48</span></div>
           <div class="wave">
             <i style="height:31%"></i><i style="height:72%"></i><i style="height:44%"></i><i style="height:88%"></i>
             <i style="height:25%"></i><i style="height:61%"></i><i style="height:39%"></i><i style="height:77%"></i>
@@ -331,7 +409,7 @@
           <div class="cout yes">Qualified, notes sent</div>
         </div>
         <div class="clip">
-          <div class="ctop"><span class="cplay">▶</span><span class="cdur">0:52</span></div>
+          <div class="ctop"><span class="cplay"><svg viewBox="0 0 11 11" aria-hidden="true"><path d="M1 0.5l9 5-9 5z"/></svg></span><span class="cdur">0:52</span></div>
           <div class="wave">
             <i style="height:19%"></i><i style="height:42%"></i><i style="height:27%"></i><i style="height:64%"></i>
             <i style="height:35%"></i><i style="height:51%"></i><i style="height:22%"></i><i style="height:46%"></i>
@@ -353,17 +431,17 @@
       <div class="tiers">
         <div class="tier">
           <div class="tname">Per call</div>
-          <div class="tprice">$ — <small><span class="tbd">TBD</span></small></div>
+          <div class="tprice">$<span class="tbd">TBD</span></div>
           <p>You pay for dials made, whoever picks up. Cheapest per unit, and the risk of a bad list sits with you.</p>
         </div>
         <div class="tier">
           <div class="tname">Per qualified lead</div>
-          <div class="tprice">$ — <small><span class="tbd">TBD</span></small></div>
+          <div class="tprice">$<span class="tbd">TBD</span></div>
           <p>You pay only for leads that clear your criteria. The risk of a bad list sits with us.</p>
         </div>
         <div class="tier">
           <div class="tname">Monthly</div>
-          <div class="tprice">$ — <small><span class="tbd">TBD</span></small></div>
+          <div class="tprice">$<span class="tbd">TBD</span></div>
           <p>A set volume of calls a month at a flat rate. Predictable for both sides once volume is known.</p>
         </div>
       </div>
@@ -424,7 +502,7 @@
   </section>
 
   <!-- 9 · Cross-sell -->
-  <section class="block cross">
+  <section class="block">
     <div class="wrap">
       <div class="btnrow">
         <a class="btn ghost" href="index.html">Browse all services</a>
@@ -433,7 +511,7 @@
     </div>
   </section>
 
-  <div class="foot">midsesh · Contact · Privacy</div>
+  <div class="foot"><span>midsesh</span><span>Contact</span><span>Privacy</span></div>
 
 </div>
 </body>
