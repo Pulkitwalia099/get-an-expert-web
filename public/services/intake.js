@@ -124,7 +124,9 @@
             '<div style="font-size:17px;font-weight:700;">Got it.</div>' +
             '<p style="margin-top:8px;font-size:14px;color:#5F594E;line-height:1.5;">' +
             (data && data.notified === false
-              ? 'Your brief is saved, but our own alert did not send. If you hear nothing, email ' +
+              ? (form.dataset.notify === '1'
+                  ? 'Your address is saved, but our own alert did not send. If you hear nothing, email '
+                  : 'Your brief is saved, but our own alert did not send. If you hear nothing, email ') +
                 '<a href="mailto:' + CONTACT + '">' + CONTACT + '</a>.'
               : (form.dataset.notify === '1'
                 ? 'You are on the list. One email when it opens, nothing else.'
