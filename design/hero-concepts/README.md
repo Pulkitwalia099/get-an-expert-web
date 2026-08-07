@@ -1,10 +1,30 @@
 # Hero concepts
 
-Four static hero directions for the midsesh.com front door, all using the real
-product copy: the "What do you want done?" question, the free first call, the
-name-and-a-price-within-24-hours promise, and the four steps. Each file is a
+Static hero directions for the midsesh.com front door. Each file is a
 self-contained page sized for a 1440x900 viewport; open it in a browser to see
 the exact composition. Fonts load from Google Fonts.
+
+`marketplace/` holds the current round, built for the marketplace pivot
+described in `marketplace-preview/HANDOFF.md`: agents do the work, a named
+expert owns the outcome, and the three lead SKUs are UGC Ads, LinkedIn
+Marketeer and Video Editing. Copy and prices come from the hifi pages, so $29
+and $100 per 10k are real and Video Editing stays Price TBD per the honesty
+rule.
+
+- `marketplace/a-aurora-split.html` Aurora split. Frozen palette and system
+  layout language, "Work, delivered." left, the three SKU cards stacked as the
+  right-hand visual with the hook rate floor, a post skeleton and a timeline.
+- `marketplace/b-editorial.html` Editorial. Giant serif statement "Agents do
+  the work. Experts own the outcome." with a tilted band of SKU cards. NOTE:
+  the serif italics deliberately step outside the frozen design system, which
+  rejected serif and italics. Shipping this look is a brand decision to make
+  on purpose, not by drift.
+- `marketplace/c-statement.html` Statement. Fully inside the frozen system:
+  the live "Work, delivered." hero at display size, the search bar, and the
+  three SKU tiles with their real badges and prices above the fold.
+
+The four files below are the previous round, built for the expert-intro
+positioning before the marketplace pivot. Kept for reference.
 
 None of this is wired into the app. These are visual proposals only, to pick a
 direction before any React work starts.
