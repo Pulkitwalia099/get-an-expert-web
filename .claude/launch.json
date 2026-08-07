@@ -9,8 +9,8 @@
     },
     {
       "name": "marketplace-preview",
-      "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "4319", "--directory", "marketplace-preview/hifi"],
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["--yes", "serve", "-l", "4319", "marketplace-preview/hifi"],
       "port": 4319
     }
   ]
