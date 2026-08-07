@@ -3,6 +3,7 @@ import AccountLink from '@/components/AccountLink';
 import HomeApp from '@/components/HomeApp';
 import ContactLink from '@/components/ContactLink';
 import SiteFooter from '@/components/SiteFooter';
+import SeamMark from '@/components/SeamMark';
 
 // This is the expert search product, verbatim as it stood at the root until the
 // marketplace took the front door. Nothing about it changed: same HomeApp, same
@@ -30,7 +31,7 @@ export default function SearchExperts() {
       <div className="grain" />
       <header className="sitebar">
         <a className="sitemark" href="/" aria-label="midsesh home">
-          <span className="worb">✳︎</span>midsesh
+          <span className="worb"><SeamMark /></span>midsesh
         </a>
         <nav className="sitenav">
           <ContactLink />

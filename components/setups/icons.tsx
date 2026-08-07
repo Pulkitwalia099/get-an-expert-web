@@ -61,19 +61,6 @@ export function PlayGlyph({ className }: { className?: string }) {
   );
 }
 
-// The midsesh m: a lowercase m knocked out of a solid disc, anymark-style.
-// Masked so the letter stays transparent on any background.
-export function LogoMark({ size = 25 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden>
-      <mask id="ms-m">
-        <rect width="64" height="64" fill="#fff" />
-        <path
-          fill="#000"
-          d="M17 44 V30.5 C17 25.3 21.3 21 26.5 21 c2.1 0 4 .7 5.5 1.9 A9.4 9.4 0 0 1 37.5 21 C42.7 21 47 25.3 47 30.5 V44 h-7 V31 a2.6 2.6 0 0 0-5.2 0 V44 h-5.6 V31 a2.6 2.6 0 0 0-5.2 0 V44 z"
-        />
-      </mask>
-      <circle cx="32" cy="32" r="26" fill="#1D1D1F" mask="url(#ms-m)" />
-    </svg>
-  );
-}
+// The logo used to live here as a disc with an m knocked out of it. It is the
+// seam now, and it is drawn once in components/SeamMark.tsx so this surface
+// and the chat window cannot drift apart.

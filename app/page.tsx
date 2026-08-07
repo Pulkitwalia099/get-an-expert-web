@@ -4,6 +4,7 @@ import Backing from '@/components/Backing';
 import ContactLink from '@/components/ContactLink';
 import ServiceCard from '@/components/ServiceCard';
 import SiteFooter from '@/components/SiteFooter';
+import SeamMark from '@/components/SeamMark';
 import { LIVE_SERVICES, SOON_SERVICES } from '@/lib/services';
 import styles from './marketplace.module.css';
 
@@ -53,7 +54,7 @@ export default function Home() {
       <header className="sitebar">
         {/* Not a link here: it would only point at itself. */}
         <span className="sitemark">
-          <span className="worb">✳︎</span>midsesh
+          <span className="worb"><SeamMark /></span>midsesh
         </span>
         <nav className="sitenav">
           {/* Supply side. A marketplace that only ever addresses buyers has to

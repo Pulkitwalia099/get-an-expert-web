@@ -9,6 +9,7 @@ import { currentPrice, type Setup } from '@/lib/setups';
 import { SIGNUP_CREDIT_CENTS, splitPrice } from '@/lib/credit-math';
 import { useMe } from '@/components/useMe';
 import st from './SetupDetail.module.css';
+import SeamMark from '@/components/SeamMark';
 
 // Step two of the same flow: the Cal embed for one setup, in the same window
 // chrome as the detail screen it came from. Overlay owns the layer and the
@@ -73,7 +74,7 @@ export default function SetupBooking({ setup, onBack, onClose }: SetupBookingPro
           Back
         </button>
         <div className="wordmark">
-          <span className="worb">✳︎</span>midsesh
+          <span className="worb"><SeamMark /></span>midsesh
         </div>
         <button type="button" className={st.close} aria-label="Close" onClick={onClose}>
           <svg width="15" height="15" viewBox="0 0 15 15" aria-hidden="true">
