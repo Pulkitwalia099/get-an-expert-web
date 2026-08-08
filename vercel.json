@@ -37,6 +37,10 @@
       "destination": "/services/explainer.html"
     },
     {
+      "source": "/services/launch-videos",
+      "destination": "/services/launch.html"
+    },
+    {
       "source": "/services/ratemywipe",
       "destination": "/services/ratemywipe.html"
     }
