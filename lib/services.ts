@@ -72,8 +72,9 @@ export const SERVICES: Service[] = [
     media: 'post',
   },
   {
-    // No sample footage exists yet, deliberately. The card shows a timeline
-    // motif rather than filling the slot with someone else's work.
+    // The card keeps its timeline motif. The service page shows five in-house
+    // videos as samples; the card slot stays a motif because a looping video
+    // tile is the UGC card's signature.
     slug: 'video-editing',
     name: 'Video Editing',
     badge: 'Human + Agent',

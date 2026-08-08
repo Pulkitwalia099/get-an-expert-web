@@ -148,15 +148,41 @@
   .cov .cn { font-size:13.5px; font-weight:650; }
   .cov .cd { font-size:12px; color:var(--ink-3); margin-top:2px; }
 
-  /* Samples: empty state, no content yet */
-  .samples { display:grid; gap:14px; grid-template-columns:1fr; }
-  @media (min-width:721px){ .samples { grid-template-columns:repeat(3,1fr); } }
-  .slot { aspect-ratio:16/11; border-radius:var(--radius-card);
-    border:1.5px dashed rgba(33,30,26,.2); background:rgba(255,255,255,.42);
-    display:grid; place-items:center; text-align:center; padding:18px; }
-  .slot .sn { font-size:12.5px; color:var(--ink-3); line-height:1.5; }
-  .slot .sn b { display:block; font-size:13.5px; font-weight:650; color:var(--ink-2); margin-bottom:4px; }
-  .emptynote { margin-top:16px; text-align:center; font-size:13.5px; color:var(--ink-2); }
+  /* Samples: horizontal video carousel, same pattern as the UGC and launch
+     pages. A card whose file is missing quietly shows its label instead of a
+     black box. */
+  .samples { position:relative; display:flex; gap:14px; overflow-x:auto; scroll-snap-type:x mandatory;
+    padding:6px 0 28px; -webkit-overflow-scrolling:touch; scrollbar-width:thin; }
+  .samples::-webkit-scrollbar { height:6px; }
+  .samples::-webkit-scrollbar-track { background:transparent; }
+  .samples::-webkit-scrollbar-thumb { background:rgba(33,30,26,.18); border-radius:999px; }
+  .vid { flex:0 0 auto; width:84%; scroll-snap-align:center;
+    aspect-ratio:16/9; border-radius:var(--radius-card); position:relative; overflow:hidden;
+    background:#211E1A; display:grid; place-items:center; box-shadow:0 16px 34px -14px rgba(45,32,22,.3);
+    transition: transform 260ms var(--ease-out), opacity 260ms var(--ease-out); }
+  @media (max-width:720px){
+    .samples { padding-inline:8%; }
+    .vid { transform:scale(var(--focus-scale,1)); opacity:var(--focus-op,1); }
+  }
+  @media (min-width:721px){
+    .samples { padding-inline:0; }
+    .vid { width:calc((100% - 14px)/2); scroll-snap-align:start; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .vid { transition:opacity 260ms ease; transform:none; }
+  }
+  .vid video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; }
+  .snd { position:absolute; right:12px; top:12px; z-index:2; border:0; cursor:pointer;
+    font:inherit; font-size:11px; font-weight:650; color:rgba(246,243,237,.92);
+    background:rgba(33,30,26,.55); border-radius:999px; padding:5px 11px;
+    transition: transform 160ms var(--ease-out); }
+  .snd:active { transform: scale(0.97); }
+  @media (hover:hover) and (pointer:fine){ .snd:hover { background:rgba(33,30,26,.75); } }
+  .vid .drop { display:none; font-size:12.5px; font-weight:650; color:var(--ink-2); }
+  .vid.missing { background:linear-gradient(160deg, rgba(33,30,26,.08), rgba(33,30,26,.03));
+    border:1px dashed rgba(33,30,26,.22); box-shadow:none; }
+  .vid.missing video, .vid.missing .snd { display:none; }
+  .vid.missing .drop { display:block; }
 
   /* Pricing */
   .tiers { display:grid; gap:14px; grid-template-columns:1fr; }
@@ -297,16 +323,40 @@
     </div>
   </section>
 
-  <!-- 5 · Samples: nothing to show yet -->
+  <!-- 5 · Samples: our own work. The section shipped empty on purpose until
+       there was something of ours to show; these five are made and cut
+       in-house, so the "no one else's work" rule holds. -->
   <section class="block">
     <div class="wrap">
-      <div class="shead"><span class="eyebrow">Samples</span><h2>Nothing to show here yet</h2></div>
+      <div class="shead"><span class="eyebrow">Samples</span><h2>Videos we cut</h2>
+        <p>Five of our own, made and edited in-house, end to end.</p></div>
       <div class="samples">
-        <div class="slot"><div class="sn"><b>Before and after</b>Raw footage next to the finished cut</div></div>
-        <div class="slot"><div class="sn"><b>A long form edit</b>Podcast or interview, cut down</div></div>
-        <div class="slot"><div class="sn"><b>A short form edit</b>Vertical, captioned, under a minute</div></div>
+        <div class="vid">
+          <video src="assets/launch1.mp4" autoplay muted loop playsinline preload="metadata"></video>
+          <button class="snd" type="button">Sound on</button>
+          <span class="drop">Edit 1</span>
+        </div>
+        <div class="vid">
+          <video src="assets/launch2.mp4" autoplay muted loop playsinline preload="metadata"></video>
+          <button class="snd" type="button">Sound on</button>
+          <span class="drop">Edit 2</span>
+        </div>
+        <div class="vid">
+          <video src="assets/launch3.mp4" autoplay muted loop playsinline preload="metadata"></video>
+          <button class="snd" type="button">Sound on</button>
+          <span class="drop">Edit 3</span>
+        </div>
+        <div class="vid">
+          <video src="assets/launch4.mp4" autoplay muted loop playsinline preload="none"></video>
+          <button class="snd" type="button">Sound on</button>
+          <span class="drop">Edit 4</span>
+        </div>
+        <div class="vid">
+          <video src="assets/launch5.mp4" autoplay muted loop playsinline preload="none"></video>
+          <button class="snd" type="button">Sound on</button>
+          <span class="drop">Edit 5</span>
+        </div>
       </div>
-      <div class="emptynote">We are not going to fill this with someone else's work. Real edits go here once the first ones are delivered.</div>
     </div>
   </section>
 
@@ -398,6 +448,79 @@
   <div class="foot">midsesh · Contact · Privacy</div>
 
 </div>
+<script>
+  /* Video cards degrade quietly to labelled slots if a file goes missing. */
+  document.querySelectorAll('.samples video').forEach(function (v) {
+    function bad() { v.closest('.vid').classList.add('missing'); }
+    v.addEventListener('error', bad);
+    if (v.error) bad();
+  });
+
+  /* Carousel: centre-focus scaling on mobile, gentle auto-advance as a scroll
+     cue. Same behaviour as the UGC and launch pages. */
+  (function () {
+    var scroller = document.querySelector('.samples');
+    if (!scroller) return;
+    var cards = Array.prototype.slice.call(scroller.querySelectorAll('.vid'));
+    if (!cards.length) return;
+
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+    var isMobile = window.matchMedia('(max-width: 720px)');
+    var queued = false;
+
+    function paint() {
+      queued = false;
+      var mid = scroller.scrollLeft + scroller.clientWidth / 2;
+      cards.forEach(function (c) {
+        var d = Math.min(Math.abs((c.offsetLeft + c.offsetWidth / 2) - mid) / c.offsetWidth, 1);
+        c.style.setProperty('--focus-scale', (1 - d * 0.1).toFixed(3));
+        c.style.setProperty('--focus-op', (1 - d * 0.4).toFixed(3));
+      });
+    }
+    function onScroll() { if (!queued) { queued = true; requestAnimationFrame(paint); } }
+
+    scroller.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    window.addEventListener('load', onScroll);
+    if (isMobile.addEventListener) isMobile.addEventListener('change', onScroll);
+    paint();
+
+    if (reduce.matches) return;
+
+    var i = 0, stopped = false, hovering = false;
+    var timer = setInterval(function () {
+      if (stopped || hovering || document.hidden) return;
+      i = (i + 1) % cards.length;
+      var t = cards[i];
+      var left = isMobile.matches
+        ? t.offsetLeft - (scroller.clientWidth - t.offsetWidth) / 2
+        : t.offsetLeft;
+      scroller.scrollTo({ left: Math.max(0, left), behavior: 'smooth' });
+    }, 3200);
+
+    function stop() { stopped = true; clearInterval(timer); }
+    ['pointerdown', 'wheel', 'touchstart', 'keydown'].forEach(function (e) {
+      scroller.addEventListener(e, stop, { passive: true, once: true });
+    });
+    scroller.addEventListener('mouseenter', function () { hovering = true; });
+    scroller.addEventListener('mouseleave', function () { hovering = false; });
+    if (isMobile.matches) setTimeout(stop, 20000);
+  })();
+
+  /* One card with sound at a time, same as the UGC page. */
+  document.querySelectorAll('.snd').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var v = btn.parentElement.querySelector('video');
+      if (!v) return;
+      var on = v.muted;
+      document.querySelectorAll('.samples video').forEach(function (o) { o.muted = true; });
+      document.querySelectorAll('.snd').forEach(function (o) { o.textContent = 'Sound on'; });
+      v.muted = !on;
+      btn.textContent = on ? 'Sound off' : 'Sound on';
+      if (on) v.play();
+    });
+  });
+</script>
 <script src="/services/intake.js" defer></script>
 </body>
 </html>
