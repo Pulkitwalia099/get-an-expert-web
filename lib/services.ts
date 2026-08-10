@@ -81,15 +81,13 @@ export const SERVICES: Service[] = [
     status: 'beta',
     blurb:
       'Send raw footage. Get back an edited video, ready to post. Cuts, captions, and sound handled.',
-    // Not a number, because there is not one yet, and "Price TBD" on a card a
-    // customer can see reads as an internal note left in by accident. This is
-    // what the page already promises further down: a quote and a turnaround
-    // come back before any editing starts. The service stays orderable, the
-    // intake form still works, and the price is set from real briefs rather
-    // than guessed before the first one arrives.
-    price: 'Quoted per project',
-    priceCents: null,
-    priceNote: 'Quote before any editing starts',
+    // Priced per finished video, not per finished minute. The two models were
+    // on the page as open questions and this settles it: one number, and the
+    // length it covers named beside it, because "$599" with no bound is a
+    // price somebody reads as covering a 40 minute documentary.
+    price: '$599 per video',
+    priceCents: 59900,
+    priceNote: 'Up to 60 seconds, up to 2 revisions',
     priceOpen: false,
     cta: 'View more',
     media: 'timeline',

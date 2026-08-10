@@ -187,12 +187,26 @@
   /* Pricing */
   .tiers { display:grid; gap:14px; grid-template-columns:1fr; }
   @media (min-width:721px){ .tiers { grid-template-columns:1fr 1fr; } }
+  /* One price, so it sits alone and centred rather than filling half a row
+     with an empty column beside it. */
+  .tiers.one { grid-template-columns:1fr; max-width:430px; margin:0 auto; }
   .tier { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:var(--radius-card);
     padding:22px; box-shadow:0 10px 26px -12px rgba(45,32,22,.15); display:flex; flex-direction:column; gap:8px; }
+  .tier.hot { border:1.5px solid rgba(158,63,36,.45); }
   .tier .tname { font-size:13px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--ink-2); }
-  .tier .tprice { font-size:24px; font-weight:750; letter-spacing:-0.02em; }
+  .tier .tprice { font-size:28px; font-weight:750; letter-spacing:-0.02em; }
   .tier .tprice small { font-size:13px; font-weight:400; color:var(--ink-3); }
-  .tier p { font-size:13.5px; color:var(--ink-2); line-height:1.45; flex:1; }
+  .tier p { font-size:13.5px; color:var(--ink-2); line-height:1.45; }
+  .tier .spec { margin:6px 0 2px; }
+  .tier .spec div { display:flex; justify-content:space-between; align-items:baseline; gap:10px;
+    font-size:12.5px; padding:7px 0; border-bottom:1px solid var(--line); }
+  .tier .spec div:last-child { border-bottom:0; }
+  .tier .spec i { font-style:normal; color:var(--ink-3); }
+  .tier .spec b { font-weight:650; text-align:right; }
+  .tier .tcta { margin-top:6px; text-align:center; font-size:13.5px; font-weight:650; color:#fff;
+    background:var(--accent-deep); border-radius:999px; padding:11px; text-decoration:none;
+    transition: transform 160ms var(--ease-out); }
+  .tier .tcta:active { transform: scale(0.97); }
 
   /* Guarantee */
   .guarantee { text-align:center; background:var(--glass); border:1px solid var(--line);
@@ -242,9 +256,9 @@
       <span class="badge">Human + Agent</span>
       <h1>Video Editing</h1>
       <p class="promise">Send raw footage. Get back an edited video, ready to post. Cuts, captions, and sound handled.</p>
-      <div class="priceline">Quoted per project</div>
+      <div class="priceline">$599 <span>a finished video, up to 60 seconds</span></div>
       <div class="btnrow">
-        <a class="btn solid" href="#start">Send footage</a>
+        <a class="btn solid" href="#start">Start your request</a>
         <span class="nocard">No card needed</span>
       </div>
     </div>
@@ -363,20 +377,23 @@
   <!-- 6 · Pricing -->
   <section class="block">
     <div class="wrap">
-      <div class="shead"><span class="eyebrow">Pricing</span><h2>Two models on the table</h2></div>
-      <div class="tiers">
-        <div class="tier">
+      <div class="shead"><span class="eyebrow">Pricing</span><h2>One price per video</h2></div>
+      <div class="tiers one">
+        <div class="tier hot">
           <div class="tname">Per video</div>
-          <div class="tprice">Not priced yet</div>
-          <p>One price for a finished video inside a stated length. Simple to quote, and long footage costs us more than short.</p>
-        </div>
-        <div class="tier">
-          <div class="tname">Per finished minute</div>
-          <div class="tprice">Not priced yet</div>
-          <p>Priced on the length of what you get back, not the length of what you send. Fairer on both sides, slower to quote.</p>
+          <div class="tprice">$599 <small>a finished video</small></div>
+          <p>Priced on what you get back, not on how much you send. Hours of raw footage for a 40 second cut costs the same as twenty minutes of it.</p>
+          <div class="spec">
+            <div><i>Length</i><b>Up to 60 seconds</b></div>
+            <div><i>Revisions</i><b>Up to 2</b></div>
+            <div><i>Cuts, captions, sound, colour</i><b>Included</b></div>
+            <div><i>Formats</i><b>Landscape, vertical, square</b></div>
+            <div><i>Finished by</i><b>A human editor</b></div>
+          </div>
+          <a class="tcta" href="#start">Submit request</a>
         </div>
       </div>
-      <div class="formnote">The model is not decided yet. These are the two under consideration.</div>
+      <div class="formnote">Longer than 60 seconds is quoted before anything starts. Nothing is charged until you have agreed the scope.</div>
     </div>
   </section>
 
@@ -393,30 +410,18 @@
   <!-- 8 · Intake form -->
   <section class="block" id="start">
     <div class="wrap">
-      <div class="shead"><span class="eyebrow">Send footage</span><h2>Two minutes of input</h2></div>
+      <div class="shead"><span class="eyebrow">Get started</span><h2>Your input</h2></div>
       <div class="form">
         <div class="field">
-          <label>Link to your footage</label>
-          <input type="url" placeholder="Drive, Dropbox, Frame.io, anywhere we can download from">
-        </div>
-        <div class="field">
-          <label>An edit you like</label>
-          <input type="url" placeholder="Link to a video with the pacing you want">
-        </div>
-        <div class="field">
-          <label>Where is it going and how long should it be</label>
-          <input type="text" placeholder="e.g. YouTube, about 8 minutes. Also a vertical cut.">
-        </div>
-        <div class="field">
-          <label>Fonts, colours, logo <small>optional</small></label>
-          <div class="upload">Drop your brand files, or leave this and we will keep it plain</div>
+          <label>Link to your website or product</label>
+          <input type="url" placeholder="https://yourproduct.com">
         </div>
         <div class="field">
           <label>Anything else we should know <small>optional</small></label>
-          <textarea placeholder="Deadline, sections to cut, music you have rights to"></textarea>
+          <textarea placeholder="Where the video is going, a link to your footage, an edit you like, a deadline"></textarea>
         </div>
-        <div class="btnrow"><a class="btn solid" href="#">Send footage</a></div>
-        <div class="formnote">We come back with a quote and a turnaround before any editing starts.</div>
+        <div class="btnrow"><a class="btn solid" href="#">Submit request</a></div>
+        <div class="formnote">We come back with the turnaround before any editing starts.</div>
       </div>
     </div>
   </section>
@@ -426,10 +431,12 @@
     <div class="wrap">
       <div class="shead"><span class="eyebrow">FAQ</span><h2>The fine print, plainly</h2></div>
       <div class="faq">
-        <details><summary>How much footage can I send?</summary><p> There will be a limit, because ten hours of footage for a two minute edit is a different job to twenty minutes of it.</p></details>
-        <details><summary>How long does it take?</summary><p> Quoted with the price, before editing starts, so you know before you commit.</p></details>
-        <details><summary>How many revisions do I get?</summary><p> Working proposal is one round included, more priced separately.</p></details>
-        <details><summary>What formats do I get back?</summary><p>The ones you name in the intake form. A landscape cut and a vertical cut of the same video is a normal ask.</p></details>
+        <details><summary>What does $599 cover?</summary><p>One finished video up to 60 seconds, with up to two rounds of revisions. Cuts, captions, sound, colour, titles and the formats you post in are all inside that price.</p></details>
+        <details><summary>What if my video needs to be longer than 60 seconds?</summary><p>We quote it before starting. The price scales with the finished length, not with how much footage you sent.</p></details>
+        <details><summary>How much footage can I send?</summary><p>Send everything you have. Sorting it is the part the agent is good at, and you are paying for the finished cut rather than for our hours. If what you send is genuinely out of proportion to what you are asking for, we say so before we start.</p></details>
+        <details><summary>How long does it take?</summary><p>We come back with the turnaround before editing starts, so you know before you commit.</p></details>
+        <details><summary>How many revisions do I get?</summary><p>Up to two rounds, included. Anything past that is quoted before we do the work.</p></details>
+        <details><summary>What formats do I get back?</summary><p>The ones you name. A landscape cut and a vertical cut of the same video is a normal ask and is inside the price.</p></details>
         <details><summary>What about music rights?</summary><p> If you have licensed tracks, send them. Otherwise we use music that is cleared for what you are doing.</p></details>
         <details><summary>Who actually edits it?</summary><p>The agent does the selects, the first cut, and the captions. A human editor makes the calls on pacing and finish, and is accountable for what you receive.</p></details>
       </div>

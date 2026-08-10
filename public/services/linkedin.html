@@ -6,6 +6,7 @@
 <link rel="icon" href="/icon.svg" type="image/svg+xml">
 <title>LinkedIn Growth Engine · midsesh</title>
 <meta name="description" content="Your LinkedIn all handled by our agents. Posts, comments, and engagements all reviewed by a human before anything ships.">
+<link rel="stylesheet" href="/services/coverflow.css">
 <style>
   :root {
     --bg: #F6F3ED; --ink: #211E1A; --ink-2: #5F594E; --ink-3: #8B8375;
@@ -62,7 +63,7 @@
   .shead h2 { margin-top:10px; font-size:clamp(21px,3.4vw,27px); font-weight:700; letter-spacing:-0.02em; }
   .snote { text-align:center; font-size:13px; color:var(--ink-3); margin-top:16px; }
 
-  /* You give / You get — visual flow */
+  /* You give / You get, visual flow */
   .io-flow { display:grid; gap:16px; grid-template-columns:1fr; align-items:center; }
   @media (min-width:721px){ .io-flow { grid-template-columns:1fr 44px 1.15fr; } }
   .instack { display:flex; flex-direction:column; gap:10px; }
@@ -120,28 +121,32 @@
   .li-impr .va { color:var(--li-blue); font-weight:650; }
   .num { font-variant-numeric:tabular-nums; }
 
-  /* Results carousel — screenshots of the real posts, each opens on LinkedIn */
-  .samples { position:relative; display:flex; align-items:flex-start; gap:14px; overflow-x:auto;
-    scroll-snap-type:x mandatory; padding:14px 0 28px; -webkit-overflow-scrolling:touch; scrollbar-width:thin; }
-  .samples::-webkit-scrollbar { height:6px; }
-  .samples::-webkit-scrollbar-track { background:transparent; }
-  .samples::-webkit-scrollbar-thumb { background:rgba(33,30,26,.18); border-radius:999px; }
-  .li-shot { flex:0 0 auto; width:78%; aspect-ratio:3/4; scroll-snap-align:center; display:block;
-    border-radius:14px; overflow:hidden; background:#fff; border:1px solid rgba(33,30,26,.12);
-    box-shadow:0 16px 34px -14px rgba(45,32,22,.3);
-    transition: transform 260ms var(--ease-out), opacity 260ms var(--ease-out); }
-  .li-shot img { display:block; width:100%; height:100%; object-fit:cover; object-position:top; }
-  @media (max-width:720px){
-    .samples { padding-inline:11%; }
-    .li-shot { transform:scale(var(--focus-scale,1)); opacity:var(--focus-op,1); }
+  /* Results coverflow. Screenshots of the real posts, each opens on LinkedIn.
+     The shot stays 3:4, because a post screenshot cropped to suit a carousel
+     stops being evidence. Card width is the one input and coverflow.css
+     derives the rake from it. These are wider than the UGC page's reels: this
+     card is text somebody has to read, not a clip they watch. */
+  .cf {
+    --cf-card: min(66vw, 280px);
+    --cf-h: calc(var(--cf-card) * 4 / 3);
+    --cf-rotate: 38; --cf-depth: .44; --cf-persp: 2.8; --cf-gap: .02; --cf-fade: .12;
+    /* The section's own 16px padding, handed back so the shelf runs edge to
+       edge and the neighbours are not clipped down to a sliver. */
+    --cf-bleed: 16px; --cf-edge: 5%;
   }
   @media (min-width:721px){
-    .samples { padding-inline:0; }
-    .li-shot { width:calc((100% - 28px)/3); scroll-snap-align:start; }
+    .cf {
+      /* The floor is set close to the phone's card width, so crossing the
+         breakpoint is not a visible step down in the size of the work. */
+      --cf-card: clamp(250px, 26vw, 306px);
+      --cf-rotate: 42; --cf-depth: .58; --cf-persp: 3.1; --cf-gap: .05; --cf-fade: .1;
+      /* Back inside the text column, with room to spend on a wider fade. */
+      --cf-bleed: 0px; --cf-edge: 9%;
+    }
   }
-  @media (prefers-reduced-motion: reduce){
-    .li-shot { transition:opacity 260ms ease; transform:none; }
-  }
+  .li-shot { background:#fff; border:1px solid rgba(33,30,26,.12);
+    box-shadow:0 22px 46px -16px rgba(45,32,22,.4); }
+  .li-shot img { object-position:top; }
   .ctarow { text-align:center; margin-top:24px; }
   .ctarow .sub { display:block; margin-top:10px; font-size:12.5px; color:var(--ink-3); }
 
@@ -284,12 +289,16 @@
   <section class="block" id="results">
     <div class="wrap">
       <div class="shead"><span class="eyebrow">The results</span><h2>Posts our experts ran</h2></div>
-      <div class="samples">
-        <a class="li-shot" href="https://www.linkedin.com/posts/activity-7474811688744230913-ECIa" target="_blank" rel="noopener"><img src="assets/li-post-1.png" alt="Rohit Jain's post quoting John Crickett on Forward Deployed Engineers, 254,950 impressions"></a>
-        <a class="li-shot" href="https://www.linkedin.com/posts/suresh-g-688608191_a-24-year-old-joined-tech-because-he-loved-share-7486063317623390208-dQNX" target="_blank" rel="noopener"><img src="assets/li-post-2.png" alt="Suresh Gandhi's post quoting a GitHub comment about leaving software for woodworking, 1,186 reactions"></a>
-        <a class="li-shot" href="https://www.linkedin.com/posts/sai-ram-somanaboina_if-you-write-10x-code-ship-faster-than-everyone-activity-7487852885532180480-I2vb" target="_blank" rel="noopener"><img src="assets/li-post-3.png" alt="Sai Ram Somanaboina's post quoting Ritesh Roushan on production mindset, 631 reactions"></a>
-        <a class="li-shot" href="https://www.linkedin.com/posts/activity-7460690672736628736--Tpl" target="_blank" rel="noopener"><img src="assets/li-post-4.png" alt="Rohit Jain's post quoting Sarthak on Uber and Rapido OTPs, 68 comments"></a>
-        <a class="li-shot" href="https://www.linkedin.com/posts/suresh-g-688608191_linkedin-makes-it-look-like-every-senior-activity-7480610263763820544-VLip" target="_blank" rel="noopener"><img src="assets/li-post-5.png" alt="Suresh Gandhi's post on software engineering as a long marathon, 1,457 reactions"></a>
+      <div class="cf" data-coverflow data-label="Posts our experts ran">
+        <div class="cf-frame">
+          <div class="cf-stage">
+            <a class="cf-card li-shot" href="https://www.linkedin.com/posts/activity-7474811688744230913-ECIa" target="_blank" rel="noopener"><img src="assets/li-post-1.png" alt="Rohit Jain's post quoting John Crickett on Forward Deployed Engineers, 254,950 impressions"></a>
+            <a class="cf-card li-shot" href="https://www.linkedin.com/posts/suresh-g-688608191_a-24-year-old-joined-tech-because-he-loved-share-7486063317623390208-dQNX" target="_blank" rel="noopener"><img src="assets/li-post-2.png" alt="Suresh Gandhi's post quoting a GitHub comment about leaving software for woodworking, 1,186 reactions"></a>
+            <a class="cf-card li-shot" href="https://www.linkedin.com/posts/sai-ram-somanaboina_if-you-write-10x-code-ship-faster-than-everyone-activity-7487852885532180480-I2vb" target="_blank" rel="noopener"><img src="assets/li-post-3.png" alt="Sai Ram Somanaboina's post quoting Ritesh Roushan on production mindset, 631 reactions"></a>
+            <a class="cf-card li-shot" href="https://www.linkedin.com/posts/activity-7460690672736628736--Tpl" target="_blank" rel="noopener"><img src="assets/li-post-4.png" alt="Rohit Jain's post quoting Sarthak on Uber and Rapido OTPs, 68 comments"></a>
+            <a class="cf-card li-shot" href="https://www.linkedin.com/posts/suresh-g-688608191_linkedin-makes-it-look-like-every-senior-activity-7480610263763820544-VLip" target="_blank" rel="noopener"><img src="assets/li-post-5.png" alt="Suresh Gandhi's post on software engineering as a long marathon, 1,457 reactions"></a>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -454,57 +463,6 @@
     }
   })();
 
-  /* Carousel: centre-focus scaling on mobile, gentle auto-advance as a scroll
-     cue. Same behaviour as the UGC page, pointed at the post cards. */
-  (function () {
-    var scroller = document.querySelector('.samples');
-    if (!scroller) return;
-    var cards = Array.prototype.slice.call(scroller.querySelectorAll('.li-post'));
-    if (!cards.length) return;
-
-    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
-    var isMobile = window.matchMedia('(max-width: 720px)');
-    var queued = false;
-
-    function paint() {
-      queued = false;
-      var mid = scroller.scrollLeft + scroller.clientWidth / 2;
-      cards.forEach(function (c) {
-        var d = Math.min(Math.abs((c.offsetLeft + c.offsetWidth / 2) - mid) / c.offsetWidth, 1);
-        c.style.setProperty('--focus-scale', (1 - d * 0.1).toFixed(3));
-        c.style.setProperty('--focus-op', (1 - d * 0.4).toFixed(3));
-      });
-    }
-    function onScroll() { if (!queued) { queued = true; requestAnimationFrame(paint); } }
-
-    scroller.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
-    window.addEventListener('load', onScroll);
-    if (isMobile.addEventListener) isMobile.addEventListener('change', onScroll);
-    paint();
-
-    if (reduce.matches) return;
-
-    var i = 0, stopped = false, hovering = false;
-    var timer = setInterval(function () {
-      if (stopped || hovering || document.hidden) return;
-      i = (i + 1) % cards.length;
-      var t = cards[i];
-      var left = isMobile.matches
-        ? t.offsetLeft - (scroller.clientWidth - t.offsetWidth) / 2
-        : t.offsetLeft;
-      scroller.scrollTo({ left: Math.max(0, left), behavior: 'smooth' });
-    }, 3200);
-
-    function stop() { stopped = true; clearInterval(timer); }
-    ['pointerdown', 'wheel', 'touchstart', 'keydown'].forEach(function (e) {
-      scroller.addEventListener(e, stop, { passive: true, once: true });
-    });
-    scroller.addEventListener('mouseenter', function () { hovering = true; });
-    scroller.addEventListener('mouseleave', function () { hovering = false; });
-    if (isMobile.matches) setTimeout(stop, 20000);
-  })();
-
   /* The machine. One top-to-bottom layout at every width, and the flow
      animates: the two inputs light first, then each stage of the pipeline
      down to the live post, then it resets and runs again. */
@@ -619,6 +577,7 @@
     }, 620);
   })();
 </script>
+<script src="/services/coverflow.js" defer></script>
 <script src="/services/intake.js" defer></script>
 </body>
 </html>

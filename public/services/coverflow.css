@@ -1,0 +1,188 @@
+/* Coverflow carousel, shared by the service pages that show work samples.
+ *
+ * Cards sit on one 3D plane and rake away from the centre. There are no cloned
+ * nodes and nothing is reordered: looping is done by folding each card's
+ * distance into the shorter way round the ring, so the DOM order a screen
+ * reader walks is the order the markup was written in.
+ *
+ * Card size is set per page, because the aspect ratio is the content's, not
+ * this file's. A reel is 9:14 and a post screenshot is 3:4, and neither becomes
+ * a square to suit the effect. Everything else is derived from --cf-card, so
+ * the rake scales with whatever width the page picks.
+ *
+ * The five tuning numbers are custom properties rather than script constants,
+ * so a page can retune the rake inside a media query and the script picks the
+ * new values up on the next resize.
+ */
+
+.cf {
+  /* Set these two per page. */
+  --cf-card: clamp(190px, 23vw, 260px);
+  --cf-h: calc(var(--cf-card) * 1.4);
+
+  --cf-rotate: 44;    /* degrees the first neighbour tilts */
+  --cf-depth: 0.6;    /* how far it recedes, as a fraction of card width */
+  --cf-persp: 3;      /* viewer distance in card widths, smaller is a wider lens */
+  --cf-falloff: 0.56; /* exponent on distance, under 1 eases the rake off */
+  --cf-fade: 0.1;     /* opacity lost per step out from the centre */
+  --cf-gap: 0.05;     /* space between cards, as a fraction of card width */
+  /* How far the shelf reaches past its text column. On a phone the column is
+     the whole budget, and the neighbours are the first thing the clip takes,
+     so the page's own side padding is given back here. */
+  --cf-bleed: 0px;
+  /* Where the edge fade starts. Wide on desktop, where there is room to spend
+     on it, tight on a phone, where it would otherwise eat the peek. */
+  --cf-edge: 9%;
+
+  position: relative;
+  width: 100%;
+}
+
+/* Before the script runs this is a plain horizontal scroller, so the samples
+   are still reachable if the file never loads. .cf-ready is what turns it into
+   a carousel, and it is added from script. */
+.cf-stage {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  -webkit-overflow-scrolling: touch;
+}
+.cf-stage > .cf-card { flex: 0 0 var(--cf-card); }
+
+.cf-frame {
+  /* Vertical padding keeps the card shadows clear of the overflow clip. */
+  padding: 26px 0 22px;
+}
+
+.cf-ready .cf-frame {
+  position: relative;
+  overflow: hidden;
+  outline: none;
+  cursor: grab;
+  margin-inline: calc(var(--cf-bleed) * -1);
+  perspective: calc(var(--cf-card) * var(--cf-persp));
+  /* Horizontal drag belongs to the carousel, the page keeps vertical scroll. */
+  touch-action: pan-y;
+  /* Cards dissolve at the edges instead of meeting a hard cut, which is what
+     lets the frame run wider than the text column without looking clipped. */
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 var(--cf-edge),
+    #000 calc(100% - var(--cf-edge)), transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 var(--cf-edge),
+    #000 calc(100% - var(--cf-edge)), transparent);
+}
+.cf-ready .cf-frame:active { cursor: grabbing; }
+.cf-ready .cf-frame:focus-visible {
+  outline: 2px solid var(--accent-deep, #9E3F24);
+  outline-offset: 2px;
+  border-radius: 14px;
+}
+
+.cf-ready .cf-stage {
+  display: block;
+  overflow: visible;
+  padding-bottom: 0;
+  position: relative;
+  height: var(--cf-h);
+  transform-style: preserve-3d;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.cf-ready .cf-card {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: var(--cf-card);
+  height: var(--cf-h);
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+}
+
+.cf-card {
+  flex: none;
+  display: block;
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-card, 16px);
+  -webkit-tap-highlight-color: transparent;
+}
+.cf-card img,
+.cf-card video { display: block; width: 100%; height: 100%; object-fit: cover; }
+.cf-card img { -webkit-user-drag: none; user-drag: none; }
+
+/* A scrim on everything but the centre card. The opacity ramp alone is too
+   gentle to say which card is the subject. */
+.cf-ready .cf-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: rgba(33, 30, 26, .18);
+  transition: opacity 300ms var(--ease-out, ease);
+}
+.cf-ready .cf-card.is-on::after { opacity: 0; }
+
+/* Arrows, desktop only. On a phone the card is a drag target and an arrow
+   sitting on top of it is one more thing covering the work. */
+.cf-nav { display: none; }
+@media (min-width: 721px) {
+  .cf-ready .cf-nav {
+    display: grid;
+    place-items: center;
+    position: absolute;
+    top: calc(26px + var(--cf-h) / 2);
+    z-index: 200;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border: 1px solid rgba(33, 30, 26, .1);
+    border-radius: 50%;
+    background: var(--glass-strong, rgba(255, 255, 255, .78));
+    color: var(--accent-deep, #9E3F24);
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 8px 20px -8px rgba(45, 32, 22, .3);
+    transform: translateY(-50%);
+    transition: transform 160ms var(--ease-out, ease), background 160ms var(--ease-out, ease);
+  }
+  .cf-ready .cf-prev { left: 2px; }
+  .cf-ready .cf-next { right: 2px; }
+  .cf-ready .cf-nav:active { transform: translateY(-50%) scale(0.94); }
+}
+@media (hover: hover) and (pointer: fine) {
+  .cf-ready .cf-nav:hover { background: #fff; }
+}
+.cf-nav svg { width: 17px; height: 17px; display: block; }
+
+.cf-dots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 7px;
+  margin-top: 4px;
+}
+.cf-dot {
+  width: 7px;
+  height: 7px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ink, #211E1A);
+  opacity: .22;
+  cursor: pointer;
+  transition: opacity 220ms var(--ease-out, ease), width 220ms var(--ease-out, ease),
+    background 220ms var(--ease-out, ease);
+}
+.cf-dot[aria-current="true"] {
+  width: 20px;
+  opacity: 1;
+  background: var(--accent-deep, #9E3F24);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cf-ready .cf-card::after,
+  .cf-dot,
+  .cf-ready .cf-nav { transition: none; }
+}

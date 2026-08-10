@@ -6,6 +6,7 @@
 <link rel="icon" href="/icon.svg" type="image/svg+xml">
 <title>AI UGC Campaign Engine · midsesh</title>
 <meta name="description" content="Send your product link and an ad you like. We research it, script it, and send back a finished ad within 24 hours. The actors are AI, not hired creators.">
+<link rel="stylesheet" href="/services/coverflow.css">
 <style>
   :root {
     --bg: #F6F3ED; --ink: #211E1A; --ink-2: #5F594E; --ink-3: #8B8375;
@@ -136,43 +137,39 @@
   .credit a { color:var(--accent-deep); font-weight:650; text-decoration:none;
     border-bottom:1px solid rgba(158,63,36,.35); }
 
-  /* Samples, horizontal carousel */
-  .samples { position:relative; display:flex; gap:14px; overflow-x:auto; scroll-snap-type:x mandatory;
-    padding:6px 0 28px; -webkit-overflow-scrolling:touch; scrollbar-width:thin; }
-  .samples::-webkit-scrollbar { height:6px; }
-  .samples::-webkit-scrollbar-track { background:transparent; }
-  .samples::-webkit-scrollbar-thumb { background:rgba(33,30,26,.18); border-radius:999px; }
-  .vid { flex:0 0 auto; width:72%; scroll-snap-align:center;
-    aspect-ratio:9/14; border-radius:var(--radius-card); position:relative; overflow:hidden;
-    background:#211E1A; display:grid; place-items:center; box-shadow:0 16px 34px -14px rgba(45,32,22,.3);
-    transition: transform 260ms var(--ease-out), opacity 260ms var(--ease-out); }
-  /* Mobile: the centred card is the focused one, neighbours sit back and peek.
-     The script only writes --focus-scale and --focus-op; whether they are used
-     at all is decided here, so the desktop layout cannot inherit stale values
-     if a repaint is missed. */
-  @media (max-width:720px){
-    .samples { padding-inline:14%; }
-    .vid { transform:scale(var(--focus-scale,1)); opacity:var(--focus-op,1); }
+  /* Samples, coverflow. The reel is still 9:14: only the shelf it sits on
+     changed. Card width is the one input, and coverflow.css derives the rake
+     from it, so these two blocks are the whole responsive story. */
+  .cf {
+    --cf-card: min(60vw, 244px);
+    --cf-h: calc(var(--cf-card) * 14 / 9);
+    /* Shallower and closer in on a phone, where a hard rake would push the
+       neighbours off the glass before they read as cards. The bleed is the
+       section's own 16px padding, handed back so the shelf runs edge to edge. */
+    --cf-rotate: 40; --cf-depth: .46; --cf-persp: 2.7; --cf-gap: .02; --cf-fade: .13;
+    --cf-bleed: 16px; --cf-edge: 5%;
   }
   @media (min-width:721px){
-    .samples { padding-inline:0; }
-    .vid { width:calc((100% - 28px)/3); scroll-snap-align:start; }
+    .cf {
+      /* The floor is set close to the phone's card width, so crossing the
+         breakpoint is not a visible step down in the size of the work. */
+      --cf-card: clamp(212px, 21vw, 246px);
+      --cf-rotate: 44; --cf-depth: .6; --cf-persp: 3; --cf-gap: .05; --cf-fade: .1;
+      /* Back inside the text column, with room to spend on a wider fade. */
+      --cf-bleed: 0px; --cf-edge: 9%;
+    }
   }
-  @media (prefers-reduced-motion: reduce){
-    .vid { transition:opacity 260ms ease; transform:none; }
-  }
-  .vid .play { width:52px; height:52px; border-radius:50%; background:rgba(246,243,237,.92);
-    display:grid; place-items:center; color:var(--accent-deep); font-size:16px;
-    box-shadow:0 10px 24px rgba(0,0,0,.35); }
-  .vid .cap { position:absolute; left:12px; bottom:12px; font-size:11px; color:rgba(246,243,237,.9);
+  .vid { background:#211E1A; box-shadow:0 22px 46px -16px rgba(45,32,22,.42); }
+  .vid .cap { position:absolute; left:12px; bottom:12px; z-index:2; font-size:11px; color:rgba(246,243,237,.9);
     background:rgba(33,30,26,.55); border-radius:999px; padding:4px 10px; }
-  .vid .dur { position:absolute; right:12px; top:12px; font-size:11px; color:rgba(246,243,237,.9);
-    background:rgba(33,30,26,.55); border-radius:999px; padding:3px 9px; }
-  .vid video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; }
-  .snd { position:absolute; right:12px; top:12px; z-index:2; border:0; cursor:pointer;
+  /* Sound belongs to the card you are looking at. A clip you cannot see must
+     not be the one you can hear, so the control rides the centre card. */
+  .snd { position:absolute; right:12px; top:12px; z-index:3; border:0; cursor:pointer;
     font:inherit; font-size:11px; font-weight:650; color:rgba(246,243,237,.92);
     background:rgba(33,30,26,.55); border-radius:999px; padding:5px 11px;
-    transition: transform 160ms var(--ease-out); }
+    opacity:0; pointer-events:none;
+    transition: opacity 240ms var(--ease-out), transform 160ms var(--ease-out); }
+  .cf-card.is-on .snd, .cf:not(.cf-ready) .snd { opacity:1; pointer-events:auto; }
   .snd:active { transform: scale(0.97); }
   @media (hover:hover) and (pointer:fine){ .snd:hover { background:rgba(33,30,26,.75); } }
 
@@ -219,8 +216,6 @@
   .tier .tcta { margin-top:6px; text-align:center; font-size:13.5px; font-weight:650; color:var(--accent-deep);
     border:1px solid rgba(158,63,36,.3); border-radius:999px; padding:9px; text-decoration:none; }
   .tier .tcta.solid { background:var(--accent-deep); color:#fff; }
-
-    border-radius:var(--radius-card); padding:30px 22px; }
 
   /* Intake */
   .form { background:var(--glass-strong); border:1px solid rgba(33,30,26,.09); border-radius:var(--radius-card);
@@ -366,26 +361,30 @@
   <section class="block" id="samples">
     <div class="wrap">
       <div class="shead"><span class="eyebrow">Samples</span><h2>What comes back</h2></div>
-      <div class="samples">
-        <div class="vid">
-          <video src="assets/sample-1.mp4" autoplay muted loop playsinline preload="metadata"></video>
-          <button class="snd" type="button">Sound on</button>
-          <span class="cap">Street, app on screen</span>
-        </div>
-        <div class="vid">
-          <video src="assets/sample-4.mp4" autoplay muted loop playsinline preload="metadata"></video>
-          <button class="snd" type="button">Sound on</button>
-          <span class="cap">At home, captioned</span>
-        </div>
-        <div class="vid">
-          <video src="assets/sample-2.mp4" autoplay muted loop playsinline preload="metadata"></video>
-          <button class="snd" type="button">Sound on</button>
-          <span class="cap">App walkthrough</span>
-        </div>
-        <div class="vid">
-          <video src="assets/sample-5.mp4" autoplay muted loop playsinline preload="none"></video>
-          <button class="snd" type="button">Sound on</button>
-          <span class="cap">Street interview</span>
+      <div class="cf" data-coverflow data-label="Sample AI UGC ads">
+        <div class="cf-frame">
+          <div class="cf-stage">
+            <div class="cf-card vid">
+              <video src="assets/sample-1.mp4" autoplay muted loop playsinline preload="metadata"></video>
+              <button class="snd" type="button">Sound on</button>
+              <span class="cap">Street, app on screen</span>
+            </div>
+            <div class="cf-card vid">
+              <video src="assets/sample-4.mp4" autoplay muted loop playsinline preload="metadata"></video>
+              <button class="snd" type="button">Sound on</button>
+              <span class="cap">At home, captioned</span>
+            </div>
+            <div class="cf-card vid">
+              <video src="assets/sample-2.mp4" autoplay muted loop playsinline preload="metadata"></video>
+              <button class="snd" type="button">Sound on</button>
+              <span class="cap">App walkthrough</span>
+            </div>
+            <div class="cf-card vid">
+              <video src="assets/sample-5.mp4" autoplay muted loop playsinline preload="metadata"></video>
+              <button class="snd" type="button">Sound on</button>
+              <span class="cap">Street interview</span>
+            </div>
+          </div>
         </div>
       </div>
       <div class="ctarow">
@@ -468,7 +467,7 @@
   <!-- 8 · Intake form -->
   <section class="block" id="start">
     <div class="wrap">
-      <div class="shead"><span class="eyebrow">Start your first ad</span><h2>60 seconds of input</h2></div>
+      <div class="shead"><span class="eyebrow">Start your first ad</span><h2>Your input</h2></div>
       <p class="snote" style="margin-top:-16px; margin-bottom:22px;">This is the $29 first ad. A monthly pack starts with a call instead, where we take the full brief.</p>
       <div class="form">
         <div class="field">
@@ -541,60 +540,72 @@
 
 </div>
 <script>
-  /* Carousel: centre-focus scaling on mobile, gentle auto-advance as a scroll cue.
-     Transform and opacity only, written straight onto the card so no parent
-     variable forces a style recalc across every child. */
+  /* The centre card is the one that plays. Everything else holds a frame,
+     raked back, which is what makes the middle card read as the subject
+     rather than as one of four things competing.
+     Runs before coverflow.js, which is deferred, so the listener is attached
+     by the time the carousel announces its first card. */
   (function () {
-    var scroller = document.querySelector('.samples');
-    if (!scroller) return;
-    var cards = Array.prototype.slice.call(scroller.querySelectorAll('.vid'));
-    if (!cards.length) return;
+    var root = document.querySelector('.cf');
+    if (!root) return;
+    var cards = Array.prototype.slice.call(root.querySelectorAll('.cf-card'));
+    /* Sound is a decision the visitor made, not a property of a card, so it
+       survives moving to the next one. */
+    var wanted = false;
 
-    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
-    var isMobile = window.matchMedia('(max-width: 720px)');
-    var queued = false;
+    var current = 0;
+    var armed = false;
 
-    function paint() {
-      queued = false;
-      var mid = scroller.scrollLeft + scroller.clientWidth / 2;
-      cards.forEach(function (c) {
-        var d = Math.min(Math.abs((c.offsetLeft + c.offsetWidth / 2) - mid) / c.offsetWidth, 1);
-        c.style.setProperty('--focus-scale', (1 - d * 0.1).toFixed(3));
-        c.style.setProperty('--focus-op', (1 - d * 0.4).toFixed(3));
+    /* A video that is paused before it has decoded anything shows nothing, so
+       a card parked off centre would be a black rectangle rather than a still
+       from the ad. Holding the pause until the first frame exists is what
+       keeps the raked cards looking like work. */
+    function hold(v, i) {
+      if (v.readyState >= 2) { v.pause(); return; }
+      v.addEventListener('loadeddata', function () {
+        if (i !== current) v.pause();
+      }, { once: true });
+    }
+
+    /* If a browser refuses the first play, every later select would refuse it
+       too and the centre card would sit frozen. One gesture is enough to lift
+       that, so the next tap anywhere on the page tries again. */
+    function arm() {
+      if (armed) return;
+      armed = true;
+      document.addEventListener('pointerdown', function () {
+        armed = false;
+        apply(current);
+      }, { once: true });
+    }
+
+    function apply(index) {
+      current = index;
+      cards.forEach(function (card, i) {
+        var v = card.querySelector('video');
+        var b = card.querySelector('.snd');
+        if (!v) return;
+        var on = i === index;
+        v.muted = !(on && wanted);
+        if (on) {
+          var p = v.play();
+          if (p && p.catch) p.catch(arm);
+        } else {
+          hold(v, i);
+        }
+        if (b) b.textContent = (on && wanted) ? 'Sound off' : 'Sound on';
       });
     }
-    function onScroll() { if (!queued) { queued = true; requestAnimationFrame(paint); } }
 
-    scroller.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
-    window.addEventListener('load', onScroll);
-    /* Breakpoint changes do not fire scroll or resize on their own, and without
-       this the desktop layout keeps whatever scaling the first paint wrote. */
-    if (isMobile.addEventListener) isMobile.addEventListener('change', onScroll);
-    paint();
+    root.addEventListener('cf:select', function (e) { apply(e.detail.index); });
 
-    if (reduce.matches) return;
-
-    var i = 0, stopped = false, hovering = false;
-    var timer = setInterval(function () {
-      if (stopped || hovering || document.hidden) return;
-      i = (i + 1) % cards.length;
-      var t = cards[i];
-      var left = isMobile.matches
-        ? t.offsetLeft - (scroller.clientWidth - t.offsetWidth) / 2
-        : t.offsetLeft;
-      scroller.scrollTo({ left: Math.max(0, left), behavior: 'smooth' });
-    }, 3200);
-
-    function stop() { stopped = true; clearInterval(timer); }
-    ['pointerdown', 'wheel', 'touchstart', 'keydown'].forEach(function (e) {
-      scroller.addEventListener(e, stop, { passive: true, once: true });
+    root.querySelectorAll('.snd').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        wanted = !wanted;
+        apply(cards.indexOf(btn.closest('.cf-card')));
+      });
     });
-    scroller.addEventListener('mouseenter', function () { hovering = true; });
-    scroller.addEventListener('mouseleave', function () { hovering = false; });
-    /* On a phone the auto-advance is only there to say "this scrolls". Once that
-       has landed it stops, so nothing keeps moving under the reader. */
-    if (isMobile.matches) setTimeout(stop, 20000);
   })();
 
   /* The two example clips are cut so the outfit change lands at 3.00s in both.
@@ -638,19 +649,8 @@
     document.addEventListener('visibilitychange', function () { if (!document.hidden) restart(); });
   })();
 
-  document.querySelectorAll('.snd').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      var v = btn.parentElement.querySelector('video');
-      if (!v) return;
-      var on = v.muted;
-      document.querySelectorAll('.samples video').forEach(function (o) { o.muted = true; });
-      document.querySelectorAll('.snd').forEach(function (o) { o.textContent = 'Sound on'; });
-      v.muted = !on;
-      btn.textContent = on ? 'Sound off' : 'Sound on';
-      if (on) v.play();
-    });
-  });
 </script>
+<script src="/services/coverflow.js" defer></script>
 <script src="/services/intake.js" defer></script>
 </body>
 </html>
