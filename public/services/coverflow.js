@@ -54,6 +54,15 @@
     var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
     var isMobile = window.matchMedia('(max-width: 720px)');
 
+    /* How much distance the cull below gets to fade over, before the card is
+       teleported across the ring at half a turn out. A fixed one card is right
+       once there are four, but on a ring of three half a turn is 1.5, so a
+       fixed fade would reach back to the first neighbour and leave both of
+       them sitting at half opacity for no reason. Ending the fade at the first
+       neighbour rather than through it is the rule; four cards and up are
+       unaffected. */
+    var cullFade = Math.max(0.5, Math.min(1, count / 2 - 1));
+
     /* Fractional card index at the centre. The single source of truth. */
     var pos = 0;
     /* Where the current settle is headed. Stepping off `pos` instead would
@@ -107,7 +116,7 @@
 
         /* A card is teleported across the ring at exactly half a turn out, so
            it has to be gone by then or the jump is visible. */
-        var edge = loop ? Math.min(1, Math.max(0, count / 2 - distance)) : 1;
+        var edge = loop ? Math.min(1, Math.max(0, (count / 2 - distance) / cullFade)) : 1;
         card.style.opacity = String(Math.max(0, 1 - tune.fade * distance) * edge);
         card.style.zIndex = String(100 - Math.round(distance));
       }
