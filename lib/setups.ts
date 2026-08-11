@@ -3,10 +3,11 @@
 // $75 reads as the $75 having been invented rather than as a bargain. That
 // worry is written out below and it was the right one.
 //
-// The discount did not go away, it moved. New accounts get $50 of credit, so
-// the first setup is free on the $35 tier and $25 on the $75 tier. Same money
-// off, given to someone who signed in rather than to everyone who scrolled
-// past, which is what makes signing in worth doing.
+// The discount did not go away, it moved. New accounts get credit, given to
+// someone who signed in rather than to everyone who scrolled past, which is
+// what makes signing in worth doing. The amount is SIGNUP_CREDIT_CENTS in
+// lib/credit-math.ts and it has moved twice, so do not restate it here. It is
+// $20 as of 2026-08-10, which leaves $15 on a $35 setup and $55 on a $75 one.
 export const SALE_ON = false;
 export const SALE_PRICE = 11;
 

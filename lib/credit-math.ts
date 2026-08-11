@@ -11,19 +11,25 @@
 /**
  * What a new account is given, once.
  *
- * $75 rather than $50, and the number is not arbitrary: it is the price of the
- * dearest setup, so a first booking is free whichever card someone picks. At
- * $50 the six setups on the $75 tier still cost $25, and those are the exact
- * six worth watching somebody go through, so the toll fell on the wrong ones.
+ * $20, set by Pulkit on 2026-08-10, down from $75. Read the trade before
+ * moving it back.
  *
- * That is what lets the offer be one sentence. "Your first setup is free" is a
- * thing a person can act on; "get $50 of credit" is a thing they have to do
- * arithmetic on first.
+ * $75 was the price of the dearest setup, which is what let the offer be one
+ * sentence: "your first setup is free" is a thing a person can act on, where
+ * "get $20 of credit" is a thing they have to do arithmetic on first. At $20
+ * a $35 setup costs $15 and a $75 setup costs $55, so the promise is gone and
+ * the sign in control now prints the remainder instead.
  *
- * Raise the dearest setup above this and the promise quietly stops being true,
- * which is what SETUP_PRICES_COVERED in the tests is there to catch.
+ * Nothing here has to be edited when this number moves. firstOrderLabel and
+ * coversEveryPrice derive the words from the figure, so the button cannot
+ * claim free while the arithmetic says otherwise. That is the whole reason
+ * they exist.
+ *
+ * Worth knowing: this credit is spent on setup bookings only. Marketplace
+ * requests carry no price and no payment path, so this grant does nothing on
+ * the marketplace site until one exists.
  */
-export const SIGNUP_CREDIT_CENTS = 7_500;
+export const SIGNUP_CREDIT_CENTS = 2_000;
 
 /**
  * The most of any single order that credit may cover.

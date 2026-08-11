@@ -120,16 +120,27 @@ describe('oauth start', () => {
 });
 
 describe('credit split', () => {
-  // The claim printed on the sign in control. If a price ever rises above the
-  // grant, or the grant is cut, the button starts telling people something
-  // that is not true, and this is what says so first.
-  it('covers a first booking of every setup in the catalog', () => {
+  // The claim printed on the sign in control. The grant was cut to $20 on
+  // 2026-08-10 and no longer covers a first booking: a $35 setup leaves $15
+  // and a $75 setup leaves $55. This used to assert the free promise. What it
+  // asserts now is the thing that actually has to stay true, that the words on
+  // the button are the arithmetic, so it can never read free while money is
+  // owed.
+  it('prints what is really left to pay on every setup in the catalog', () => {
     const prices = MAIN_SETUPS.map((s) => s.price);
-    expect(coversEveryPrice(prices)).toBe(true);
+    expect(coversEveryPrice(prices)).toBe(false);
     for (const price of prices) {
-      expect(splitPrice(price * 100, SIGNUP_CREDIT_CENTS).dueCents).toBe(0);
+      const { dueCents } = splitPrice(price * 100, SIGNUP_CREDIT_CENTS);
+      expect(dueCents).toBe(price * 100 - SIGNUP_CREDIT_CENTS);
+      expect(firstOrderLabel(price)).toBe(`${formatCents(dueCents)} on your first`);
     }
-    expect(firstOrderLabel(Math.max(...prices))).toBe('Free on your first');
+  });
+
+  // The free branch still exists and still has to work, for the day a price
+  // drops under the grant or the grant goes back up.
+  it('still says free when the credit does cover the price', () => {
+    expect(firstOrderLabel(SIGNUP_CREDIT_CENTS / 100)).toBe('Free on your first');
+    expect(coversEveryPrice([SIGNUP_CREDIT_CENTS / 100])).toBe(true);
   });
 
   // The same guard from the other side: one dollar over the grant and the
