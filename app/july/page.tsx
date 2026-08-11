@@ -7,7 +7,7 @@ import ServiceCard from '@/components/ServiceCard';
 import SiteFooter from '@/components/SiteFooter';
 import SeamMark from '@/components/SeamMark';
 import { LIVE_SERVICES, SOON_SERVICES } from '@/lib/services';
-import styles from './marketplace.module.css';
+import styles from '@/app/marketplace.module.css';
 
 // The marketplace is the front door now. The expert search that used to live
 // here is unchanged and moved to /search-experts, linked from the strip at the

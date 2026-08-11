@@ -24,6 +24,12 @@ const DAILY_ROOM_ORIGIN = 'https://midsesh.daily.co';
 const DAILY = 'https://*.daily.co wss://*.daily.co';
 const CAL = 'https://app.cal.com https://cal.com';
 
+// The new marketplace, served at the apex through the rewrites at the bottom
+// of this file. Its stable production alias, not a deployment URL: agon-agent
+// .vercel.app belongs to somebody else's project, which is why this reads the
+// way it does.
+const MARKETPLACE = 'https://agon-agent-eight.vercel.app';
+
 // Every card on /setups embeds TikTok's official player in an iframe. Without
 // this the browser refuses the frame and shows its own "This content is
 // blocked" panel where the video should be, which is what shipped: the whole
@@ -90,6 +96,43 @@ const nextConfig: NextConfig = {
   // the cost of guessing a destination will never move, and it moved.
   async redirects() {
     return [{ source: '/setup', destination: '/get', permanent: false }];
+  },
+  // The apex serves the new marketplace, which is a separate Vite app in its
+  // own repo and its own Vercel project. It is rewritten in rather than folded
+  // in, because that app is Tailwind 4 with framer-motion and this repo runs
+  // six runtime dependencies and hand written CSS. Folding it in means either
+  // three dependencies enter the repo that refuses them, or its whole visual
+  // surface gets rewritten.
+  //
+  // The domain stays here. Every route this repo owns keeps working, which is
+  // what matters: /api, /mcp, /dashboard, /experts, /services and the Google
+  // OAuth callback are all registered against this host, and moving the apex
+  // to the other project would break sign in and the MCP connector.
+  //
+  // `beforeFiles`, not the default, because these have to win against this
+  // app's own routes. The destination is the other project's stable production
+  // alias, not a deployment URL, so its next deploy is picked up here with no
+  // change on this side.
+  //
+  // Deliberately absent: /privacy. That URL has to answer for everything this
+  // domain does, and /experts, /dashboard and /search-experts still run chat,
+  // session replay and Google sign in. The other app carries a shorter policy
+  // that is true of itself and not of the rest, so this repo keeps that page
+  // until those routes are gone.
+  async rewrites() {
+    return {
+      beforeFiles: [
+        { source: '/', destination: `${MARKETPLACE}/` },
+        { source: '/contact', destination: `${MARKETPLACE}/contact` },
+        // Its assets live under this one prefix on purpose. This repo has its
+        // own public/media holding three of the same filenames, and without
+        // the prefix the apex would serve our rohit.png and ugc-tile.mp4 over
+        // theirs, which looks almost right.
+        { source: '/_agon/:path*', destination: `${MARKETPLACE}/_agon/:path*` },
+      ],
+      afterFiles: [],
+      fallback: [],
+    };
   },
 };
 
