@@ -124,6 +124,17 @@ const nextConfig: NextConfig = {
       beforeFiles: [
         { source: '/', destination: `${MARKETPLACE}/` },
         { source: '/contact', destination: `${MARKETPLACE}/contact` },
+        // The new site's own experts page, which is where its "Partner with
+        // us" CTAs point. It wins over this repo's /experts: that one is the
+        // old pitch, and two pages arguing the same case on one domain is how
+        // a visitor ends up on the one nobody is maintaining.
+        { source: '/experts', destination: `${MARKETPLACE}/experts` },
+        // The social card its meta tags name, plus the crawler files. All
+        // three are absolute URLs on this host, so without these they 404 and
+        // every share of midsesh.com comes back as a bare link.
+        { source: '/og.png', destination: `${MARKETPLACE}/og.png` },
+        { source: '/robots.txt', destination: `${MARKETPLACE}/robots.txt` },
+        { source: '/sitemap.xml', destination: `${MARKETPLACE}/sitemap.xml` },
         // Its assets live under this one prefix on purpose. This repo has its
         // own public/media holding three of the same filenames, and without
         // the prefix the apex would serve our rohit.png and ugc-tile.mp4 over
