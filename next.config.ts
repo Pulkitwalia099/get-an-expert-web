@@ -36,6 +36,15 @@ const MARKETPLACE = 'https://agon-agent-eight.vercel.app';
 // page is videos, and none of them played.
 const TIKTOK = 'https://www.tiktok.com';
 
+// The marketplace at the apex loads Inter and JetBrains Mono from Google
+// Fonts. style-src did not name the stylesheet host and font-src did not name
+// the file host, so the browser blocked both and the whole site rendered in
+// system fallbacks. It looks almost right on a Mac, where system-ui is SF Pro,
+// and clearly wrong on Windows and Android. Nothing in the console said
+// "fonts", it said style-src, which is why this survived a deploy.
+const GOOGLE_FONTS_CSS = 'https://fonts.googleapis.com';
+const GOOGLE_FONTS_FILES = 'https://fonts.gstatic.com';
+
 // The waitlist form on /classic posts to an API that still lives on the older
 // v2 deployment, so it is a cross origin fetch from this app's point of view.
 // connect-src did not name it, the browser blocked the request before it left
@@ -46,9 +55,9 @@ const WAITLIST_API = 'https://get-an-expert-v2.vercel.app';
 const CSP = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline' ${POSTHOG} https://app.cal.com`,
-  "style-src 'self' 'unsafe-inline'",
+  `style-src 'self' 'unsafe-inline' ${GOOGLE_FONTS_CSS}`,
   "img-src 'self' https: data: blob:",
-  "font-src 'self' data:",
+  `font-src 'self' data: ${GOOGLE_FONTS_FILES}`,
   `connect-src 'self' ${POSTHOG} ${DAILY} ${CAL} ${WAITLIST_API}`,
   `frame-src 'self' ${DAILY} ${CAL} ${TIKTOK}`,
   `media-src 'self' blob: ${DAILY}`,
