@@ -78,6 +78,30 @@ export default function Home() {
         </nav>
       </header>
 
+      {/* This page was the front door until the apex moved to the new
+          marketplace. It is kept at /july rather than deleted because the
+          service pages, the LinkedIn tiles and half a dozen shared links still
+          point into it, and because it is the version people saw in July.
+          Anyone who lands here should be told, once, in a line they can act
+          on. */}
+      <p
+        style={{
+          margin: 0,
+          padding: '10px 20px',
+          textAlign: 'center',
+          fontSize: 13.5,
+          lineHeight: 1.5,
+          background: '#0A0A0A',
+          color: 'rgba(255,255,255,0.72)',
+        }}
+      >
+        This is the July version of midsesh.{' '}
+        <a href="/" style={{ color: '#fff', fontWeight: 650 }}>
+          See the current marketplace
+        </a>
+        .
+      </p>
+
       {/* The V1 split the user chose from the mockup rounds. Its own module
           holds the styles; the section id below is the primary CTA's target. */}
       <HomeHero />
