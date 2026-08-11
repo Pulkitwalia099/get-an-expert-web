@@ -1,3 +1,12 @@
+/* Tailwind, theme and utilities only. The base layer is deliberately absent.
+   That layer is Preflight, a global reset, and this file is loaded by the root
+   layout, so pulling it in would have reset margins, font sizes and borders on
+   /setups, /get, /dashboard, /search-experts and /stuck. Utilities do nothing
+   until an element asks for them, so the marketplace gets Tailwind and every
+   page that came before keeps its own CSS untouched. */
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
 /* ---------- Tokens ---------- */
 :root {
   --bg: #F6F3ED;
