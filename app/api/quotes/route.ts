@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { SESSION_COOKIE, readSession } from '@/lib/auth';
+import { SESSION_COOKIE } from '@/lib/auth';
+import { currentAccount } from '@/lib/accounts';
 import { isValidEmail } from '@/lib/email';
 import { redactExperts } from '@/lib/experts';
 import { recordInsight } from '@/lib/insights';
@@ -45,7 +46,7 @@ async function handlePost(req: NextRequest): Promise<NextResponse> {
   const set = await readMatchSet(setId);
   if (!set) return NextResponse.json({ error: 'That search has expired.' }, { status: 404 });
 
-  const user = readSession(req.cookies.get(SESSION_COOKIE)?.value);
+  const user = await currentAccount(req.cookies.get(SESSION_COOKIE)?.value);
 
   // Signed in: the set becomes theirs, and refusing to claim means it already
   // belongs to somebody else.
@@ -104,7 +105,7 @@ async function handlePost(req: NextRequest): Promise<NextResponse> {
 }
 
 async function handleGet(req: NextRequest): Promise<NextResponse> {
-  const user = readSession(req.cookies.get(SESSION_COOKIE)?.value);
+  const user = await currentAccount(req.cookies.get(SESSION_COOKIE)?.value);
   // Signed out is a 200 with an empty list, matching /api/me: being signed out
   // is the normal state of this site, not an error worth a red line in the
   // console on every first load.

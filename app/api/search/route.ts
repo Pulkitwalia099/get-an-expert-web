@@ -128,6 +128,12 @@ async function handleSearch(req: NextRequest): Promise<NextResponse> {
   // Who is asking decides what comes back. Somebody already signed in has
   // nothing to be gated from, so their set is written as theirs and their
   // cards arrive unlocked. Everyone else gets a payload with no names in it.
+  //
+  // The one session read left on readSession rather than currentAccount, and
+  // deliberately. Every other route now checks the revocation version, which
+  // costs a database round trip; search is the slowest path on the site and
+  // the worst a revoked session buys here is a set pre-claimed for an account
+  // that still exists. Nothing withheld is revealed by this read.
   const user = readSession(req.cookies.get(SESSION_COOKIE)?.value);
 
   // The one place a set becomes a response. Storing and redacting are done

@@ -5,7 +5,8 @@ import { cookies } from 'next/headers';
 import Mark from '@/components/Mark';
 import RequestList from '@/components/RequestList';
 import { inter } from '@/app/fonts';
-import { SESSION_COOKIE, readSession } from '@/lib/auth';
+import { SESSION_COOKIE } from '@/lib/auth';
+import { currentAccount } from '@/lib/accounts';
 import { balanceFor, formatCents } from '@/lib/credits';
 import { redactExperts } from '@/lib/experts';
 import { briefLine, listQuoteRequests } from '@/lib/quotes';
@@ -32,10 +33,15 @@ export default async function Dashboard({
   searchParams: Promise<{ placed?: string }>;
 }) {
   const store = await cookies();
-  const user = readSession(store.get(SESSION_COOKIE)?.value);
+  const user = await currentAccount(store.get(SESSION_COOKIE)?.value);
   // Signed out is not an error page, and `/` is the marketplace, a different
   // app that cannot bring them back here afterwards. /signin carries both
   // doors and returns them to this page.
+  //
+  // A session revoked elsewhere lands here too. The cookie is not cleared on
+  // the way out, because a server component cannot set one during render;
+  // /signin runs the same check, so it renders the doors rather than bouncing
+  // back, and the next successful sign in overwrites the cookie.
   if (!user) redirect('/signin?next=/dashboard');
 
   const [requests, balance] = await Promise.all([
@@ -51,7 +57,11 @@ export default async function Dashboard({
         <Mark />
         {/* The two things a signed in person owns live on two pages, and this
             one is the older of them. Without this link the marketplace orders
-            page can only be reached by typing the URL or from an email. */}
+            page can only be reached by typing the URL or from an email.
+            /account holds both in one list and the settings behind them. */}
+        <Link href="/account" className="dash-back dash-other">
+          Your account
+        </Link>
         <Link href="/orders" className="dash-back dash-other">
           Your orders
         </Link>

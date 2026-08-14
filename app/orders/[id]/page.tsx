@@ -4,7 +4,8 @@ import { cookies } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 import OrderActions from '@/components/OrderActions';
 import OrderDraft from '@/components/OrderDraft';
-import { SESSION_COOKIE, readSession } from '@/lib/auth';
+import { SESSION_COOKIE } from '@/lib/auth';
+import { currentAccount } from '@/lib/accounts';
 import { CONTACT_EMAIL } from '@/lib/contact';
 import { TEXT_LABELS, TEXT_NOTES, deliveryFor } from '@/lib/delivery';
 import { draftThread } from '@/lib/orderDrafts';
@@ -30,7 +31,10 @@ export const dynamic = 'force-dynamic';
 export default async function Order({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const store = await cookies();
-  const user = readSession(store.get(SESSION_COOKIE)?.value);
+  // The session guard is the only thing on this page that changed for the
+  // account work. Every status email links straight here, so the deep link and
+  // everything it renders stay exactly as they were.
+  const user = await currentAccount(store.get(SESSION_COOKIE)?.value);
   // Signed in, they come straight back to this order rather than to the list,
   // which is the whole point of carrying a destination through. The id goes
   // through the same allowlist on the way back, so a junk one in the URL ends

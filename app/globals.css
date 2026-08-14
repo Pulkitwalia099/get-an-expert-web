@@ -2664,3 +2664,149 @@ body:has(.opq) { background: #FBFBF8; }
      that looks finished while it is not. */
   .opq-bar-run span { animation: none; width: 100%; opacity: .3; }
 }
+
+/* ================================================================ /account
+   Milestone three of the design review: one account holding orders and
+   requests in one list, with the four settings behind them. Everything below
+   this line belongs to /account, app/account/page.tsx and the three
+   components under it. Nothing above it was touched.
+
+   The prefix is `acct-`, not `account-`. .account-wrap, .account-cta,
+   .account-menu, .account-link, .account-who, .account-credit, .account-dash
+   and .account-out are all live further up this file and belong to
+   components/AccountLink.tsx in the site bar, so reusing that prefix would
+   restyle the sitewide account menu on every page of the site.
+
+   There is less here than the page suggests, on purpose. /account wears the
+   `ord` class as well as `acct`, so it inherits the paper ground, the violet
+   accent, the pill controls and the h1 scale that /orders and /dashboard
+   already share. What follows is only what those two pages had no equivalent
+   of. ================================================================ */
+
+.acct { max-width: 720px; }
+.acct h1 { margin-bottom: 8px; }
+
+/* The bar. .ord-who is a plain block, and this one has a credit pill in it. */
+.acct-who { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.acct-credit {
+  color: var(--accent); font-weight: 600;
+  background: var(--accent-tint); border: 1px solid var(--line-2);
+  padding: 2px 9px; border-radius: 999px; white-space: nowrap;
+}
+
+.acct-warn {
+  font-size: 13.5px; line-height: 1.5; color: var(--ink-2);
+  background: var(--accent-tint); border: 1px solid var(--line-2);
+  border-radius: 12px; padding: 11px 14px; margin-bottom: 18px;
+}
+
+.acct-empty {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 10px;
+  padding: 28px 22px;
+  font-size: 14px; line-height: 1.6; color: var(--ink-2);
+  background: var(--glass); border: 1px solid var(--line);
+  border-radius: var(--radius-card); max-width: 54ch;
+}
+.acct-empty-h { font-size: 15px; font-weight: 650; color: var(--ink); }
+
+/* ----- the one list. An order and a request side by side, sorted on time,
+   each row saying which of the two it is rather than the copy saying so. */
+.acct-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.acct-list li {
+  animation: msg-in 300ms var(--ease-out) backwards;
+  /* Capped, because a stagger that keeps counting past the fold turns a long
+     list into a wait. Eight rows in, everything lands together. */
+  animation-delay: calc(min(var(--i, 0), 8) * 40ms);
+}
+.acct-row {
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 16px 18px; text-decoration: none; color: var(--ink);
+  background: var(--glass-strong); border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .04), 0 8px 24px rgba(0, 0, 0, .04);
+  transition: transform 200ms var(--ease-out), border-color 200ms var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .acct-row:hover { transform: translateY(-2px); border-color: var(--line-2); }
+}
+.acct-row:active { transform: scale(.97); }
+.acct-row:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.acct-row-top { display: flex; align-items: baseline; gap: 12px; }
+.acct-row-title { font-size: 15px; font-weight: 650; letter-spacing: -.01em; flex: 1; }
+.acct-row-when { font-size: 12px; color: var(--ink-3); white-space: nowrap; }
+.acct-row-foot { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.acct-state {
+  font-size: 12.5px; font-weight: 600;
+  padding: 2px 9px; border-radius: 999px;
+  background: var(--glass); border: 1px solid var(--line);
+}
+/* Which vocabulary the row belongs to, in the one place it is worth a colour.
+   The accent marks the older product, so the newer one reads as the default. */
+.acct-row[data-kind='request'] .acct-state { color: var(--accent); background: var(--accent-tint); }
+.acct-kind { font-size: 12px; color: var(--ink-3); }
+
+.acct-jump { display: flex; gap: 18px; margin-top: 16px; }
+.acct-jump a {
+  font-size: 13.5px; font-weight: 600; color: var(--ink-2);
+  text-decoration: underline; text-underline-offset: 3px;
+  transition: color 160ms var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) { .acct-jump a:hover { color: var(--ink); } }
+.acct-jump a:active { transform: scale(.97); }
+
+/* ----- the four settings */
+.acct-settings { margin-top: 44px; border-top: 1px solid var(--line); padding-top: 28px; }
+.acct-h2 { font-size: 13px; font-weight: 650; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); }
+.acct-block { margin-top: 26px; display: flex; flex-direction: column; gap: 8px; max-width: 54ch; }
+.acct-h3 { font-size: 16px; font-weight: 650; letter-spacing: -.015em; }
+.acct-sub { font-size: 13.5px; line-height: 1.6; color: var(--ink-2); }
+.acct-value { font-size: 15px; font-weight: 600; }
+.acct-note { font-size: 13px; font-weight: 600; color: var(--ink-2); }
+
+.acct-field { display: flex; flex-direction: column; gap: 6px; max-width: 340px; }
+.acct-field input {
+  height: 46px; padding: 0 16px; border-radius: 9999px;
+  /* 16px deliberately: iOS zooms into a focused field under it. */
+  font: inherit; font-size: 16px; color: var(--ink);
+  background: var(--glass-strong); border: 1px solid var(--line-2);
+  transition: border-color 160ms var(--ease-out);
+}
+.acct-field input:focus-visible { outline: none; border-color: var(--accent); }
+.acct-field input:disabled { opacity: .5; }
+
+.acct-row-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 4px; }
+
+/* ----- deleting. A disclosure, so the control is never one tap from a page
+   load, and the copy inside it is the actual safeguard. */
+.acct-danger { margin-top: 4px; }
+.acct-danger summary {
+  font-size: 13.5px; font-weight: 600; color: var(--ink-2);
+  cursor: pointer; padding: 6px 0; width: fit-content;
+}
+.acct-danger summary::marker { color: var(--ink-3); }
+.acct-danger[open] summary { color: var(--ink); }
+.acct-danger > *:not(summary) { animation: msg-in 240ms var(--ease-out) backwards; }
+.acct-danger p, .acct-danger li { font-size: 13.5px; line-height: 1.6; color: var(--ink-2); margin-top: 8px; }
+.acct-danger-lede { font-weight: 650; color: var(--ink) !important; }
+.acct-danger-h { font-size: 12px !important; font-weight: 650; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3) !important; margin-top: 16px !important; }
+.acct-danger-list { margin: 0; padding-left: 18px; }
+/* The typed confirmation needs air above it. Butted straight onto the last
+   consequence, it reads as part of that sentence rather than as the gate. */
+.acct-danger .acct-field { margin-top: 18px; }
+/* Scoped under .acct so it outranks `.ord .oa-btn`, which paints every pill on
+   these pages black on white. Without the extra class this rule loses on
+   specificity and the one destructive button reads as an ordinary one. */
+.acct .acct-danger-btn { margin-top: 14px; border-color: var(--accent); color: var(--accent); }
+@media (hover: hover) and (pointer: fine) {
+  .acct .acct-danger-btn:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-tint); }
+}
+
+.acct-foot { font-size: 12.5px; color: var(--ink-3); margin-top: 36px; }
+.acct-foot a { color: var(--ink-2); text-decoration: underline; text-underline-offset: 3px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .acct-list li, .acct-danger > *:not(summary) { animation: none; opacity: 1; transform: none; }
+  .acct-row, .acct-jump a, .acct-field input { transition: none; }
+  .acct-row:hover, .acct-row:active, .acct-jump a:active { transform: none; }
+}

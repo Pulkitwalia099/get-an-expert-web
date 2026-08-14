@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { insertRows, selectRows } from '@/lib/supabase';
+import { insertRows, patchRows, selectRows } from '@/lib/supabase';
 import type { Brief, ExpertRecord } from '@/lib/types';
 
 // Where a search goes after the cards are drawn.
@@ -211,38 +211,8 @@ export async function claimMatchSet(setId: string, sub: string): Promise<boolean
   return ok;
 }
 
-// PATCH is not something lib/supabase.ts offered, because nothing before this
-// updated a row it had already written. Kept here rather than added there
-// until a second caller needs it.
-async function patchRows(
-  table: string,
-  filter: string,
-  patch: Record<string, unknown>,
-): Promise<boolean> {
-  const url = process.env.SUPABASE_URL?.replace(/\/+$/, '');
-  const key = process.env.SUPABASE_SECRET_KEY;
-  if (!url || !key) return false;
-  try {
-    const res = await fetch(`${url}/rest/v1/${table}?${filter}`, {
-      method: 'PATCH',
-      headers: {
-        apikey: key,
-        Authorization: `Bearer ${key}`,
-        'Content-Type': 'application/json',
-        Prefer: 'return=minimal',
-      },
-      body: JSON.stringify(patch),
-      signal: AbortSignal.timeout(3_000),
-    });
-    if (!res.ok) {
-      console.error(`[midsesh:supabase] ${table} patch failed`, res.status, await res.text());
-      return false;
-    }
-    return true;
-  } catch (err) {
-    console.error(`[midsesh:supabase] ${table} patch failed`, err);
-    return false;
-  }
-}
-
+// patchRows used to be defined here, with a note saying it would move to
+// lib/supabase.ts as soon as anything else updated a row it had already
+// written. lib/accounts.ts does, so it moved. Re-exported because callers that
+// already had it from here should not have to care that it did.
 export { patchRows };

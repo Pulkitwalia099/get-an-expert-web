@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { SESSION_COOKIE, readSession } from '@/lib/auth';
+import { SESSION_COOKIE } from '@/lib/auth';
+import { currentAccount } from '@/lib/accounts';
 import { redactExperts } from '@/lib/experts';
 import { canReveal, parseSetId, readMatchSet } from '@/lib/matches';
 import { withMetrics } from '@/lib/metrics';
@@ -18,7 +19,7 @@ async function handleGet(
   const setId = parseSetId((await ctx.params).set);
   if (!setId) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-  const user = readSession(req.cookies.get(SESSION_COOKIE)?.value);
+  const user = await currentAccount(req.cookies.get(SESSION_COOKIE)?.value);
   const set = await readMatchSet(setId);
   if (!set) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 

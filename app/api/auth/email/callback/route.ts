@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { SESSION_COOKIE, SESSION_MAX_AGE, safeNext, signSession } from '@/lib/auth';
+import { sessionVersionFor } from '@/lib/accounts';
 import { ensureAccount, resolveAccount } from '@/lib/credits';
 import { readEmailToken, subForEmail } from '@/lib/emailAuth';
 import { withMetrics } from '@/lib/metrics';
@@ -64,13 +65,17 @@ async function handleGet(req: NextRequest): Promise<NextResponse> {
     picture: null,
   });
 
-  const session = signSession(user);
-  if (!session) return land(req, { signin: 'unavailable' });
-
   // Idempotent, and allowed to fail. Supabase being down must not stop
   // somebody signing in: their orders are read separately and that read has
   // its own error state.
   await ensureAccount(user);
+
+  // Both doors have to stamp the generation, or this one keeps minting
+  // sessions that "sign out everywhere" cannot reach. Same rule as the Google
+  // callback: a version that could not be read is omitted, never written as 0.
+  const version = await sessionVersionFor(user.sub);
+  const session = signSession(user, Date.now(), version ?? undefined);
+  if (!session) return land(req, { signin: 'unavailable' });
 
   const res = land(req, { signin: 'ok' }, to);
   res.cookies.set(SESSION_COOKIE, session, {
