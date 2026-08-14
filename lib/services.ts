@@ -83,10 +83,19 @@ export const SERVICES: Service[] = [
       'Send raw footage. Get back an edited video, ready to post. Cuts, captions, and sound handled.',
     // Priced per finished video, not per finished minute. The two models were
     // on the page as open questions and this settles it: one number, and the
-    // length it covers named beside it, because "$599" with no bound is a
+    // length it covers named beside it, because "$999" with no bound is a
     // price somebody reads as covering a 40 minute documentary.
-    price: '$599 per video',
-    priceCents: 59900,
+    //
+    // Aligned with Launch Video Creation on the marketplace, which is also
+    // $999 for a finished video up to 60 seconds. The two were $599 and $999
+    // while making near identical promises on one domain, and the cheaper
+    // number was the one a visitor would quote back at us.
+    //
+    // priceCents is not display copy. It is written onto the order and read
+    // back by the order email and the Cal webhook, so this line is the amount
+    // somebody is actually asked for.
+    price: '$999 per video',
+    priceCents: 99900,
     priceNote: 'Up to 60 seconds, up to 2 revisions',
     priceOpen: false,
     cta: 'View more',
