@@ -1,9 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import ExpertJoinForm from '@/components/ExpertJoinForm';
-import { WorkflowLoopDiagram } from '@/components/ExpertDiagrams';
-import ExpertHeroDemo from '@/components/ExpertHeroDemo';
-import ExpertMachineDiagram from '@/components/ExpertMachineDiagram';
+// Relative, not `@/components`. Both files served this page and nothing else,
+// so they were archived beside it rather than left in components/ as the only
+// two nobody imports. The folder is now self-contained.
+import ExpertJoinForm from './ExpertJoinForm';
+import { WorkflowLoopDiagram } from './ExpertDiagrams';
+import ExpertHeroDemo from './ExpertHeroDemo';
+import ExpertMachineDiagram from './ExpertMachineDiagram';
 
 export const metadata: Metadata = {
   title: 'Become an expert · Get An Expert',

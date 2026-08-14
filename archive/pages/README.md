@@ -40,10 +40,23 @@ permanent redirect is cached by the browser and close to impossible to take back
 
 ## Still here, deliberately
 
-`components/setups/` and `lib/setups.ts` were not moved. `lib/packs.ts` and two
-test files still reach into them, so untangling that is its own change rather
-than a side effect of this one. The TikTok origin in `frame-src` stays for the
-same reason.
+The four components that served only `/experts` moved into `experts/` beside the
+page, so that folder is self-contained and `components/` has no file left that
+nothing imports.
+
+`components/setups/` did not move, and after this change the only thing importing
+it is `get/page.tsx` in this folder. It stays because every file in it reads
+`lib/setups.ts`, and that module is live: `app/api/cal`, `app/api/orders`,
+`lib/orders.ts`, `lib/cal-webhook.ts`, `lib/validate.ts` and `lib/prompts.ts` all
+depend on it, and `lib/prompts.ts` is behind the eval gate. Separating the dead
+components from the live catalogue is its own change with its own verification,
+not a side effect of moving some pages.
+
+The TikTok origin in `frame-src` stays for the same reason: it exists for the
+embeds in `components/setups/`, and a test asserts it.
+
+`app/globals.css` still carries the `exp-` rules that styled `/experts`. Left
+alone rather than picked out of a shared stylesheet by hand.
 
 ## To put one back
 
