@@ -84,7 +84,18 @@ export default async function Orders({
         <Link href="/" className="ord-back">
           midsesh
         </Link>
-        <span className="ord-who">{user.email}</span>
+        <span className="ord-who">
+          {user.email}
+          {/* A form, not a link: the route is POST only so a prefetch cannot
+              sign anybody out. The empty state below tells people to sign out
+              and try another address, which it had no business saying while
+              there was no way to do it. */}
+          <form action="/api/auth/signout" method="post">
+            <button className="ord-signout" type="submit">
+              Sign out
+            </button>
+          </form>
+        </span>
       </header>
 
       <h1>Your orders</h1>

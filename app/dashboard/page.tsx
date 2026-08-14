@@ -47,6 +47,12 @@ export default async function Dashboard({
         <Link href="/" className="dash-back">
           midsesh
         </Link>
+        {/* The two things a signed in person owns live on two pages, and this
+            one is the older of them. Without this link the marketplace orders
+            page can only be reached by typing the URL or from an email. */}
+        <Link href="/orders" className="dash-back dash-other">
+          Your orders
+        </Link>
         <span className="dash-who">
           {user.email}
           {balance.known && <span className="dash-credit">{formatCents(balance.cents)} credit</span>}
