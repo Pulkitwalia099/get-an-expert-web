@@ -89,7 +89,14 @@ async function handleGet(req: NextRequest): Promise<NextResponse> {
         // dashboard with nothing on it would read as the request vanishing, so
         // they go home and can ask again with their cards still in front of them.
         home(req, { signin: 'ok', quotes: 'retry' })
-      : home(req, { signin: 'ok' });
+      : // Not home. `/` is rewritten to the marketplace, which is a separate
+        // Vercel project that never reads this cookie and never calls
+        // /api/me, so it renders its ordinary signed out page. Sign in worked
+        // every time and looked like it had failed every time.
+        //
+        // /dashboard is this app's account page: it reads the session on the
+        // server, shows the address, and links on to /orders.
+        land(req, '/dashboard', { signin: 'ok' });
   res.cookies.set(SESSION_COOKIE, session, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
