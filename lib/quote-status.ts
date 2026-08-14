@@ -25,3 +25,22 @@ export const STATUS_NOTES: Record<QuoteStatus, string> = {
   quotes_ready: 'Check your inbox. Every quote we got back is in there.',
   closed: 'This one is finished.',
 };
+
+/**
+ * The same four statuses, named for us rather than for a visitor.
+ *
+ * The labels above are written to be read by somebody waiting: "Quotes sent to
+ * you", "Reaching out". In an operator picker those read as instructions to
+ * the wrong person, and "to you" points at the operator. Same values, plainer
+ * words.
+ */
+export const QUEUE_LABELS: Record<QuoteStatus, string> = {
+  open: 'Open',
+  contacting: 'Contacting',
+  quotes_ready: 'Quotes sent',
+  closed: 'Closed',
+};
+
+export function isQuoteStatus(value: unknown): value is QuoteStatus {
+  return typeof value === 'string' && value in QUEUE_LABELS;
+}

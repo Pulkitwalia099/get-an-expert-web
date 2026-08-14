@@ -118,6 +118,25 @@ export async function queue(): Promise<QueueOrder[] | null> {
   return rows.map(toQueueOrder).filter((o): o is QueueOrder => o !== null);
 }
 
+/**
+ * The last few orders that are finished, newest first.
+ *
+ * A separate bounded read rather than a wider filter on queue(), because that
+ * function is deliberately a to-do list and widening it would put finished
+ * work back in the middle of live work. The dashboard shows these collapsed,
+ * under everything else, so ten is plenty: it is there to answer "did that one
+ * actually go out", not to be browsed.
+ */
+export async function recentlyClosed(limit = 10): Promise<QueueOrder[] | null> {
+  const rows = await selectRows<QueueRow>(
+    'mk_orders_current',
+    `select=${QUEUE_COLUMNS}&kind=eq.order` +
+      `&status=in.(delivered,declined,refunded)&order=created_at.desc&limit=${limit}`,
+  );
+  if (rows === null) return null;
+  return rows.map(toQueueOrder).filter((o): o is QueueOrder => o !== null);
+}
+
 export interface OrderEvent {
   status: string;
   note: string | null;

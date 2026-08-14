@@ -27,6 +27,7 @@ const SERVER_ONLY = [
   'quotes',
   'supabase',
   'operatorOrders',
+  'operatorQuotes',
   'orderDrafts',
   'watermark',
 ];
