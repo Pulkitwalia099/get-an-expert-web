@@ -47,15 +47,43 @@ export async function balanceFor(sub: string): Promise<Balance> {
  * typed into Cal. A booking from an address nobody has signed up with simply
  * gets no order and no credit, which is correct: there is no account to spend
  * from and no way to be sure it is the same person.
+ *
+ * Oldest first, and that is not decoration. Until the merge migration has run
+ * an address can still hold two rows, and an unordered `limit=1` would hand
+ * back whichever one Postgres reached first. Two callers disagreeing about
+ * which row is the account is the split this is here to stop.
  */
 export async function accountByEmail(email: string): Promise<{ sub: string } | null> {
   const clean = email.trim().toLowerCase();
   if (!clean) return null;
   const rows = await selectRows<{ sub: string }>(
     'accounts',
-    `?email=eq.${encodeURIComponent(clean)}&select=sub&limit=1`,
+    `?email=eq.${encodeURIComponent(clean)}&select=sub&order=created_at.asc&limit=1`,
   );
   return rows?.[0] ?? null;
+}
+
+/**
+ * The same person, keyed on the account they already have.
+ *
+ * The two doors mint different ids for one human: Google hands back its
+ * numeric subject id, and the email link derives `email:<address>`. Left
+ * alone, somebody who used both holds two `accounts` rows, and since credits
+ * hang off `sub` their balance splits in half without anything looking broken.
+ *
+ * So the address is looked up before the session is signed, and an account
+ * that already exists wins. It has to happen here rather than inside
+ * ensureAccount, because the cookie carries the sub: a session signed with the
+ * other id would go on reading the wrong balance for thirty days.
+ *
+ * Falls back to the sub the door produced when Supabase is unset or the read
+ * fails. A lookup that could not run must not stop somebody signing in, and
+ * the worst it costs is the split the migration cleans up.
+ */
+export async function resolveAccount(user: SessionUser): Promise<SessionUser> {
+  const existing = await accountByEmail(user.email);
+  if (!existing || existing.sub === user.sub) return user;
+  return { ...user, sub: existing.sub };
 }
 
 /**
@@ -67,20 +95,22 @@ export async function accountByEmail(email: string): Promise<{ sub: string } | n
  * check in here that two requests could race past.
  */
 export async function ensureAccount(user: SessionUser): Promise<void> {
-  await insertRows(
-    'accounts',
-    {
-      sub: user.sub,
-      // Stored lowercased because accountByEmail looks it up lowercased. A
-      // mixed case address stored as typed would make the Cal webhook find
-      // nobody and quietly skip the order.
-      email: user.email.trim().toLowerCase(),
-      name: user.name,
-      picture: user.picture,
-      last_seen_at: new Date().toISOString(),
-    },
-    { resolveOn: 'sub' },
-  );
+  const row: Record<string, unknown> = {
+    sub: user.sub,
+    // Stored lowercased because accountByEmail looks it up lowercased. A
+    // mixed case address stored as typed would make the Cal webhook find
+    // nobody and quietly skip the order.
+    email: user.email.trim().toLowerCase(),
+    last_seen_at: new Date().toISOString(),
+  };
+  // Sent only when there is something to send. The upsert merges whatever
+  // columns it is given, so an email link sign in, which knows nothing but the
+  // address, would otherwise blank the name and photo Google filled in the
+  // last time the same person came through the other door.
+  if (user.name) row.name = user.name;
+  if (user.picture) row.picture = user.picture;
+
+  await insertRows('accounts', row, { resolveOn: 'sub' });
 
   await insertRows(
     'credit_entries',

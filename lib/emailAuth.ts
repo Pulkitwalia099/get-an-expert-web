@@ -137,10 +137,12 @@ export function readEmailToken(token: string | undefined, now = Date.now()): str
  * it means signing in twice from two devices lands on one account without a
  * lookup, and it stays stable if the row is ever rebuilt.
  *
- * One person signing in both ways gets two rows, and that is fine here:
- * orders are found by email, not by sub, so both see the same list. Credits
- * are the only thing that hangs off sub, and marketplace orders never touch
- * them.
+ * This is a candidate, not a verdict. One person signing in both ways used to
+ * get two `accounts` rows and a credit balance split between them, so the
+ * callback passes this through `resolveAccount` in lib/credits, which prefers
+ * an account the address already has. The prefix still matters: it is what
+ * makes the derived id impossible to confuse with a numeric Google subject id
+ * when nothing exists yet.
  */
 export function subForEmail(email: string): string {
   return `email:${email.trim().toLowerCase()}`;

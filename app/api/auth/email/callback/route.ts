@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { SESSION_COOKIE, SESSION_MAX_AGE, signSession } from '@/lib/auth';
-import { ensureAccount } from '@/lib/credits';
+import { ensureAccount, resolveAccount } from '@/lib/credits';
 import { readEmailToken, subForEmail } from '@/lib/emailAuth';
 import { withMetrics } from '@/lib/metrics';
 
@@ -56,14 +56,18 @@ async function handleGet(req: NextRequest): Promise<NextResponse> {
   // order page that will only 404 them for being signed out.
   if (!email) return land(req, { signin: 'expired' });
 
-  const user = {
+  // The derived sub is what this address gets if it has never been here
+  // before. If it signed in with Google first, that account already exists and
+  // owns the credits, so resolveAccount hands back its id and the session is
+  // signed with that instead. One address, one account, whichever door.
+  const user = await resolveAccount({
     sub: subForEmail(email),
     email,
     // Nothing is known beyond the address, and inventing a display name from
     // the local part is how somebody ends up greeted as "Accounts Payable".
     name: null,
     picture: null,
-  };
+  });
 
   const session = signSession(user);
   if (!session) return land(req, { signin: 'unavailable' });

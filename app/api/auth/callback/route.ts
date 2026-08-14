@@ -8,7 +8,7 @@ import {
   signSession,
   stateMatches,
 } from '@/lib/auth';
-import { ensureAccount } from '@/lib/credits';
+import { ensureAccount, resolveAccount } from '@/lib/credits';
 import { claimMatchSet } from '@/lib/matches';
 import { withMetrics } from '@/lib/metrics';
 import { INTENT_COOKIE, createQuoteRequest, readIntent } from '@/lib/quotes';
@@ -49,8 +49,14 @@ async function handleGet(req: NextRequest): Promise<NextResponse> {
   if (!stateMatches(state, cookie)) return home(req, { signin: 'expired' });
   if (!code) return home(req, { signin: 'failed' });
 
-  const user = await exchangeCode(code, req.nextUrl.origin);
-  if (!user) return home(req, { signin: 'failed' });
+  const identity = await exchangeCode(code, req.nextUrl.origin);
+  if (!identity) return home(req, { signin: 'failed' });
+
+  // Google's subject id is only the id of the door they came through. If this
+  // address already signed in by email link, that account is the one they own,
+  // and everything below has to be keyed on it: the cookie, the credit grant,
+  // the match set they are about to claim.
+  const user = await resolveAccount(identity);
 
   const session = signSession(user);
   if (!session) return home(req, { signin: 'unavailable' });
