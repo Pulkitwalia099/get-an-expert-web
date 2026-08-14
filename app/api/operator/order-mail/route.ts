@@ -3,7 +3,7 @@ import { withMetrics } from '@/lib/metrics';
 import { isAuthorised } from '@/lib/operatorAuth';
 import { isOrderStatus } from '@/lib/order-status';
 import { notifyCustomer } from '@/lib/orderMail';
-import { selectRows } from '@/lib/supabase';
+import { countRows, selectRows } from '@/lib/supabase';
 
 // Called by advance() in ~/Programs/get-an-expert-orders after it writes a
 // status event, so the customer hears about it.
@@ -62,12 +62,23 @@ async function handlePost(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ result: 'skipped', reason: 'unknown status' });
   }
 
+  // Whether this address has ordered before, asked only for the confirmation
+  // that says so. The order being confirmed is already written, so one row is
+  // a first order. A count that cannot be read comes back null and is treated
+  // as "not their first": thanking a returning customer for joining us reads
+  // worse than not thanking a new one.
+  const orderCount =
+    row.status === 'new'
+      ? await countRows('mk_orders_current', `email=eq.${encodeURIComponent(row.email)}`)
+      : null;
+
   const result = await notifyCustomer({
     orderId: row.id,
     email: row.email,
     status: row.status,
     serviceName: row.service_name,
     brief: row.brief,
+    firstOrder: orderCount === 1,
     afterChanges: payload.afterChanges === true,
   });
 

@@ -89,6 +89,17 @@ describe('the confirmation', () => {
     expect(sent?.text).toContain('Nothing is charged automatically');
   });
 
+  it('thanks a first time customer, and only them', async () => {
+    const first = await mail({ status: 'new', firstOrder: true });
+    expect(first?.text).toContain('This is your first order with us');
+    // A returning customer told they are new reads as a form letter that
+    // cannot count, so unknown has to fall the other way.
+    const returning = await mail({ status: 'new', firstOrder: false });
+    expect(returning?.text).not.toContain('first order');
+    const unknown = await mail({ status: 'new' });
+    expect(unknown?.text).not.toContain('first order');
+  });
+
   it('says a call may be needed, and why', async () => {
     const sent = await mail({ status: 'new' });
     expect(sent?.text).toContain('ask for a short call before we start');

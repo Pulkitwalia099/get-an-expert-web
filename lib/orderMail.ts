@@ -71,6 +71,7 @@ function copyFor(
   service: string,
   afterChanges: boolean,
   brief: string | null | undefined,
+  firstOrder: boolean,
 ): Copy | null {
   const watch = isWatchable(service);
 
@@ -108,6 +109,16 @@ function copyFor(
           'Nothing is charged automatically, and nothing is final until you',
           'approve it. If we cannot take the job on, we will tell you quickly',
           'rather than sit on it.',
+          // Only on a first order, and only because it is true. On the fourth
+          // one it would read as a form letter that cannot count.
+          ...(firstOrder
+            ? [
+                '',
+                'This is your first order with us, and we know that takes some',
+                'trust. Thank you for it. If anything is unclear at any point,',
+                'reply to this email and we will answer.',
+              ]
+            : []),
         ],
         cta: 'Your order',
       };
@@ -215,6 +226,12 @@ export interface OrderMailInput {
   brief?: string | null;
   /** True when this `working` event came from the customer asking for changes. */
   afterChanges?: boolean;
+  /**
+   * True when this is the first order this address has ever placed. Unknown
+   * counts as false: a returning customer told they are new is worse than a
+   * new one who is not thanked.
+   */
+  firstOrder?: boolean;
 }
 
 export type OrderMailResult = 'sent' | 'skipped' | 'failed' | 'unavailable';
@@ -233,7 +250,13 @@ export async function notifyCustomer(input: OrderMailInput): Promise<OrderMailRe
   // 'order' is the fallback so a row with no service still produces a sentence
   // rather than "Your  is ready".
   const service = input.serviceName?.replace(/\s*·.*$/, '').trim() || 'order';
-  const copy = copyFor(input.status, service, input.afterChanges === true, input.brief);
+  const copy = copyFor(
+    input.status,
+    service,
+    input.afterChanges === true,
+    input.brief,
+    input.firstOrder === true,
+  );
   if (!copy) return 'skipped';
 
   const token = signEmailToken(input.email);
