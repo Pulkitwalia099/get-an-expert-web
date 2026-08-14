@@ -13,10 +13,6 @@
       "destination": "https://get-an-expert-chat-production.up.railway.app/mcp"
     },
     {
-      "source": "/classic",
-      "destination": "/classic/index.html"
-    },
-    {
       "source": "/services/ugc-ads",
       "destination": "/services/ugc.html"
     },

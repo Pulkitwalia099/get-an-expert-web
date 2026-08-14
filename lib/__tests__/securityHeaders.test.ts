@@ -42,10 +42,15 @@ describe('Content-Security-Policy', () => {
     expect(connect).toContain('wss://*.daily.co');
   });
 
-  it('lets the /classic waitlist form reach its API, which lives on another origin', async () => {
+  // The /classic waitlist form used to be allowed to reach the older v2
+  // deployment from connect-src. That page was archived on 2026-08-14, so the
+  // allowance went with it rather than staying behind as a cross origin nobody
+  // calls. Asserted here in the negative, because a dead entry in a policy is
+  // easier to re-add by accident than to notice.
+  it('no longer opens connect-src to the retired v2 deployment', async () => {
     const csp = (await headers())['Content-Security-Policy'];
     const connect = csp.split('; ').find((d) => d.startsWith('connect-src'))!;
-    expect(connect).toContain('https://get-an-expert-v2.vercel.app');
+    expect(connect).not.toContain('get-an-expert-v2.vercel.app');
   });
 
   it('allows blob media, which is how call audio plays', async () => {

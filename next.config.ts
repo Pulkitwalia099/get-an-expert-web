@@ -45,20 +45,13 @@ const TIKTOK = 'https://www.tiktok.com';
 const GOOGLE_FONTS_CSS = 'https://fonts.googleapis.com';
 const GOOGLE_FONTS_FILES = 'https://fonts.gstatic.com';
 
-// The waitlist form on /classic posts to an API that still lives on the older
-// v2 deployment, so it is a cross origin fetch from this app's point of view.
-// connect-src did not name it, the browser blocked the request before it left
-// the page, and the form's own catch reported it as the waitlist being
-// unreachable. The API itself was up the whole time.
-const WAITLIST_API = 'https://get-an-expert-v2.vercel.app';
-
 const CSP = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline' ${POSTHOG} https://app.cal.com`,
   `style-src 'self' 'unsafe-inline' ${GOOGLE_FONTS_CSS}`,
   "img-src 'self' https: data: blob:",
   `font-src 'self' data: ${GOOGLE_FONTS_FILES}`,
-  `connect-src 'self' ${POSTHOG} ${DAILY} ${CAL} ${WAITLIST_API}`,
+  `connect-src 'self' ${POSTHOG} ${DAILY} ${CAL}`,
   `frame-src 'self' ${DAILY} ${CAL} ${TIKTOK}`,
   `media-src 'self' blob: ${DAILY}`,
   "worker-src 'self' blob:",
@@ -95,16 +88,20 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: '/(.*)', headers: SECURITY_HEADERS }];
   },
-  // People type and share the singular, and got a 404. It points straight at
-  // /get rather than /setups so it is one hop, not two.
+  // The setups product is retired and its two pages were archived on
+  // 2026-08-14, but `/setups` is printed in Reddit and Instagram posts that are
+  // still up, and it drew 49 views in the 90 days before it was archived. Those
+  // people would now get a 404 on a path we published ourselves, so both spellings
+  // land on the marketplace instead.
   //
-  // Now temporary, where it used to be permanent. A permanent redirect is
-  // cached by the browser and is close to impossible to take back: everyone who
-  // hit /setup while it pointed at the root will keep landing on the root, which
-  // is the ask page now, and nothing served from here can reach them. That is
-  // the cost of guessing a destination will never move, and it moved.
+  // Temporary, not permanent, for the same reason as before: a permanent redirect
+  // is cached by the browser and is close to impossible to take back. This
+  // destination has already moved twice.
   async redirects() {
-    return [{ source: '/setup', destination: '/get', permanent: false }];
+    return [
+      { source: '/setup', destination: '/', permanent: false },
+      { source: '/setups', destination: '/', permanent: false },
+    ];
   },
   // The apex serves the new marketplace, which is a separate Vite app in its
   // own repo and its own Vercel project. It is rewritten in rather than folded

@@ -74,7 +74,9 @@ export default async function Dashboard({
           <p className="dash-empty-sub">
             Tell us what you need and we will find people who have done it before.
           </p>
-          <Link href="/chat" className="cta">
+          {/* Points at /ask, not /chat. Both asked the same opening question,
+              and /chat was archived on 2026-08-14 as the one nobody reached. */}
+          <Link href="/ask" className="cta">
             Start a search
           </Link>
         </div>

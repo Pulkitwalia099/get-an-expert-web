@@ -15,7 +15,10 @@ export default function SiteFooter() {
       <span className="sitefoot-mark">midsesh</span>
       <nav className="sitefoot-links" aria-label="Footer">
         <Link href="/experts">Become an expert</Link>
-        <Link href="/get">Setups</Link>
+        {/* The Setups link pointed at /get, archived on 2026-08-14 with the rest
+            of that product. `/experts` still resolves: it is rewritten to the
+            marketplace, which is why it survives while this repo's own version
+            of that page went to archive/pages/experts. */}
         {/* No email address here. A raw mailto in a footer reads as a personal
             inbox rather than a company, and the contact form above already
             routes to the same place with a name and a purpose attached. */}
