@@ -2083,3 +2083,180 @@ a.cta { text-decoration: none; display: inline-block; }
   .xd-cap span { position: static; opacity: 1 !important; }
   .xd-cap { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
 }
+
+/* ---------------------------------------------------------------- orders */
+
+/* The customer facing view of a marketplace order. Composed from the same
+   tokens as .dash rather than given its own palette: two pages behind one
+   sign in that do not look related is worse than either one alone. */
+
+.ord {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 20px var(--page-gutter) 80px;
+}
+.ord-bar {
+  display: flex; align-items: center; gap: 12px;
+  padding: 6px 0 26px;
+  font-size: 13px;
+}
+.ord-back { color: var(--ink); font-weight: 600; text-decoration: none; letter-spacing: -.01em; }
+.ord-who { margin-left: auto; color: var(--ink-3); }
+.ord h1 { font-size: 26px; font-weight: 650; letter-spacing: -.02em; margin-bottom: 8px; }
+.ord-eyebrow {
+  font-size: 11px; font-weight: 650; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--ink-3); margin-bottom: 8px;
+}
+.ord-lede { font-size: 15px; color: var(--ink-2); line-height: 1.55; margin-bottom: 22px; max-width: 52ch; }
+.ord-note, .ord-when-line { font-size: 12.5px; color: var(--ink-3); margin-top: 14px; }
+.ord-flash {
+  font-size: 13.5px; line-height: 1.5; color: var(--ink-2);
+  background: var(--accent-tint); border: 1px solid rgba(196, 89, 60, .2);
+  border-radius: 12px; padding: 11px 14px; margin-bottom: 18px;
+}
+.ord-empty, .ord-ended {
+  font-size: 14px; line-height: 1.6; color: var(--ink-2);
+  background: var(--glass); border: 1px solid var(--line);
+  border-radius: var(--radius-card); padding: 22px 20px; max-width: 54ch;
+}
+
+/* ----- the list */
+
+.ord-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.ord-card {
+  display: flex; flex-direction: column; gap: 6px;
+  background: var(--glass-strong); border: 1px solid var(--line);
+  border-radius: var(--radius-card); padding: 16px 18px;
+  text-decoration: none; color: inherit;
+  box-shadow: 0 8px 22px rgba(45, 32, 22, .05);
+  transition: transform 160ms var(--ease-out), border-color 160ms var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .ord-card:hover { transform: translateY(-2px); border-color: var(--line-2); }
+}
+.ord-card:active { transform: scale(.99); }
+.ord-card-top { display: flex; align-items: baseline; gap: 10px; }
+.ord-service { font-size: 15px; font-weight: 650; letter-spacing: -.01em; flex: 1; min-width: 0; }
+.ord-when { font-size: 12px; color: var(--ink-3); flex: none; }
+.ord-status {
+  align-self: flex-start;
+  font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  padding: 4px 9px; border-radius: 999px; border: 1px solid currentColor;
+  color: var(--ink-3);
+}
+.ord-status-sample_sent { color: var(--accent-deep); background: var(--accent-tint); }
+.ord-status-approved, .ord-status-delivered { color: #2F6F4F; background: rgba(47, 111, 79, .1); }
+.ord-status-working { color: #9A6A12; background: rgba(217, 142, 40, .1); }
+.ord-status-declined, .ord-status-refunded { opacity: .7; }
+.ord-brief {
+  font-size: 13px; color: var(--ink-3); line-height: 1.5;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.ord-pips { display: flex; gap: 4px; }
+.ord-pip { width: 26px; height: 3px; border-radius: 2px; background: var(--line-2); opacity: .5; }
+.ord-pip-on { background: var(--accent); opacity: 1; }
+
+/* ----- one order */
+
+.ord-rail {
+  list-style: none; margin: 0 0 4px; padding: 0;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+}
+.ord-step { border-top: 2px solid var(--line-2); padding-top: 8px; opacity: .55; }
+.ord-step-on { border-top-color: var(--accent); opacity: 1; }
+.ord-step-n {
+  display: block; font-size: 10px; font-weight: 650; letter-spacing: .1em;
+  color: var(--ink-3); margin-bottom: 2px; font-variant-numeric: tabular-nums;
+}
+.ord-step-label { display: block; font-size: 13px; font-weight: 600; letter-spacing: -.01em; }
+@media (max-width: 560px) {
+  .ord-rail { grid-template-columns: repeat(2, 1fr); gap: 10px 8px; }
+}
+
+.ord-sample { margin: 26px 0 0; }
+.ord-sample h2, .ord-brief-block h2 {
+  font-size: 11px; font-weight: 650; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--ink-3); margin-bottom: 10px;
+}
+.ord-sample video {
+  width: 100%; display: block; border-radius: var(--radius-card);
+  border: 1px solid var(--line); background: #000;
+}
+.ord-sample-note { font-size: 12.5px; color: var(--ink-3); margin-top: 8px; }
+.ord-brief-block { margin-top: 26px; }
+.ord-brief-block p {
+  font-size: 14px; line-height: 1.6; color: var(--ink-2);
+  white-space: pre-wrap; max-width: 58ch;
+}
+.ord-download { margin-top: 22px; }
+
+/* ----- the two doors */
+
+.doors { display: flex; flex-direction: column; gap: 14px; max-width: 30rem; }
+.door-or {
+  font-size: 12px; color: var(--ink-3); text-align: center;
+  display: flex; align-items: center; gap: 10px;
+}
+.door-or::before, .door-or::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.door-form { display: flex; flex-direction: column; gap: 8px; }
+.door-label { font-size: 13px; font-weight: 600; letter-spacing: -.01em; }
+.door-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.door-row input {
+  flex: 1; min-width: 12rem;
+  font: inherit; font-size: 14px;
+  padding: 11px 13px; border-radius: 12px;
+  border: 1px solid var(--line-2); background: var(--glass-strong); color: var(--ink);
+  transition: border-color 160ms var(--ease-out);
+}
+.door-row input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.door-note { font-size: 12.5px; color: var(--ink-3); }
+.door-error, .oa-error { font-size: 13px; color: var(--accent-deep); margin-top: 8px; }
+.door-sent {
+  background: var(--glass-strong); border: 1px solid var(--line);
+  border-radius: var(--radius-card); padding: 22px 20px; max-width: 34rem;
+  font-size: 14px; line-height: 1.6; color: var(--ink-2);
+  animation: msg-in 260ms var(--ease-out) backwards;
+}
+.door-sent-h { font-size: 15px; font-weight: 650; color: var(--ink); margin-bottom: 4px; }
+
+/* ----- pressable things, on both pages */
+
+.door-btn, .oa-btn {
+  font: inherit; font-size: 14px; font-weight: 600; letter-spacing: -.01em;
+  padding: 11px 18px; border-radius: 12px; cursor: pointer;
+  border: 1px solid var(--line-2); background: var(--glass-strong); color: var(--ink);
+  text-decoration: none; text-align: center;
+  transition: transform 160ms var(--ease-out), border-color 160ms var(--ease-out);
+}
+.door-google, .oa-solid {
+  background: var(--ink); border-color: var(--ink); color: var(--bg);
+}
+@media (hover: hover) and (pointer: fine) {
+  .door-btn:hover:not(:disabled), .oa-btn:hover:not(:disabled) { transform: translateY(-2px); }
+}
+.door-btn:active:not(:disabled), .oa-btn:active:not(:disabled) { transform: scale(.97); }
+.door-btn:disabled, .oa-btn:disabled { opacity: .5; cursor: default; }
+.door-btn:focus-visible, .oa-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ----- approve and request changes */
+
+.oa { margin-top: 24px; }
+.oa-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.oa-box { display: flex; flex-direction: column; gap: 10px; animation: msg-in 240ms var(--ease-out) backwards; }
+.oa-label { font-size: 13px; font-weight: 600; letter-spacing: -.01em; }
+.oa-box textarea {
+  font: inherit; font-size: 14px; line-height: 1.55; resize: vertical;
+  padding: 12px 13px; border-radius: 12px;
+  border: 1px solid var(--line-2); background: var(--glass-strong); color: var(--ink);
+}
+.oa-box textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.oa-done {
+  font-size: 14px; color: var(--ink-2); margin-top: 24px;
+  background: var(--glass); border: 1px solid var(--line);
+  border-radius: var(--radius-card); padding: 16px 18px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ord-card, .door-btn, .oa-btn { transition: none; }
+  .door-sent, .oa-box { animation: none; }
+}
