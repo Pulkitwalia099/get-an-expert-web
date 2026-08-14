@@ -24,6 +24,7 @@ interface Row {
   id: string;
   email: string;
   service_name: string | null;
+  brief: string | null;
   status: string;
 }
 
@@ -46,7 +47,9 @@ async function handlePost(req: NextRequest): Promise<NextResponse> {
 
   const rows = await selectRows<Row>(
     'mk_orders_current',
-    `select=id,email,service_name,status&id=eq.${orderId}&limit=1`,
+    // brief is read for the confirmation email, which shows somebody what
+    // they asked for rather than only naming the service they picked.
+    `select=id,email,service_name,brief,status&id=eq.${orderId}&limit=1`,
   );
   if (!rows) return NextResponse.json({ error: 'Cannot read the order' }, { status: 502 });
   if (rows.length === 0) return NextResponse.json({ error: 'Not found' }, { status: 404 });
@@ -64,6 +67,7 @@ async function handlePost(req: NextRequest): Promise<NextResponse> {
     email: row.email,
     status: row.status,
     serviceName: row.service_name,
+    brief: row.brief,
     afterChanges: payload.afterChanges === true,
   });
 

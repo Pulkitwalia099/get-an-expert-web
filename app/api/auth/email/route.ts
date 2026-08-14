@@ -26,14 +26,26 @@ function origin(req: NextRequest): string {
   return (process.env.AUTH_ORIGIN || req.nextUrl.origin).replace(/\/+$/, '');
 }
 
-function body(link: string): string {
+function body(link: string, site: string): string {
   return [
-    'Here is your sign in link for midsesh.',
+    'Hi,',
+    '',
+    'Here is your sign in link. Open it and you are signed in.',
+    'There is no password.',
     '',
     link,
     '',
-    `It works once you open it and expires in ${EMAIL_TOKEN_MAX_AGE / 60} minutes.`,
-    'If you did not ask for this, nothing has happened and you can ignore it.',
+    // Not "works once". These links are deliberately not single use, and that
+    // is what lets them survive a corporate mail scanner opening the link
+    // before the person does. "Works once" reads as the opposite.
+    `The link expires in ${EMAIL_TOKEN_MAX_AGE / 60} minutes. After that, ask for a new one`,
+    `at ${site}/signin with this address.`,
+    '',
+    'If you did not ask for this, nothing has happened and you can ignore',
+    'this email.',
+    '',
+    'midsesh team',
+    site,
   ].join('\n');
 }
 
@@ -98,7 +110,9 @@ async function handlePost(req: NextRequest): Promise<NextResponse> {
   const sent = await sendEmail({
     to: normalised,
     subject: 'Your midsesh sign in link',
-    text: body(link),
+    // The bare host, because a sign in email is read as text and
+    // "midsesh.com/signin" is something somebody can type.
+    text: body(link, origin(req).replace(/^https?:\/\//, '')),
   });
 
   // `sent` is reported rather than acted on. A failed send is worth knowing
