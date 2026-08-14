@@ -29,6 +29,9 @@ const SERVER_ONLY = [
   'operatorOrders',
   'orderDrafts',
   'watermark',
+  // Server-only by inheritance rather than by its own guard: it imports
+  // safeNext from lib/auth, which throws on sight of a browser.
+  'signinBack',
 ];
 
 /** Every `use client` file under a directory, however deep. */

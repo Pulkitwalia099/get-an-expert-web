@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import Mark from '@/components/Mark';
 import SignInDoors from '@/components/SignInDoors';
@@ -8,6 +9,7 @@ import { SESSION_COOKIE, authConfigured, readSession, safeNext } from '@/lib/aut
 import { CONTACT_EMAIL } from '@/lib/contact';
 import { hasEmailKey } from '@/lib/email';
 import { EMAIL_TOKEN_MAX_AGE, emailAuthConfigured } from '@/lib/emailAuth';
+import { backTo } from '@/lib/signinBack';
 import { flashFor } from '@/lib/signinFlash';
 
 // One door in, for a site that had none.
@@ -38,6 +40,10 @@ export default async function SignInPage({
   // Checked before it is rendered into an href, not only when it is spent.
   // Every consumer downstream checks it again.
   const next = safeNext(params.next) ?? undefined;
+  // The raw value, not `next`, because this asks a different question of it:
+  // not "may we land here after signing in" but "where can somebody who
+  // changed their mind actually get to right now".
+  const back = backTo(params.next);
 
   // Somebody already signed in does not need this page. They asked to go
   // somewhere, so take them there rather than showing them a door they are
@@ -56,6 +62,12 @@ export default async function SignInPage({
       <div className="paper" aria-hidden="true" />
       <header className="ord-bar">
         <Mark />
+        {/* The mark is a logo, not an exit. Somebody who landed here by
+            accident needs words, and the browser button was the only way out
+            of this page until now. */}
+        <Link href={back.href} className="ord-back">
+          {back.label}
+        </Link>
       </header>
       <h1>Sign in</h1>
       {/* Above the lede, not below it. The flash is in the markup at first

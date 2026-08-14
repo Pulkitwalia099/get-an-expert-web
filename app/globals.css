@@ -2664,3 +2664,15 @@ body:has(.opq) { background: #FBFBF8; }
      that looks finished while it is not. */
   .opq-bar-run span { animation: none; width: 100%; opacity: .3; }
 }
+
+/* ---------------------------------------------------------------------------
+   T1, the way back on /signin.
+   .ord-back is shared with /orders/[id] and its motion was never gated. The
+   sign in page renders one now, and a control whose whole job is "get me out
+   of here" is the first thing somebody who cannot take motion reaches for.
+   .dash-back carries the same declarations and is left alone on purpose: it
+   belongs to the dashboard, not to this stream. */
+@media (prefers-reduced-motion: reduce) {
+  .ord-back { transition: none; }
+  .ord-back:active { transform: none; }
+}
