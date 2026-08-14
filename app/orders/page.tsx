@@ -5,7 +5,7 @@ import SignInDoors from '@/components/SignInDoors';
 import { SESSION_COOKIE, authConfigured, readSession } from '@/lib/auth';
 import { CONTACT_EMAIL } from '@/lib/contact';
 import { hasEmailKey } from '@/lib/email';
-import { emailAuthConfigured } from '@/lib/emailAuth';
+import { EMAIL_TOKEN_MAX_AGE, emailAuthConfigured } from '@/lib/emailAuth';
 import { STATUS_LABELS, ago, stepFor } from '@/lib/order-status';
 import { listOrdersForEmail } from '@/lib/orderTracking';
 
@@ -62,7 +62,11 @@ export default async function Orders({
             Sign in is not available right now. Try again shortly.
           </p>
         )}
-        <SignInDoors google={authConfigured()} email={emailDoor} />
+        <SignInDoors
+          google={authConfigured()}
+          email={emailDoor}
+          minutes={EMAIL_TOKEN_MAX_AGE / 60}
+        />
         {!emailDoor && (
           <p className="ord-note">
             {authConfigured()

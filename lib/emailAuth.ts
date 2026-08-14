@@ -24,11 +24,16 @@ if (typeof window !== 'undefined') {
 }
 
 /**
- * Fifteen minutes. Long enough to switch to a phone and find the mail, short
- * enough that a link sitting in a forwarded thread stops working quickly. It
- * is the only bound on replay, since nothing records that a token was spent.
+ * Thirty minutes. Long enough to switch to a phone, find the mail and get
+ * through a slow inbox, short enough that a link sitting in a forwarded thread
+ * stops working. It is the only bound on replay, since nothing records that a
+ * token was spent: single use was considered on 14 Aug and deliberately not
+ * built, because the window is narrow and nothing expensive sits behind it.
+ *
+ * Every piece of copy that quotes a number reads this rather than saying
+ * fifteen in six places, which is how it was wrong in four of them.
  */
-export const EMAIL_TOKEN_MAX_AGE = 15 * 60;
+export const EMAIL_TOKEN_MAX_AGE = 30 * 60;
 
 // Prefixed into the HMAC input so a sign in token and a session cookie can
 // never verify as each other. Both are signed with SESSION_SECRET and both are

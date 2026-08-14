@@ -12,7 +12,7 @@ const selectRows = vi.fn<(table: string, query: string) => Promise<unknown[] | n
 const insertRows = vi.fn(async () => ({ ok: true, status: 201 }));
 vi.mock('@/lib/supabase', () => ({ selectRows, insertRows }));
 
-const { listOrdersForEmail, getOrderForEmail, appendCustomerEvent, assetsFor } = await import(
+const { listOrdersForEmail, getOrderForEmail, appendCustomerEvent, assetsFor, revisionsUsed } = await import(
   '@/lib/orderTracking'
 );
 
@@ -159,5 +159,31 @@ describe('appendCustomerEvent', () => {
       false,
     );
     expect(insertRows).not.toHaveBeenCalled();
+  });
+});
+
+describe('revisionsUsed', () => {
+  it('counts only the working events a customer wrote, never ours', async () => {
+    await revisionsUsed(ID);
+    const [table, query] = selectRows.mock.calls[0];
+    expect(table).toBe('mk_order_events');
+    expect(query).toContain('status=eq.working');
+    expect(query).toContain('actor=like.customer:*');
+    expect(query).toContain(`order_id=eq.${ID}`);
+  });
+
+  it('reports null when the count cannot be read, so no warning is guessed', async () => {
+    selectRows.mockResolvedValue(null);
+    expect(await revisionsUsed(ID)).toBeNull();
+  });
+
+  it('counts what came back', async () => {
+    selectRows.mockResolvedValue([{ id: 1 }, { id: 2 }]);
+    expect(await revisionsUsed(ID)).toBe(2);
+  });
+
+  it('refuses a bad id without querying', async () => {
+    expect(await revisionsUsed('nope')).toBeNull();
+    expect(selectRows).not.toHaveBeenCalled();
   });
 });

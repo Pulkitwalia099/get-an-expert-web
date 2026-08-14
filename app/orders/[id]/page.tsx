@@ -13,7 +13,7 @@ import {
   awaitingCustomer,
   stepFor,
 } from '@/lib/order-status';
-import { assetsFor, getOrderForEmail } from '@/lib/orderTracking';
+import { assetsFor, getOrderForEmail, revisionsUsed } from '@/lib/orderTracking';
 
 // One order: where it is, the sample when there is one, and the two answers.
 
@@ -41,6 +41,9 @@ export default async function Order({ params }: { params: Promise<{ id: string }
   const assets = order.status === 'new' ? null : await assetsFor(id);
   const showSample = Boolean(assets?.sampleUrl);
   const showDownload = order.status === 'delivered' && Boolean(assets?.finalUrl);
+  // Only asked for when the buttons are about to render. Every other status
+  // would be a query whose answer nothing on the page uses.
+  const used = awaitingCustomer(order.status) ? await revisionsUsed(id) : null;
 
   return (
     <main className="ord ord-one">
@@ -90,7 +93,7 @@ export default async function Order({ params }: { params: Promise<{ id: string }
         </section>
       )}
 
-      {awaitingCustomer(order.status) && <OrderActions id={order.id} />}
+      {awaitingCustomer(order.status) && <OrderActions id={order.id} used={used} />}
 
       {showDownload && (
         <p className="ord-download">

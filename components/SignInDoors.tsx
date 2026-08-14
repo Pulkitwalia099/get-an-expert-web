@@ -11,7 +11,18 @@ import { useState } from 'react';
 
 type State = 'idle' | 'sending' | 'sent' | 'error';
 
-export default function SignInDoors({ google, email: emailDoor }: { google: boolean; email: boolean }) {
+// `minutes` is passed in rather than imported. The constant lives in
+// lib/emailAuth, which is server-only and throws on sight of a browser, and
+// this is a client component. Same split as the status labels.
+export default function SignInDoors({
+  google,
+  email: emailDoor,
+  minutes,
+}: {
+  google: boolean;
+  email: boolean;
+  minutes: number;
+}) {
   const [email, setEmail] = useState('');
   const [state, setState] = useState<State>('idle');
   const [error, setError] = useState('');
@@ -54,7 +65,7 @@ export default function SignInDoors({ google, email: emailDoor }: { google: bool
         <p className="door-sent-h">Check your email</p>
         <p>
           If <strong>{email}</strong> has an order with us, a sign in link is on its way. It
-          expires in 15 minutes.
+          expires in {minutes} minutes.
         </p>
       </div>
     );
@@ -95,7 +106,7 @@ export default function SignInDoors({ google, email: emailDoor }: { google: bool
           </button>
         </div>
         <p className="door-note">
-          No password. We send a link that signs you in, good for 15 minutes.
+          No password. We send a link that signs you in, good for {minutes} minutes.
         </p>
         {error && (
           <p className="door-error" role="alert">

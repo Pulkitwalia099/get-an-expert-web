@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { MAX_COMMENT } from '@/lib/order-status';
+import { BEYOND_REVISIONS, INCLUDED_REVISIONS, MAX_COMMENT } from '@/lib/order-status';
 
 // Approve, or say what to change. Nothing else.
 //
@@ -12,7 +12,11 @@ import { MAX_COMMENT } from '@/lib/order-status';
 
 type Mode = 'idle' | 'commenting' | 'sending' | 'done';
 
-export default function OrderActions({ id }: { id: string }) {
+export default function OrderActions({ id, used }: { id: string; used: number | null }) {
+  // Null means the count could not be read. No warning then, rather than a
+  // guess: telling somebody they are out of revisions when they are not is
+  // worse than saying nothing.
+  const beyond = used !== null && used >= INCLUDED_REVISIONS;
   const router = useRouter();
   const [mode, setMode] = useState<Mode>('idle');
   const [comment, setComment] = useState('');
@@ -64,6 +68,13 @@ export default function OrderActions({ id }: { id: string }) {
           <label className="oa-label" htmlFor="oa-comment">
             What should change?
           </label>
+          {/* Shown before the box, not after the send. A warning that arrives
+              once the request is gone is an excuse, not a warning. */}
+          {beyond && (
+            <p className="oa-warn" role="status">
+              {BEYOND_REVISIONS}
+            </p>
+          )}
           <textarea
             id="oa-comment"
             rows={4}
@@ -81,7 +92,7 @@ export default function OrderActions({ id }: { id: string }) {
               disabled={mode === 'sending' || !comment.trim()}
               onClick={() => send('changes')}
             >
-              {mode === 'sending' ? 'Sending' : 'Send these notes'}
+              {mode === 'sending' ? 'Sending' : beyond ? 'Send them anyway' : 'Send these notes'}
             </button>
             <button
               className="oa-btn"

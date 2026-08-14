@@ -102,6 +102,19 @@ export function isOrderAction(value: unknown): value is OrderAction {
 export const MAX_COMMENT = 2_000;
 
 /**
+ * Revisions included in the price. The marketplace card says one on the $29 ad.
+ *
+ * Warned about rather than enforced, decided 14 Aug. A second request still
+ * sends: a wall between a paying customer and the thing they are unhappy with
+ * costs more than the recut does. What it buys is that nobody is surprised by
+ * an invoice, because the page said so before they pressed the button.
+ */
+export const INCLUDED_REVISIONS = 1;
+
+export const BEYOND_REVISIONS =
+  'This is past the one revision included in the price. Send it anyway and we will still do it, and we may come back to you about the extra work first.';
+
+/**
  * How long ago, in the roughest useful unit.
  *
  * Lifted from components/RequestList.tsx rather than imported from it, because

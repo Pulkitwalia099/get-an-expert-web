@@ -1,5 +1,5 @@
 import { hasEmailKey, sendEmail } from '@/lib/email';
-import { signEmailToken } from '@/lib/emailAuth';
+import { EMAIL_TOKEN_MAX_AGE, signEmailToken } from '@/lib/emailAuth';
 import type { OrderStatus } from '@/lib/order-status';
 
 // What the customer is told when their order moves, and when to say nothing.
@@ -92,8 +92,8 @@ function body(copy: Copy, link: string): string {
     `${copy.cta}: ${link}`,
     '',
     'That link signs you in, so there is no password to remember. It is good',
-    'for 15 minutes. After that, go to ' + `${origin()}/orders` + ' and ask for',
-    'a new one with this address.',
+    `for ${EMAIL_TOKEN_MAX_AGE / 60} minutes. After that, go to ${origin()}/orders and`,
+    'ask for a new one with this address.',
   ].join('\n');
 }
 

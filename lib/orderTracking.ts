@@ -145,6 +145,27 @@ export async function assetsFor(id: string): Promise<OrderAssets> {
 }
 
 /**
+ * How many revisions this customer has already asked for.
+ *
+ * Counted from the trail rather than stored, for the same reason status is
+ * derived: a column and a history that disagree is a bug you find in an
+ * argument with a customer. Only events whose actor names a customer count, so
+ * our own `working` moves never eat somebody's included revision.
+ *
+ * Null means the count could not be read. The caller shows no warning in that
+ * case rather than guessing, because warning somebody they are out of
+ * revisions when they are not is worse than staying quiet.
+ */
+export async function revisionsUsed(orderId: string): Promise<number | null> {
+  if (!UUID.test(orderId)) return null;
+  const rows = await selectRows<{ id: number }>(
+    'mk_order_events',
+    `select=id&order_id=eq.${orderId}&status=eq.working&actor=like.customer:*&limit=20`,
+  );
+  return rows ? rows.length : null;
+}
+
+/**
  * Record what the customer decided.
  *
  * Approving and asking for changes are both events on the same trail as every
