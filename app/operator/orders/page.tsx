@@ -145,6 +145,24 @@ export default function OperatorOrders() {
     await openOrder(open.id);
   }
 
+  async function drop() {
+    if (!open || busy) return;
+    setBusy('delete');
+    setError('');
+    const res = await fetch(`/api/operator/orders?id=${encodeURIComponent(open.id)}`, {
+      method: 'DELETE',
+    });
+    const body = (await res.json().catch(() => null)) as { message?: string; error?: string } | null;
+    setBusy('');
+    if (!res.ok) {
+      setError(body?.error ?? 'That did not delete.');
+      return;
+    }
+    setOpen(null);
+    setFlash(body?.message ?? 'Deleted.');
+    await load();
+  }
+
   async function take(file: File, slot: 'sample' | 'final') {
     if (!open) return;
     setError('');
@@ -276,6 +294,17 @@ export default function OperatorOrders() {
             <button className="opq-btn" disabled={busy !== ''} onClick={() => void send('refunded')}>
               Refund
             </button>
+            <button
+              className="opq-btn"
+              disabled={busy !== ''}
+              onClick={() => {
+                if (!window.confirm('Delete this order and its history? There is no undo.')) return;
+                void drop();
+              }}
+            >
+              {busy === 'delete' ? 'Deleting' : 'Delete this order'}
+            </button>
+            <p className="opq-why">For test rows. Emails nobody, and cannot be undone.</p>
           </details>
         </section>
 

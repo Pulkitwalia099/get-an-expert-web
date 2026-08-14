@@ -1,7 +1,7 @@
 import { list } from '@vercel/blob';
 import { notifyCustomer } from '@/lib/orderMail';
 import { isOrderStatus, type OrderStatus } from '@/lib/order-status';
-import { insertRows, selectRows } from '@/lib/supabase';
+import { deleteRows, insertRows, selectRows } from '@/lib/supabase';
 
 // The queue, and moving one order along.
 //
@@ -230,4 +230,28 @@ export async function advance(input: AdvanceInput): Promise<AdvanceResult> {
             ? 'Saved. Email is not configured here.'
             : 'Saved, but the email did not send.',
   };
+}
+
+/**
+ * Delete an order and its trail.
+ *
+ * Test rows are a real category here: a cutover check, a walk through of the
+ * customer flow, an order placed to prove an email fires. Each one sits in the
+ * queue looking like work somebody is waiting on, which is exactly how a real
+ * order gets missed.
+ *
+ * One id at a time, never a pattern. The events cascade from the foreign key.
+ * There is no undo, which is why the button that calls this sits behind a fold
+ * and says what it is.
+ */
+export async function remove(orderId: string): Promise<AdvanceResult> {
+  if (!UUID.test(orderId)) return { ok: false, error: 'That is not an order id' };
+
+  const order = await detail(orderId);
+  if (!order) return { ok: false, error: 'No order with that id' };
+
+  const gone = await deleteRows('mk_orders', `id=eq.${orderId}`);
+  if (!gone.ok) return { ok: false, error: 'That order could not be deleted.' };
+
+  return { ok: true, emailed: `Deleted the order from ${order.email}. Nobody was emailed.` };
 }

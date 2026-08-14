@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withMetrics } from '@/lib/metrics';
 import { isOrderStatus } from '@/lib/order-status';
 import { isAuthorised } from '@/lib/operatorAuth';
-import { advance, detail, queue } from '@/lib/operatorOrders';
+import { advance, detail, queue, remove } from '@/lib/operatorOrders';
 
 // The dashboard's one endpoint: read the queue, read one order, move one on.
 //
@@ -56,5 +56,15 @@ async function handlePost(req: NextRequest): Promise<NextResponse> {
   return NextResponse.json({ ok: true, message: result.emailed });
 }
 
+async function handleDelete(req: NextRequest): Promise<NextResponse> {
+  if (!isAuthorised(req)) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
+  const id = req.nextUrl.searchParams.get('id') ?? '';
+  const result = await remove(id);
+  if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });
+  return NextResponse.json({ ok: true, message: result.emailed });
+}
+
 export const GET = withMetrics('operator-orders', handleGet);
+export const DELETE = withMetrics('operator-orders', handleDelete);
 export const POST = withMetrics('operator-orders', handlePost);

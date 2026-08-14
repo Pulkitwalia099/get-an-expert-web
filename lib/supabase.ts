@@ -137,6 +137,35 @@ export async function countRows(table: string, filter: string): Promise<number |
   }
 }
 
+/**
+ * Deletes rows matching a raw PostgREST filter.
+ *
+ * The only destructive call in this file, and it takes a filter rather than a
+ * table-wide sweep on purpose: PostgREST deletes everything when handed no
+ * filter, so an empty string here would empty a table. Callers pass an
+ * explicit `id=eq.<uuid>` and nothing else does.
+ */
+export async function deleteRows(table: string, filter: string): Promise<WriteResult> {
+  const cfg = config();
+  if (!cfg) return { ok: false, status: null };
+  if (!filter.trim()) return { ok: false, status: null };
+  try {
+    const res = await fetch(`${cfg.url}/rest/v1/${table}?${filter}`, {
+      method: 'DELETE',
+      headers: headers(cfg, { Prefer: 'return=minimal' }),
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+    });
+    if (!res.ok) {
+      console.error(`[midsesh:supabase] ${table} delete failed`, res.status, await res.text());
+      return { ok: false, status: res.status };
+    }
+    return { ok: true, status: res.status };
+  } catch (err) {
+    console.error(`[midsesh:supabase] ${table} delete failed`, err);
+    return { ok: false, status: null };
+  }
+}
+
 // Reads rows with a raw PostgREST query string. Null on any failure.
 export async function selectRows<T>(table: string, query: string): Promise<T[] | null> {
   const cfg = config();
