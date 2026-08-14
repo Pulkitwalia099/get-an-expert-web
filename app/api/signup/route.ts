@@ -6,8 +6,9 @@ import { withMetrics } from '@/lib/metrics';
 import { clientId, rateLimit } from '@/lib/ratelimit';
 import { matchesOrigin, scrubUntrusted } from '@/lib/sanitize';
 import { recordMarketplaceOrder, type OrderKind } from '@/lib/marketplaceOrders';
+import { notifyCustomer } from '@/lib/orderMail';
 import { serviceBySlug } from '@/lib/services';
-import { recordLead } from '@/lib/supabase';
+import { countRows, recordLead, selectRows } from '@/lib/supabase';
 import { durableLimit } from '@/lib/usage';
 
 // Two forms, one route: the contact card on the home page and the register at
@@ -88,6 +89,43 @@ async function mirrorOrder(
     });
     if (!written.ok) {
       console.error('[midsesh:orders] mk_orders write failed', kind, written.ref);
+      return;
+    }
+    // A waitlist signup is not an order and has nothing to confirm.
+    if (kind !== 'order') return;
+
+    // The confirmation. It needs the row's id, which the insert does not hand
+    // back: this repo asks PostgREST for `return=minimal`, so the id is read
+    // by the ref that was just written. One extra round trip, and it buys a
+    // link that opens their order rather than a list they have to search.
+    const rows = await selectRows<{ id: string }>(
+      'mk_orders',
+      `ref=eq.${encodeURIComponent(written.ref)}&select=id&limit=1`,
+    );
+    const orderId = rows?.[0]?.id;
+    if (!orderId) {
+      console.error('[midsesh:orders] wrote an order and could not read it back', written.ref);
+      return;
+    }
+
+    // Their first order, counted after this one exists, so one row means new.
+    // Null when it cannot be read, and null is not 1, so an unreadable count
+    // simply leaves the thank you out.
+    const orders = await countRows(
+      'mk_orders',
+      `kind=eq.order&email=eq.${encodeURIComponent(input.email.trim().toLowerCase())}`,
+    );
+
+    const told = await notifyCustomer({
+      orderId,
+      email: input.email,
+      status: 'new',
+      serviceName: service?.name ?? input.serviceName ?? null,
+      brief: input.brief,
+      firstOrder: orders === 1,
+    });
+    if (told === 'failed') {
+      console.error('[midsesh:orders] order confirmation failed to send', orderId);
     }
   } catch (err) {
     console.error('[midsesh:orders] mk_orders threw', kind, err);
