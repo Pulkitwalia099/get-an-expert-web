@@ -2300,3 +2300,150 @@ a.cta { text-decoration: none; display: inline-block; }
   background: rgba(217, 142, 40, .09); border: 1px solid rgba(217, 142, 40, .28);
   border-radius: 10px; padding: 10px 12px; max-width: 58ch;
 }
+
+/* ---------------------------------------------------------------- account
+   pages, in the marketplace's clothes
+
+   /signin, /orders and /dashboard sit behind midsesh.com beside the
+   marketplace at `/`, and until now they were a different brand: sand ground,
+   terracotta accent, 12px controls, against the marketplace's paper ground,
+   violet accent and pill controls. Somebody signing in walked from one product
+   into another.
+
+   Every value below is inherited verbatim from agon-agent, quoted with the
+   file and line it came from. Nothing here is invented, and nothing is
+   repointed at :root, because /chat, /search-experts and /july are
+   deliberately the warm sand system and share this stylesheet. */
+
+.ord, .dash {
+  --bg: #FBFBF8;                      /* App.tsx:441, PageShell.tsx:23 */
+  --ink: #0A0A0A;                     /* index.css:13, App.tsx:441 */
+  --ink-2: rgba(0, 0, 0, .6);         /* App.tsx:547, text-black/60 */
+  --ink-3: rgba(0, 0, 0, .5);         /* App.tsx:535, PageShell.tsx:31 */
+  --line: rgba(0, 0, 0, .06);         /* App.tsx:450, border-black/[0.06] */
+  --line-2: rgba(0, 0, 0, .1);        /* App.tsx:479, border-black/10 */
+  --glass: rgba(0, 0, 0, .04);        /* App.tsx:1113, bg-black/5 */
+  --glass-strong: #FFFFFF;            /* App.tsx:670, bg-white */
+  --accent: #6D28FF;                  /* index.css:15, App.tsx:443 */
+  --accent-deep: #6D28FF;             /* App.tsx:1304 is violet-700 in oklch, which does not belong in hand written CSS */
+  --accent-tint: #F4F1FF;             /* App.tsx:524, :945 */
+  --radius-card: 18px;                /* App.tsx:670, rounded-[18px] */
+  --page-gutter: 20px;                /* PageShell.tsx:27, px-5 */
+
+  max-width: 720px;                   /* PageShell.tsx:27, max-w-[720px] */
+  padding: 40px var(--page-gutter) 64px;  /* PageShell.tsx:27, py-10 */
+}
+
+/* The column carries the tokens, but the ground behind it is painted by body,
+   which reads :root. Without this the page is a paper column on sand. */
+body:has(.ord), body:has(.dash) { background: #FBFBF8; color: #0A0A0A; }
+body:has(.ord) ::selection,
+body:has(.dash) ::selection { background: #6D28FF; color: #fff; }  /* index.css:15 */
+
+@media (min-width: 640px) {
+  .ord, .dash { --page-gutter: 24px; padding-top: 64px; }  /* sm:px-6, sm:py-16 */
+}
+
+.ord h1, .dash h1 {
+  font-size: 30px;                    /* PageShell.tsx:36 */
+  font-weight: 850;
+  letter-spacing: -.04em;
+  line-height: .98;
+}
+@media (min-width: 640px) { .ord h1, .dash h1 { font-size: 40px; } }  /* sm:text-[40px] */
+
+.ord-lede { font-size: 15px; line-height: 1.65; max-width: 52ch; }    /* PageShell.tsx:40 */
+@media (min-width: 640px) { .ord-lede { font-size: 16px; } }
+
+/* ----- the bar. A back link and nothing else, the way the reading pages
+   in the marketplace do it. */
+.ord-bar, .dash-bar { padding: 0 0 32px; gap: 12px; }
+.ord-back, .dash-back {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 13px; font-weight: 600; color: rgba(0, 0, 0, .5);   /* PageShell.tsx:31 */
+  transition: color 160ms var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .ord-back:hover, .dash-back:hover { color: #0A0A0A; }          /* hover:text-black */
+}
+.ord-back:active, .dash-back:active { transform: scale(.97); }   /* active:scale-[0.97] */
+
+/* ----- controls. Pills, because every control in the marketplace is one:
+   rounded-full appears 84 times in App.tsx and 12px appears nowhere. */
+.ord .door-btn, .ord .oa-btn, .dash .door-btn, .dash .oa-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  height: 48px; padding: 0 24px;      /* App.tsx:553, h-[48px] px-6 */
+  font-size: 15px; font-weight: 700;  /* App.tsx:553 */
+  letter-spacing: normal;
+  border-radius: 9999px;              /* App.tsx:553, rounded-full */
+  border: 1px solid rgba(0, 0, 0, .1);/* App.tsx:559, border-black/10 */
+  background: #FFFFFF; color: #0A0A0A;
+}
+.ord .door-google, .ord .oa-solid, .dash .door-google, .dash .oa-solid {
+  background: #0A0A0A; border-color: #0A0A0A; color: #fff;       /* App.tsx:553 */
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .18);                     /* App.tsx:553 */
+}
+@media (hover: hover) and (pointer: fine) {
+  /* Border only. The marketplace lifts cards and never buttons. */
+  .ord .door-btn:hover:not(:disabled), .dash .door-btn:hover:not(:disabled) {
+    transform: none; border-color: rgba(0, 0, 0, .25);           /* App.tsx:559 */
+  }
+  .ord .door-google:hover:not(:disabled), .dash .door-google:hover:not(:disabled) {
+    border-color: #0A0A0A;
+  }
+}
+.ord .door-btn:focus-visible, .dash .door-btn:focus-visible {
+  outline: 2px solid #6D28FF; outline-offset: 2px;               /* App.tsx:517, ring-2 ring-[#6D28FF] */
+}
+
+.ord .door-row input {
+  height: 46px; padding: 0 16px;      /* App.tsx:1281, h-[46px] px-4 */
+  border-radius: 9999px;              /* rounded-full */
+  background: #FBFBF8; border-color: rgba(0, 0, 0, .1);
+  font-size: 16px;                    /* deliberate: iOS zooms a focused field under 16px */
+}
+@media (min-width: 640px) { .ord .door-row input { font-size: 13.5px; } }
+.ord .door-row input:focus-visible {
+  outline: none; border-color: #6D28FF; background: #fff;        /* App.tsx:1281 */
+}
+
+/* ----- cards. Solid white on paper, not glass on sand. */
+.ord-card, .dash-card {
+  border-radius: 18px;                                           /* App.tsx:670 */
+  background: #FFFFFF;
+  border-color: rgba(0, 0, 0, .08);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .04), 0 8px 24px rgba(0, 0, 0, .04);
+}
+@media (hover: hover) and (pointer: fine) {
+  .ord-card:hover, .dash-card:hover {
+    transform: translateY(-3px);                                 /* App.tsx:668, whileHover y:-3 */
+    border-color: rgba(0, 0, 0, .12);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, .10);                  /* App.tsx:670 */
+  }
+}
+
+/* ----- the mark. Five divs and no asset, copied from App.tsx:454-459: a black
+   squircle holding a white lozenge with two dots in it, human and agent side
+   by side. */
+.mk { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; transition: opacity 160ms var(--ease-out); }
+@media (hover: hover) and (pointer: fine) { .mk:hover { opacity: .75; } }
+.mk:active { transform: scale(.97); }
+.mk-tile {
+  width: 32px; height: 32px; border-radius: 10px;                /* rounded-[10px] */
+  background: #0A0A0A; display: grid; place-items: center; flex-shrink: 0;
+}
+.mk-loz {
+  width: 18px; height: 12px; border-radius: 9999px; background: #fff;
+  display: flex; align-items: center; justify-content: center; gap: 3px;
+}
+.mk-dot { width: 4px; height: 4px; border-radius: 9999px; background: #000; }
+.mk-dot-2 { width: 2.5px; height: 2.5px; border-radius: 9999px; background: #6D28FF; }
+.mk-word { font-size: 15.5px; font-weight: 800; letter-spacing: -.03em; color: #0A0A0A; }
+
+/* ----- the grain, at the marketplace's own opacity and tile size, which are
+   both different from this app's existing .grain. PageShell.tsx:24. */
+.paper {
+  pointer-events: none; position: fixed; inset: 0; opacity: .015; z-index: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.ord, .dash { position: relative; z-index: 1; }

@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { cookies } from 'next/headers';
+import Mark from '@/components/Mark';
 import SignInDoors from '@/components/SignInDoors';
+import { inter } from '@/app/fonts';
 import { SESSION_COOKIE, authConfigured, readSession } from '@/lib/auth';
 import { CONTACT_EMAIL } from '@/lib/contact';
 import { hasEmailKey } from '@/lib/email';
@@ -44,11 +46,10 @@ export default async function Orders({
   // rendered here rather than redirected somewhere that has to explain itself.
   if (!user) {
     return (
-      <main className="ord">
+      <main className={`ord ${inter.className}`}>
+        <div className="paper" aria-hidden="true" />
         <header className="ord-bar">
-          <Link href="/" className="ord-back">
-            midsesh
-          </Link>
+          <Mark />
         </header>
         <h1>Your orders</h1>
         <p className="ord-lede">
@@ -87,11 +88,10 @@ export default async function Orders({
   ]);
 
   return (
-    <main className="ord">
+    <main className={`ord ${inter.className}`}>
+      <div className="paper" aria-hidden="true" />
       <header className="ord-bar">
-        <Link href="/" className="ord-back">
-          midsesh
-        </Link>
+        <Mark />
         <span className="ord-who">
           {user.email}
           {/* A form, not a link: the route is POST only so a prefetch cannot

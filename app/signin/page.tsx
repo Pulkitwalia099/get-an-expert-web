@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import Mark from '@/components/Mark';
 import SignInDoors from '@/components/SignInDoors';
+import { inter } from '@/app/fonts';
 import { SESSION_COOKIE, authConfigured, readSession, safeNext } from '@/lib/auth';
 import { CONTACT_EMAIL } from '@/lib/contact';
 import { hasEmailKey } from '@/lib/email';
@@ -51,11 +52,10 @@ export default async function SignInPage({
   const flash = flashFor(params.signin);
 
   return (
-    <main className="ord">
+    <main className={`ord ${inter.className}`}>
+      <div className="paper" aria-hidden="true" />
       <header className="ord-bar">
-        <Link href="/" className="ord-back">
-          midsesh
-        </Link>
+        <Mark />
       </header>
       <h1>Sign in</h1>
       {/* Above the lede, not below it. The flash is in the markup at first

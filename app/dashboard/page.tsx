@@ -2,7 +2,9 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
+import Mark from '@/components/Mark';
 import RequestList from '@/components/RequestList';
+import { inter } from '@/app/fonts';
 import { SESSION_COOKIE, readSession } from '@/lib/auth';
 import { balanceFor, formatCents } from '@/lib/credits';
 import { redactExperts } from '@/lib/experts';
@@ -43,11 +45,10 @@ export default async function Dashboard({
   const justPlaced = (await searchParams).placed === '1';
 
   return (
-    <main className="dash">
+    <main className={`dash ${inter.className}`}>
+      <div className="paper" aria-hidden="true" />
       <header className="dash-bar">
-        <Link href="/" className="dash-back">
-          midsesh
-        </Link>
+        <Mark />
         {/* The two things a signed in person owns live on two pages, and this
             one is the older of them. Without this link the marketplace orders
             page can only be reached by typing the URL or from an email. */}
