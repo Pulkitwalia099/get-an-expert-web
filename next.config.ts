@@ -133,6 +133,13 @@ const nextConfig: NextConfig = {
       beforeFiles: [
         { source: '/', destination: `${MARKETPLACE}/` },
         { source: '/contact', destination: `${MARKETPLACE}/contact` },
+        // The founder page. It lives over there because it has to look like the
+        // site it is linked from, and every footer that links to it is on that
+        // side too. This list is explicit rather than a wildcard, so a page
+        // added to the marketplace works on its own Vercel URL and 404s at the
+        // apex until its path is named here. That is the failure to watch for
+        // whenever a route is added on that side.
+        { source: '/about', destination: `${MARKETPLACE}/about` },
         // The new site's own experts page, which is where its "Partner with
         // us" CTAs point. It wins over this repo's /experts: that one is the
         // old pitch, and two pages arguing the same case on one domain is how
