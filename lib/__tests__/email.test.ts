@@ -62,6 +62,27 @@ describe('sendEmail', () => {
     expect(body.to).toEqual(['o@x.co']);
   });
 
+  it('carries the configured reply address, trimmed', async () => {
+    vi.stubEnv('RESEND_API_KEY', 're_test');
+    vi.stubEnv('REPORT_REPLY_TO', '  someone@example.com  ');
+    await sendEmail({ to: 'o@x.co', subject: 's', text: 't' });
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body as string);
+    // A trailing space in a Vercel variable is invisible and Resend rejects
+    // the whole send for it.
+    expect(body.reply_to).toBe('someone@example.com');
+  });
+
+  it('always carries one, so no send goes out unanswerable', async () => {
+    // The sending domain has no inbox. Mail with no reply address reaches the
+    // customer and their answer reaches nobody, which is only discovered from
+    // the customer's side.
+    vi.stubEnv('RESEND_API_KEY', 're_test');
+    vi.stubEnv('REPORT_REPLY_TO', '');
+    await sendEmail({ to: 'o@x.co', subject: 's', text: 't' });
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body as string);
+    expect(body.reply_to).toBe('pulkitwalia099@gmail.com');
+  });
+
   it('refuses invalid recipients and survives API failures', async () => {
     vi.stubEnv('RESEND_API_KEY', 're_test');
     expect(await sendEmail({ to: 'not-an-email', subject: 's', text: 't' })).toBe(false);
