@@ -1,0 +1,34 @@
+-- Archive the two tables left stranded by retiring the setups product, 2026-08-14.
+--
+-- Follow-up to 20260814010000. That migration moved tables with no writer at
+-- all; these two still have a writer in live code, but nothing a visitor can
+-- reach now that /get and /setups are archived.
+--
+--   setup_requests   2 rows, last written 28 Jul 2026.
+--     The "Seen a setup we're missing?" form. Written by lib/requests.ts behind
+--     /api/requests, and the only caller of that route is
+--     components/setups/AskForm.tsx, which renders inside SetupsApp. The only
+--     page mounting SetupsApp was /get, now archive/pages/get.
+--
+--   orders           0 rows, never written.
+--     The setups order table, superseded by mk_orders. placeOrder in
+--     lib/orders.ts has exactly two callers and neither can fire:
+--       * POST /api/orders rejects anything without a known setup slug, and the
+--         booking sheet that posted to it went to the archive with /get.
+--       * placeOrderForBooking in the Cal webhook returns early unless
+--         getSetup(slug) resolves, so an ordinary "talk to a human" booking
+--         from the call button never reaches it.
+--     That early return is also what makes this safe: the webhook is still very
+--     much live, and it goes on recording every booking into setup_bookings,
+--     which is why that table is deliberately NOT moved here.
+--
+-- If somebody books an old setups Cal link, the booking is still recorded in
+-- setup_bookings and the order insert is skipped. placeOrderForBooking wraps
+-- its work in a try, so a missing table cannot 500 the webhook and send Cal
+-- into a retry loop.
+--
+-- To put one back:
+--   alter table archive.setup_requests set schema public;
+
+alter table public.setup_requests set schema archive;
+alter table public.orders          set schema archive;
