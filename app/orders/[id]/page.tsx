@@ -76,8 +76,10 @@ export default async function Order({ params }: { params: Promise<{ id: string }
       {showSample && (
         <section className="ord-sample">
           <h2>{showDownload ? 'Your sample' : 'Your sample, watermarked'}</h2>
-          {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-          <video src={assets!.sampleUrl!} controls playsInline preload="metadata" />
+          <div className="ord-stage">
+            {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+            <video src={assets!.sampleUrl!} controls playsInline preload="metadata" />
+          </div>
           <p className="ord-sample-note">
             Trouble playing it?{' '}
             <a href={assets!.sampleUrl!} target="_blank" rel="noreferrer noopener">
