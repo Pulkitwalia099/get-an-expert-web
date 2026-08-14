@@ -79,8 +79,8 @@ export default function OperatorOrders() {
     void load();
   }, [load]);
 
-  // The secret arrives once in the address bar and is taken straight out of
-  // it, so a screenshot of this page is not a credential.
+  // The password may arrive once in the address bar, and is taken straight out
+  // of it, so a screenshot of this page is not a credential.
   useEffect(() => {
     const raw = window.location.search.slice(1).split('&').find((p) => p.startsWith('secret='));
     if (!raw) return;
@@ -102,7 +102,7 @@ export default function OperatorOrders() {
       setSecret('');
       await load();
     } else {
-      setError('That is not the right secret.');
+      setError('That password is not right.');
     }
   }
 
@@ -180,7 +180,7 @@ export default function OperatorOrders() {
             type="password"
             value={secret}
             onChange={(e) => setSecret(e.target.value)}
-            placeholder="Operator secret"
+            placeholder="Admin password"
             autoFocus
           />
           <button className="opq-btn opq-solid" type="submit">
