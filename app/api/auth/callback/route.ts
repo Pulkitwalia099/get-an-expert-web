@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
+  NEXT_COOKIE,
   SESSION_COOKIE,
   SESSION_MAX_AGE,
   STATE_COOKIE,
   authConfigured,
   exchangeCode,
+  safeNext,
   signSession,
   stateMatches,
 } from '@/lib/auth';
@@ -15,9 +17,12 @@ import { INTENT_COOKIE, createQuoteRequest, readIntent } from '@/lib/quotes';
 
 // Step two: Google sends the browser back here with a one time code.
 //
-// Every failure goes home with a short reason in the query string rather than
-// rendering an error page. A sign in that fails on someone's phone should put
-// them back on the site able to try again, not at a dead end.
+// Every failure lands on /signin with a short reason in the query string
+// rather than rendering an error page. A sign in that fails on someone's phone
+// should put them back in front of both doors, able to try again or to try the
+// other one. It used to go to `/`, which is rewritten to the marketplace, a
+// separate app that never reads this cookie and has nothing to say about a
+// failed sign in: no error, no 404, no log line.
 
 function land(req: NextRequest, path: string, params: Record<string, string> = {}): NextResponse {
   const url = new URL(path, req.nextUrl.origin);
@@ -26,31 +31,39 @@ function land(req: NextRequest, path: string, params: Record<string, string> = {
   // The state cookie has done its job either way, so it never outlives the
   // request that consumed it. The intent cookie is cleared here too: it is
   // acted on below, and one left behind would be replayed on the next sign in.
+  // The destination cookie goes with them, on failures as well as successes,
+  // because a stale one would silently redirect a later, unrelated sign in.
   res.cookies.set(STATE_COOKIE, '', { httpOnly: true, path: '/', maxAge: 0 });
   res.cookies.set(INTENT_COOKIE, '', { httpOnly: true, path: '/', maxAge: 0 });
+  res.cookies.set(NEXT_COOKIE, '', { httpOnly: true, path: '/', maxAge: 0 });
   return res;
 }
 
-function home(req: NextRequest, params: Record<string, string> = {}): NextResponse {
-  return land(req, '/', params);
+/**
+ * Where a failed sign in goes. Never the parked destination: those pages all
+ * require a session, so a failure would arrive somewhere that bounces them
+ * straight back out with nothing said. This is the email callback's rule too.
+ */
+function retry(req: NextRequest, params: Record<string, string> = {}): NextResponse {
+  return land(req, '/signin', params);
 }
 
 async function handleGet(req: NextRequest): Promise<NextResponse> {
-  if (!authConfigured()) return home(req, { signin: 'unavailable' });
+  if (!authConfigured()) return retry(req, { signin: 'unavailable' });
 
   // Google reports a refusal here rather than by failing the exchange, and a
   // person who pressed cancel is not an error to report.
-  if (req.nextUrl.searchParams.get('error')) return home(req);
+  if (req.nextUrl.searchParams.get('error')) return retry(req);
 
   const code = req.nextUrl.searchParams.get('code');
   const state = req.nextUrl.searchParams.get('state') ?? undefined;
   const cookie = req.cookies.get(STATE_COOKIE)?.value;
 
-  if (!stateMatches(state, cookie)) return home(req, { signin: 'expired' });
-  if (!code) return home(req, { signin: 'failed' });
+  if (!stateMatches(state, cookie)) return retry(req, { signin: 'stale' });
+  if (!code) return retry(req, { signin: 'failed' });
 
   const identity = await exchangeCode(code, req.nextUrl.origin);
-  if (!identity) return home(req, { signin: 'failed' });
+  if (!identity) return retry(req, { signin: 'failed' });
 
   // Google's subject id is only the id of the door they came through. If this
   // address already signed in by email link, that account is the one they own,
@@ -59,7 +72,7 @@ async function handleGet(req: NextRequest): Promise<NextResponse> {
   const user = await resolveAccount(identity);
 
   const session = signSession(user);
-  if (!session) return home(req, { signin: 'unavailable' });
+  if (!session) return retry(req, { signin: 'unavailable' });
 
   // The account row and the welcome credit. Both are idempotent, and both are
   // allowed to fail: Supabase being down must not stop somebody signing in,
@@ -88,21 +101,34 @@ async function handleGet(req: NextRequest): Promise<NextResponse> {
     }
   }
 
+  // Where they asked to go before they were sent to Google, if it survived and
+  // still passes the allowlist. Checked again on the way out, so a cookie set
+  // before this list was last tightened cannot outlive the tightening.
+  const next = safeNext(req.cookies.get(NEXT_COOKIE)?.value);
+
   const res = placed
-    ? land(req, '/dashboard', { placed: '1' })
+    ? // Ignores `next` on purpose. `?placed=1` is the confirmation that the
+      // request was saved, and /dashboard is the only page that reads it, so
+      // honouring a parked destination here would drop that confirmation and
+      // land somebody on a page that never mentions the request they just
+      // made. The request would exist and they would have no evidence of it.
+      land(req, '/dashboard', { placed: '1' })
     : intent
-      ? // The selection was there and could not be honoured. Landing on the
-        // dashboard with nothing on it would read as the request vanishing, so
-        // they go home and can ask again with their cards still in front of them.
-        home(req, { signin: 'ok', quotes: 'retry' })
-      : // Not home. `/` is rewritten to the marketplace, which is a separate
-        // Vercel project that never reads this cookie and never calls
-        // /api/me, so it renders its ordinary signed out page. Sign in worked
-        // every time and looked like it had failed every time.
+      ? // The selection was there and could not be honoured. Landing on an
+        // account page with nothing on it would read as the request vanishing,
+        // so they go home and can ask again with their cards still in front of
+        // them. Ignores `next` for the same reason as the branch above: what
+        // they need is on the page they started from.
+        land(req, '/', { signin: 'ok', quotes: 'retry' })
+      : // Not `/`. That is rewritten to the marketplace, a separate Vercel
+        // project that never reads this cookie and never calls /api/me, so it
+        // renders its ordinary signed out page. Sign in worked every time and
+        // looked like it had failed every time.
         //
-        // /dashboard is this app's account page: it reads the session on the
-        // server, shows the address, and links on to /orders.
-        land(req, '/dashboard', { signin: 'ok' });
+        // /orders, because orders are what this business takes now. Requests
+        // still exist and still have their own page; /orders links to it when
+        // there are any, and nobody lands on an empty one by default.
+        land(req, next ?? '/orders', { signin: 'ok' });
   res.cookies.set(SESSION_COOKIE, session, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',

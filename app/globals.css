@@ -2109,6 +2109,15 @@ a.cta { text-decoration: none; display: inline-block; }
 }
 .ord-lede { font-size: 15px; color: var(--ink-2); line-height: 1.55; margin-bottom: 22px; max-width: 52ch; }
 .ord-note, .ord-when-line { font-size: 12.5px; color: var(--ink-3); margin-top: 14px; }
+
+/* ----- requests, when there are any. A footnote to the orders above it,
+   rather than a second column competing with them. */
+.ord-aside { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line); }
+.ord-aside-h { font-size: 13px; font-weight: 650; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); }
+.ord-aside-sub { font-size: 14px; color: var(--ink-2); margin-top: 6px; }
+.ord-aside-link { display: inline-block; margin-top: 10px; font-size: 14px; font-weight: 600; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; transition: color 160ms var(--ease-out); }
+@media (hover: hover) and (pointer: fine) { .ord-aside-link:hover { color: var(--accent); } }
+.ord-aside-link:active { transform: scale(.97); }
 .ord-flash {
   font-size: 13.5px; line-height: 1.5; color: var(--ink-2);
   background: var(--accent-tint); border: 1px solid rgba(196, 89, 60, .2);

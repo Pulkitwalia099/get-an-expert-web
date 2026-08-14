@@ -19,6 +19,8 @@ if (typeof window !== 'undefined') {
 
 export const SESSION_COOKIE = 'midsesh_session';
 export const STATE_COOKIE = 'midsesh_oauth_state';
+/** Where to send somebody after they sign in, parked across the trip to Google. */
+export const NEXT_COOKIE = 'midsesh_next';
 
 // Thirty days. Long enough that a returning visitor is still signed in, short
 // enough that a shared laptop forgets.
@@ -93,6 +95,40 @@ function sameValue(a: string, b: string): boolean {
   const left = Buffer.from(a);
   const right = Buffer.from(b);
   return left.length === right.length && timingSafeEqual(left, right);
+}
+
+/**
+ * Where a sign in is allowed to land, matched rather than sanitised.
+ *
+ * A destination arrives in a URL, which makes it somebody else's input, and
+ * the response that carries the redirect is the response that sets a thirty
+ * day session cookie. `new URL(path, origin)` ignores the origin entirely when
+ * the path is absolute, so an unchecked `https://evil.example` or a protocol
+ * relative `//evil.example` hands a freshly signed in person to somebody
+ * else's page at the moment they have most reason to trust what is on screen.
+ *
+ * Anchored at both ends and matching literal path words, so nothing can be
+ * prefixed or appended and the only variable part is a hex uuid. A "must start
+ * with a slash" check famously admits `//evil.example`; this does not.
+ *
+ * One copy, deliberately. This began in the email callback, and the Google
+ * door needed the same rule: two allowlists would drift, and the weaker copy
+ * is the one an attacker finds. Adding a fourth destination means editing this
+ * line and having a reason.
+ */
+// The uuid belongs to /orders/<id> and to nothing else, so it is spelled
+// inside that one alternative rather than bolted onto every branch.
+//
+// Case sensitive on the path words and case insensitive only on the uuid,
+// which is the only part that legitimately varies. Next routes case
+// sensitively, so a blanket /i flag here would admit /Dashboard and then land
+// somebody on a 404 with a fresh session cookie and no idea what happened.
+const SAFE_NEXT =
+  /^\/(dashboard|orders|orders\/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$/;
+
+/** The destination if it is one we allow, otherwise null so callers pick their own default. */
+export function safeNext(raw: string | null | undefined): string | null {
+  return raw && SAFE_NEXT.test(raw) ? raw : null;
 }
 
 /** A fresh, unguessable CSRF value for the state parameter. */

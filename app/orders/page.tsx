@@ -6,8 +6,10 @@ import { SESSION_COOKIE, authConfigured, readSession } from '@/lib/auth';
 import { CONTACT_EMAIL } from '@/lib/contact';
 import { hasEmailKey } from '@/lib/email';
 import { EMAIL_TOKEN_MAX_AGE, emailAuthConfigured } from '@/lib/emailAuth';
+import { flashFor } from '@/lib/signinFlash';
 import { STATUS_LABELS, ago, stepFor } from '@/lib/order-status';
 import { listOrdersForEmail } from '@/lib/orderTracking';
+import { listQuoteRequests } from '@/lib/quotes';
 
 // Everything somebody has ordered from the marketplace, and where each one
 // has got to.
@@ -52,14 +54,9 @@ export default async function Orders({
         <p className="ord-lede">
           Sign in with the email you ordered with and your work is here, with its status.
         </p>
-        {signin === 'expired' && (
+        {flashFor(signin) && (
           <p className="ord-flash" role="status">
-            That link has expired or was already changed. Ask for a new one below.
-          </p>
-        )}
-        {signin === 'unavailable' && (
-          <p className="ord-flash" role="status">
-            Sign in is not available right now. Try again shortly.
+            {flashFor(signin)}
           </p>
         )}
         <SignInDoors
@@ -80,7 +77,14 @@ export default async function Orders({
     );
   }
 
-  const orders = await listOrdersForEmail(user.email);
+  // Orders are the page. Requests are the older product and are nearly dead,
+  // so they get a line at the bottom when there are any and nothing at all
+  // when there are none. Read together: neither read blocks the other, and a
+  // request lookup that fails must not cost somebody their order list.
+  const [orders, requests] = await Promise.all([
+    listOrdersForEmail(user.email),
+    listQuoteRequests(user.sub, 5),
+  ]);
 
   return (
     <main className="ord">
@@ -142,6 +146,23 @@ export default async function Orders({
             );
           })}
         </ul>
+      )}
+
+      {/* Only when there are any. Somebody who has never run a search should
+          not be told about a thing they do not have, and most people now
+          arrive with an order and nothing else. */}
+      {requests.length > 0 && (
+        <section className="ord-aside">
+          <h2 className="ord-aside-h">Your requests</h2>
+          <p className="ord-aside-sub">
+            {requests.length === 1
+              ? 'One search where we are still getting you prices.'
+              : `${requests.length} searches where we are still getting you prices.`}
+          </p>
+          <Link href="/dashboard" className="ord-aside-link">
+            Open your requests
+          </Link>
+        </section>
       )}
     </main>
   );

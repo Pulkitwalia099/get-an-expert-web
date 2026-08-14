@@ -18,10 +18,17 @@ export default function SignInDoors({
   google,
   email: emailDoor,
   minutes,
+  next,
 }: {
   google: boolean;
   email: boolean;
   minutes: number;
+  /**
+   * Where to land after signing in. Already checked against the allowlist by
+   * whoever rendered this, and checked again by both callbacks, because a prop
+   * on a client component is not a promise about anything.
+   */
+  next?: string;
 }) {
   const [email, setEmail] = useState('');
   const [state, setState] = useState<State>('idle');
@@ -36,7 +43,7 @@ export default function SignInDoors({
       const res = await fetch('/api/auth/email', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify(next ? { email, next } : { email }),
       });
       if (res.ok) {
         setState('sent');
@@ -74,7 +81,10 @@ export default function SignInDoors({
   return (
     <div className="doors">
       {google && (
-        <a className="door-btn door-google" href="/api/auth/google">
+        <a
+          className="door-btn door-google"
+          href={next ? `/api/auth/google?next=${encodeURIComponent(next)}` : '/api/auth/google'}
+        >
           Continue with Google
         </a>
       )}

@@ -25,11 +25,14 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 export default async function Order({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const store = await cookies();
   const user = readSession(store.get(SESSION_COOKIE)?.value);
-  if (!user) redirect('/orders');
-
-  const { id } = await params;
+  // Signed in, they come straight back to this order rather than to the list,
+  // which is the whole point of carrying a destination through. The id goes
+  // through the same allowlist on the way back, so a junk one in the URL ends
+  // up on /orders rather than anywhere it should not.
+  if (!user) redirect(`/signin?next=/orders/${id}`);
   const order = await getOrderForEmail(id, user.email);
   // Somebody else's order, a bad id, and Supabase being down all end here.
   // A 403 on the first would confirm the id names a real order.

@@ -31,9 +31,10 @@ export default async function Dashboard({
 }) {
   const store = await cookies();
   const user = readSession(store.get(SESSION_COOKIE)?.value);
-  // Signed out is not an error page. They were on their way somewhere and the
-  // front door is where signing in starts.
-  if (!user) redirect('/');
+  // Signed out is not an error page, and `/` is the marketplace, a different
+  // app that cannot bring them back here afterwards. /signin carries both
+  // doors and returns them to this page.
+  if (!user) redirect('/signin?next=/dashboard');
 
   const [requests, balance] = await Promise.all([
     listQuoteRequests(user.sub),

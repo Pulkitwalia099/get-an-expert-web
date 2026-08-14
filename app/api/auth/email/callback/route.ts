@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { SESSION_COOKIE, SESSION_MAX_AGE, signSession } from '@/lib/auth';
+import { SESSION_COOKIE, SESSION_MAX_AGE, safeNext, signSession } from '@/lib/auth';
 import { ensureAccount, resolveAccount } from '@/lib/credits';
 import { readEmailToken, subForEmail } from '@/lib/emailAuth';
 import { withMetrics } from '@/lib/metrics';
@@ -19,19 +19,14 @@ const LANDING = '/orders';
  *
  * A status email links to one order, so "you have a sample" should open that
  * sample rather than a list they then have to read. But the destination
- * arrives in a URL, which makes it somebody else's input: an unchecked `next`
- * is an open redirect, and this one is attached to a link that sets a session
- * cookie, which is the worst possible thing to point at another origin.
+ * arrives in a URL, which makes it somebody else's input, and this one is
+ * attached to a link that sets a session cookie.
  *
- * So it is not sanitised, it is matched. Only `/orders` and `/orders/<uuid>`
- * are ever honoured and everything else falls back to the list. A protocol
- * relative `//evil.example` fails this, which is the case a "must start with
- * a slash" check famously does not.
+ * The allowlist that decides it now lives in lib/auth, because the Google door
+ * needs the same rule and two copies of it would drift.
  */
-const SAFE_NEXT = /^\/orders(\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})?$/i;
-
 function destination(raw: string | null): string {
-  return raw && SAFE_NEXT.test(raw) ? raw : LANDING;
+  return safeNext(raw) ?? LANDING;
 }
 
 function land(

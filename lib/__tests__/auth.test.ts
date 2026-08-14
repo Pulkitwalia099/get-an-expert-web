@@ -5,6 +5,7 @@ import {
   callbackUrl,
   newState,
   readSession,
+  safeNext,
   signSession,
   stateMatches,
 } from '@/lib/auth';
@@ -200,5 +201,53 @@ describe('credit split', () => {
     expect(formatCents(5_000)).toBe('$50');
     expect(formatCents(550)).toBe('$5.50');
     expect(formatCents(0)).toBe('$0');
+  });
+});
+
+describe('safeNext', () => {
+  // This is the allowlist both doors share. The response that acts on it is
+  // the response that sets a thirty day session cookie, so a value that slips
+  // through hands a freshly signed in person to somebody else's page at the
+  // moment they have most reason to trust what is on screen.
+
+  it('allows the three destinations that exist', () => {
+    expect(safeNext('/dashboard')).toBe('/dashboard');
+    expect(safeNext('/orders')).toBe('/orders');
+    const order = '/orders/b1029c04-c43d-422b-9000-ff79632847a6';
+    expect(safeNext(order)).toBe(order);
+  });
+
+  it('refuses another origin, however it is spelled', () => {
+    expect(safeNext('https://evil.example/orders')).toBeNull();
+    // The case a "must start with a slash" check famously admits.
+    expect(safeNext('//evil.example')).toBeNull();
+    expect(safeNext('//evil.example/orders')).toBeNull();
+    expect(safeNext('http:/evil.example')).toBeNull();
+    expect(safeNext('\\evil.example')).toBeNull();
+  });
+
+  it('refuses anything appended or prefixed, because both ends are anchored', () => {
+    expect(safeNext('/orders/../admin')).toBeNull();
+    expect(safeNext('/orders?x=1')).toBeNull();
+    expect(safeNext('/orders#x')).toBeNull();
+    expect(safeNext('/ordersomething')).toBeNull();
+    expect(safeNext('x/orders')).toBeNull();
+    expect(safeNext(' /orders')).toBeNull();
+  });
+
+  it('refuses a uuid on the route that has no uuid', () => {
+    expect(safeNext('/dashboard/b1029c04-c43d-422b-9000-ff79632847a6')).toBeNull();
+  });
+
+  it('refuses an order id that is not a uuid', () => {
+    expect(safeNext('/orders/all')).toBeNull();
+    expect(safeNext('/orders/b1029c04')).toBeNull();
+    expect(safeNext('/orders/../../etc')).toBeNull();
+  });
+
+  it('answers null for nothing at all, so callers pick their own landing', () => {
+    expect(safeNext(null)).toBeNull();
+    expect(safeNext(undefined)).toBeNull();
+    expect(safeNext('')).toBeNull();
   });
 });

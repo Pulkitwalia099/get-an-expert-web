@@ -28,7 +28,7 @@ export default function AccountLink() {
     return (
       <a
         className="account-cta"
-        href="/api/auth/google"
+        href="/signin"
         onClick={() => track('signin_started', { source: 'sitebar' })}
       >
         Sign in

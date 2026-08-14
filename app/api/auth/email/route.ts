@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { safeNext } from '@/lib/auth';
 import { hasEmailKey, isValidEmail, sendEmail } from '@/lib/email';
 import { EMAIL_TOKEN_MAX_AGE, emailAuthConfigured, signEmailToken } from '@/lib/emailAuth';
 import { withMetrics } from '@/lib/metrics';
@@ -64,6 +65,13 @@ async function handlePost(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'That does not look like an email address' }, { status: 400 });
   }
 
+  // A destination, when the page they typed their address on had one. Checked
+  // here rather than only in the callback, because this value goes into an
+  // outbound email: a rejected one must never be printed into a link somebody
+  // is invited to click. Anything not on the allowlist is dropped and the link
+  // opens the order list, which is what the callback would have done anyway.
+  const next = typeof payload.next === 'string' ? safeNext(payload.next) : null;
+
   // Per address as well as per client. One limit on the IP alone lets a
   // botnet mail one person repeatedly; one on the address alone lets a single
   // machine work through a list. Both are keyed durably so a redeploy does
@@ -84,7 +92,9 @@ async function handlePost(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Email sign in is not available' }, { status: 503 });
   }
 
-  const link = `${origin(req)}/api/auth/email/callback?t=${encodeURIComponent(token)}`;
+  const link =
+    `${origin(req)}/api/auth/email/callback?t=${encodeURIComponent(token)}` +
+    (next ? `&next=${encodeURIComponent(next)}` : '');
   const sent = await sendEmail({
     to: normalised,
     subject: 'Your midsesh sign in link',
