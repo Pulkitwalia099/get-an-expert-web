@@ -48,6 +48,7 @@ async function handlePost(req: NextRequest): Promise<NextResponse> {
     status,
     note: typeof payload.note === 'string' ? payload.note : null,
     assetUrl: typeof payload.assetUrl === 'string' ? payload.assetUrl : null,
+    draft: typeof payload.draft === 'string' ? payload.draft : null,
   });
 
   // A refused move is the operator's mistake to see, not a server error, so it

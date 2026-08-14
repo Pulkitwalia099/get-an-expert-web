@@ -2,6 +2,12 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { upload } from '@vercel/blob/client';
+import OperatorActions from '@/components/OperatorActions';
+import OperatorDraft from '@/components/OperatorDraft';
+import { videoShape } from '@/components/OperatorDrop';
+import OperatorFiles from '@/components/OperatorFiles';
+import { deliveryFor } from '@/lib/delivery';
+import { guardVerdict } from '@/lib/watermark-guard';
 
 // The order queue, worked from a phone.
 //
@@ -12,8 +18,21 @@ import { upload } from '@vercel/blob/client';
 // Nothing here emails anybody by loading. Uploads attach files and change
 // nothing the customer can see; only the buttons at the bottom of an open
 // order write an event and send the mail, and each one says which mail it is.
+//
+// One file goes in. The clean cut is uploaded and the server draws the mark on
+// a copy of it, so the operator is never asked to produce a watermarked file
+// by hand and there is no way to send a clean one by mistake. Anything too
+// long or too large for a function to finish falls back to the two file flow,
+// with the reason on screen rather than a silent difference in behaviour.
 
 type Status = 'new' | 'working' | 'sample_sent' | 'approved' | 'delivered' | 'declined' | 'refunded';
+
+interface Version {
+  id: number;
+  body: string;
+  actor: string;
+  createdAt: string;
+}
 
 interface Order {
   id: string;
@@ -21,12 +40,15 @@ interface Order {
   name: string | null;
   status: Status;
   serviceName: string | null;
+  serviceSlug: string | null;
   brief: string | null;
   createdAt: string;
   statusAt: string | null;
   events?: { status: string; note: string | null; actor: string | null; createdAt: string }[];
   parkedFinalUrl?: string | null;
+  parkedSampleUrl?: string | null;
   revisions?: number;
+  draft?: { versions: Version[]; comments: Version[] };
 }
 
 const LABELS: Record<Status, string> = {
@@ -62,6 +84,17 @@ export default function OperatorOrders() {
   const [finalUrl, setFinalUrl] = useState('');
   const [progress, setProgress] = useState<{ slot: string; pct: number } | null>(null);
   const [note, setNote] = useState('');
+
+  // Set only when the server is not going to produce the sample: too long, too
+  // large, or an encode that failed. It carries the sentence explaining why and
+  // its presence is what puts the second drop target back on screen.
+  const [twoFiles, setTwoFiles] = useState('');
+  const [marking, setMarking] = useState(false);
+
+  // The draft being written, for a service that delivers words. Seeded from
+  // the current version when an order is opened, so editing starts from what
+  // is already there rather than from an empty box.
+  const [draft, setDraft] = useState('');
 
   const load = useCallback(async (): Promise<boolean> => {
     const res = await fetch('/api/operator/orders');
@@ -112,6 +145,8 @@ export default function OperatorOrders() {
     setSampleUrl('');
     setFinalUrl('');
     setNote('');
+    setTwoFiles('');
+    setMarking(false);
     const res = await fetch(`/api/operator/orders?id=${encodeURIComponent(id)}`);
     if (!res.ok) {
       setError('That order could not be opened.');
@@ -119,6 +154,7 @@ export default function OperatorOrders() {
     }
     const body = (await res.json()) as { order: Order };
     setOpen(body.order);
+    setDraft(body.order.draft?.versions[0]?.body ?? '');
   }
 
   async function send(status: Status, assetUrl?: string) {
@@ -129,7 +165,13 @@ export default function OperatorOrders() {
     const res = await fetch('/api/operator/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ orderId: open.id, status, note: note || null, assetUrl }),
+      body: JSON.stringify({
+        orderId: open.id,
+        status,
+        note: note || null,
+        assetUrl,
+        draft: deliveryFor(open.serviceSlug) === 'text' ? draft : null,
+      }),
     });
     const body = (await res.json().catch(() => null)) as
       | { ok?: boolean; message?: string; error?: string }
@@ -165,21 +207,70 @@ export default function OperatorOrders() {
 
   async function take(file: File, slot: 'sample' | 'final') {
     if (!open) return;
+    const order = open.id;
     setError('');
+
+    // Asked before the upload, not after, so somebody with a ten minute cut
+    // hears about it now rather than at the end of a four minute upload. The
+    // server checks again with ffprobe, because a browser can be wrong about a
+    // file and this side is only the courtesy.
+    let watermarkable = slot === 'final';
+    if (slot === 'final') {
+      const verdict = guardVerdict({ bytes: file.size, ...(await videoShape(file)) });
+      watermarkable = verdict.ok;
+      setTwoFiles(verdict.reason ?? '');
+    }
+
     setProgress({ slot, pct: 0 });
     try {
       const blob = await upload(file.name, file, {
         access: 'public',
         handleUploadUrl: '/api/operator/upload',
-        clientPayload: `${open.id}:${slot}`,
+        clientPayload: `${order}:${slot}`,
         onUploadProgress: ({ percentage }) => setProgress({ slot, pct: Math.round(percentage) }),
       });
-      if (slot === 'sample') setSampleUrl(blob.url);
-      else setFinalUrl(blob.url);
       setProgress(null);
+      if (slot === 'sample') {
+        setSampleUrl(blob.url);
+        return;
+      }
+      setFinalUrl(blob.url);
+      if (watermarkable) await drawMark(order, blob.url);
     } catch (err) {
       setProgress(null);
       setError(err instanceof Error ? err.message : 'That upload failed.');
+    }
+  }
+
+  /**
+   * Ask the server for the watermarked copy.
+   *
+   * A failure here is not an error at the top of the page. It is a fallback:
+   * the second drop target comes back with the reason on it, and the operator
+   * carries on rather than being told something went wrong and left to guess
+   * what to do about it.
+   */
+  async function drawMark(orderId: string, url: string) {
+    setMarking(true);
+    try {
+      const res = await fetch('/api/operator/watermark', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId, url }),
+      });
+      const body = (await res.json().catch(() => null)) as
+        | { url?: string; error?: string }
+        | null;
+      if (!res.ok || !body?.url) {
+        setTwoFiles(body?.error ?? 'The watermark did not run. Upload the sample yourself.');
+        return;
+      }
+      setSampleUrl(body.url);
+      setTwoFiles('');
+    } catch {
+      setTwoFiles('The watermark did not finish here. Upload the sample yourself.');
+    } finally {
+      setMarking(false);
     }
   }
 
@@ -212,6 +303,18 @@ export default function OperatorOrders() {
 
   if (open) {
     const parked = finalUrl || open.parkedFinalUrl;
+    // The sample this page just made, or one made on an earlier visit and left
+    // in storage when the tab was closed. Either is the same file to send.
+    const sample = sampleUrl || open.parkedSampleUrl;
+    // A LinkedIn order hands over words. Everything below that says "file"
+    // asks this first, because for those orders there is no file at any point.
+    const text = deliveryFor(open.serviceSlug) === 'text';
+    const versions = open.draft?.versions ?? [];
+    const comments = open.draft?.comments ?? [];
+    const edited = draft.trim() !== (versions[0]?.body.trim() ?? '');
+    // What Send needs before it is allowed: words for a text order, both files
+    // for everything else.
+    const sendable = text ? draft.trim().length > 0 : Boolean(sample && parked);
     return (
       <main className="opq">
         <button className="opq-back" onClick={() => setOpen(null)}>
@@ -229,22 +332,24 @@ export default function OperatorOrders() {
         {flash && <p className="opq-flash">{flash}</p>}
         {error && <p className="opq-error">{error}</p>}
 
-        <section className="opq-block">
-          <h2>Files</h2>
-          <Drop
-            label="Watermarked sample"
-            url={sampleUrl}
-            pct={progress?.slot === 'sample' ? progress.pct : null}
-            onFile={(f) => void take(f, 'sample')}
+        {text ? (
+          <OperatorDraft
+            draft={draft}
+            onDraft={setDraft}
+            versions={versions}
+            comments={comments}
+            ago={ago}
           />
-          <Drop
-            label="Clean file"
-            hint="Uploaded now, kept back until they approve."
-            url={parked ?? ''}
-            pct={progress?.slot === 'final' ? progress.pct : null}
-            onFile={(f) => void take(f, 'final')}
+        ) : (
+          <OperatorFiles
+            parked={parked ?? null}
+            sample={sample ?? null}
+            uploading={progress}
+            marking={marking}
+            twoFiles={twoFiles}
+            onFile={(f, slot) => void take(f, slot)}
           />
-        </section>
+        )}
 
         <section className="opq-block">
           <h2>Note</h2>
@@ -256,57 +361,17 @@ export default function OperatorOrders() {
           />
         </section>
 
-        <section className="opq-actions">
-          <button
-            className="opq-btn opq-solid"
-            disabled={!sampleUrl || !parked || busy !== ''}
-            onClick={() => void send('sample_sent', sampleUrl)}
-          >
-            {busy === 'sample_sent' ? 'Sending' : 'Send the sample'}
-          </button>
-          <p className="opq-why">
-            {!sampleUrl || !parked
-              ? 'Needs both files. The clean one is parked, not shown to them.'
-              : 'Emails them that it is ready to watch.'}
-          </p>
-
-          <button
-            className="opq-btn"
-            disabled={!parked || busy !== ''}
-            onClick={() => void send('delivered')}
-          >
-            {busy === 'delivered' ? 'Delivering' : 'Deliver the clean file'}
-          </button>
-          <p className="opq-why">
-            {parked ? 'Uses the parked file. Emails them the download.' : 'No clean file parked yet.'}
-          </p>
-
-          <button className="opq-btn" disabled={busy !== ''} onClick={() => void send('working')}>
-            Mark as working
-          </button>
-          <p className="opq-why">Silent unless it follows a change request.</p>
-
-          <details className="opq-danger">
-            <summary>Turn it down or refund it</summary>
-            <button className="opq-btn" disabled={busy !== ''} onClick={() => void send('declined')}>
-              Decline
-            </button>
-            <button className="opq-btn" disabled={busy !== ''} onClick={() => void send('refunded')}>
-              Refund
-            </button>
-            <button
-              className="opq-btn"
-              disabled={busy !== ''}
-              onClick={() => {
-                if (!window.confirm('Delete this order and its history? There is no undo.')) return;
-                void drop();
-              }}
-            >
-              {busy === 'delete' ? 'Deleting' : 'Delete this order'}
-            </button>
-            <p className="opq-why">For test rows. Emails nobody, and cannot be undone.</p>
-          </details>
-        </section>
+        <OperatorActions
+          text={text}
+          sendable={sendable}
+          edited={edited}
+          marking={marking}
+          parked={parked ?? null}
+          sample={sample ?? null}
+          busy={busy}
+          onSend={(status, assetUrl) => void send(status, assetUrl)}
+          onDelete={() => void drop()}
+        />
 
         {open.events && open.events.length > 0 && (
           <section className="opq-block">
@@ -355,58 +420,5 @@ export default function OperatorOrders() {
       )}
       {error && <p className="opq-error">{error}</p>}
     </main>
-  );
-}
-
-/** A drop target that is also a file input, because a phone has no drag. */
-function Drop({
-  label,
-  hint,
-  url,
-  pct,
-  onFile,
-}: {
-  label: string;
-  hint?: string;
-  url: string;
-  pct: number | null;
-  onFile: (file: File) => void;
-}) {
-  const [over, setOver] = useState(false);
-  const done = Boolean(url) && pct === null;
-
-  return (
-    <label
-      className={`opq-drop${over ? ' opq-drop-over' : ''}${done ? ' opq-drop-done' : ''}`}
-      onDragOver={(e) => {
-        e.preventDefault();
-        setOver(true);
-      }}
-      onDragLeave={() => setOver(false)}
-      onDrop={(e) => {
-        e.preventDefault();
-        setOver(false);
-        const file = e.dataTransfer.files[0];
-        if (file) onFile(file);
-      }}
-    >
-      <input
-        type="file"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) onFile(file);
-        }}
-      />
-      <span className="opq-drop-label">{label}</span>
-      <span className="opq-drop-state">
-        {pct !== null ? `Uploading ${pct}%` : done ? 'Attached' : 'Drop a file, or tap to pick one'}
-      </span>
-      {hint && !done && <span className="opq-drop-hint">{hint}</span>}
-      {pct !== null && (
-        <span className="opq-bar" aria-hidden="true">
-          <span style={{ transform: `scaleX(${Math.max(pct, 2) / 100})` }} />
-        </span>
-      )}
-    </label>
   );
 }

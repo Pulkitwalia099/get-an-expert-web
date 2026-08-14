@@ -26,6 +26,8 @@ if (typeof window !== 'undefined') {
 export interface CustomerOrder {
   id: string;
   status: OrderStatus;
+  /** What they typed in the name field. Used to greet them in email. */
+  name: string | null;
   statusAt: string | null;
   statusNote: string | null;
   serviceName: string | null;
@@ -43,6 +45,7 @@ export interface OrderAssets {
 interface CurrentRow {
   id: string;
   status: string;
+  name: string | null;
   status_at: string | null;
   status_note: string | null;
   service_name: string | null;
@@ -53,7 +56,7 @@ interface CurrentRow {
 }
 
 const COLUMNS =
-  'id,status,status_at,status_note,service_name,service_slug,brief,price_cents,created_at';
+  'id,status,status_at,status_note,name,service_name,service_slug,brief,price_cents,created_at';
 
 // Postgres uuid. Checked before the value reaches a filter, because
 // selectRows takes a raw query string: an id straight from the URL is
@@ -75,6 +78,7 @@ function toOrder(row: CurrentRow): CustomerOrder {
   return {
     id: row.id,
     status: isOrderStatus(row.status) ? row.status : 'working',
+    name: row.name,
     statusAt: row.status_at,
     statusNote: row.status_note,
     serviceName: row.service_name,

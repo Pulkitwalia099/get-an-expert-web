@@ -59,6 +59,17 @@ describe('Content-Security-Policy', () => {
     expect(media).toContain('blob:');
   });
 
+  // A different blob. The one above is the `blob:` URI scheme the call uses;
+  // this is the storage the operator uploads to. media-src named neither the
+  // store nor https generally, so the <video> on a customer's order page could
+  // not load its own sample. img-src allows https: outright, which is why the
+  // same URL worked as a thumbnail and not as the video.
+  it('allows the sample to play from the store it was uploaded to', async () => {
+    const csp = (await headers())['Content-Security-Policy'];
+    const media = csp.split('; ').find((d) => d.startsWith('media-src'))!;
+    expect(media).toContain('https://*.public.blob.vercel-storage.com');
+  });
+
   it('still refuses to be framed and still blocks objects', async () => {
     const csp = (await headers())['Content-Security-Policy'];
     expect(csp).toContain("frame-ancestors 'none'");

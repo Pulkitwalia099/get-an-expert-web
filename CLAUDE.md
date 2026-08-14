@@ -219,6 +219,58 @@ Nothing here touches `lib/prompts.ts`, the model, `sanitizeReply` or the
 question budget, so the eval gate does not apply to it. The ranking prompt is
 a separate prompt in the search route and is not covered by `evals/`.
 
+## One file in, both out
+
+The operator drops the finished cut and the server draws the mark on a copy of
+it. `lib/watermark.ts` shells out to ffmpeg from `@ffmpeg-installer/ffmpeg`,
+`app/api/operator/watermark/route.ts` is the one caller, and
+`assets/watermark.png` is the mark. The recipe is the one approved on 14 Aug:
+the mark at 14% of the frame width, inset 2.08% of it, bottom right.
+
+- Both numbers are ratios, so a 9:16 phone cut and a 16:9 landscape cut carry
+  the same visual weight. `markGeometry` turns them into pixels in TypeScript
+  rather than in the filter graph, because `scale2ref` means different things
+  on different ffmpeg builds: `main_w` resolves to the reference width on
+  ffmpeg 4 and to the overlay's own width on ffmpeg 8, so the same filter
+  string draws a 269px mark on one and a 42px mark on the other.
+- A function is killed at 300 seconds. `lib/watermark-guard.ts` holds the
+  budget in **seconds of 1080p**, not seconds, because two minutes of 4K is
+  four times the work and a clock-only check accepts it and then dies. Measured
+  on preview: 77 seconds of 1080p took 117 seconds end to end.
+- The dashboard checks the same guard before uploading, from `videoShape` in
+  `components/OperatorDrop.tsx`. That check is the courtesy; ffprobe on the
+  server is the rule. Over the guard, the two file flow comes back with the
+  reason on screen.
+- `isParkedFinalUrl` is the only thing between an operator session and an
+  arbitrary fetch. ffmpeg opens what it is handed, so the URL must be https, on
+  our own storage, under that order's own `final/` prefix.
+- Both binaries are in `serverExternalPackages` and named in
+  `outputFileTracingIncludes`. They resolve their binary with a runtime
+  `require`, which fails the build if bundled and deploys without the binary if
+  merely traced.
+- `WATERMARK_LIVE=1 npx vitest run lib/__tests__/watermark.live.test.ts` runs a
+  real encode. It is off in `npm test` because it spends a minute.
+
+## LinkedIn delivers words, not a file
+
+An order on the `linkedin` service hands over a post. `deliveryFor` in
+`lib/delivery.ts` reads that off `service_slug`, and both order pages branch on
+it. Nothing about the status ladder changes: a draft still goes out as
+`sample_sent` and still ends at `delivered`.
+
+- `mk_order_drafts` and `mk_order_comments` are append only, added by
+  `migrations/0003_linkedin_drafts.sql` in the orders repo, which owns every
+  `mk_` table. The newest draft row is the current one.
+- The customer can edit the draft and comment on it, at
+  `/api/marketplace/[id]/draft`. An edit writes a version with
+  `actor='customer:<address>'` and **does not** spend a revision: somebody
+  fixing their own job title should not use up the rewrite they paid for.
+- A comment is a third thing, neither a version nor a status change. Filed as a
+  version it would replace the text; filed as a `working` event it would bounce
+  the order back into the queue.
+- `advance()` asks for a file only when the service delivers one. Before this
+  it always did, so a LinkedIn order could not reach `sample_sent` at all.
+
 ## The call button
 
 A "Talk to a human" pill in the chat titlebar, shown once the visitor has

@@ -112,6 +112,9 @@ async function handlePost(
     email: user.email,
     status: action === 'approve' ? 'approved' : 'working',
     serviceName: order.serviceName,
+    // What they wrote on the order first, and the name on their Google account
+    // second. The order is the more deliberate of the two.
+    name: order.name ?? user.name,
     afterChanges: action === 'changes',
   });
   if (told === 'failed') console.error('[midsesh:orders] customer receipt failed', id, action);

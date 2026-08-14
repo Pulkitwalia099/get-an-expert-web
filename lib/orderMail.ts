@@ -1,5 +1,7 @@
 import { hasEmailKey, sendEmail } from '@/lib/email';
 import { EMAIL_TOKEN_MAX_AGE, signEmailToken } from '@/lib/emailAuth';
+import { firstName, greeting } from '@/lib/initials';
+import { selectRows } from '@/lib/supabase';
 import type { OrderStatus } from '@/lib/order-status';
 
 // What the customer is told when their order moves, and when to say nothing.
@@ -194,13 +196,33 @@ function copyFor(
   }
 }
 
+/**
+ * The name on the account with this address, or null.
+ *
+ * Null for every reason, including Supabase being unreachable. A greeting is
+ * the smallest thing in the email, so anything that goes wrong here falls back
+ * to "Hi," rather than holding up a message somebody is waiting on.
+ */
+async function accountName(email: string): Promise<string | null> {
+  const address = email.trim().toLowerCase();
+  if (!address) return null;
+  const rows = await selectRows<{ name: string | null }>(
+    'accounts',
+    `select=name&email=eq.${encodeURIComponent(address)}&limit=1`,
+  );
+  return rows?.[0]?.name ?? null;
+}
+
 function origin(): string {
   return (process.env.AUTH_ORIGIN || 'https://midsesh.com').replace(/\/+$/, '');
 }
 
-function body(copy: Copy, link: string): string {
+function body(copy: Copy, link: string, name: string | null | undefined): string {
   return [
-    'Hi,',
+    // Their first name when the field holds one, and a bare "Hi," when it does
+    // not. `greeting` refuses anything doubtful, because an email opening "Hi
+    // TEST SUBMISSION," is worse than one that opens with no name at all.
+    greeting(name),
     '',
     ...copy.lines,
     '',
@@ -222,6 +244,8 @@ export interface OrderMailInput {
   email: string;
   status: OrderStatus;
   serviceName: string | null;
+  /** Whatever they typed in the name field. Free text, and often not a name. */
+  name?: string | null;
   /** What they asked for, shown back to them on the confirmation. */
   brief?: string | null;
   /** True when this `working` event came from the customer asking for changes. */
@@ -245,6 +269,17 @@ export type OrderMailResult = 'sent' | 'skipped' | 'failed' | 'unavailable';
  */
 export async function notifyCustomer(input: OrderMailInput): Promise<OrderMailResult> {
   if (!hasEmailKey()) return 'unavailable';
+
+  // The order usually has no name on it. `public/services/intake.js` posts
+  // `name: ''` because the form asks for an email address and nothing else, so
+  // every real row in mk_orders has a null name and the greeting would never
+  // fire on the strength of the order alone.
+  //
+  // An account is the other place a name exists, put there by Google at sign
+  // in, and it is keyed by the same address the mail is going to. So somebody
+  // who has signed in once gets greeted by name from then on, including on
+  // orders they placed before they had an account.
+  const name = firstName(input.name) ? input.name : await accountName(input.email);
 
   // The stored name can carry a trailing qualifier after a dot separator, and
   // 'order' is the fallback so a row with no service still produces a sentence
@@ -272,7 +307,7 @@ export async function notifyCustomer(input: OrderMailInput): Promise<OrderMailRe
   const ok = await sendEmail({
     to: input.email,
     subject: copy.subject,
-    text: body(copy, link),
+    text: body(copy, link, name),
   });
   return ok ? 'sent' : 'failed';
 }

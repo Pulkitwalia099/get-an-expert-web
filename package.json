@@ -12,6 +12,8 @@
   },
   "dependencies": {
     "@daily-co/daily-js": "^0.91.0",
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
+    "@ffprobe-installer/ffprobe": "^2.1.2",
     "@vercel/blob": "^2.8.0",
     "next": "^16.2.11",
     "posthog-js": "^1.407.2",

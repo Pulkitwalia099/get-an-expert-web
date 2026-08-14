@@ -3,8 +3,11 @@ import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 import OrderActions from '@/components/OrderActions';
+import OrderDraft from '@/components/OrderDraft';
 import { SESSION_COOKIE, readSession } from '@/lib/auth';
 import { CONTACT_EMAIL } from '@/lib/contact';
+import { TEXT_LABELS, TEXT_NOTES, deliveryFor } from '@/lib/delivery';
+import { draftThread } from '@/lib/orderDrafts';
 import {
   STATUS_LABELS,
   STATUS_NOTES,
@@ -39,9 +42,13 @@ export default async function Order({ params }: { params: Promise<{ id: string }
   if (!order) notFound();
 
   const step = stepFor(order.status);
+  // What this order hands over. A LinkedIn post has no file at any point, so
+  // the whole file half of this page is skipped rather than rendered empty.
+  const text = deliveryFor(order.serviceSlug) === 'text';
   // Nothing has been made yet at `new`, so the lookup is skipped rather than
   // run to find two nulls.
-  const assets = order.status === 'new' ? null : await assetsFor(id);
+  const assets = text || order.status === 'new' ? null : await assetsFor(id);
+  const thread = text && order.status !== 'new' ? await draftThread(id) : null;
   const showSample = Boolean(assets?.sampleUrl);
   const showDownload = order.status === 'delivered' && Boolean(assets?.finalUrl);
   // Only asked for when the buttons are about to render. Every other status
@@ -58,8 +65,8 @@ export default async function Order({ params }: { params: Promise<{ id: string }
       </header>
 
       <p className="ord-eyebrow">{order.serviceName || 'Order'}</p>
-      <h1>{STATUS_LABELS[order.status]}</h1>
-      <p className="ord-lede">{STATUS_NOTES[order.status]}</p>
+      <h1>{(text && TEXT_LABELS[order.status]) || STATUS_LABELS[order.status]}</h1>
+      <p className="ord-lede">{(text && TEXT_NOTES[order.status]) || STATUS_NOTES[order.status]}</p>
 
       {step !== null ? (
         <ol className="ord-rail">
@@ -94,6 +101,16 @@ export default async function Order({ params }: { params: Promise<{ id: string }
             .
           </p>
         </section>
+      )}
+
+      {thread && thread.versions.length > 0 && (
+        <OrderDraft
+          id={order.id}
+          versions={thread.versions}
+          comments={thread.comments}
+          when={ago}
+          final={order.status === 'delivered'}
+        />
       )}
 
       {awaitingCustomer(order.status) && <OrderActions id={order.id} used={used} />}

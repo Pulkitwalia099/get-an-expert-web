@@ -1,4 +1,6 @@
 import { list } from '@vercel/blob';
+import { deliveryFor } from '@/lib/delivery';
+import { appendDraft, draftThread, type DraftThread } from '@/lib/orderDrafts';
 import { notifyCustomer } from '@/lib/orderMail';
 import { isOrderStatus, type OrderStatus } from '@/lib/order-status';
 import { deleteRows, insertRows, selectRows } from '@/lib/supabase';
@@ -31,12 +33,38 @@ export function samplePrefix(orderId: string): string {
   return `orders/${orderId}/sample/`;
 }
 
+/**
+ * That a link really is this order's parked clean file.
+ *
+ * The watermark route is handed a URL by the dashboard and gives it to ffmpeg
+ * as an input. ffmpeg opens most things it is handed, so without this an
+ * operator session is also a way to make the server fetch an arbitrary
+ * address. Narrowing it to our own storage, under this order's own prefix,
+ * leaves nothing to point it at except a file the operator just uploaded.
+ */
+export function isParkedFinalUrl(orderId: string, url: string): boolean {
+  if (!UUID.test(orderId)) return false;
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return false;
+  }
+  return (
+    parsed.protocol === 'https:' &&
+    parsed.hostname.endsWith('.vercel-storage.com') &&
+    parsed.pathname.startsWith(`/${finalPrefix(orderId)}`)
+  );
+}
+
 export interface QueueOrder {
   id: string;
   email: string;
   name: string | null;
   status: OrderStatus;
   serviceName: string | null;
+  /** Which entry in lib/services.ts this is, and so what it delivers. */
+  serviceSlug: string | null;
   brief: string | null;
   createdAt: string;
   statusAt: string | null;
@@ -48,12 +76,14 @@ interface QueueRow {
   name: string | null;
   status: string;
   service_name: string | null;
+  service_slug: string | null;
   brief: string | null;
   created_at: string;
   status_at: string | null;
 }
 
-const QUEUE_COLUMNS = 'id,email,name,status,service_name,brief,created_at,status_at';
+const QUEUE_COLUMNS =
+  'id,email,name,status,service_name,service_slug,brief,created_at,status_at';
 
 function toQueueOrder(row: QueueRow): QueueOrder | null {
   if (!isOrderStatus(row.status)) return null;
@@ -63,6 +93,7 @@ function toQueueOrder(row: QueueRow): QueueOrder | null {
     name: row.name,
     status: row.status,
     serviceName: row.service_name,
+    serviceSlug: row.service_slug,
     brief: row.brief,
     createdAt: row.created_at,
     statusAt: row.status_at,
@@ -99,14 +130,32 @@ export interface OrderDetail extends QueueOrder {
   events: OrderEvent[];
   /** A clean file already uploaded and waiting for the delivery tap. */
   parkedFinalUrl: string | null;
+  /**
+   * A watermarked sample already made and waiting to be sent.
+   *
+   * The encode can run for two minutes, and an operator who closes the tab
+   * while it does would otherwise pay for it twice: the file is sitting in
+   * storage and only the page knew where. Read back the same way the clean
+   * file is, so reopening the order finds it.
+   */
+  parkedSampleUrl: string | null;
   /** Change requests the customer has spent. */
   revisions: number;
+  /**
+   * The written deliverable, for services that hand over words.
+   *
+   * Read for every order rather than only text ones, because it is two cheap
+   * queries against an indexed column and the alternative is the dashboard
+   * knowing about delivery types twice: once to decide whether to ask, and
+   * again to decide what to draw.
+   */
+  draft: DraftThread;
 }
 
 export async function detail(id: string): Promise<OrderDetail | null> {
   if (!UUID.test(id)) return null;
 
-  const [rows, events, parked] = await Promise.all([
+  const [rows, events, parked, parkedSample, draft] = await Promise.all([
     selectRows<QueueRow>('mk_orders_current', `select=${QUEUE_COLUMNS}&id=eq.${id}&limit=1`),
     selectRows<{
       status: string;
@@ -119,7 +168,9 @@ export async function detail(id: string): Promise<OrderDetail | null> {
       `select=status,note,actor,asset_url,created_at&order_id=eq.${id}` +
         `&order=created_at.desc&limit=50`,
     ),
-    parkedFinal(id),
+    newestUnder(finalPrefix(id)),
+    newestUnder(samplePrefix(id)),
+    draftThread(id),
   ]);
 
   const order = rows?.[0] ? toQueueOrder(rows[0]) : null;
@@ -137,6 +188,8 @@ export async function detail(id: string): Promise<OrderDetail | null> {
     ...order,
     events: trail,
     parkedFinalUrl: parked,
+    parkedSampleUrl: parkedSample,
+    draft,
     // Only the customer's own change requests count. Our own `working` moves
     // must never eat somebody's included revision.
     revisions: trail.filter((e) => e.status === 'working' && e.actor?.startsWith('customer:'))
@@ -146,9 +199,15 @@ export async function detail(id: string): Promise<OrderDetail | null> {
 
 /** The newest clean file parked for this order, or null when none is waiting. */
 export async function parkedFinal(orderId: string): Promise<string | null> {
+  if (!UUID.test(orderId)) return null;
+  return newestUnder(finalPrefix(orderId));
+}
+
+/** The newest file under one of an order's prefixes, or null when there is none. */
+async function newestUnder(prefix: string): Promise<string | null> {
   if (!process.env.BLOB_READ_WRITE_TOKEN) return null;
   try {
-    const { blobs } = await list({ prefix: finalPrefix(orderId), limit: 20 });
+    const { blobs } = await list({ prefix, limit: 20 });
     if (blobs.length === 0) return null;
     const newest = blobs.reduce((a, b) => (a.uploadedAt > b.uploadedAt ? a : b));
     return newest.url;
@@ -165,6 +224,15 @@ export interface AdvanceInput {
   status: OrderStatus;
   note?: string | null;
   assetUrl?: string | null;
+  /**
+   * The draft, for an order that delivers words.
+   *
+   * Saved with the move rather than by a separate call, so the operator presses
+   * Send once. A draft that is unchanged since the last version is dropped
+   * rather than failing the move, because pressing Send twice on the same words
+   * is not a mistake worth stopping for.
+   */
+  draft?: string | null;
 }
 
 export type AdvanceResult =
@@ -185,11 +253,34 @@ export async function advance(input: AdvanceInput): Promise<AdvanceResult> {
   if (!order) return { ok: false, error: 'No order with that id' };
 
   // The same rule the command line has. An order marked ready with nothing to
-  // watch shows the customer a status change and an empty page, which is worse
-  // than not having moved it at all.
-  const needsFile = input.status === 'sample_sent' || input.status === 'delivered';
+  // read or watch shows the customer a status change and an empty page, which
+  // is worse than not having moved it at all.
+  //
+  // What counts as "something" depends on what the service delivers. A video
+  // needs a file in storage; a LinkedIn post needs words, and asking it for a
+  // file would make the one status it has to pass through unreachable.
+  const handover = input.status === 'sample_sent' || input.status === 'delivered';
+  const text = deliveryFor(order.serviceSlug) === 'text';
+
+  if (text) {
+    // Written first, so the check below sees the version being sent rather
+    // than the one before it.
+    if (input.draft) {
+      const saved = await appendDraft(input.orderId, input.draft, 'operator');
+      // "Same as the current version" is not a failure here. It means Send was
+      // pressed twice on words that did not change, and the right response is
+      // to carry on and send them.
+      if (!saved.ok && saved.error !== 'That is the same as the current version') {
+        return { ok: false, error: saved.error ?? 'The draft did not save. Nothing was sent.' };
+      }
+    }
+    if (handover && order.draft.versions.length === 0 && !input.draft?.trim()) {
+      return { ok: false, error: 'There is no draft to send. Write one first.' };
+    }
+  }
+
   const url = input.assetUrl ?? (input.status === 'delivered' ? order.parkedFinalUrl : null);
-  if (needsFile && !url) {
+  if (handover && !text && !url) {
     return {
       ok: false,
       error:
@@ -216,6 +307,7 @@ export async function advance(input: AdvanceInput): Promise<AdvanceResult> {
     email: order.email,
     status: input.status,
     serviceName: order.serviceName,
+    name: order.name,
     brief: order.brief,
   });
 

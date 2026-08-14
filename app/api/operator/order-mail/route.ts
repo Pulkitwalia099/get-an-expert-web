@@ -23,6 +23,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 interface Row {
   id: string;
   email: string;
+  name: string | null;
   service_name: string | null;
   brief: string | null;
   status: string;
@@ -49,7 +50,7 @@ async function handlePost(req: NextRequest): Promise<NextResponse> {
     'mk_orders_current',
     // brief is read for the confirmation email, which shows somebody what
     // they asked for rather than only naming the service they picked.
-    `select=id,email,service_name,brief,status&id=eq.${orderId}&limit=1`,
+    `select=id,email,name,service_name,brief,status&id=eq.${orderId}&limit=1`,
   );
   if (!rows) return NextResponse.json({ error: 'Cannot read the order' }, { status: 502 });
   if (rows.length === 0) return NextResponse.json({ error: 'Not found' }, { status: 404 });
@@ -77,6 +78,7 @@ async function handlePost(req: NextRequest): Promise<NextResponse> {
     email: row.email,
     status: row.status,
     serviceName: row.service_name,
+    name: row.name,
     brief: row.brief,
     firstOrder: orderCount === 1,
     afterChanges: payload.afterChanges === true,

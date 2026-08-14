@@ -2211,6 +2211,60 @@ a.cta { text-decoration: none; display: inline-block; }
 }
 .ord-download { margin-top: 22px; }
 
+/* ----- the draft, on an order that delivers words */
+
+.ord-draft { margin: 26px 0 0; }
+.ord-draft h2, .ord-draft h3 {
+  font-size: 11px; font-weight: 650; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--ink-3); margin-bottom: 10px;
+}
+/* pre-wrap, because a LinkedIn post is line breaks. Collapsing them would show
+   the customer something that is not what they are about to publish. */
+.ord-draft-body {
+  white-space: pre-wrap; font-size: 15px; line-height: 1.62; color: var(--ink);
+  background: var(--glass-strong); border: 1px solid var(--line);
+  border-radius: var(--radius-card); padding: 18px 20px; max-width: 58ch;
+}
+.ord-draft-old { background: transparent; color: var(--ink-2); font-size: 14px; }
+.ord-draft-edit {
+  display: block; width: 100%; max-width: 58ch;
+  font: inherit; font-size: 15px; line-height: 1.62;
+  padding: 18px 20px; border-radius: var(--radius-card);
+  border: 1px solid var(--line-2); background: var(--glass-strong); color: var(--ink);
+  resize: vertical;
+  transition: border-color 160ms var(--ease-out);
+}
+.ord-draft-edit:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.ord-draft-meta { font-size: 12.5px; color: var(--ink-3); margin-top: 8px; }
+.ord-draft-note { font-size: 12.5px; color: var(--ink-3); margin-top: 8px; max-width: 52ch; }
+.ord-draft-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+
+.ord-draft-history { margin-top: 18px; }
+.ord-draft-history summary {
+  font-size: 13px; color: var(--ink-3); cursor: pointer; padding: 6px 0;
+}
+.ord-draft-history ol { list-style: none; display: flex; flex-direction: column; gap: 14px; }
+
+.ord-draft-talk { margin-top: 26px; }
+.ord-draft-talk ul { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; }
+.ord-draft-talk li {
+  font-size: 14px; line-height: 1.55; color: var(--ink-2);
+  border-left: 2px solid var(--line-2); padding-left: 12px;
+}
+/* Their own words, marked without a chat bubble. This is one flat list on a
+   status page, not a messaging app, and it should not start looking like one. */
+.ord-draft-talk .ord-mine { border-left-color: var(--accent); }
+.ord-draft-talk .ord-draft-meta { margin-top: 0; margin-bottom: 2px; }
+.ord-draft-talk textarea {
+  display: block; width: 100%; max-width: 58ch;
+  font: inherit; font-size: 14px; line-height: 1.55;
+  padding: 11px 13px; border-radius: 12px;
+  border: 1px solid var(--line-2); background: var(--glass-strong); color: var(--ink);
+  resize: vertical;
+  transition: border-color 160ms var(--ease-out);
+}
+.ord-draft-talk textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
 /* ----- the two doors */
 
 .doors { display: flex; flex-direction: column; gap: 14px; max-width: 30rem; }
@@ -2515,6 +2569,41 @@ body:has(.opq) { background: #FBFBF8; }
    that stutters makes the upload itself feel slower than it is. */
 .opq-bar span { display: block; height: 100%; background: #6D28FF; transform-origin: left; transition: transform 200ms linear; }
 
+/* The encode. Dashed border goes solid and the cursor stops offering a file,
+   because dropping a second one mid-encode would upload over the first. */
+.opq-drop-busy { border-style: solid; border-color: rgba(109,40,255,.35); background: #FCFBFF; cursor: default; }
+.opq-drop-busy input { cursor: default; }
+.opq-drop-busy .opq-drop-state { color: #6D28FF; font-weight: 600; }
+/* Constant motion, so linear: an eased loop reads as stuttering. There is no
+   percentage to show, and inventing one for a job that reports no progress is
+   the kind of detail that is only ever noticed when it turns out to be false. */
+.opq-bar-run span { width: 38%; transition: none; animation: opq-run 1.15s linear infinite; }
+@keyframes opq-run {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(263%); }
+}
+
+/* ----- the draft, operator side */
+
+.opq-draft {
+  min-height: 220px; line-height: 1.55; white-space: pre-wrap;
+  font-variant-ligatures: none;
+}
+.opq-btn-small { padding: 7px 12px; font-size: 12.5px; align-self: flex-start; }
+.opq-versions { margin-top: 4px; }
+.opq-versions summary { font-size: 13px; color: rgba(0,0,0,.45); cursor: pointer; padding: 6px 0; }
+.opq-versions ul { list-style: none; display: flex; flex-direction: column; gap: 14px; }
+.opq-versions li { display: flex; flex-direction: column; gap: 6px; border-left: 2px solid rgba(0,0,0,.1); padding-left: 12px; }
+.opq-versions p { font-size: 13.5px; line-height: 1.5; color: rgba(0,0,0,.72); white-space: pre-wrap; }
+.opq-comments { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
+.opq-comments li { border-left: 2px solid rgba(0,0,0,.1); padding-left: 12px; }
+.opq-comments p { font-size: 13.5px; line-height: 1.5; color: rgba(0,0,0,.72); white-space: pre-wrap; }
+.opq-comment-them { border-left-color: #6D28FF; }
+
+.opq-why-warn { color: #9A6A12; }
+.opq-why-done { color: #2F6F4F; }
+.opq-why-done a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+
 .opq textarea, .opq-lock input {
   width: 100%; font: inherit; font-size: 16px; color: #0A0A0A;
   background: #fff; border: 1px solid rgba(0,0,0,.14); border-radius: 14px; padding: 12px 14px;
@@ -2570,4 +2659,8 @@ body:has(.opq) { background: #FBFBF8; }
   .opq-list li { animation: none; opacity: 1; transform: none; }
   .opq-row, .opq-btn, .opq-back { transition: none; }
   .opq-row:hover, .opq-row:active, .opq-btn:active, .opq-back:active { transform: none; }
+  /* Not removed, dimmed and stilled. The bar is the only thing on screen
+     saying the encode is still running, and taking it away would leave a page
+     that looks finished while it is not. */
+  .opq-bar-run span { animation: none; width: 100%; opacity: .3; }
 }

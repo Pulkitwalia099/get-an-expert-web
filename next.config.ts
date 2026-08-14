@@ -45,6 +45,17 @@ const TIKTOK = 'https://www.tiktok.com';
 const GOOGLE_FONTS_CSS = 'https://fonts.googleapis.com';
 const GOOGLE_FONTS_FILES = 'https://fonts.gstatic.com';
 
+// Where uploaded files are served from. The customer's order page plays the
+// sample in a <video> whose src is a Blob URL, and media-src named only 'self'
+// and the call provider, so the browser refused to load it. Nothing had caught
+// this because no sample had ever been sent: the whole upload path shipped on
+// 14 Aug and mk_order_events is still empty, so the first customer to open a
+// finished order would have been the test.
+//
+// img-src already allows https: generally, which is why the same URL works for
+// a thumbnail and not for the video it belongs to.
+const BLOB = 'https://*.public.blob.vercel-storage.com';
+
 const CSP = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline' ${POSTHOG} https://app.cal.com`,
@@ -53,7 +64,7 @@ const CSP = [
   `font-src 'self' data: ${GOOGLE_FONTS_FILES}`,
   `connect-src 'self' ${POSTHOG} ${DAILY} ${CAL}`,
   `frame-src 'self' ${DAILY} ${CAL} ${TIKTOK}`,
-  `media-src 'self' blob: ${DAILY}`,
+  `media-src 'self' blob: ${BLOB} ${DAILY}`,
   "worker-src 'self' blob:",
   "object-src 'none'",
   "base-uri 'self'",
@@ -84,6 +95,24 @@ const SECURITY_HEADERS = [
 const nextConfig: NextConfig = {
   turbopack: {
     root: __dirname,
+  },
+  // The watermark encode shells out to ffmpeg, which is a 68MB binary inside a
+  // package rather than JavaScript that can be imported. Both of these packages
+  // find their binary by assembling a path and calling `require` on it, which
+  // the bundler cannot follow: it fails the build outright with "Can't resolve
+  // <dynamic>". Left external, they are plain `require`s at runtime and the
+  // path resolves the way Node intended.
+  serverExternalPackages: ['@ffmpeg-installer/ffmpeg', '@ffprobe-installer/ffprobe'],
+  // External still leaves the tracer guessing which files to deploy, and the
+  // answer it reaches is the wrapper without the binary: an encode that fails
+  // with ENOENT in production having passed every check here. Named explicitly,
+  // and named per route, so every other function stays the size it was.
+  outputFileTracingIncludes: {
+    '/api/operator/watermark': [
+      './node_modules/@ffmpeg-installer/**/*',
+      './node_modules/@ffprobe-installer/**/*',
+      './assets/watermark.png',
+    ],
   },
   async headers() {
     return [{ source: '/(.*)', headers: SECURITY_HEADERS }];

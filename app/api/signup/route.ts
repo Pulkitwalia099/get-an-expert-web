@@ -121,6 +121,7 @@ async function mirrorOrder(
       email: input.email,
       status: 'new',
       serviceName: service?.name ?? input.serviceName ?? null,
+      name: input.name,
       brief: input.brief,
       firstOrder: orders === 1,
     });
