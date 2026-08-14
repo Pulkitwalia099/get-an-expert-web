@@ -7,6 +7,22 @@ if you already knew it existed.
 
 Rendered version: https://claude.ai/code/artifact/18fe85f8-fb17-43d4-ad0b-e22f77565945
 
+## Status, 14 Aug 2026
+
+- **P1 done.** `resolveAccount` in `lib/credits.ts` runs before either callback
+  signs a session, the merge migration is applied, and
+  `accounts_email_key` now makes a second account for one address impossible.
+  Verified against production: 0 split addresses, 5 accounts, index present.
+- **P4 done.** `midsesh.com` is verified at Resend, `REPORT_FROM` and
+  `REPORT_REPLY_TO` are set in Production, and a sign in link was delivered to
+  a non-Gmail address. Pranav is no longer blocked.
+- **Deliverability follow up.** DKIM at `resend._domainkey.midsesh.com` and a
+  `_dmarc` record do not resolve in public DNS. Mail is arriving anyway, so
+  this is not urgent, but unsigned mail from a new domain is what lands in
+  spam once volume rises. Worth adding both at GoDaddy.
+- **P2 next.** There is no `/signin` route, and all six pages in
+  `public/services/` link straight at `/api/auth/google`.
+
 ## Read this first
 
 `midsesh.com` serves three codebases behind one domain:
