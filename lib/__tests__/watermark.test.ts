@@ -15,32 +15,45 @@ import {
 // through fails as a timeout four minutes later.
 
 describe('markGeometry', () => {
-  it('draws the approved size on the 1920 cut it was approved on', () => {
-    const { width, height, inset } = markGeometry(1920);
-    // 14% of 1920 is 268.8, and the mark keeps its 300x64 shape.
-    expect(width).toBe(270);
-    expect(height).toBe(58);
-    expect(inset).toBe(40);
+  it('reproduces the placement approved on a 1080x1920 phone cut', () => {
+    // Half the frame wide, 40px in from the right and 260px up from the
+    // bottom, which is the mark Pulkit approved after the first one was
+    // rejected for being invisible in motion.
+    const { width, height, x, y } = markGeometry(1080, 1920);
+    expect(width).toBe(540);
+    expect(height).toBe(116);
+    expect(x).toBe(40);
+    expect(y).toBeCloseTo(260, -1);
   });
 
-  it('gives a vertical cut the same visual weight, not the same pixels', () => {
-    const wide = markGeometry(1920);
-    const phone = markGeometry(1080);
-    expect(phone.width).toBeLessThan(wide.width);
-    expect(phone.width / 1080).toBeCloseTo(wide.width / 1920, 2);
-    expect(phone.inset / 1080).toBeCloseTo(wide.inset / 1920, 2);
+  it('gives a landscape cut the same visual weight, not the same pixels', () => {
+    const phone = markGeometry(1080, 1920);
+    const wide = markGeometry(1920, 1080);
+    expect(wide.width).toBeGreaterThan(phone.width);
+    expect(wide.width / 1920).toBeCloseTo(phone.width / 1080, 2);
+    expect(wide.x / 1920).toBeCloseTo(phone.x / 1080, 2);
+  });
+
+  it('lifts the mark off the bottom in proportion to the height, not the width', () => {
+    // The vertical inset clears the HTML5 control bar and a burned in caption,
+    // both of which sit at the bottom whatever shape the frame is. Tied to the
+    // width it would sit nearly half way up a 16:9 frame.
+    const wide = markGeometry(1920, 1080);
+    expect(wide.y).toBeLessThan(wide.width);
+    expect(wide.y / 1080).toBeCloseTo(markGeometry(1080, 1920).y / 1920, 2);
   });
 
   it('keeps every dimension even, because x264 rejects odd ones on yuv420p', () => {
-    for (const frame of [640, 720, 1080, 1234, 1920, 2160, 3840]) {
-      const { width, height } = markGeometry(frame);
+    for (const [w, h] of [[640, 360], [720, 1280], [1080, 1920], [1234, 567], [3840, 2160]]) {
+      const { width, height } = markGeometry(w, h);
       expect(width % 2).toBe(0);
       expect(height % 2).toBe(0);
     }
   });
 
   it('keeps the mark off the very edge of a small frame', () => {
-    expect(markGeometry(320).inset).toBeGreaterThanOrEqual(8);
+    expect(markGeometry(320, 240).x).toBeGreaterThanOrEqual(8);
+    expect(markGeometry(320, 240).y).toBeGreaterThanOrEqual(8);
   });
 });
 
@@ -113,7 +126,11 @@ describe('guardVerdict', () => {
 });
 
 describe('encodeArgs', () => {
-  const args = encodeArgs('https://blob.example/clean.mp4', '/tmp/out.mp4', markGeometry(1920));
+  const args = encodeArgs(
+    'https://blob.example/clean.mp4',
+    '/tmp/out.mp4',
+    markGeometry(1080, 1920),
+  );
 
   it('passes the source as its own argument, never inside a command line', () => {
     // A URL from somewhere else, concatenated into a shell string, is the one
@@ -122,10 +139,10 @@ describe('encodeArgs', () => {
     expect(args.some((a) => a.includes('&&') || a.includes(';  '))).toBe(false);
   });
 
-  it('pins the mark to the bottom right with expressions, not with the probe', () => {
+  it('places the mark with expressions, not with the probe', () => {
     const filter = args[args.indexOf('-filter_complex') + 1];
-    expect(filter).toContain('overlay=main_w-overlay_w-40:main_h-overlay_h-40');
-    expect(filter).toContain('scale=270:58');
+    expect(filter).toContain('overlay=main_w-overlay_w-40:main_h-overlay_h-259');
+    expect(filter).toContain('scale=540:116');
   });
 
   it('copies the audio rather than spending encode time on it', () => {

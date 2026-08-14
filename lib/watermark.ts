@@ -37,29 +37,37 @@ export {
 
 const run = promisify(execFile);
 
-/** The mark, at `assets/watermark.png`. 300x64, drawn with PIL at 4x and downsampled. */
+/** The mark, at `assets/watermark.png`. 420x90, drawn with PIL at 4x and downsampled. */
 export const MARK_PATH = join(process.cwd(), 'assets', 'watermark.png');
 
 /**
- * The approved size, as a proportion of the frame rather than in pixels.
+ * The approved size and placement, as proportions of the frame.
  *
- * Both numbers come off the 1920 wide cut Pulkit signed off on 14 Aug: the
- * mark sat 269px wide, inset 40px. Held as ratios so a 9:16 phone cut and a
- * 16:9 landscape cut get the same visual weight, which absolute pixels cannot
- * do. 40px on a 1080 wide vertical video is nearly double the inset it is on
- * a 1920 wide one, and it reads as a different watermark.
+ * These come off the second mark, approved on 14 Aug after the first one was
+ * rejected. The first was a small dark corner badge and it was invisible in
+ * motion on dark footage: Pulkit reported "there is no watermark" twice while
+ * still frames proved it was there, which is the least useful fact available.
+ * A watermark nobody notices is not a watermark. What replaced it is a white
+ * plate reading "midsesh SAMPLE" at about half the frame width.
  *
- * Both are proportions of the *width* on purpose, including the vertical
- * inset. Tying the vertical one to the height would push the mark further from
- * the bottom edge than from the right on anything taller than it is wide, and
- * a corner mark that is not square in its corner looks like a mistake.
+ * Held as ratios rather than pixels so a 9:16 phone cut and a 16:9 landscape
+ * cut carry the same weight. 40px of inset on a 1080 wide vertical video is
+ * nearly double what it is on a 1920 wide one, and reads as a different mark.
+ *
+ * The horizontal inset is a proportion of the width and the vertical one a
+ * proportion of the *height*, which is the one asymmetry here. It exists
+ * because the vertical number is not decoration: it lifts the mark clear of
+ * the HTML5 control bar and of a burned in caption, both of which sit at the
+ * bottom of the frame whatever its shape. 0.135 of the height reproduces
+ * exactly the 260px that was approved on a 1080x1920 frame.
  */
-export const MARK_WIDTH_RATIO = 0.14;
-export const MARK_INSET_RATIO = 0.0208;
+export const MARK_WIDTH_RATIO = 0.5;
+export const MARK_X_INSET_RATIO = 0.037;
+export const MARK_Y_INSET_RATIO = 0.135;
 
 /** Natural size of the PNG. Only its shape matters; the height follows the width. */
-const MARK_NATURAL_WIDTH = 300;
-const MARK_NATURAL_HEIGHT = 64;
+const MARK_NATURAL_WIDTH = 420;
+const MARK_NATURAL_HEIGHT = 90;
 
 /**
  * How long ffmpeg is allowed before it is stopped.
@@ -73,7 +81,8 @@ export const ENCODE_TIMEOUT_MS = 240_000;
 export interface MarkGeometry {
   width: number;
   height: number;
-  inset: number;
+  x: number;
+  y: number;
 }
 
 /**
@@ -89,12 +98,13 @@ export interface MarkGeometry {
  * Rounded to even numbers because x264 will not take odd dimensions on the
  * yuv420p pixel format the output uses.
  */
-export function markGeometry(frameWidth: number): MarkGeometry {
+export function markGeometry(frameWidth: number, frameHeight: number): MarkGeometry {
   const width = even(Math.round(frameWidth * MARK_WIDTH_RATIO));
   return {
     width,
     height: even(Math.round((width * MARK_NATURAL_HEIGHT) / MARK_NATURAL_WIDTH)),
-    inset: Math.max(8, Math.round(frameWidth * MARK_INSET_RATIO)),
+    x: Math.max(8, Math.round(frameWidth * MARK_X_INSET_RATIO)),
+    y: Math.max(8, Math.round(frameHeight * MARK_Y_INSET_RATIO)),
   };
 }
 
@@ -138,7 +148,7 @@ export function quarterTurned(tag: string | undefined, sideData: number | undefi
  * rather than a mark halfway off the frame.
  */
 export function encodeArgs(source: string, out: string, geometry: MarkGeometry): string[] {
-  const { width, height, inset } = geometry;
+  const { width, height, x, y } = geometry;
   return [
     '-hide_banner',
     '-loglevel',
@@ -150,7 +160,7 @@ export function encodeArgs(source: string, out: string, geometry: MarkGeometry):
     MARK_PATH,
     '-filter_complex',
     `[1:v]scale=${width}:${height}[wm];` +
-      `[0:v][wm]overlay=main_w-overlay_w-${inset}:main_h-overlay_h-${inset}`,
+      `[0:v][wm]overlay=main_w-overlay_w-${x}:main_h-overlay_h-${y}`,
     '-c:v',
     'libx264',
     '-preset',
@@ -262,7 +272,7 @@ export async function watermarkVideo(source: string): Promise<WatermarkResult> {
 
   const out = join(tmpdir(), `wm-${Date.now()}-${Math.random().toString(36).slice(2, 10)}.mp4`);
   try {
-    await run(ffmpeg.path, encodeArgs(source, out, markGeometry(info.width)), {
+    await run(ffmpeg.path, encodeArgs(source, out, markGeometry(info.width, info.height)), {
       timeout: ENCODE_TIMEOUT_MS,
       maxBuffer: 1024 * 1024,
     });

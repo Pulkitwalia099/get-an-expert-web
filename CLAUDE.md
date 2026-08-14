@@ -224,11 +224,19 @@ a separate prompt in the search route and is not covered by `evals/`.
 The operator drops the finished cut and the server draws the mark on a copy of
 it. `lib/watermark.ts` shells out to ffmpeg from `@ffmpeg-installer/ffmpeg`,
 `app/api/operator/watermark/route.ts` is the one caller, and
-`assets/watermark.png` is the mark. The recipe is the one approved on 14 Aug:
-the mark at 14% of the frame width, inset 2.08% of it, bottom right.
+`assets/watermark.png` is the mark: a white plate reading "midsesh SAMPLE" at
+half the frame width, 3.7% of the width in from the right and 13.5% of the
+height up from the bottom.
 
-- Both numbers are ratios, so a 9:16 phone cut and a 16:9 landscape cut carry
-  the same visual weight. `markGeometry` turns them into pixels in TypeScript
+- That is the **second** mark. The first was a small dark corner badge and it
+  was invisible in motion on dark footage: Pulkit said "there is no watermark"
+  twice while still frames proved it was there. Being able to prove the pixels
+  exist is the least useful fact available.
+- The vertical inset is a proportion of the height, not the width, which is the
+  one asymmetry. It lifts the mark clear of the HTML5 control bar and of a
+  burned in caption, both of which sit at the bottom whatever the frame shape.
+- The rest are ratios of the width, so a 9:16 phone cut and a 16:9 landscape
+  cut carry the same weight. `markGeometry` turns them into pixels in TypeScript
   rather than in the filter graph, because `scale2ref` means different things
   on different ffmpeg builds: `main_w` resolves to the reference width on
   ffmpeg 4 and to the overlay's own width on ffmpeg 8, so the same filter

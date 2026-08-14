@@ -82,9 +82,9 @@ describe.skipIf(!live)('a real encode', () => {
     expect(info).not.toBeNull();
     expect(info!.width).toBe(1080);
     expect(info!.height).toBe(1920);
-    // Smaller in pixels than the 270 a 1920 wide cut gets, and the same
-    // fraction of the frame, which is the whole point of the ratio.
-    expect(markGeometry(info!.width).width).toBe(152);
+    // Half the frame, which is the mark that was approved after a smaller one
+    // turned out to be invisible in motion.
+    expect(markGeometry(info!.width, info!.height).width).toBe(540);
 
     const result = await watermarkVideo(source);
     expect(result.ok).toBe(true);
@@ -93,11 +93,15 @@ describe.skipIf(!live)('a real encode', () => {
     expect(await shape(join(dir, 'out.mp4'))).toMatchObject({ width: 1080, height: 1920 });
   }, 180_000);
 
-  it('refuses a cut longer than the guard, without encoding any of it', async () => {
+  it('refuses a cut past the outer limit, without encoding any of it', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'wm-live-'));
+    // Past MAX_SOURCE_SECONDS. Deliberately tiny in frame size, so what is
+    // being tested is the outer wall rather than the encode budget: 310
+    // seconds of 320x240 is only about 12 seconds of 1080p worth of work and
+    // sails through the budget on its own.
     const args = [
       '-hide_banner', '-loglevel', 'error', '-y',
-      '-f', 'lavfi', '-i', 'testsrc=size=320x240:rate=10:duration=130',
+      '-f', 'lavfi', '-i', 'testsrc=size=320x240:rate=10:duration=310',
       '-c:v', 'libx264', '-preset', 'ultrafast', '-pix_fmt', 'yuv420p',
       join(dir, 'long.mp4'),
     ];
@@ -109,7 +113,7 @@ describe.skipIf(!live)('a real encode', () => {
     if (result.ok) return;
     expect(result.error).toContain('upload the watermarked sample too');
     // The refusal comes from the probe, so it is immediate rather than after
-    // two minutes of encoding something that was always going to be rejected.
+    // five minutes of encoding something that was always going to be rejected.
     expect(Date.now() - started).toBeLessThan(20_000);
   }, 180_000);
 });
