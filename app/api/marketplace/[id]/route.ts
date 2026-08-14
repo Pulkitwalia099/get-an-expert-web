@@ -6,6 +6,7 @@ import { withMetrics } from '@/lib/metrics';
 import { MAX_COMMENT, isOrderAction } from '@/lib/order-status';
 import { appendCustomerEvent, getOrderForEmail } from '@/lib/orderTracking';
 import { clientId, rateLimit } from '@/lib/ratelimit';
+import { notifyCustomer } from '@/lib/orderMail';
 import { matchesOrigin, scrubUntrusted } from '@/lib/sanitize';
 
 // The customer's two answers: approve, or ask for changes.
@@ -97,6 +98,23 @@ async function handlePost(
     ].join('\n'),
   });
   if (!sent) console.error('[midsesh:orders] action notification failed', id, action);
+
+  // And the customer's own receipt. Called directly rather than through
+  // /api/operator/order-mail because that route exists to let the orders repo
+  // reach this code, and we are already inside it.
+  //
+  // `afterChanges` is why this is not left to a generic status hook. A
+  // `working` event from us means we started; the same event from them means
+  // they asked for a recut, and only one of those is worth an email. The
+  // difference lives in who wrote it, which only this route knows.
+  const told = await notifyCustomer({
+    orderId: id,
+    email: user.email,
+    status: action === 'approve' ? 'approved' : 'working',
+    serviceName: order.serviceName,
+    afterChanges: action === 'changes',
+  });
+  if (told === 'failed') console.error('[midsesh:orders] customer receipt failed', id, action);
 
   return NextResponse.json({ ok: true, status: action === 'approve' ? 'approved' : 'working' });
 }

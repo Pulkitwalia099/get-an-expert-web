@@ -14,18 +14,46 @@ import { withMetrics } from '@/lib/metrics';
 
 const LANDING = '/orders';
 
-function land(req: NextRequest, params: Record<string, string> = {}): NextResponse {
-  const url = new URL(LANDING, req.nextUrl.origin);
+/**
+ * Where to send them after the link works.
+ *
+ * A status email links to one order, so "you have a sample" should open that
+ * sample rather than a list they then have to read. But the destination
+ * arrives in a URL, which makes it somebody else's input: an unchecked `next`
+ * is an open redirect, and this one is attached to a link that sets a session
+ * cookie, which is the worst possible thing to point at another origin.
+ *
+ * So it is not sanitised, it is matched. Only `/orders` and `/orders/<uuid>`
+ * are ever honoured and everything else falls back to the list. A protocol
+ * relative `//evil.example` fails this, which is the case a "must start with
+ * a slash" check famously does not.
+ */
+const SAFE_NEXT = /^\/orders(\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})?$/i;
+
+function destination(raw: string | null): string {
+  return raw && SAFE_NEXT.test(raw) ? raw : LANDING;
+}
+
+function land(
+  req: NextRequest,
+  params: Record<string, string> = {},
+  to: string = LANDING,
+): NextResponse {
+  const url = new URL(to, req.nextUrl.origin);
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
   return NextResponse.redirect(url);
 }
 
 async function handleGet(req: NextRequest): Promise<NextResponse> {
   const email = readEmailToken(req.nextUrl.searchParams.get('t') ?? undefined);
+  const to = destination(req.nextUrl.searchParams.get('next'));
 
   // Expired and forged land in the same place, saying the same thing. There is
   // nothing useful to tell apart for the person holding an old link, and
   // telling a forger which of the two they got is a hint they can work with.
+  //
+  // Always the list, never `to`. A dead link should not drop somebody on an
+  // order page that will only 404 them for being signed out.
   if (!email) return land(req, { signin: 'expired' });
 
   const user = {
@@ -45,7 +73,7 @@ async function handleGet(req: NextRequest): Promise<NextResponse> {
   // its own error state.
   await ensureAccount(user);
 
-  const res = land(req, { signin: 'ok' });
+  const res = land(req, { signin: 'ok' }, to);
   res.cookies.set(SESSION_COOKIE, session, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
