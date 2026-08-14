@@ -86,19 +86,27 @@ function copyFor(
           ...briefLines(brief),
           '',
           'WHAT HAPPENS NEXT',
-          'We start on it now. When the first version is ready you will get',
-          'an email with a link that opens it. There is no password and no',
-          'account to set up.',
+          'We are starting on it now. When the first version is ready, you',
+          'will get an email with a link that opens it. There is no password',
+          'to remember and no account to set up.',
+          '',
+          // Asking for a call reads as a delay unless the reason is given, so
+          // the reason is given. It is also the honest description of how this
+          // actually goes: a thin brief costs a revision round, and ten
+          // minutes on a call costs less than that for everybody.
+          'If anything in your brief leaves us guessing, we will write to you',
+          'and ask for a short call before we start. Ten minutes on a call is',
+          'better than sending you something you did not ask for.',
           '',
           'WHAT IS INCLUDED',
-          'One round of changes after you have seen the first version.',
+          'You get one round of changes once you have seen the first version.',
           ...(watch
-            ? ['The final file with no watermark, and the usage rights are yours.']
-            : ['The finished work, and the usage rights are yours.']),
+            ? ['The final file has no watermark, and the usage rights are yours.']
+            : ['The finished work is yours to use, with full rights.']),
           '',
           'WORTH KNOWING',
           'Nothing is charged automatically, and nothing is final until you',
-          'approve it. If we cannot take the job on we will tell you quickly',
+          'approve it. If we cannot take the job on, we will tell you quickly',
           'rather than sit on it.',
         ],
         cta: 'Your order',

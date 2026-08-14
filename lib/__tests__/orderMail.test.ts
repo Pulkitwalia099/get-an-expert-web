@@ -84,9 +84,16 @@ describe('the confirmation', () => {
     expect(sent?.subject).toBe('We have your LinkedIn Growth Engine order');
     // Their own words, tidied of the whitespace a textarea leaves behind.
     expect(sent?.text).toContain('Twelve posts a month about fintech hiring');
-    expect(sent?.text).toContain('One round of changes');
-    expect(sent?.text).toContain('usage rights are yours');
+    expect(sent?.text).toContain('one round of changes');
+    expect(sent?.text).toMatch(/rights are yours|with full rights/);
     expect(sent?.text).toContain('Nothing is charged automatically');
+  });
+
+  it('says a call may be needed, and why', async () => {
+    const sent = await mail({ status: 'new' });
+    expect(sent?.text).toContain('ask for a short call before we start');
+    // The reason has to travel with the ask. On its own it reads as a delay.
+    expect(sent?.text).toContain('leaves us guessing');
   });
 
   it('survives an order with no brief', async () => {
@@ -95,9 +102,12 @@ describe('the confirmation', () => {
   });
 
   it('does not paste an essay into an email', async () => {
-    const sent = await mail({ status: 'new', brief: 'x'.repeat(600) });
-    expect(sent?.text).toContain('...');
-    expect(sent?.text.length).toBeLessThan(1400);
+    const long = await mail({ status: 'new', brief: 'x'.repeat(600) });
+    const short = await mail({ status: 'new', brief: 'four words only here' });
+    expect(long?.text).toContain('...');
+    // The brief is capped rather than the email: a 600 character brief adds
+    // about 240 characters, not 600, so it never becomes the email.
+    expect((long?.text.length ?? 0) - (short?.text.length ?? 0)).toBeLessThan(260);
   });
 });
 
