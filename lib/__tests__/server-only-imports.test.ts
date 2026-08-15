@@ -27,6 +27,7 @@ const SERVER_ONLY = [
   'quotes',
   'supabase',
   'operatorOrders',
+  'operatorQuotes',
   'orderDrafts',
   'watermark',
   // Server-only by inheritance rather than by its own guard: it imports

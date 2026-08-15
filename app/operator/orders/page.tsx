@@ -6,7 +6,12 @@ import OperatorActions from '@/components/OperatorActions';
 import OperatorDraft from '@/components/OperatorDraft';
 import { videoShape } from '@/components/OperatorDrop';
 import OperatorFiles from '@/components/OperatorFiles';
+import OperatorLock from '@/components/OperatorLock';
+import OperatorQueueView from '@/components/OperatorQueueView';
+import { useQuoteQueue } from '@/components/useQuoteQueue';
 import { deliveryFor } from '@/lib/delivery';
+import { ORDER_QUEUE_LABELS as LABELS } from '@/lib/operator-lanes';
+import { ago } from '@/lib/promise-clock';
 import { guardVerdict } from '@/lib/watermark-guard';
 
 // The order queue, worked from a phone.
@@ -14,6 +19,11 @@ import { guardVerdict } from '@/lib/watermark-guard';
 // One page, two views: the list of what is waiting, and one order open. No
 // routing between them, because the whole thing is forty orders at most and a
 // back button that never leaves the page is faster than a navigation.
+//
+// The list is grouped by whose turn it is and headed by four counts, which is
+// OperatorQueueView. Quote requests are read separately and sit in it as a
+// fifth kind of row, because they carry the same 24 hour promise and nothing
+// in this tool used to show them at all.
 //
 // Nothing here emails anybody by loading. Uploads attach files and change
 // nothing the customer can see; only the buttons at the bottom of an open
@@ -51,32 +61,19 @@ interface Order {
   draft?: { versions: Version[]; comments: Version[] };
 }
 
-const LABELS: Record<Status, string> = {
-  new: 'New',
-  working: 'Working',
-  sample_sent: 'Waiting on them',
-  approved: 'Approved',
-  delivered: 'Delivered',
-  declined: 'Declined',
-  refunded: 'Refunded',
-};
-
-function ago(iso: string): string {
-  const mins = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
-  if (mins < 60) return `${mins}m`;
-  const hours = Math.round(mins / 60);
-  if (hours < 48) return `${hours}h`;
-  return `${Math.round(hours / 24)}d`;
-}
-
 export default function OperatorOrders() {
   const [orders, setOrders] = useState<Order[] | null>(null);
+  const [closed, setClosed] = useState<Order[]>([]);
   const [open, setOpen] = useState<Order | null>(null);
-  const [secret, setSecret] = useState('');
   const [locked, setLocked] = useState(false);
   const [error, setError] = useState('');
   const [flash, setFlash] = useState('');
   const [busy, setBusy] = useState('');
+
+  // The quote requests, read separately from the orders on purpose. They are a
+  // different table with a different failure, and a page that hid live orders
+  // because that table was unreachable would be worse than one that says so.
+  const requests = useQuoteQueue();
 
   // Uploads waiting to be sent, per slot, kept out of the order object so a
   // refresh of the queue cannot drop a file somebody just spent a minute on.
@@ -102,15 +99,18 @@ export default function OperatorOrders() {
       setLocked(true);
       return false;
     }
-    const body = (await res.json()) as { orders: Order[] };
+    const body = (await res.json()) as { orders: Order[]; closed?: Order[] };
     setOrders(body.orders);
+    setClosed(body.closed ?? []);
     setLocked(false);
     return true;
   }, []);
 
+  const loadQuotes = requests.load;
   useEffect(() => {
     void load();
-  }, [load]);
+    void loadQuotes();
+  }, [load, loadQuotes]);
 
   // The password may arrive once in the address bar, and is taken straight out
   // of it, so a screenshot of this page is not a credential.
@@ -132,8 +132,8 @@ export default function OperatorOrders() {
       body: JSON.stringify({ secret: value }),
     });
     if (res.ok) {
-      setSecret('');
       await load();
+      await loadQuotes();
     } else {
       setError('That password is not right.');
     }
@@ -275,30 +275,7 @@ export default function OperatorOrders() {
   }
 
   if (locked) {
-    return (
-      <main className="opq">
-        <h1>Orders</h1>
-        <form
-          className="opq-lock"
-          onSubmit={(e) => {
-            e.preventDefault();
-            void signIn(secret.trim());
-          }}
-        >
-          <input
-            type="password"
-            value={secret}
-            onChange={(e) => setSecret(e.target.value)}
-            placeholder="Admin password"
-            autoFocus
-          />
-          <button className="opq-btn opq-solid" type="submit">
-            Open
-          </button>
-        </form>
-        {error && <p className="opq-error">{error}</p>}
-      </main>
-    );
+    return <OperatorLock error={error} onSignIn={(value) => void signIn(value)} />;
   }
 
   if (open) {
@@ -398,25 +375,16 @@ export default function OperatorOrders() {
       <h1>Orders</h1>
       {orders === null ? (
         <p className="opq-sub">Loading.</p>
-      ) : orders.length === 0 ? (
-        <p className="opq-sub">Nothing waiting. Everything is delivered or closed.</p>
       ) : (
-        <ul className="opq-list">
-          {orders.map((o, i) => (
-            <li key={o.id} style={{ animationDelay: `${Math.min(i, 8) * 40}ms` }}>
-              <button className="opq-row" onClick={() => void openOrder(o.id)}>
-                <span className="opq-row-top">
-                  <span className="opq-service">{o.serviceName ?? 'Order'}</span>
-                  <span className={`opq-pill opq-${o.status}`}>{LABELS[o.status]}</span>
-                </span>
-                <span className="opq-row-meta">
-                  {o.email} · waiting {ago(o.statusAt ?? o.createdAt)}
-                </span>
-                {o.brief && <span className="opq-row-brief">{o.brief}</span>}
-              </button>
-            </li>
-          ))}
-        </ul>
+        <OperatorQueueView
+          orders={orders}
+          closed={closed}
+          quotes={requests.quotes}
+          quotesError={requests.error}
+          busyQuote={requests.busy}
+          onOpen={(id) => void openOrder(id)}
+          onMoveQuote={(id, status) => void requests.move(id, status)}
+        />
       )}
       {error && <p className="opq-error">{error}</p>}
     </main>

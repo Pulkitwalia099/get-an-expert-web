@@ -1,44 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { patchRows } from '@/lib/matches';
 import { withMetrics } from '@/lib/metrics';
 import { isAuthorised } from '@/lib/operatorAuth';
-import { selectRows } from '@/lib/supabase';
-import { STATUS_LABELS, type QuoteStatus } from '@/lib/quotes';
+import { moveQuote, quoteQueue } from '@/lib/operatorQuotes';
 
-// Moving a request along by hand, behind the same shared secret as the
-// presence switches.
+// Reading the requests, and moving one along by hand, behind the same shared
+// secret as the presence switches.
 //
 // The outbound agents own this in the normal case: they claim an open request,
 // work it, and set the status themselves. This route exists because "the
 // automation is wrong and a customer is waiting" is a situation that turns up
 // on a phone, and the alternative is editing rows in the Supabase console.
-
-function isStatus(v: unknown): v is QuoteStatus {
-  return typeof v === 'string' && v in STATUS_LABELS;
-}
-
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-interface Row {
-  id: string;
-  set_id: string;
-  email: string;
-  slots: number[];
-  status: QuoteStatus;
-  created_at: string;
-}
+//
+// The reads and the checks both live in lib/operatorQuotes now. This file used
+// to hold them inline, and one of them was wrong in a way nothing would ever
+// report: a failed select came back as an empty list, so a Supabase blip drew
+// a page saying there was nothing to work.
 
 async function handleGet(req: NextRequest): Promise<NextResponse> {
   if (!isAuthorised(req)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  // Everything still to be worked, oldest first, which is the order somebody
-  // should actually work them in.
-  const rows = await selectRows<Row>(
-    'quote_requests',
-    'status=in.(open,contacting)&select=id,set_id,email,slots,status,created_at&order=created_at.asc&limit=50',
-  );
-  return NextResponse.json({ requests: rows ?? [] });
+
+  const requests = await quoteQueue();
+  if (requests === null) {
+    return NextResponse.json({ error: 'Cannot reach the requests right now' }, { status: 502 });
+  }
+  return NextResponse.json({ requests });
 }
 
 async function handlePost(req: NextRequest): Promise<NextResponse> {
@@ -52,18 +39,15 @@ async function handlePost(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const id = typeof body.id === 'string' && UUID_RE.test(body.id) ? body.id : null;
-  if (!id) return NextResponse.json({ error: 'Unknown request' }, { status: 400 });
-  if (!isStatus(body.status)) {
-    return NextResponse.json({ error: 'Unknown status' }, { status: 400 });
-  }
-
-  const moved = await patchRows('quote_requests', `id=eq.${encodeURIComponent(id)}`, {
-    status: body.status,
-    updated_at: new Date().toISOString(),
-  });
-  if (!moved) {
-    return NextResponse.json({ error: 'That did not save.' }, { status: 503 });
+  const moved = await moveQuote(body.id, body.status);
+  // A refused move is something to put on screen, not a stack trace. Which
+  // code it carries is the difference between "you sent nonsense" and "try
+  // again in a minute", and only the second is worth retrying.
+  if (!moved.ok) {
+    return NextResponse.json(
+      { error: moved.error },
+      { status: moved.reason === 'storage' ? 503 : 400 },
+    );
   }
   return NextResponse.json({ ok: true, status: body.status });
 }

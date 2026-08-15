@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withMetrics } from '@/lib/metrics';
 import { isOrderStatus } from '@/lib/order-status';
 import { isAuthorised } from '@/lib/operatorAuth';
-import { advance, detail, queue, remove } from '@/lib/operatorOrders';
+import { advance, detail, queue, recentlyClosed, remove } from '@/lib/operatorOrders';
 
 // The dashboard's one endpoint: read the queue, read one order, move one on.
 //
@@ -20,11 +20,14 @@ async function handleGet(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ order });
   }
 
-  const orders = await queue();
+  const [orders, closed] = await Promise.all([queue(), recentlyClosed()]);
   if (orders === null) {
     return NextResponse.json({ error: 'Cannot reach the orders right now' }, { status: 502 });
   }
-  return NextResponse.json({ orders });
+  // A missing archive is not worth failing the request over. Live work is the
+  // reason somebody opened this page, and hiding it because the Closed section
+  // could not be read would be the wrong half to keep.
+  return NextResponse.json({ orders, closed: closed ?? [] });
 }
 
 async function handlePost(req: NextRequest): Promise<NextResponse> {
