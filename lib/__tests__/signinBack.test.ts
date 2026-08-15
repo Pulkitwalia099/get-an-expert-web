@@ -1,74 +1,62 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { backTo } from '../signinBack';
+import { SIGNIN_BACK } from '@/lib/signinBack';
+import { safeNext } from '@/lib/auth';
 
-// The back control on /signin, which had to exist before anybody could leave
-// that page without the browser button.
+// The way out of /signin.
 //
-// Every case here is a pair, the href and the label together, because the
-// failure this guards against is not a broken link. It is a working link under
-// words that describe somewhere else.
+// This started as a function that derived a destination from `?next=`, and
+// review killed it: every candidate destination renders a sign in prompt to a
+// signed out browser, so the derived control led back to where it started. The
+// tests below are therefore not about branching. They are about the one claim
+// the constant makes, which is that it points somewhere a signed out person
+// can actually read.
 
-const UUID = 'b1029c04-c43d-422b-9000-ff79632847a6';
-
-describe('backTo', () => {
-  it('sends an order id to the list, because the order itself bounces a signed out browser', () => {
-    // app/orders/[id]/page.tsx redirects to /signin?next=/orders/<id>, so an
-    // href of the order returns somebody to the page they just left. /orders
-    // is the one guarded page that renders without a session.
-    expect(backTo(`/orders/${UUID}`)).toEqual({
-      href: '/orders',
-      label: 'Back to your orders',
-    });
+describe('the back control', () => {
+  it('goes to the marketplace and says so', () => {
+    expect(SIGNIN_BACK.href).toBe('/');
+    expect(SIGNIN_BACK.label).toBe('Back to midsesh');
   });
 
-  it('sends the dashboard to the marketplace, for the same bounce', () => {
-    // app/dashboard/page.tsx redirects to /signin?next=/dashboard. There is no
-    // signed out dashboard to offer, so the honest exit is the marketplace.
-    expect(backTo('/dashboard')).toEqual({ href: '/', label: 'Back to midsesh' });
+  it('is deliberately not a destination the allowlist would sign somebody into', () => {
+    // `safeNext('/')` is null on purpose: the apex is the marketplace, a
+    // different app, and a post sign in redirect there lands on a page that
+    // never reads the cookie, which is how a working Google sign in looked
+    // broken for days. That is the whole distinction this constant rests on.
+    // "Where may we land somebody after they sign in" and "where can somebody
+    // who changed their mind get to" are different questions, and `/` is the
+    // right answer to the second and the wrong answer to the first.
+    expect(safeNext(SIGNIN_BACK.href)).toBeNull();
   });
 
-  it('keeps /orders where it is', () => {
-    expect(backTo('/orders')).toEqual({ href: '/orders', label: 'Back to your orders' });
+  it('never points at a page that answers a signed out browser with a sign in form', () => {
+    // The blocker this replaced, pinned so it cannot come back. /orders and
+    // /dashboard both render doors or redirect when there is no session, so
+    // either one as an href makes the exit from sign in another sign in.
+    const doors = ['/orders', '/dashboard', '/signin'];
+    expect(doors).not.toContain(SIGNIN_BACK.href);
   });
 
-  it('offers the marketplace on a bare /signin, which is the case nobody checks', () => {
-    // Somebody who landed here by accident has no `next` at all, and they are
-    // exactly the person the control was added for.
-    expect(backTo(undefined)).toEqual({ href: '/', label: 'Back to midsesh' });
-    expect(backTo(null)).toEqual({ href: '/', label: 'Back to midsesh' });
-    expect(backTo('')).toEqual({ href: '/', label: 'Back to midsesh' });
+  it('cannot be rewritten for everybody by one stray assignment', () => {
+    expect(Object.isFrozen(SIGNIN_BACK)).toBe(true);
   });
 
-  it('refuses a destination we do not own, because this is a back button over an open redirect', () => {
-    // The page that renders this href is the page that sets a thirty day
-    // session cookie, so a hostile destination reaches somebody at the moment
-    // they have most reason to trust what is on screen.
-    for (const hostile of [
-      'https://evil.example/orders',
-      '//evil.example',
-      '/orders/../admin',
-      ' /orders',
-      '/ordersomething',
-      '/orders?x=1',
-    ]) {
-      expect(backTo(hostile)).toEqual({ href: '/', label: 'Back to midsesh' });
-    }
+  it('reads as English, with no em dash', () => {
+    expect(SIGNIN_BACK.label).not.toContain('—');
+    expect(SIGNIN_BACK.label.length).toBeLessThan(30);
+  });
+});
+
+describe('the page that renders it', () => {
+  const source = readFileSync(join(process.cwd(), 'app/signin/page.tsx'), 'utf8');
+
+  it('renders the control rather than only importing it', () => {
+    expect(source).toContain('SIGNIN_BACK.href');
+    expect(source).toContain('SIGNIN_BACK.label');
   });
 
-  it('treats an order id that is not a uuid as no destination at all', () => {
-    // The allowlist in lib/auth wants a full hex uuid. Answering /orders here
-    // would mean two rules about what an order id is, and the weaker one wins.
-    expect(backTo('/orders/abc')).toEqual({ href: '/', label: 'Back to midsesh' });
-    expect(backTo('/orders/b1029c04')).toEqual({ href: '/', label: 'Back to midsesh' });
-  });
-
-  it('hands back an object a caller cannot edit for everybody after them', () => {
-    // The results are shared module constants. A caller retitling one would
-    // retitle it for every later request in the same process.
-    const back = backTo('/orders');
-    expect(() => {
-      (back as { label: string }).label = 'Somewhere else';
-    }).toThrow();
-    expect(backTo('/orders').label).toBe('Back to your orders');
+  it('keeps the exit off the mark, which points at the same place', () => {
+    expect(source).toContain('ord-back-exit');
   });
 });

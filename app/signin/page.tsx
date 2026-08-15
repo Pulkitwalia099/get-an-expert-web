@@ -9,7 +9,7 @@ import { SESSION_COOKIE, authConfigured, readSession, safeNext } from '@/lib/aut
 import { CONTACT_EMAIL } from '@/lib/contact';
 import { hasEmailKey } from '@/lib/email';
 import { EMAIL_TOKEN_MAX_AGE, emailAuthConfigured } from '@/lib/emailAuth';
-import { backTo } from '@/lib/signinBack';
+import { SIGNIN_BACK } from '@/lib/signinBack';
 import { flashFor } from '@/lib/signinFlash';
 
 // One door in, for a site that had none.
@@ -40,10 +40,6 @@ export default async function SignInPage({
   // Checked before it is rendered into an href, not only when it is spent.
   // Every consumer downstream checks it again.
   const next = safeNext(params.next) ?? undefined;
-  // The raw value, not `next`, because this asks a different question of it:
-  // not "may we land here after signing in" but "where can somebody who
-  // changed their mind actually get to right now".
-  const back = backTo(params.next);
 
   // Somebody already signed in does not need this page. They asked to go
   // somewhere, so take them there rather than showing them a door they are
@@ -64,9 +60,13 @@ export default async function SignInPage({
         <Mark />
         {/* The mark is a logo, not an exit. Somebody who landed here by
             accident needs words, and the browser button was the only way out
-            of this page until now. */}
-        <Link href={back.href} className="ord-back">
-          {back.label}
+            of this page until now.
+            Pushed to the far side of the bar rather than sitting beside the
+            mark, which goes to the same place: two links twelve pixels apart
+            pointing at one destination reads as a mistake rather than as a
+            control. */}
+        <Link href={SIGNIN_BACK.href} className="ord-back ord-back-exit">
+          {SIGNIN_BACK.label}
         </Link>
       </header>
       <h1>Sign in</h1>

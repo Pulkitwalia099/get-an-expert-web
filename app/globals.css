@@ -2676,3 +2676,9 @@ body:has(.opq) { background: #FBFBF8; }
   .ord-back { transition: none; }
   .ord-back:active { transform: none; }
 }
+
+/* Pushed to the far side of the bar. The mark beside it goes to the same
+   place, and two links twelve pixels apart pointing at one destination reads
+   as a mistake rather than as a control. Right aligned, it takes the slot
+   .ord-who holds on the other pages in this family and reads as its own thing. */
+.ord-back-exit { margin-left: auto; }
