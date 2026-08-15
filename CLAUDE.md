@@ -279,6 +279,78 @@ it. Nothing about the status ladder changes: a draft still goes out as
 - `advance()` asks for a file only when the service delivers one. Before this
   it always did, so a LinkedIn order could not reach `sample_sent` at all.
 
+## The cockpit
+
+`/operator/orders` is grouped by whose turn it is, not by when a row arrived.
+Four tiles count Late, Your turn, On them and Quotes, and each one is a filter
+rather than a label. `lib/promise-clock.ts` turns an age into a promise against
+24 hours and `lib/operator-lanes.ts` sorts everything into lanes; the page is
+markup over those two.
+
+- The clock starts at `created_at` while an order is ours, and at `status_at`
+  once a sample has gone out. `status_at` alone would restart the clock every
+  time we touched the row, so an order could be worked on forever and never
+  look late.
+- **Lateness is decided once, by the lane.** `board()` settles the promise
+  against the lane it picked, so a row sitting with the customer carries no
+  clock at all. Before that, `promote` kept a quiet customer out of Late while
+  `promiseFor` still returned a red "3d late", and the Waiting on them section
+  painted a warning the Late tile did not count and tapping Late did not show.
+  Two answers to one question is worse than either.
+- The tiles are four questions, not four buckets, so Quotes deliberately double
+  counts with Late. What it must never do is count a row the tile will not
+  open, which is why it counts live requests rather than all of them.
+- Quote requests are in this tool for the first time. Seven of them sat open
+  from 4 August with nothing on the dashboard mentioning them, because the
+  queue only ever read `mk_orders`. Showing them is not working them: that is
+  still `midsesh-outbound`, and the status select on each row is the manual
+  path through `/api/operator/quotes`.
+- Closed is collapsed, newest first, and loses its age. An archive that reads
+  like a queue is what that section exists to stop.
+
+## One account, and settings that do something
+
+`/account` holds orders and quote requests in one list with the credit balance.
+`/orders`, `/orders/[id]` and `/dashboard` keep their URLs because every status
+email links straight at them, so those became views of the same thing rather
+than being replaced.
+
+Four settings, and no notification preference: every email this product sends
+is transactional, so a switch that turns them off breaks the order it belongs
+to. That preference arrives when marketing email does.
+
+- `accounts.session_version` is what "sign out everywhere" moves, added by
+  `migrations/20260815000000_account_settings.sql`. A cookie carrying no
+  version is accepted, which is what makes deploying it sign nobody out, and
+  an unreadable version is accepted too, because the alternative signs out the
+  whole site during a Supabase blip. Revocation is best effort and bounded by
+  `SESSION_MAX_AGE`.
+- `currentAccount` is the async replacement for `readSession` at every call
+  site that can afford a round trip. `/api/search` was the one exception and it
+  was wrong: `locked` is computed from that value, so a revoked session came
+  back with every expert name unredacted.
+- `accounts.name_locked` exists because `ensureAccount` upserts on every sign
+  in, so Google would quietly overwrite an edited name a week later.
+- **Erasing keeps the orders.** The account, its credit ledger and its match
+  sets go; `mk_orders` rows survive with the address replaced by a marker,
+  because they are the record of work delivered. Decided by Pulkit on 15 Aug.
+  A known limitation is written where it happens: once the row is gone,
+  `sessionVersionFor` cannot tell "no such account" from "Supabase did not
+  answer", so other sessions survive until the cookie ages out.
+
+## Every screen says where you came from
+
+A standing rule from 15 Aug, not a feature. On any page a person can name the
+way back without touching browser chrome.
+
+`/signin` had no link, no back control and no mark. It has one now, and it goes
+to `/` whatever `?next=` says, because that is the only destination on the
+allowlist that shows a signed out visitor real content: `/dashboard` redirects
+back to `/signin`, and `/orders` renders `SignInDoors`, so a derived
+destination made the way out of signing in another sign in. `lib/signinBack.ts`
+holds the constant and the reasoning, and the bar for adding a real branch back
+is a page that renders content without a session.
+
 ## The call button
 
 A "Talk to a human" pill in the chat titlebar, shown once the visitor has
