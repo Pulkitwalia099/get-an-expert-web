@@ -244,6 +244,20 @@ export async function eraseAccount(sub: string, email: string): Promise<EraseRep
   );
   steps.mk_orders = orders.every(Boolean);
 
+  // KNOWN LIMITATION, deliberately not fixed here. Once this row is gone,
+  // other browsers this person was signed in on keep working until the cookie
+  // ages out at SESSION_MAX_AGE. `sessionVersionFor` cannot tell "no such
+  // account" from "Supabase did not answer", and `currentAccount` fails open
+  // on the second, so it fails open on both. Bumping the version first does
+  // not help: the row it was written to is deleted on the next line.
+  //
+  // The honest fix is to give that read three states rather than two, so a
+  // missing row rejects and an unreadable one still accepts. That is a change
+  // to the check that runs on every authenticated request, and getting it
+  // wrong signs out the whole site, so it is its own piece of work rather than
+  // a rider on this one. What it buys is small: the account, its credit and
+  // its match sets are already gone, so a surviving session sees empty pages.
+  //
   // Last, and only ever last.
   steps.accounts = (await deleteRows('accounts', filterSub(sub))).ok;
 

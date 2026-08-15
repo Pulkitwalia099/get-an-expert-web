@@ -29,6 +29,7 @@ const SERVER_ONLY = [
   'operatorOrders',
   'orderDrafts',
   'watermark',
+  'accounts',
 ];
 
 /** Every `use client` file under a directory, however deep. */
