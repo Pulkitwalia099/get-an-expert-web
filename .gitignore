@@ -21,3 +21,7 @@ docs/handoff.md
 
 # Supabase CLI link cache. Holds a pooler connection string with credentials.
 supabase/.temp/
+
+# Agent worktrees. They are real git worktrees living inside the repo, so
+# without this a plain `git add -A` stages them as embedded gitlinks.
+.claude/worktrees/
