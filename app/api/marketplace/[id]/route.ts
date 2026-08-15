@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { SESSION_COOKIE, readSession } from '@/lib/auth';
+import { SESSION_COOKIE } from '@/lib/auth';
+import { currentAccount } from '@/lib/accounts';
 import { CONTACT_EMAIL } from '@/lib/contact';
 import { sendEmail } from '@/lib/email';
 import { withMetrics } from '@/lib/metrics';
@@ -34,7 +35,7 @@ async function handlePost(
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   }
 
-  const user = readSession(req.cookies.get(SESSION_COOKIE)?.value);
+  const user = await currentAccount(req.cookies.get(SESSION_COOKIE)?.value);
   if (!user) return NextResponse.json({ error: 'Sign in first' }, { status: 401 });
 
   let payload: Record<string, unknown>;

@@ -113,8 +113,13 @@ function sameValue(a: string, b: string): boolean {
  *
  * One copy, deliberately. This began in the email callback, and the Google
  * door needed the same rule: two allowlists would drift, and the weaker copy
- * is the one an attacker finds. Adding a fourth destination means editing this
- * line and having a reason.
+ * is the one an attacker finds. Adding a destination means editing this line
+ * and having a reason.
+ *
+ * `/account` is the fourth, added with the settings page. It redirects a
+ * signed out visitor to `/signin?next=/account`, and without it here that
+ * destination is silently dropped and somebody who asked for their settings
+ * lands on the dashboard instead.
  */
 // The uuid belongs to /orders/<id> and to nothing else, so it is spelled
 // inside that one alternative rather than bolted onto every branch.
@@ -124,7 +129,7 @@ function sameValue(a: string, b: string): boolean {
 // sensitively, so a blanket /i flag here would admit /Dashboard and then land
 // somebody on a 404 with a fresh session cookie and no idea what happened.
 const SAFE_NEXT =
-  /^\/(dashboard|orders|orders\/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$/;
+  /^\/(account|dashboard|orders|orders\/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$/;
 
 /** The destination if it is one we allow, otherwise null so callers pick their own default. */
 export function safeNext(raw: string | null | undefined): string | null {
@@ -246,27 +251,49 @@ export async function exchangeCode(
 interface SessionPayload extends SessionUser {
   /** Seconds since the epoch. Checked on every read. */
   exp: number;
+  /**
+   * Which generation of this account's sessions the cookie belongs to.
+   *
+   * Optional, and that is the point. Every cookie minted before "sign out
+   * everywhere" existed carries no `ver`, and lib/accounts.ts reads a missing
+   * one as unknown and accepts it, so deploying the check signs nobody out.
+   */
+  ver?: number;
 }
 
-/** The signed cookie value. Null when no session secret is configured. */
-export function signSession(user: SessionUser, now = Date.now()): string | null {
+/**
+ * The signed cookie value. Null when no session secret is configured.
+ *
+ * `version` is a third positional argument rather than an options object so
+ * every existing caller and test keeps compiling. Passing undefined omits the
+ * claim entirely instead of writing 0, and that distinction is load bearing: a
+ * version read that failed at sign in time must not mint a cookie claiming
+ * generation 0 against a stored 3, which is a cookie rejected on its very next
+ * use and a sign in loop with no way out.
+ */
+export function signSession(
+  user: SessionUser,
+  now = Date.now(),
+  version?: number,
+): string | null {
   const secret = sessionSecret();
   if (!secret) return null;
   const payload: SessionPayload = {
     ...user,
     exp: Math.floor(now / 1000) + SESSION_MAX_AGE,
   };
+  if (typeof version === 'number' && Number.isFinite(version)) payload.ver = version;
   const body = b64url(JSON.stringify(payload));
   const sig = b64url(createHmac('sha256', secret).update(body).digest());
   return `${body}.${sig}`;
 }
 
 /**
- * Who the cookie says this is, or null. Returns null for anything tampered
- * with, expired, or signed with a secret we no longer hold, so rotating
- * SESSION_SECRET signs everybody out rather than trusting old cookies.
+ * The verified payload, or null. Private, because everything outside this file
+ * wants one of the two narrower answers below and neither should have to know
+ * what else is in the cookie.
  */
-export function readSession(cookie: string | undefined, now = Date.now()): SessionUser | null {
+function verify(cookie: string | undefined, now: number): SessionPayload | null {
   const secret = sessionSecret();
   if (!secret || !cookie) return null;
 
@@ -286,6 +313,21 @@ export function readSession(cookie: string | undefined, now = Date.now()): Sessi
   }
   if (!payload.exp || payload.exp * 1000 <= now) return null;
   if (!payload.sub || !payload.email) return null;
+  return payload;
+}
+
+/**
+ * Who the cookie says this is, or null. Returns null for anything tampered
+ * with, expired, or signed with a secret we no longer hold, so rotating
+ * SESSION_SECRET signs everybody out rather than trusting old cookies.
+ *
+ * Still synchronous and still says nothing about revocation. The version check
+ * needs a database read, so it lives in `currentAccount` in lib/accounts.ts,
+ * and this stays the pure half that a test can call without a Supabase.
+ */
+export function readSession(cookie: string | undefined, now = Date.now()): SessionUser | null {
+  const payload = verify(cookie, now);
+  if (!payload) return null;
 
   return {
     sub: payload.sub,
@@ -293,4 +335,17 @@ export function readSession(cookie: string | undefined, now = Date.now()): Sessi
     name: payload.name ?? null,
     picture: payload.picture ?? null,
   };
+}
+
+/**
+ * The generation this cookie was signed for, or null when it claims none.
+ *
+ * Null means two different things that are the same thing to the caller: the
+ * cookie is not valid at all, or it predates versioning. Both are handled by
+ * `currentAccount`, which has already established validity by then.
+ */
+export function sessionVersionOf(cookie: string | undefined, now = Date.now()): number | null {
+  const payload = verify(cookie, now);
+  if (!payload || typeof payload.ver !== 'number') return null;
+  return payload.ver;
 }

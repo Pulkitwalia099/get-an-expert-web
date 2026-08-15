@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { SESSION_COOKIE, readSession } from '@/lib/auth';
+import { SESSION_COOKIE } from '@/lib/auth';
+import { currentAccount } from '@/lib/accounts';
 import { formatCents } from '@/lib/credits';
 import { sendEmail } from '@/lib/email';
 import { recordInsight } from '@/lib/insights';
@@ -29,7 +30,7 @@ async function handlePost(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  const user = readSession(req.cookies.get(SESSION_COOKIE)?.value);
+  const user = await currentAccount(req.cookies.get(SESSION_COOKIE)?.value);
   if (!user) {
     return NextResponse.json({ error: 'Sign in first' }, { status: 401 });
   }

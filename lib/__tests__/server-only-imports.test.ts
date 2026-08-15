@@ -30,6 +30,7 @@ const SERVER_ONLY = [
   'operatorQuotes',
   'orderDrafts',
   'watermark',
+  'accounts',
   // Server-only by inheritance rather than by its own guard: it imports
   // safeNext from lib/auth, which throws on sight of a browser.
   'signinBack',

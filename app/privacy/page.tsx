@@ -221,6 +221,12 @@ export default function Privacy() {
         Email addresses are stored separately from everything else, on purpose, so that a request
         to export or delete yours can be honoured without unpicking anything.
       </p>
+      <p>
+        None of that schedule is the only way out. If you have an account you can delete it at any
+        time from <Link href="/account">Your account</Link>, without waiting for a retention period
+        and without asking anybody. What that removes and what it keeps is set out under Your
+        rights below.
+      </p>
 
       <h2>Profiles we find for you</h2>
       <p>
@@ -262,9 +268,19 @@ export default function Privacy() {
 
       <h2>Your rights</h2>
       <p>
-        Wherever you live, you can ask us for a copy of what we hold about you, ask us to correct
-        it, or ask us to delete it. Write to <a href={`mailto:${CONTACT}`}>{CONTACT}</a> and we
-        will action it. We will not charge you, and we will not treat you differently for asking.
+        If you have an account, you can delete it yourself. Sign in, open{' '}
+        <Link href="/account">Your account</Link>, and use Delete my data. It removes the account,
+        the credit balance and its history, your saved searches and the people in them, and every
+        request for quotes you have made. Orders stay, because we have to keep a record of work we
+        did and were paid for, and your email address and name are taken off those rows so they
+        stop naming you. You type a word to confirm before anything runs, and the page states all
+        of this before you do.
+      </p>
+      <p>
+        Wherever you live, and with or without an account, you can also ask us for a copy of what
+        we hold about you, ask us to correct it, or ask us to delete it. Write to{' '}
+        <a href={`mailto:${CONTACT}`}>{CONTACT}</a> and we will action it. We will not charge you,
+        and we will not treat you differently for asking.
       </p>
       <p>
         If the UK or EU GDPR applies to you, you also have the right to object to processing based

@@ -10,6 +10,7 @@ import {
   signSession,
   stateMatches,
 } from '@/lib/auth';
+import { sessionVersionFor } from '@/lib/accounts';
 import { ensureAccount, resolveAccount } from '@/lib/credits';
 import { claimMatchSet } from '@/lib/matches';
 import { withMetrics } from '@/lib/metrics';
@@ -71,13 +72,18 @@ async function handleGet(req: NextRequest): Promise<NextResponse> {
   // the match set they are about to claim.
   const user = await resolveAccount(identity);
 
-  const session = signSession(user);
-  if (!session) return retry(req, { signin: 'unavailable' });
-
   // The account row and the welcome credit. Both are idempotent, and both are
   // allowed to fail: Supabase being down must not stop somebody signing in,
   // it only means their balance reads as unknown until it is back.
   await ensureAccount(user);
+
+  // Stamped after the row exists, so a first sign in reads its own default
+  // rather than nothing. Null when the read failed, and undefined then omits
+  // the claim entirely: a cookie claiming generation 0 against a stored 3 is
+  // rejected on its very next use, which is a sign in loop.
+  const version = await sessionVersionFor(user.sub);
+  const session = signSession(user, Date.now(), version ?? undefined);
+  if (!session) return retry(req, { signin: 'unavailable' });
 
   // Somebody who picked profiles before signing in gets their request placed
   // here, so they come back to a request that already exists rather than to a
