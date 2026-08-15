@@ -1,0 +1,382 @@
+<meta charset="utf-8">
+<title>Generated-Art Prompt Pack · The Wall</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --paper: #F4F0E6;
+    --paper-2: #FBF8F0;
+    --card: #FFFFFF;
+    --ink: #23201A;
+    --ink-2: #57503F;
+    --faint: #8B826C;
+    --forest: #2F4A38;
+    --forest-soft: rgba(47, 74, 56, 0.10);
+    --sage: #8FB89B;
+    --bronze: #8C7136;
+    --bronze-soft: rgba(140, 113, 54, 0.12);
+    --line: rgba(35, 32, 26, 0.12);
+    --line-2: rgba(35, 32, 26, 0.22);
+    --code-bg: #FBF8F0;
+    --shadow: 0 1px 3px rgba(35,32,26,.05), 0 18px 40px -24px rgba(35,32,26,.30);
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #1A1712; --paper-2: #211D17; --card: #242019;
+      --ink: #F2ECDD; --ink-2: #C3BAA4; --faint: #8F866F;
+      --forest: #7FA98C; --forest-soft: rgba(127, 169, 140, 0.14);
+      --sage: #A6CDB1; --bronze: #C79B57; --bronze-soft: rgba(199, 155, 87, 0.14);
+      --line: rgba(242, 236, 221, 0.14); --line-2: rgba(242, 236, 221, 0.24);
+      --code-bg: #16130E;
+      --shadow: 0 1px 3px rgba(0,0,0,.4), 0 18px 40px -24px rgba(0,0,0,.7);
+    }
+  }
+  :root[data-theme="light"] {
+    --paper: #F4F0E6; --paper-2: #FBF8F0; --card: #FFFFFF;
+    --ink: #23201A; --ink-2: #57503F; --faint: #8B826C;
+    --forest: #2F4A38; --forest-soft: rgba(47,74,56,.10);
+    --sage: #8FB89B; --bronze: #8C7136; --bronze-soft: rgba(140,113,54,.12);
+    --line: rgba(35,32,26,.12); --line-2: rgba(35,32,26,.22); --code-bg: #FBF8F0;
+    --shadow: 0 1px 3px rgba(35,32,26,.05), 0 18px 40px -24px rgba(35,32,26,.30);
+  }
+  :root[data-theme="dark"] {
+    --paper: #1A1712; --paper-2: #211D17; --card: #242019;
+    --ink: #F2ECDD; --ink-2: #C3BAA4; --faint: #8F866F;
+    --forest: #7FA98C; --forest-soft: rgba(127,169,140,.14);
+    --sage: #A6CDB1; --bronze: #C79B57; --bronze-soft: rgba(199,155,87,.14);
+    --line: rgba(242,236,221,.14); --line-2: rgba(242,236,221,.24); --code-bg: #16130E;
+    --shadow: 0 1px 3px rgba(0,0,0,.4), 0 18px 40px -24px rgba(0,0,0,.7);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: var(--sans); line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: clamp(28px, 5vw, 68px) clamp(20px, 4vw, 40px) 120px; }
+
+  /* ---------- masthead ---------- */
+  .eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--bronze); margin: 0 0 14px; }
+  h1 { font-family: var(--serif); font-weight: 600; font-size: clamp(32px, 5.4vw, 52px);
+    line-height: 1.08; letter-spacing: -.01em; margin: 0 0 16px; text-wrap: balance; }
+  h1 em { font-style: italic; color: var(--forest); }
+  .lede { font-size: clamp(16px, 1.9vw, 19px); color: var(--ink-2); margin: 0; max-width: 60ch; }
+
+  .meta { display: flex; flex-wrap: wrap; gap: 10px; margin: 26px 0 0; }
+  .pill { font-family: var(--mono); font-size: 11px; letter-spacing: .04em;
+    padding: 5px 12px; border-radius: 999px; border: 1px solid var(--line-2); color: var(--ink-2); }
+  .pill b { color: var(--ink); font-weight: 600; }
+
+  /* ---------- callout ---------- */
+  .callout { margin: 30px 0 0; border-radius: 14px; padding: 18px 20px;
+    background: var(--bronze-soft); border: 1px solid color-mix(in srgb, var(--bronze) 34%, transparent); }
+  .callout.forest { background: var(--forest-soft); border-color: color-mix(in srgb, var(--forest) 34%, transparent); }
+  .callout h3 { margin: 0 0 6px; font-size: 14px; font-family: var(--mono); letter-spacing: .04em;
+    text-transform: uppercase; color: var(--bronze); }
+  .callout.forest h3 { color: var(--forest); }
+  .callout p { margin: 0; font-size: 14.5px; color: var(--ink-2); }
+  .callout p + p { margin-top: 8px; }
+
+  /* ---------- section headers ---------- */
+  .sec { margin: 56px 0 0; }
+  .sec-num { font-family: var(--mono); font-size: 12px; color: var(--faint); letter-spacing: .1em; }
+  h2 { font-family: var(--serif); font-weight: 600; font-size: clamp(24px, 3.4vw, 32px);
+    margin: 6px 0 6px; letter-spacing: -.01em; }
+  .sec-intro { margin: 0 0 4px; color: var(--ink-2); font-size: 15.5px; max-width: 64ch; }
+
+  /* ---------- palette legend ---------- */
+  .legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px; margin: 22px 0 0; }
+  .swatch { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--card); }
+  .swatch .chip { height: 46px; }
+  .swatch .lbl { padding: 9px 12px; font-size: 12.5px; }
+  .swatch .lbl b { display: block; font-size: 13px; }
+  .swatch .lbl code { font-family: var(--mono); font-size: 11px; color: var(--faint); }
+
+  /* ---------- decision block ---------- */
+  .decision { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 22px 0 0; }
+  @media (max-width: 640px) { .decision { grid-template-columns: 1fr; } }
+  .opt { border: 1px solid var(--line-2); border-radius: 16px; padding: 20px; background: var(--card); }
+  .opt.rec { border-color: color-mix(in srgb, var(--forest) 55%, transparent);
+    box-shadow: 0 0 0 3px var(--forest-soft); }
+  .opt .tag { font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--faint); }
+  .opt.rec .tag { color: var(--forest); }
+  .opt h4 { margin: 8px 0 8px; font-family: var(--serif); font-size: 20px; font-weight: 600; }
+  .opt p { margin: 0 0 10px; font-size: 14px; color: var(--ink-2); }
+  .opt ul { margin: 0; padding-left: 18px; font-size: 13.5px; color: var(--ink-2); }
+  .opt li { margin: 4px 0; }
+  .verdict { margin: 8px 0 0; font-size: 12.5px; font-family: var(--mono); }
+  .verdict.good { color: var(--forest); }
+  .verdict.warn { color: var(--bronze); }
+
+  /* ---------- asset cards ---------- */
+  .asset { margin: 22px 0 0; border: 1px solid var(--line); border-radius: 16px;
+    background: var(--card); box-shadow: var(--shadow); overflow: hidden; }
+  .asset-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+    padding: 18px 22px; border-bottom: 1px solid var(--line); background: var(--paper-2); }
+  .asset-head .idx { font-family: var(--mono); font-size: 13px; color: var(--bronze); font-weight: 600; }
+  .asset-head h3 { margin: 0; font-family: var(--serif); font-size: 21px; font-weight: 600; flex: 1 1 auto; }
+  .badge { font-family: var(--mono); font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase;
+    padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+  .badge.req { background: var(--forest); color: #FBF8F0; }
+  .badge.opt { background: transparent; border: 1px solid var(--line-2); color: var(--ink-2); }
+  .badge.gated { background: var(--bronze-soft); color: var(--bronze); border: 1px solid color-mix(in srgb, var(--bronze) 30%, transparent); }
+
+  .asset-body { padding: 20px 22px 22px; }
+  .rowset { display: grid; grid-template-columns: 130px 1fr; gap: 4px 18px; margin: 0 0 16px; }
+  @media (max-width: 560px) { .rowset { grid-template-columns: 1fr; gap: 2px; }
+    .rowset dt { margin-top: 10px; } }
+  dt { font-family: var(--mono); font-size: 11px; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--faint); padding-top: 3px; }
+  dd { margin: 0; font-size: 14px; color: var(--ink-2); }
+  dd code, .path { font-family: var(--mono); font-size: 12.5px; color: var(--ink);
+    background: var(--code-bg); border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; }
+  .spec-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+  .spec-chips span { font-family: var(--mono); font-size: 11.5px; padding: 3px 9px; border-radius: 6px;
+    background: var(--code-bg); border: 1px solid var(--line); color: var(--ink-2); }
+
+  .prompt-label { display: flex; align-items: center; gap: 8px; margin: 4px 0 7px;
+    font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--forest); }
+  .prompt-label::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--forest); }
+  .prompt { font-family: var(--mono); font-size: 12.8px; line-height: 1.72; color: var(--ink);
+    background: var(--code-bg); border: 1px solid var(--line-2); border-radius: 12px;
+    padding: 16px 18px; white-space: pre-wrap; overflow-x: auto; margin: 0 0 14px; }
+  .neg { color: var(--faint); }
+
+  .fallback { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; color: var(--ink-2);
+    background: var(--forest-soft); border-radius: 10px; padding: 11px 14px; }
+  .fallback b { color: var(--ink); }
+  .fallback .k { font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--forest); padding-top: 2px; white-space: nowrap; }
+
+  .foot { margin: 60px 0 0; padding-top: 22px; border-top: 1px solid var(--line);
+    font-size: 13px; color: var(--faint); font-family: var(--mono); }
+
+  a { color: var(--forest); }
+  .toggle { position: fixed; top: 14px; right: 14px; z-index: 10; font-family: var(--mono);
+    font-size: 11px; letter-spacing: .06em; text-transform: uppercase; padding: 7px 13px;
+    border-radius: 999px; border: 1px solid var(--line-2); background: var(--card); color: var(--ink-2);
+    cursor: pointer; box-shadow: var(--shadow); }
+  @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } }
+</style>
+
+<button class="toggle" id="tg" aria-label="Toggle light or dark theme">theme</button>
+
+<div class="wrap">
+
+  <p class="eyebrow">Generated-art prompt pack · v2 · The Wall</p>
+  <h1>Art the site actually needs, <em>matched to the film that shipped.</em></h1>
+  <p class="lede">The old prompts were written for the rejected constellation hero. This pack is rebuilt around the approved hero film "The Wall" and the ported sections. It is a spec for you to run in Nano Banana Pro. Nothing here generates anything.</p>
+
+  <div class="meta">
+    <span class="pill"><b>5</b> assets to generate</span>
+    <span class="pill"><b>1</b> optional texture</span>
+    <span class="pill"><b>Option A</b> recommended for people</span>
+    <span class="pill">Tool: <b>Nano Banana Pro</b> via Higgsfield</span>
+  </div>
+
+  <div class="callout">
+    <h3>You run every generation</h3>
+    <p>Per the v2 spend rule, all image and video generation is yours to run. This document produces zero assets and triggers nothing. Generate the winners, then drop each file at the exact path listed on its card. Every slot already has a working CSS fallback, so nothing on the site breaks while a slot is empty.</p>
+  </div>
+
+  <!-- ============ THE JUDGMENT CALL ============ -->
+  <div class="sec">
+    <div class="sec-num">Decision first</div>
+    <h2>The candidate faces: abstract or portraits?</h2>
+    <p class="sec-intro">During the search beat, the hero flashes twelve searched candidates. Today they are abstract person-silhouette glyphs on green and bronze gradients. Replacing them with generated photoreal faces would imply that twelve specific real experts exist, and it brushes the locked "no real team faces in the hero" rule. This is the one call worth making on purpose. Here are both paths.</p>
+
+    <div class="decision">
+      <div class="opt rec">
+        <div class="tag">Recommended</div>
+        <h4>A · Keep people abstract</h4>
+        <p>Candidates stay silhouettes. The matched expert becomes a stylized, non-photoreal avatar. You generate only atmosphere plus the social image.</p>
+        <ul>
+          <li>Honest: nothing implies a named real person is on the roster</li>
+          <li>Stays inside the "no real faces in the hero" rule cleanly</li>
+          <li>The green-is-people, bronze-is-expert language keeps carrying meaning</li>
+          <li>Fewer assets to generate, review, and keep on brand</li>
+        </ul>
+        <p class="verdict good">Generate: OG, film grain, globe atmosphere, matched-expert avatar.</p>
+      </div>
+      <div class="opt">
+        <div class="tag">Alternative</div>
+        <h4>B · Generic portrait art</h4>
+        <p>Candidates and the matched expert become diverse generated portraits, framed explicitly as representative, not real individuals.</p>
+        <ul>
+          <li>More cinematic, more human warmth in the search beat</li>
+          <li>Needs a visible "representative, not real people" cue near the film</li>
+          <li>Risk: a viewer reads them as your actual roster</li>
+          <li>More art to generate and keep diverse without drifting stocky</li>
+        </ul>
+        <p class="verdict warn">Only if you accept the "not real people" framing on the page.</p>
+      </div>
+    </div>
+    <div class="callout forest" style="margin-top:16px">
+      <h3>My recommendation</h3>
+      <p>Take Option A. The film's whole honesty is that the human is real and the moment is real. Photoreal strangers in the search beat trade that away for polish you do not need, since the matched card is where the emotional weight lands, not the flickering candidates. Keep candidates abstract, and make the one expert who joins feel crafted rather than stock. The Option B prompt is included at the end if you decide the warmth is worth the framing cost.</p>
+    </div>
+  </div>
+
+  <!-- ============ PALETTE ============ -->
+  <div class="sec">
+    <div class="sec-num">Reference</div>
+    <h2>Palette every prompt inherits</h2>
+    <p class="sec-intro">Feed these into each generation so the assets read as one room. Green is people, bronze is expert activity within approved access, cream is the room itself.</p>
+    <div class="legend">
+      <div class="swatch"><div class="chip" style="background:#F4F0E6"></div><div class="lbl"><b>Room cream</b><code>#F4F0E6</code></div></div>
+      <div class="swatch"><div class="chip" style="background:#2F4A38"></div><div class="lbl"><b>Forest · people</b><code>#2F4A38</code></div></div>
+      <div class="swatch"><div class="chip" style="background:#8FB89B"></div><div class="lbl"><b>Sage · people lit</b><code>#8FB89B</code></div></div>
+      <div class="swatch"><div class="chip" style="background:#8C7136"></div><div class="lbl"><b>Bronze · expert</b><code>#8C7136</code></div></div>
+      <div class="swatch"><div class="chip" style="background:#1D1A14"></div><div class="lbl"><b>Dusk ink</b><code>#1D1A14</code></div></div>
+      <div class="swatch"><div class="chip" style="background:#23201A"></div><div class="lbl"><b>Ink text</b><code>#23201A</code></div></div>
+    </div>
+  </div>
+
+  <!-- ============ ASSETS ============ -->
+  <div class="sec">
+    <div class="sec-num">The pack</div>
+    <h2>Assets, paths, and prompts</h2>
+    <p class="sec-intro">Each card is self-contained: where the file lands, where it shows up on the site, the exact prompt, the aspect and resolution, and the fallback that already covers the slot.</p>
+  </div>
+
+  <!-- 01 OG -->
+  <div class="asset">
+    <div class="asset-head">
+      <span class="idx">01</span>
+      <h3>Social share image · The Wall still</h3>
+      <span class="badge req">Required</span>
+    </div>
+    <div class="asset-body">
+      <dl class="rowset">
+        <dt>File</dt><dd><span class="path">og-wall.png</span></dd>
+        <dt>Path</dt><dd><span class="path">v2/public/assets/v2/og-wall.png</span></dd>
+        <dt>Used by</dt><dd>The link preview when midsesh.com is shared on X, Slack, iMessage, LinkedIn. Wired in <code>v2/app/layout.tsx</code> under <code>openGraph.images</code> and <code>twitter.images</code>, which today still point at the old <code>/assets/og.png</code>. After you drop this file, that one line gets repointed to <code>/assets/v2/og-wall.png</code> (a code change, not part of this pack).</dd>
+        <dt>Spec</dt><dd class="spec-chips"><span>1200 × 630</span><span>1.91:1</span><span>PNG</span><span>&lt; 1 MB</span></dd>
+      </dl>
+      <div class="prompt-label">Nano Banana Pro prompt</div>
+      <div class="prompt">A cinematic editorial still for a social share card. A calm warm-cream studio room, background color #F4F0E6, softly lit like late-afternoon daylight. Two clean product panels float side by side on the left: a coding session panel and an expert chat panel, rendered as minimal frosted glass cards with soft shadows, no readable text. From the coding panel a slender forest-green pill-shaped probe (#2F4A38) arcs toward the right, where a rotating sphere made of thousands of tiny dots hovers, its city points glowing bronze (#8C7136) and one arc held in bright sage green (#8FB89B). Shallow depth of field, gentle film grain, faint vignette. Composition weighted to the left third so a logo could sit top-left. Editorial, understated, premium, architectural. <span class="neg">Negative: no text, no words, no logos, no faces, no stock-photo people, no neon, no purple, no glossy 3D render sheen, not busy, not sci-fi HUD.</span></div>
+      <div class="fallback"><span class="k">Fallback</span><span>Existing <b>/assets/og.png</b> (1200 × 630) stays referenced until <code>layout.tsx</code> is repointed, so shares never break.</span></div>
+    </div>
+  </div>
+
+  <!-- 02 Film grain -->
+  <div class="asset">
+    <div class="asset-head">
+      <span class="idx">02</span>
+      <h3>Film grain plate · hero texture</h3>
+      <span class="badge req">Required</span>
+    </div>
+    <div class="asset-body">
+      <dl class="rowset">
+        <dt>File</dt><dd><span class="path">film-grain.png</span></dd>
+        <dt>Path</dt><dd><span class="path">v2/public/assets/v2/film-grain.png</span></dd>
+        <dt>Used by</dt><dd>The hero film's texture layer, <code>.stage::after</code> in <code>v2/components/hero/hero.module.css</code>. Sits above the room at low opacity to give the whole film a shot-on-film feel instead of flat CSS. Keep it a plain overlay: the file's own comment warns that <code>mix-blend-mode: multiply</code> makes Chrome drop the WebGL globe to black, so no blend mode.</dd>
+        <dt>Spec</dt><dd class="spec-chips"><span>2048 × 2048</span><span>1:1 tileable</span><span>PNG</span><span>grayscale, transparent</span></dd>
+      </dl>
+      <div class="prompt-label">Nano Banana Pro prompt</div>
+      <div class="prompt">A fully tileable 35mm film grain texture plate. Fine monochrome photographic grain, subtle and organic, evenly distributed with no visible clumps or repeating pattern, on a transparent background. Delicate, analog, filmic, like the grain layer of a scanned Kodak still. Very low contrast, soft, no structure or shapes, just texture. Edges wrap and tile with no visible seam. <span class="neg">Negative: no color, no gradient, no vignette, no dust scratches, no light leaks, no pattern, no text, no subject.</span></div>
+      <div class="fallback"><span class="k">Fallback</span><span>An inline SVG <b>feTurbulence</b> fractal-noise overlay at opacity 0.045 is already live in <code>.stage::after</code>. The plate replaces it for warmer, more photographic grain.</span></div>
+    </div>
+  </div>
+
+  <!-- 03 Globe atmosphere -->
+  <div class="asset">
+    <div class="asset-head">
+      <span class="idx">03</span>
+      <h3>Globe atmosphere · dusk halo</h3>
+      <span class="badge req">Required</span>
+    </div>
+    <div class="asset-body">
+      <dl class="rowset">
+        <dt>File</dt><dd><span class="path">globe-atmosphere.png</span></dd>
+        <dt>Path</dt><dd><span class="path">v2/public/assets/v2/globe-atmosphere.png</span></dd>
+        <dt>Used by</dt><dd>A backdrop layer behind the WebGL dot-globe during the search beat (<code>Globe.tsx</code> mounts in <code>HeroFilm.tsx</code>). Adds depth and a soft dusk bloom so the sphere reads as suspended in a room rather than pasted on flat cream. Additive, sits below the canvas.</dd>
+        <dt>Spec</dt><dd class="spec-chips"><span>1600 × 1600</span><span>1:1</span><span>PNG</span><span>transparent center</span></dd>
+      </dl>
+      <div class="prompt-label">Nano Banana Pro prompt</div>
+      <div class="prompt">A soft circular atmospheric halo for behind a floating globe, on a fully transparent background. A gentle radial bloom of warm dusk light, deep warm ink (#1D1A14) fading outward to nothing, with a faint dusting of tiny out-of-focus particles like drifting motes, a few catching bronze (#8C7136) and sage-green (#8FB89B) light. The very center stays clear and empty for the globe to sit in. Ethereal, quiet, cinematic depth, like the air in a dim studio at dusk. <span class="neg">Negative: no hard edges, no visible sphere or planet, no stars pattern, no text, no lens flare streaks, no bright core, no solid background.</span></div>
+      <div class="fallback"><span class="k">Fallback</span><span>The globe already draws its own faint limb-glow ring in canvas, so the search beat holds without this. The halo is a lift, not a dependency.</span></div>
+    </div>
+  </div>
+
+  <!-- 04 Matched expert avatar -->
+  <div class="asset">
+    <div class="asset-head">
+      <span class="idx">04</span>
+      <h3>Matched-expert avatar · stylized</h3>
+      <span class="badge req">Required</span>
+    </div>
+    <div class="asset-body">
+      <dl class="rowset">
+        <dt>File</dt><dd><span class="path">matched-expert-avatar.png</span></dd>
+        <dt>Path</dt><dd><span class="path">v2/public/assets/v2/matched-expert-avatar.png</span></dd>
+        <dt>Used by</dt><dd>The one expert who joins: the <code>.ava</code> circle in both the match card and the docked resident row (<code>HeroFilm.tsx</code>, labeled "Motion graphic designer · 100+ launch videos · since 2016"). This is a fictional composite role, not a named person, so keep it stylized and non-photoreal on purpose. That is the honest read and it stays inside the no-real-faces rule.</dd>
+        <dt>Spec</dt><dd class="spec-chips"><span>512 × 512</span><span>1:1</span><span>PNG</span><span>circular-safe</span></dd>
+      </dl>
+      <div class="prompt-label">Nano Banana Pro prompt</div>
+      <div class="prompt">A stylized, non-photorealistic avatar for a circular profile badge. An abstract editorial illustration of a single figure suggested by soft geometric shapes and negative space, not a real recognizable face, in a warm sage-to-forest green palette (#8FB89B into #2F4A38) with a small bronze (#8C7136) accent. Calm, confident, crafted, like a quality illustrated app avatar. Flat modern illustration, subtle grain, centered, works when masked to a circle. <span class="neg">Negative: no photorealism, no real human face, no recognizable identity, no text, no letters, no logo, no harsh gradients, no 3D render, not stocky.</span></div>
+      <div class="fallback"><span class="k">Fallback</span><span>A sage-to-forest radial-gradient circle (<code>.ava</code>) already fills both slots. The avatar makes the one human who joins feel crafted rather than generic.</span></div>
+    </div>
+  </div>
+
+  <!-- 05 Deliver texture (optional) -->
+  <div class="asset">
+    <div class="asset-head">
+      <span class="idx">05</span>
+      <h3>Delivered-strip band · faint texture</h3>
+      <span class="badge opt">Optional</span>
+    </div>
+    <div class="asset-body">
+      <dl class="rowset">
+        <dt>File</dt><dd><span class="path">deliver-texture.png</span></dd>
+        <dt>Path</dt><dd><span class="path">v2/public/assets/v2/deliver-texture.png</span></dd>
+        <dt>Used by</dt><dd>The "Delivered today" ticker strip (<code>DeliveredStrip.tsx</code>) that scrolls just under the hero. Today it is clean text on cream, which is fine. A near-invisible woven-paper band behind it would add warmth and separate it from the film above. Low priority, only if you want the extra texture.</dd>
+        <dt>Spec</dt><dd class="spec-chips"><span>1600 × 400</span><span>4:1 tileable-x</span><span>PNG</span><span>very subtle</span></dd>
+      </dl>
+      <div class="prompt-label">Nano Banana Pro prompt</div>
+      <div class="prompt">A very subtle horizontal paper-texture band for a website strip. Warm cream (#F4F0E6) handmade-paper surface with a faint woven fiber grain and the softest possible warm shadow at the top edge, tiling left to right with no visible seam. Barely-there, tactile, editorial, like the texture of quality letterpress stock. <span class="neg">Negative: no strong pattern, no color shift, no text, no visible seams, no heavy shadow, nothing that competes with foreground text.</span></div>
+      <div class="fallback"><span class="k">Fallback</span><span>The strip is styled entirely in CSS (<code>[data-deliver]</code> in <code>globals.css</code>) with no image dependency. Skip this with no loss if you want the pack tighter.</span></div>
+    </div>
+  </div>
+
+  <!-- Option B gated -->
+  <div class="asset">
+    <div class="asset-head">
+      <span class="idx">B</span>
+      <h3>Candidate portraits · only if you chose Option B</h3>
+      <span class="badge gated">Gated</span>
+    </div>
+    <div class="asset-body">
+      <p style="margin:0 0 16px;font-size:14px;color:var(--ink-2)">Generate this set <b>only</b> if you decide against my recommendation and want photoreal warmth in the search beat, with a visible "representative, not real people" cue added near the film. Produce six to eight tiles, named <span class="path">candidate-01.png</span> through <span class="path">candidate-08.png</span> at <span class="path">v2/public/assets/v2/</span>, to replace the <code>.face</code> silhouette glyphs in <code>HeroFilm.tsx</code>.</p>
+      <dl class="rowset">
+        <dt>Spec</dt><dd class="spec-chips"><span>256 × 256 each</span><span>1:1</span><span>PNG</span><span>circular-safe</span></dd>
+      </dl>
+      <div class="prompt-label">Nano Banana Pro prompt</div>
+      <div class="prompt">A set of diverse fictional portrait avatars, clearly illustrative rather than photographic, for a circular badge. Warm editorial illustration of an imagined creative professional, softly lit, in a muted palette that leans warm cream, forest green, and bronze. Each face is invented and generic, representing a role not a real individual, varied in age, gender, and ethnicity across the set. Calm, competent, human. Consistent illustration style across all tiles. <span class="neg">Negative: no real or recognizable person, no celebrity likeness, no text, no logo, no watermark, no photoreal skin detail, not stocky, no uniform sameness across the set.</span></div>
+      <div class="fallback"><span class="k">Fallback</span><span>Twelve token-derived silhouette glyphs (<code>.face</code> in <code>hero.module.css</code>) are live now. If you stay on Option A, do not generate this set at all.</span></div>
+    </div>
+  </div>
+
+  <p class="foot">Spec only. No generation was run and no site files were changed. Drop winners into v2/public/assets/v2/ and repoint layout.tsx for the social image when ready.</p>
+
+</div>
+
+<script>
+  (function () {
+    var btn = document.getElementById("tg");
+    btn.addEventListener("click", function () {
+      var root = document.documentElement;
+      var now = root.getAttribute("data-theme");
+      if (!now) {
+        now = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      }
+      root.setAttribute("data-theme", now === "dark" ? "light" : "dark");
+    });
+  })();
+</script>

@@ -185,7 +185,7 @@ describe('one answer per row', () => {
     // because a quiet customer is not the operator being slow, and before this
     // promiseFor still handed the card a red "1d late" nobody could act on.
     const b = board(
-      [{ status: 'sample_sent' as const, createdAt: '2026-08-10T12:00:00Z', statusAt: '2026-08-13T12:00:00Z' }],
+      [{ id: 'o1', status: 'sample_sent' as const, createdAt: '2026-08-10T12:00:00Z', statusAt: '2026-08-13T12:00:00Z' }],
       [],
       NOW,
     );
@@ -200,7 +200,7 @@ describe('one answer per row', () => {
 
   it('leaves an archived row with neither a clock nor a wait', () => {
     const b = board(
-      [{ status: 'delivered' as const, createdAt: '2026-08-01T12:00:00Z', statusAt: '2026-08-14T12:00:00Z' }],
+      [{ id: 'o2', status: 'delivered' as const, createdAt: '2026-08-01T12:00:00Z', statusAt: '2026-08-14T12:00:00Z' }],
       [],
       NOW,
     );
@@ -211,9 +211,9 @@ describe('one answer per row', () => {
   it('counts on the Quotes tile exactly what tapping it opens', () => {
     // A tile reading 3 that opens 2 rows is a tile people stop believing.
     const quotes = [
-      { status: 'open' as const, createdAt: '2026-08-04T12:00:00Z' },
-      { status: 'contacting' as const, createdAt: '2026-08-15T11:00:00Z' },
-      { status: 'closed' as const, createdAt: '2026-08-02T12:00:00Z' },
+      { id: 'q1', status: 'open' as const, createdAt: '2026-08-04T12:00:00Z' },
+      { id: 'q2', status: 'contacting' as const, createdAt: '2026-08-15T11:00:00Z' },
+      { id: 'q3', status: 'closed' as const, createdAt: '2026-08-02T12:00:00Z' },
     ];
     const b = board([], quotes, NOW);
     expect(b.counts.quotes).toBe(rowsFor(b, 'quotes').length);

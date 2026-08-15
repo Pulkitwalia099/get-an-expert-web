@@ -2,17 +2,64 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "midsesh-dev",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
-      "port": 3000,
-      "autoPort": true
+      "name": "marketplace-preview",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "4319", "--directory", "marketplace-preview/hifi"],
+      "port": 4319
     },
     {
-      "name": "marketplace-preview",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": ["--yes", "serve", "-l", "4319", "marketplace-preview/hifi"],
-      "port": 4319
+      "name": "dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 3000
+    },
+    {
+      "name": "agon-agent",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "/Users/pulkitwalia/Downloads/agon-agent_2-b3acde98", "run", "dev", "--", "--port", "4321", "--strictPort"],
+      "port": 4321
+    },
+    {
+      "name": "agon-about",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "/private/tmp/claude-501/-Users-pulkitwalia-Programs-get-an-expert-web/bf2e4592-5b2c-41c7-80ea-b9664e97f5f1/scratchpad/agon-agent", "run", "dev", "--", "--port", "4341", "--strictPort"],
+      "port": 4341
+    },
+    {
+      "name": "agon-review",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "/Users/pulkitwalia/Downloads/agon-agent_2-b3acde98", "run", "dev", "--", "--port", "4331", "--strictPort"],
+      "port": 4331
+    },
+    {
+      "name": "agon-experts",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "/Users/pulkitwalia/Downloads/agon-experts", "run", "dev", "--", "--port", "4324", "--strictPort"],
+      "port": 4324
+    },
+    {
+      "name": "agon-frontend-alt",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "/Users/pulkitwalia/Downloads/agon-frontend", "run", "dev", "--", "--port", "4327", "--strictPort"],
+      "port": 4327
+    },
+    {
+      "name": "agon-experts-dist",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["/private/tmp/claude-501/-Users-pulkitwalia-Programs-get-an-expert-web/385b37aa-b5c9-498e-87e9-798250cc40bf/scratchpad/cleanurl.py", "/Users/pulkitwalia/Downloads/agon-agent_2-b3acde98/dist"],
+      "port": 4325
+    },
+    {
+      "name": "agon-backend",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "/Users/pulkitwalia/Downloads/agon-backend", "run", "dev", "--", "--port", "4322", "--strictPort"],
+      "port": 4322
+    },
+    {
+      "name": "agon-frontend",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "/Users/pulkitwalia/Downloads/agon-frontend", "run", "dev", "--", "--port", "4323", "--strictPort"],
+      "port": 4323
     }
   ]
 }
