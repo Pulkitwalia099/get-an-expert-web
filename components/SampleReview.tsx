@@ -52,10 +52,17 @@ export default function SampleReview({
   const section = useRef<HTMLElement>(null);
   const [at, setAt] = useState(0);
   const [mode, setMode] = useState<Mode>('idle');
-  // Null means the whole cut. It is a first class choice, not a fallback:
-  // colour, pacing and music belong to the whole thing, and making somebody
-  // pin those to a frame would invent a moment that is not the point.
-  const [picked, setPicked] = useState<number | null>(null);
+  // Which frame the note is about, and the only thing the strip highlights.
+  //
+  // It starts on the first shot rather than on nothing, so the lit block, the
+  // line under the strip and the scope line always say the same thing. Leaving
+  // it null lit no block while the line still named a frame, which is the
+  // mismatch that made two highlights confusing in the first place.
+  //
+  // Null is still reachable and still a first class choice: colour, pacing and
+  // music belong to the whole cut, and pinning those to a moment would invent
+  // one. It is the button, not the default.
+  const [picked, setPicked] = useState<number | null>(frames?.[0]?.n ?? null);
   const [draft, setDraft] = useState('');
   const [notes, setNotes] = useState<FrameNote[]>([]);
   const [error, setError] = useState('');
@@ -65,18 +72,44 @@ export default function SampleReview({
   // worse than saying nothing.
   const beyond = used !== null && used >= INCLUDED_REVISIONS;
   const playing = frames ? frameAt(frames, at) : null;
+  // What the line under the strip names. The picked frame when there is one,
+  // and while the video is running those are the same thing anyway. Falls back
+  // to the shot on screen so the line is never blank.
+  const shown = picked === null ? null : (frames?.find((f) => f.n === picked) ?? playing);
+
+  // The selection follows the playhead. Always, however the playhead moved.
+  //
+  // There used to be two highlights, one for the shot on screen and one for the
+  // shot the note was about, and they drifted apart the moment the video moved:
+  // frame 1 stayed lit while frame 6 was showing. Two colours answering two
+  // questions is one question too many for a control this small, so there is
+  // one. The frame you are looking at is the frame you are writing about.
+  //
+  // Following on `seeked` as well as on play matters, because dragging the
+  // player's own scrubber is the other way to change shot and it produced
+  // exactly the mismatch this replaced.
+  //
+  // The one exception is somebody who has said this note is about the whole
+  // video. That is a deliberate choice and scrubbing around to check something
+  // must not quietly undo it.
+  const wholeVideo = picked === null;
+  const wholeRef = useRef(wholeVideo);
+  wholeRef.current = wholeVideo;
 
   useEffect(() => {
     const el = video.current;
     if (!el) return;
-    const onTime = () => setAt(el.currentTime);
+    const onTime = () => {
+      setAt(el.currentTime);
+      if (frames && !wholeRef.current) setPicked(frameAt(frames, el.currentTime).n);
+    };
     el.addEventListener('timeupdate', onTime);
     el.addEventListener('seeked', onTime);
     return () => {
       el.removeEventListener('timeupdate', onTime);
       el.removeEventListener('seeked', onTime);
     };
-  }, []);
+  }, [frames]);
 
   // Land a little inside the shot rather than exactly on its first frame. A cut
   // is often a dark frame or the tail of the previous one, so seeking to the
@@ -95,13 +128,19 @@ export default function SampleReview({
   // box opens below the fold and the first thing somebody does is scroll.
   function openChanges() {
     setMode('commenting');
-    requestAnimationFrame(() => {
-      const stage = section.current?.querySelector('.ord-stage');
-      stage?.scrollIntoView({
-        behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
-        block: 'start',
-      });
-    });
+    const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // After the player has finished shrinking, not before. The pinned block is
+    // shorter once it settles, and scrolling against its old height is what put
+    // the box half underneath it.
+    window.setTimeout(
+      () => {
+        const pin = section.current?.querySelector('.ord-pin');
+        if (!pin) return;
+        const top = pin.getBoundingClientRect().top + window.scrollY;
+        window.scrollTo({ top: Math.max(0, top - 8), behavior: smooth ? 'smooth' : 'auto' });
+      },
+      smooth ? 280 : 0,
+    );
   }
 
   function addNote() {
@@ -309,45 +348,57 @@ export default function SampleReview({
           the strip scrolling underneath it, which hid the thing being pointed
           at behind the thing pointing at it. */}
       <div className="ord-pin">
-      <div className="ord-stage">
-        {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-        <video ref={video} src={sampleUrl} controls playsInline preload="metadata" />
-      </div>
+        {/* The strip lives inside the player's own card, under the picture and
+            never over it. Drawn on the frame it competed with the work for
+            attention, which is the opposite of what a sample is for. Inside the
+            card it reads as part of the player, which is what it is: a timeline
+            where each block is one shot, as wide as that shot is long. */}
+        <div className="ord-stage">
+          {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+          <video ref={video} src={sampleUrl} controls playsInline preload="metadata" />
 
-      {/* Under the picture, never over it. Drawn on the frame it competed with
-          the work for attention, which is the opposite of what a sample is for.
-          Down here the same information is a timeline: each block is a shot, as
-          wide as the shot is long, and the one you are watching is filled in. */}
-      {frames && (
-        <div className="fr-strip-wrap">
-          <div className="fr-strip" role="group" aria-label="Frames in this cut">
-            {frames.map((f) => (
-              <button
-                key={f.n}
-                type="button"
-                className={
-                  'fr-seg' +
-                  (f.n === picked ? ' fr-on' : '') +
-                  (playing && f.n === playing.n && f.n !== picked ? ' fr-now' : '')
-                }
-                style={{ flexGrow: f.d }}
-                aria-pressed={f.n === picked}
-                aria-label={`Frame ${f.n}, ${f.name}, ${span(f)}`}
-                onClick={() => goTo(f)}
-              >
-                {f.n}
-              </button>
-            ))}
-          </div>
-          {playing && (
-            <p className="fr-nowline">
-              <span className="fr-nowline-n">Frame {playing.n}</span>
-              <span className="fr-nowline-name">{playing.name}</span>
-              <span className="fr-nowline-tc">{span(playing)}</span>
-            </p>
+          {frames && (
+            <div className="fr-strip-wrap">
+              <div className="fr-strip" role="group" aria-label="Frames in this cut">
+                {frames.map((f) => (
+                  <button
+                    key={f.n}
+                    type="button"
+                    className={f.n === picked ? 'fr-seg fr-on' : 'fr-seg'}
+                    style={{ flexGrow: f.d }}
+                    aria-pressed={f.n === picked}
+                    aria-label={`Frame ${f.n}, ${f.name}, ${span(f)}`}
+                    onClick={() => goTo(f)}
+                  >
+                    {f.n}
+                  </button>
+                ))}
+              </div>
+              {shown ? (
+                <p className="fr-nowline">
+                  <span className="fr-nowline-n">Frame {shown.n}</span>
+                  <span className="fr-nowline-name">{shown.name}</span>
+                  <span className="fr-nowline-tc">{span(shown)}</span>
+                </p>
+              ) : (
+                <p className="fr-nowline">
+                  <span className="fr-nowline-name">The whole video</span>
+                  <span className="fr-nowline-tc">Tap a frame to point at one moment</span>
+                </p>
+              )}
+            </div>
           )}
         </div>
-      )}
+
+        {/* Directly under the player, because this is where somebody looks for
+            what to do next and the buttons are further down the page. */}
+        {awaiting && frames && mode !== 'done' && (
+          <p className="fr-cue">
+            {writing
+              ? 'Tap any frame above to point this note at it.'
+              : 'Tap a frame to jump to it. Then approve below, or request changes.'}
+          </p>
+        )}
       </div>
 
       {!writing && (
