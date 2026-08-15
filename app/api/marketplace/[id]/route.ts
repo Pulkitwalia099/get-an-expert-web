@@ -78,6 +78,7 @@ async function handlePost(
   // this round of feedback with the previous cut's shot names, which is worse
   // than no names at all.
   let comment: string | null = null;
+  let structured: { frame: number | null; text: string }[] | null = null;
   if (Array.isArray(payload.notes)) {
     const notes = payload.notes.filter(isFrameNote).slice(0, MAX_NOTES);
     if (notes.length > 0) {
@@ -88,6 +89,12 @@ async function handlePost(
       }));
       const block = compileNotes(scrubbed, frames ?? []);
       comment = block ? block.slice(0, MAX_COMMENT) : null;
+      // Kept alongside the prose, scrubbed the same way, so the trail holds the
+      // structure as well as the sentence. A frame number naming no frame is
+      // stored as written: the compiled block already fell back to the whole
+      // video for it, and rewriting the data to match the prose would lose the
+      // fact that a stale tab sent it.
+      structured = scrubbed.filter((n) => n.text.length > 0);
     }
   } else if (typeof payload.comment === 'string') {
     const raw = scrubUntrusted(payload.comment).trim();
@@ -99,9 +106,12 @@ async function handlePost(
   if (action === 'changes' && !comment) {
     return NextResponse.json({ error: 'Tell us what to change' }, { status: 400 });
   }
-  if (action === 'approve') comment = null;
+  if (action === 'approve') {
+    comment = null;
+    structured = null;
+  }
 
-  const written = await appendCustomerEvent(id, action, user.email, comment);
+  const written = await appendCustomerEvent(id, action, user.email, comment, structured);
   if (!written) {
     return NextResponse.json({ error: 'That did not save. Try again.' }, { status: 502 });
   }

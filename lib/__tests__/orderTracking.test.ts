@@ -165,7 +165,24 @@ describe('appendCustomerEvent', () => {
       Record<string, unknown>,
     ];
     expect(table).toBe('mk_order_events');
-    expect(Object.keys(payload).sort()).toEqual(['actor', 'note', 'order_id', 'status']);
+    expect(Object.keys(payload).sort()).toEqual(['actor', 'note', 'notes', 'order_id', 'status']);
+  });
+
+  // The prose is what an editor reads. The structure beside it is what makes
+  // "which shot draws change requests" a query rather than a regex over
+  // English, and it only exists while it is being written.
+  it('keeps the structure beside the prose', async () => {
+    await appendCustomerEvent(ID, 'changes', 'pranav@example.com', 'Frame 4\n  Hold it longer.', [
+      { frame: 4, text: 'Hold it longer.' },
+    ]);
+    const payload = (insertRows.mock.calls[0] as never as [string, Record<string, unknown>])[1];
+    expect(payload.notes).toEqual([{ frame: 4, text: 'Hold it longer.' }]);
+  });
+
+  it('writes null rather than an empty list when there is no structure', async () => {
+    await appendCustomerEvent(ID, 'changes', 'pranav@example.com', 'cut the last line', []);
+    const payload = (insertRows.mock.calls[0] as never as [string, Record<string, unknown>])[1];
+    expect(payload.notes).toBeNull();
   });
 
   it('records approval as approved', async () => {

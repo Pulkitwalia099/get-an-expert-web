@@ -1,5 +1,5 @@
 import { insertRows, selectRows } from '@/lib/supabase';
-import { parseFrames, type Frame } from '@/lib/frames';
+import { parseFrames, type Frame, type FrameNote } from '@/lib/frames';
 import {
   MAX_COMMENT,
   isOrderStatus,
@@ -226,6 +226,17 @@ export async function appendCustomerEvent(
   action: OrderAction,
   email: string,
   comment: string | null,
+  /**
+   * The same feedback before it was written out.
+   *
+   * Stored beside the prose rather than instead of it. The block in `note` is
+   * what an editor reads and what the alert email carries, and it stays the
+   * record. This is the structure behind it, so "which shot draws change
+   * requests" is a query rather than a regex over English later. Captured now
+   * because it only exists while it is being written: a column added in six
+   * months cannot backfill what nobody kept.
+   */
+  notes?: FrameNote[] | null,
 ): Promise<boolean> {
   if (!UUID.test(orderId)) return false;
 
@@ -236,6 +247,7 @@ export async function appendCustomerEvent(
     order_id: orderId,
     status,
     note,
+    notes: notes && notes.length > 0 ? notes : null,
     actor: `customer:${normalise(email)}`,
   });
   return written.ok;

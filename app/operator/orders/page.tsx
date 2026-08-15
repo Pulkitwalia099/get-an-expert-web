@@ -415,11 +415,18 @@ export default function OperatorOrders() {
             <ul className="opq-trail">
               {open.events.map((e, i) => (
                 <li key={i}>
-                  <span className="opq-trail-s">{LABELS[e.status as Status] ?? e.status}</span>
+                  <span className="opq-trail-s">
+                    {LABELS[e.status as Status] ?? e.status}
+                    {e.actor?.startsWith('customer:') && <span className="opq-them">from them</span>}
+                  </span>
                   <span className="opq-trail-m">
                     {ago(e.createdAt)} ago{e.actor ? ` · ${e.actor}` : ''}
-                    {e.note ? ` · ${e.note}` : ''}
                   </span>
+                  {/* On its own line, wrapping, because a customer's feedback
+                      is now several lines of frame headings and this used to
+                      run all of it together into one grey sentence. It is the
+                      thing on this page you actually have to read. */}
+                  {e.note && <p className="opq-trail-note">{e.note}</p>}
                 </li>
               ))}
             </ul>
