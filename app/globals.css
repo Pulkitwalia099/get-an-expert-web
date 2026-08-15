@@ -2211,6 +2211,159 @@ a.cta { text-decoration: none; display: inline-block; }
 }
 .ord-download { margin-top: 22px; }
 
+/* ----- the sample, its shot list, and feedback pinned to a frame */
+
+/* The player is the thing being written about, so while somebody is writing it
+   stays on screen. Without this a phone makes you scroll up to see the shot and
+   back down to describe it, which is how a person stops leaving feedback. */
+.ord-sample-writing .ord-pin {
+  position: sticky; top: 0; z-index: 3;
+  background: var(--bg);
+  padding-bottom: 8px;
+}
+.ord-sample-writing video { max-height: 34vh; }
+/* The player shrinks as the box opens rather than snapping to a new size. One
+   element, one property, and the alternative reads as the page reloading. */
+.ord-sample video { transition: max-height 240ms var(--ease-out); }
+
+/* The shot list as a timeline, under the picture and never over it. Each block
+   is one shot, as wide as the shot is long, so the strip reads as the shape of
+   the cut before a single number is read. Nothing is drawn on the frame: a
+   label over the work competes with the work, which is the opposite of what a
+   sample is for. */
+.fr-strip-wrap { display: flex; flex-direction: column; gap: 7px; margin-top: 9px; }
+.fr-strip { display: flex; gap: 3px; overflow-x: auto; padding-bottom: 2px; }
+.fr-seg {
+  flex: 1 1 0; min-width: 30px; height: 26px; padding: 0;
+  border: 1px solid var(--line-2); border-radius: 6px;
+  background: var(--glass-strong); color: var(--ink-3);
+  font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px; font-weight: 650; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 150ms var(--ease-out), background 150ms var(--ease-out),
+              border-color 150ms var(--ease-out), color 150ms var(--ease-out);
+}
+.fr-seg:active { transform: scale(.96); }
+.fr-seg:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.fr-nowline {
+  display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+  margin: 0; font-size: 12.5px; color: var(--ink-2);
+}
+.fr-nowline-n {
+  font-size: 10.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--ink-3);
+}
+.fr-nowline-name { font-weight: 600; color: var(--ink); }
+.fr-nowline-tc {
+  font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px; color: var(--ink-3); font-variant-numeric: tabular-nums;
+}
+
+.fr-scope { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.fr-scope-k {
+  font-size: 10.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--ink-3);
+}
+.fr-scope-v { font-size: 13.5px; font-weight: 620; color: var(--ink); }
+
+.ord-sub {
+  display: block; margin: 14px 0 5px;
+  font-size: 10.5px; font-weight: 650; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--ink-3);
+}
+.ord-sub:first-of-type { margin-top: 0; }
+
+/* The shot on screen right now, and the shot being written about. Two different
+   questions, so two different weights rather than two accents. */
+.fr-now { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.fr-on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.fr-whole {
+  cursor: pointer;
+  border: 1px dashed var(--line-2); border-radius: 999px;
+  background: transparent; color: var(--ink-2);
+  padding: 5px 12px; font-size: 12px; font-weight: 620; font-family: inherit;
+  transition: transform 150ms var(--ease-out), color 150ms var(--ease-out);
+}
+.fr-whole:active:not(:disabled) { transform: scale(.97); }
+.fr-whole:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.fr-notes { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.fr-note {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: start;
+  border: 1px solid var(--line); border-radius: 12px;
+  background: var(--glass-strong); padding: 10px 12px;
+  animation: msg-in 220ms var(--ease-out) backwards;
+}
+.fr-note-b { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.fr-note-who {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 0; background: none; padding: 0; text-align: left; cursor: pointer;
+  font-size: 10.5px; font-weight: 700; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--accent-deep);
+}
+.fr-note-who:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.fr-note-n {
+  font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  background: var(--accent-tint); padding: 2px 6px; border-radius: 5px;
+}
+.fr-note-t { font-size: 13.5px; color: var(--ink-2); margin: 0; overflow-wrap: anywhere; }
+.fr-x {
+  border: 0; background: none; cursor: pointer; padding: 2px 5px; border-radius: 6px;
+  color: var(--ink-3); font-size: 17px; line-height: 1;
+}
+.fr-x:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.oa-sm { padding: 7px 13px; font-size: 12px; }
+
+/* ----- the references out of the brief */
+
+.ref-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.ref-card {
+  display: grid; grid-template-columns: 46px minmax(0, 1fr) auto; gap: 11px; align-items: center;
+  border: 1px solid var(--line); border-radius: 12px;
+  background: var(--glass-strong); padding: 8px;
+}
+.ref-thumb {
+  width: 46px; height: 46px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 8.5px; font-weight: 700; letter-spacing: .04em; color: #fff;
+}
+.ref-thumb-media { background: linear-gradient(135deg, var(--accent), var(--cat-video)); }
+.ref-thumb-site { background: linear-gradient(135deg, var(--cat-web), var(--cat-ai)); }
+.ref-body { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.ref-kind { font-size: 9px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
+.ref-url {
+  font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px; color: var(--ink-2);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.ref-go {
+  border: 0; background: none; cursor: pointer; padding: 6px 8px;
+  font-size: 11.5px; font-weight: 640; color: var(--accent-deep);
+  font-family: inherit; white-space: nowrap;
+  transition: transform 150ms var(--ease-out);
+}
+.ref-go:active { transform: scale(.96); }
+.ref-go:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* Nothing third party loads until this is pressed, so the page stays fast and
+   nobody is tracked by a reference they did not open. */
+.ref-embed { position: relative; display: flex; flex-direction: column; gap: 8px; }
+.ref-embed iframe {
+  width: 100%; height: 460px; border: 1px solid var(--line);
+  border-radius: 12px; background: var(--glass-strong);
+}
+.ref-close {
+  align-self: flex-start; cursor: pointer;
+  border: 1px solid var(--line-2); border-radius: 999px; background: transparent;
+  color: var(--ink-2); padding: 5px 12px; font-size: 11.5px; font-weight: 620; font-family: inherit;
+}
+.ref-close:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fr-seg, .fr-whole, .ref-go, .ord-sample video { transition: none; }
+  .fr-note { animation: none; }
+}
+
 /* ----- the draft, on an order that delivers words */
 
 .ord-draft { margin: 26px 0 0; }
@@ -2522,6 +2675,21 @@ body:has(.opq) { background: #FBFBF8; }
 .opq-sub { font-size: 13.5px; color: rgba(0,0,0,.58); }
 .opq-brief { font-size: 14.5px; line-height: 1.55; color: rgba(0,0,0,.72); background: #fff; border: 1px solid rgba(0,0,0,.08); border-radius: 14px; padding: 12px 14px; }
 .opq-block { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
+
+/* The three things a customer reads under the player, written on this side.
+   Labelled boxes rather than one, because they answer different questions and
+   the customer reads them under different headings. */
+.opq-field { display: flex; flex-direction: column; gap: 5px; }
+.opq-field > span {
+  font-size: 11px; font-weight: 650; letter-spacing: .1em;
+  text-transform: uppercase; color: rgba(0, 0, 0, .48);
+}
+.opq-mono {
+  font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px; line-height: 1.7;
+}
+.opq-hint { font-size: 12.5px; color: rgba(0, 0, 0, .5); line-height: 1.5; margin: 0; }
+.opq-save-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 
 /* ----- the list */
 .opq-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }

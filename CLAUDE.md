@@ -70,6 +70,28 @@ Never commit real keys. `.env.local` is gitignored.
 - Validate at every API boundary. `lib/validate.ts` holds the schemas.
 - Handle errors explicitly. The chat must never show a raw stack trace.
 
+## One design language, and it is already written down
+
+Every surface follows midsesh.com. The tokens at the top of `app/globals.css`
+are the whole system: the sand ground, the warm ink ramp, terracotta, the
+hairline `--line`, `--radius-card`, `--ease-out`. New work composes from those
+and adds nothing to them. This covers the operator tools and one off prototypes
+as much as the marketing pages, because a visitor who moves between them should
+not be able to tell they were built at different times.
+
+- **No accent rail down the side of a card.** A coloured left border on a
+  rounded panel is decoration standing in for hierarchy, and it is the tell of
+  a page that was not built here. Pulkit called it out on 15 Aug and the rule
+  is absolute. Hierarchy comes from the uppercase micro label plus plain text
+  that `.ord-brief-block` already uses, at 11px, 650 weight, `.14em` tracking,
+  in `--ink-3`.
+- The 2px neutral rails on `.ord-draft-talk`, `.opq-comments` and `.opq-trail`
+  are a different device and stay. They mark a thread of list items, they are
+  `--line-2` rather than accent, and they are not what the rule is about.
+- Terracotta is for one thing per view. A category label, or a live control, or
+  a link. Painting it onto borders, backgrounds and text in the same block is
+  how the accent stops meaning anything.
+
 ## Chat behavior is eval-gated
 
 The chat is an LLM feature, so its failures are invisible to unit tests. The

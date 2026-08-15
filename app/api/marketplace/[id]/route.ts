@@ -5,7 +5,8 @@ import { CONTACT_EMAIL } from '@/lib/contact';
 import { sendEmail } from '@/lib/email';
 import { withMetrics } from '@/lib/metrics';
 import { MAX_COMMENT, isOrderAction } from '@/lib/order-status';
-import { appendCustomerEvent, getOrderForEmail } from '@/lib/orderTracking';
+import { MAX_NOTES, compileNotes, isFrameNote } from '@/lib/frames';
+import { appendCustomerEvent, assetsFor, getOrderForEmail } from '@/lib/orderTracking';
 import { clientId, rateLimit } from '@/lib/ratelimit';
 import { notifyCustomer } from '@/lib/orderMail';
 import { matchesOrigin, scrubUntrusted } from '@/lib/sanitize';
@@ -50,14 +51,6 @@ async function handlePost(
     return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
   }
 
-  const raw = typeof payload.comment === 'string' ? scrubUntrusted(payload.comment).trim() : '';
-  // Asking for changes without saying what to change is not a request, it is a
-  // round trip that costs the customer another day. Approving needs no words.
-  if (action === 'changes' && !raw) {
-    return NextResponse.json({ error: 'Tell us what to change' }, { status: 400 });
-  }
-  const comment = raw ? raw.slice(0, MAX_COMMENT) : null;
-
   const { id } = await ctx.params;
   const order = await getOrderForEmail(id, user.email);
   // Not yours, not real, or Supabase is down. All three answer 404: a 403
@@ -75,6 +68,38 @@ async function handlePost(
   if (order.status !== 'sample_sent') {
     return NextResponse.json({ error: 'There is nothing to review yet' }, { status: 409 });
   }
+
+  // Notes tagged to a frame, or the one free text box that came before them.
+  // Both end up as the same block of plain text, because that is what the
+  // editor reads, what the alert email carries and what the trail stores.
+  //
+  // The headings are written here from the frame list on the sample, never from
+  // what the browser sent. A tab left open across a recut would otherwise label
+  // this round of feedback with the previous cut's shot names, which is worse
+  // than no names at all.
+  let comment: string | null = null;
+  if (Array.isArray(payload.notes)) {
+    const notes = payload.notes.filter(isFrameNote).slice(0, MAX_NOTES);
+    if (notes.length > 0) {
+      const { frames } = await assetsFor(id);
+      const scrubbed = notes.map((note) => ({
+        frame: note.frame,
+        text: scrubUntrusted(note.text).trim(),
+      }));
+      const block = compileNotes(scrubbed, frames ?? []);
+      comment = block ? block.slice(0, MAX_COMMENT) : null;
+    }
+  } else if (typeof payload.comment === 'string') {
+    const raw = scrubUntrusted(payload.comment).trim();
+    comment = raw ? raw.slice(0, MAX_COMMENT) : null;
+  }
+
+  // Asking for changes without saying what to change is not a request, it is a
+  // round trip that costs the customer another day. Approving needs no words.
+  if (action === 'changes' && !comment) {
+    return NextResponse.json({ error: 'Tell us what to change' }, { status: 400 });
+  }
+  if (action === 'approve') comment = null;
 
   const written = await appendCustomerEvent(id, action, user.email, comment);
   if (!written) {

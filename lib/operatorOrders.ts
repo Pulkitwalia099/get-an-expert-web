@@ -1,9 +1,10 @@
 import { list } from '@vercel/blob';
 import { deliveryFor } from '@/lib/delivery';
+import { parseFrames, type Frame } from '@/lib/frames';
 import { appendDraft, draftThread, type DraftThread } from '@/lib/orderDrafts';
 import { notifyCustomer } from '@/lib/orderMail';
 import { isOrderStatus, type OrderStatus } from '@/lib/order-status';
-import { deleteRows, insertRows, selectRows } from '@/lib/supabase';
+import { deleteRows, insertRows, patchRows, selectRows } from '@/lib/supabase';
 
 // The queue, and moving one order along.
 //
@@ -169,12 +170,19 @@ export interface OrderDetail extends QueueOrder {
    * again to decide what to draw.
    */
   draft: DraftThread;
+  /**
+   * What is published with the current sample, so the boxes open filled in.
+   *
+   * An operator correcting a paragraph should see the paragraph, not an empty
+   * field that silently wipes what is live the moment they press Save.
+   */
+  delivery: { cut: string | null; diff: string | null; frames: Frame[] | null };
 }
 
 export async function detail(id: string): Promise<OrderDetail | null> {
   if (!UUID.test(id)) return null;
 
-  const [rows, events, parked, parkedSample, draft] = await Promise.all([
+  const [rows, events, parked, parkedSample, draft, published] = await Promise.all([
     selectRows<QueueRow>('mk_orders_current', `select=${QUEUE_COLUMNS}&id=eq.${id}&limit=1`),
     selectRows<{
       status: string;
@@ -190,6 +198,10 @@ export async function detail(id: string): Promise<OrderDetail | null> {
     newestUnder(finalPrefix(id)),
     newestUnder(samplePrefix(id)),
     draftThread(id),
+    selectRows<{ delivered_cut: string | null; delivered_diff: string | null; frames: unknown }>(
+      'mk_order_assets',
+      `select=delivered_cut,delivered_diff,frames&order_id=eq.${id}&limit=1`,
+    ),
   ]);
 
   const order = rows?.[0] ? toQueueOrder(rows[0]) : null;
@@ -209,6 +221,11 @@ export async function detail(id: string): Promise<OrderDetail | null> {
     parkedFinalUrl: parked,
     parkedSampleUrl: parkedSample,
     draft,
+    delivery: {
+      cut: published?.[0]?.delivered_cut ?? null,
+      diff: published?.[0]?.delivered_diff ?? null,
+      frames: parseFrames(published?.[0]?.frames),
+    },
     // Only the customer's own change requests count. Our own `working` moves
     // must never eat somebody's included revision.
     revisions: trail.filter((e) => e.status === 'working' && e.actor?.startsWith('customer:'))
@@ -252,6 +269,65 @@ export interface AdvanceInput {
    * is not a mistake worth stopping for.
    */
   draft?: string | null;
+  /** What the cut is. Shown to the customer with the sample. */
+  deliveredCut?: string | null;
+  /** Where it differs from the brief and why. Shown to the customer. */
+  deliveredDiff?: string | null;
+  /** The shot list published with this sample. */
+  frames?: unknown;
+}
+
+/**
+ * What the customer reads under the player, kept apart from the private note.
+ *
+ * Three fields, all optional, all nullable. Written onto the `sample_sent`
+ * event rather than onto the order for the same reason the file is: a recut has
+ * different shots in it and a different argument for itself, and a column on
+ * `mk_orders` would hold only the last one while relabelling feedback written
+ * against the first.
+ */
+function deliveryColumns(input: {
+  deliveredCut?: string | null;
+  deliveredDiff?: string | null;
+  frames?: unknown;
+}): Record<string, unknown> {
+  const frames = parseFrames(input.frames);
+  return {
+    delivered_cut: input.deliveredCut?.trim().slice(0, 4000) || null,
+    delivered_diff: input.deliveredDiff?.trim().slice(0, 4000) || null,
+    // Stored in the shape the customer page reads, already sorted and
+    // renumbered, so the browser and the database cannot disagree about which
+    // shot is frame 4.
+    frames: frames ? frames.map((f) => ({ n: f.n, t: f.t, d: f.d, name: f.name })) : null,
+  };
+}
+
+/**
+ * Correct what was published with a sample that has already gone out.
+ *
+ * A patch on the newest `sample_sent` row rather than a new event, deliberately.
+ * Appending would email the customer a second time, restart the promise clock
+ * and put a duplicate in the trail, all to fix a typo in a paragraph. The file
+ * and the status are untouched: only the three things a person reads change.
+ */
+export async function updateDelivery(
+  orderId: string,
+  input: { deliveredCut?: string | null; deliveredDiff?: string | null; frames?: unknown },
+): Promise<{ ok: boolean; error?: string }> {
+  if (!UUID.test(orderId)) return { ok: false, error: 'That is not an order id' };
+
+  const rows = await selectRows<{ id: number }>(
+    'mk_order_events',
+    `select=id&order_id=eq.${orderId}&status=eq.sample_sent&order=created_at.desc,id.desc&limit=1`,
+  );
+  if (rows === null) return { ok: false, error: 'Could not reach the order. Nothing changed.' };
+  const eventId = rows[0]?.id;
+  if (eventId === undefined) {
+    return { ok: false, error: 'No sample has been sent yet, so there is nothing to edit.' };
+  }
+
+  const written = await patchRows('mk_order_events', `id=eq.${eventId}`, deliveryColumns(input));
+  return written ? { ok: true } : { ok: false, error: 'That did not save. Nothing changed.' };
 }
 
 export type AdvanceResult =
@@ -318,6 +394,10 @@ export async function advance(input: AdvanceInput): Promise<AdvanceResult> {
     note: input.note?.slice(0, 2000) || null,
     actor: 'operator',
     asset_url: url,
+    // Only onto the event that hands something over. A `working` row carrying
+    // a shot list would put frames on the customer's page for a cut that has
+    // not been sent yet.
+    ...(handover ? deliveryColumns(input) : {}),
   });
   if (!written.ok) return { ok: false, error: 'The status did not save. Nothing was sent.' };
 

@@ -106,12 +106,53 @@ describe('getOrderForEmail', () => {
 describe('assetsFor', () => {
   it('reads the derived view rather than working the files out here', async () => {
     selectRows.mockResolvedValue([{ sample_url: 'https://a/s.mp4', final_url: null }]);
-    expect(await assetsFor(ID)).toEqual({ sampleUrl: 'https://a/s.mp4', finalUrl: null });
+    expect(await assetsFor(ID)).toEqual({
+      sampleUrl: 'https://a/s.mp4',
+      finalUrl: null,
+      frames: null,
+      // A view that has not learned the columns yet answers with neither, and
+      // one shape for "there is nothing here" is what keeps every caller's
+      // null check honest.
+      deliveredCut: null,
+      deliveredDiff: null,
+    });
     expect(selectRows.mock.calls[0][0]).toBe('mk_order_assets');
   });
 
+  it('carries the shot list and what was published with the sample', async () => {
+    selectRows.mockResolvedValue([
+      {
+        sample_url: 'https://a/s.mp4',
+        final_url: null,
+        frames: [{ t: 0, d: 0.6, name: 'Black, and one sound' }],
+        delivered_cut: '23 seconds, 9:16.',
+        delivered_diff: 'Their reference is a crockery set.',
+      },
+    ]);
+    const assets = await assetsFor(ID);
+    expect(assets.frames).toEqual([{ n: 1, t: 0, d: 0.6, name: 'Black, and one sound' }]);
+    expect(assets.deliveredDiff).toBe('Their reference is a crockery set.');
+  });
+
+  // The mk_ tables belong to the orders repo. A junk list must render no
+  // picker rather than throw on a page somebody is waiting on.
+  it('drops a frame list it cannot read, and keeps the sample', async () => {
+    selectRows.mockResolvedValue([
+      { sample_url: 'https://a/s.mp4', final_url: null, frames: 'not a list' },
+    ]);
+    const assets = await assetsFor(ID);
+    expect(assets.frames).toBeNull();
+    expect(assets.sampleUrl).toBe('https://a/s.mp4');
+  });
+
   it('refuses a bad id without querying', async () => {
-    expect(await assetsFor('nope')).toEqual({ sampleUrl: null, finalUrl: null });
+    expect(await assetsFor('nope')).toEqual({
+      sampleUrl: null,
+      finalUrl: null,
+      frames: null,
+      deliveredCut: null,
+      deliveredDiff: null,
+    });
     expect(selectRows).not.toHaveBeenCalled();
   });
 });

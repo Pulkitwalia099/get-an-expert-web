@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withMetrics } from '@/lib/metrics';
 import { isOrderStatus } from '@/lib/order-status';
 import { isAuthorised } from '@/lib/operatorAuth';
-import { advance, detail, queue, recentlyClosed, remove } from '@/lib/operatorOrders';
+import { advance, detail, queue, recentlyClosed, remove, updateDelivery } from '@/lib/operatorOrders';
 
 // The dashboard's one endpoint: read the queue, read one order, move one on.
 //
@@ -41,6 +41,22 @@ async function handlePost(req: NextRequest): Promise<NextResponse> {
   }
 
   const orderId = typeof payload.orderId === 'string' ? payload.orderId : '';
+  const text = (key: string): string | null =>
+    typeof payload[key] === 'string' ? (payload[key] as string) : null;
+
+  // Correcting what was published with a sample that already went out. No
+  // status moves and no email goes, because fixing a paragraph is not an event
+  // in the life of the order.
+  if (payload.action === 'edit-delivery') {
+    const edited = await updateDelivery(orderId, {
+      deliveredCut: text('deliveredCut'),
+      deliveredDiff: text('deliveredDiff'),
+      frames: payload.frames,
+    });
+    if (!edited.ok) return NextResponse.json({ error: edited.error }, { status: 400 });
+    return NextResponse.json({ ok: true, message: 'Saved. The customer sees this now.' });
+  }
+
   const status = typeof payload.status === 'string' ? payload.status : '';
   if (!isOrderStatus(status)) {
     return NextResponse.json({ error: 'Unknown status' }, { status: 400 });
@@ -49,9 +65,12 @@ async function handlePost(req: NextRequest): Promise<NextResponse> {
   const result = await advance({
     orderId,
     status,
-    note: typeof payload.note === 'string' ? payload.note : null,
-    assetUrl: typeof payload.assetUrl === 'string' ? payload.assetUrl : null,
-    draft: typeof payload.draft === 'string' ? payload.draft : null,
+    note: text('note'),
+    assetUrl: text('assetUrl'),
+    draft: text('draft'),
+    deliveredCut: text('deliveredCut'),
+    deliveredDiff: text('deliveredDiff'),
+    frames: payload.frames,
   });
 
   // A refused move is the operator's mistake to see, not a server error, so it

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { upload } from '@vercel/blob/client';
 import OperatorActions from '@/components/OperatorActions';
+import OperatorDelivery from '@/components/OperatorDelivery';
 import OperatorDraft from '@/components/OperatorDraft';
 import { videoShape } from '@/components/OperatorDrop';
 import OperatorFiles from '@/components/OperatorFiles';
@@ -10,6 +11,7 @@ import OperatorLock from '@/components/OperatorLock';
 import OperatorQueueView from '@/components/OperatorQueueView';
 import { useQuoteQueue } from '@/components/useQuoteQueue';
 import { deliveryFor } from '@/lib/delivery';
+import { framesToLines, parseFrameLines, type Frame } from '@/lib/frames';
 import { ORDER_QUEUE_LABELS as LABELS } from '@/lib/operator-lanes';
 import { ago } from '@/lib/promise-clock';
 import { guardVerdict } from '@/lib/watermark-guard';
@@ -59,6 +61,7 @@ interface Order {
   parkedSampleUrl?: string | null;
   revisions?: number;
   draft?: { versions: Version[]; comments: Version[] };
+  delivery?: { cut: string | null; diff: string | null; frames: Frame[] | null };
 }
 
 export default function OperatorOrders() {
@@ -92,6 +95,13 @@ export default function OperatorOrders() {
   // the current version when an order is opened, so editing starts from what
   // is already there rather than from an empty box.
   const [draft, setDraft] = useState('');
+
+  // What the customer reads under the player. Seeded from what is already
+  // published when an order is opened, so an operator correcting a paragraph
+  // edits the paragraph rather than an empty box that wipes it on save.
+  const [cut, setCut] = useState('');
+  const [diff, setDiff] = useState('');
+  const [framesText, setFramesText] = useState('');
 
   const load = useCallback(async (): Promise<boolean> => {
     const res = await fetch('/api/operator/orders');
@@ -155,6 +165,38 @@ export default function OperatorOrders() {
     const body = (await res.json()) as { order: Order };
     setOpen(body.order);
     setDraft(body.order.draft?.versions[0]?.body ?? '');
+    setCut(body.order.delivery?.cut ?? '');
+    setDiff(body.order.delivery?.diff ?? '');
+    setFramesText(framesToLines(body.order.delivery?.frames ?? null));
+  }
+
+  // Correcting what went out with a sample that is already on somebody's
+  // screen. No status moves and no email goes: fixing a paragraph is not an
+  // event in the life of the order.
+  async function saveDelivery() {
+    if (!open || busy) return;
+    setBusy('delivery');
+    setError('');
+    setFlash('');
+    const res = await fetch('/api/operator/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'edit-delivery',
+        orderId: open.id,
+        deliveredCut: cut,
+        deliveredDiff: diff,
+        frames: parseFrameLines(framesText),
+      }),
+    });
+    const body = (await res.json().catch(() => null)) as { message?: string; error?: string } | null;
+    setBusy('');
+    if (!res.ok) {
+      setError(body?.error ?? 'That did not save.');
+      return;
+    }
+    setFlash(body?.message ?? 'Saved.');
+    await openOrder(open.id);
   }
 
   async function send(status: Status, assetUrl?: string) {
@@ -171,6 +213,9 @@ export default function OperatorOrders() {
         note: note || null,
         assetUrl,
         draft: deliveryFor(open.serviceSlug) === 'text' ? draft : null,
+        deliveredCut: cut,
+        deliveredDiff: diff,
+        frames: parseFrameLines(framesText),
       }),
     });
     const body = (await res.json().catch(() => null)) as
@@ -325,6 +370,20 @@ export default function OperatorOrders() {
             marking={marking}
             twoFiles={twoFiles}
             onFile={(f, slot) => void take(f, slot)}
+          />
+        )}
+
+        {!text && (
+          <OperatorDelivery
+            cut={cut}
+            diff={diff}
+            frames={framesText}
+            sent={Boolean(open.events?.some((e) => e.status === 'sample_sent'))}
+            saving={busy === 'delivery'}
+            onCut={setCut}
+            onDiff={setDiff}
+            onFrames={setFramesText}
+            onSave={() => void saveDelivery()}
           />
         )}
 

@@ -1,4 +1,5 @@
 import { insertRows, selectRows } from '@/lib/supabase';
+import { parseFrames, type Frame } from '@/lib/frames';
 import {
   MAX_COMMENT,
   isOrderStatus,
@@ -40,6 +41,12 @@ export interface CustomerOrder {
 export interface OrderAssets {
   sampleUrl: string | null;
   finalUrl: string | null;
+  /** The shot list published with this sample, or null when there is none. */
+  frames: Frame[] | null;
+  /** What the cut is, written for the customer. */
+  deliveredCut: string | null;
+  /** Where it differs from the brief and why. The one a client actually needs. */
+  deliveredDiff: string | null;
 }
 
 interface CurrentRow {
@@ -137,15 +144,48 @@ export async function getOrderForEmail(
   return toOrder(rows[0]);
 }
 
-/** The current sample and the current clean file, from the view that derives them. */
+const NO_ASSETS: OrderAssets = {
+  sampleUrl: null,
+  finalUrl: null,
+  frames: null,
+  deliveredCut: null,
+  deliveredDiff: null,
+};
+
+/**
+ * The current sample, the current clean file, and what was published with them.
+ *
+ * All four come from `mk_order_assets`, which keys the frames and the note to
+ * the newest `sample_sent` event rather than to the newest event of any kind.
+ * Asking for changes writes a `working` row, so reading the latest event would
+ * blank the shot list on a cut that is still on screen.
+ */
 export async function assetsFor(id: string): Promise<OrderAssets> {
-  if (!UUID.test(id)) return { sampleUrl: null, finalUrl: null };
-  const rows = await selectRows<{ sample_url: string | null; final_url: string | null }>(
+  if (!UUID.test(id)) return NO_ASSETS;
+  const rows = await selectRows<{
+    sample_url: string | null;
+    final_url: string | null;
+    frames: unknown;
+    delivered_cut: string | null;
+    delivered_diff: string | null;
+  }>(
     'mk_order_assets',
-    `select=sample_url,final_url&order_id=eq.${id}&limit=1`,
+    `select=sample_url,final_url,frames,delivered_cut,delivered_diff&order_id=eq.${id}&limit=1`,
   );
-  if (!rows || rows.length === 0) return { sampleUrl: null, finalUrl: null };
-  return { sampleUrl: rows[0].sample_url, finalUrl: rows[0].final_url };
+  if (!rows || rows.length === 0) return NO_ASSETS;
+  return {
+    sampleUrl: rows[0].sample_url,
+    finalUrl: rows[0].final_url,
+    // Validated rather than trusted. The `mk_` tables belong to the orders
+    // repo, and a junk list must render no picker rather than throw on a page
+    // somebody is waiting on.
+    frames: parseFrames(rows[0].frames),
+    // Coerced rather than passed through. A column the view has not learned
+    // about yet reads as undefined, and one shape for "there is nothing here"
+    // is what keeps every caller's `null` check honest.
+    deliveredCut: rows[0].delivered_cut ?? null,
+    deliveredDiff: rows[0].delivered_diff ?? null,
+  };
 }
 
 /**

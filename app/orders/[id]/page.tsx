@@ -4,6 +4,9 @@ import { cookies } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 import OrderActions from '@/components/OrderActions';
 import OrderDraft from '@/components/OrderDraft';
+import OrderReferences from '@/components/OrderReferences';
+import SampleReview from '@/components/SampleReview';
+import { briefProse, parseReferences } from '@/lib/references';
 import { SESSION_COOKIE } from '@/lib/auth';
 import { currentAccount } from '@/lib/accounts';
 import { CONTACT_EMAIL } from '@/lib/contact';
@@ -59,6 +62,49 @@ export default async function Order({ params }: { params: Promise<{ id: string }
   // would be a query whose answer nothing on the page uses.
   const used = awaitingCustomer(order.status) ? await revisionsUsed(id) : null;
 
+  // The links out of the brief, and the prose around them kept as written. A
+  // line reading "Reference video:" is the customer labelling their own link
+  // and is worth more than our guess at what sits behind it.
+  const refs = parseReferences(order.brief);
+  const prose = briefProse(order.brief);
+
+  // What they asked for, then what we made of it. Built here and handed to
+  // SampleReview so the order can follow what somebody is doing: above the two
+  // buttons while there is a decision, below the box once they are writing in
+  // it. Rendered at the foot of the page when there is no sample at all.
+  const brief = (order.brief || assets?.deliveredCut || assets?.deliveredDiff) && (
+    <>
+      {order.brief && (
+        <section className="ord-brief-block">
+          <h2>What you asked for</h2>
+          {prose && <p>{prose}</p>}
+          {refs.length > 0 && <OrderReferences refs={refs} />}
+          {/* A brief whose links we could not read is still their brief, so it
+              is printed rather than dropped. */}
+          {refs.length === 0 && !prose && <p>{order.brief}</p>}
+        </section>
+      )}
+
+      {(assets?.deliveredCut || assets?.deliveredDiff) && (
+        <section className="ord-brief-block">
+          <h2>What we delivered</h2>
+          {assets.deliveredCut && (
+            <>
+              <span className="ord-sub">The cut</span>
+              <p>{assets.deliveredCut}</p>
+            </>
+          )}
+          {assets.deliveredDiff && (
+            <>
+              <span className="ord-sub">Where it differs from your brief, and why</span>
+              <p>{assets.deliveredDiff}</p>
+            </>
+          )}
+        </section>
+      )}
+    </>
+  );
+
   return (
     <main className="ord ord-one">
       <header className="ord-bar">
@@ -91,20 +137,15 @@ export default async function Order({ params }: { params: Promise<{ id: string }
       {order.statusAt && <p className="ord-when-line">Last update {ago(order.statusAt)}</p>}
 
       {showSample && (
-        <section className="ord-sample">
-          <h2>{showDownload ? 'Your sample' : 'Your sample, watermarked'}</h2>
-          <div className="ord-stage">
-            {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-            <video src={assets!.sampleUrl!} controls playsInline preload="metadata" />
-          </div>
-          <p className="ord-sample-note">
-            Trouble playing it?{' '}
-            <a href={assets!.sampleUrl!} target="_blank" rel="noreferrer noopener">
-              Open it directly
-            </a>
-            .
-          </p>
-        </section>
+        <SampleReview
+          id={order.id}
+          sampleUrl={assets!.sampleUrl!}
+          frames={assets!.frames}
+          used={used}
+          awaiting={awaitingCustomer(order.status)}
+          heading={showDownload ? 'Your sample' : 'Your sample, watermarked'}
+          context={brief}
+        />
       )}
 
       {thread && thread.versions.length > 0 && (
@@ -117,7 +158,10 @@ export default async function Order({ params }: { params: Promise<{ id: string }
         />
       )}
 
-      {awaitingCustomer(order.status) && <OrderActions id={order.id} used={used} />}
+      {/* Only when the sample is not carrying them. SampleReview owns the two
+          buttons on a video order so that tapping a frame can move the player,
+          and a LinkedIn draft or an order with no sample yet still needs them. */}
+      {awaitingCustomer(order.status) && !showSample && <OrderActions id={order.id} used={used} />}
 
       {showDownload && (
         <p className="ord-download">
@@ -127,19 +171,10 @@ export default async function Order({ params }: { params: Promise<{ id: string }
         </p>
       )}
 
-      {order.brief && (
-        <section className="ord-brief-block">
-          <h2>What you asked for</h2>
-          <p>{order.brief}</p>
-        </section>
-      )}
-
-      {order.statusNote && order.status !== 'sample_sent' && (
-        <section className="ord-brief-block">
-          <h2>Latest note</h2>
-          <p>{order.statusNote}</p>
-        </section>
-      )}
+      {/* The brief only renders here when there is no sample above to carry it.
+          The moment there is one, it belongs next to the thing it was used to
+          make, above the decision rather than under it. */}
+      {!showSample && brief}
     </main>
   );
 }
