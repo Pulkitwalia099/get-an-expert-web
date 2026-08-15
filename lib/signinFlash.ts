@@ -8,9 +8,13 @@
 // Plain strings and no dependencies, so a client component could render them
 // too. Anything not listed here renders nothing rather than a shrug.
 
-export type SigninFlash = 'expired' | 'stale' | 'failed' | 'unavailable';
+export type SigninFlash = 'expired' | 'stale' | 'failed' | 'unavailable' | 'elsewhere';
 
 const MESSAGES: Record<SigninFlash, string> = {
+  // Not a failure at all. Somebody pressed "sign out everywhere" in their
+  // settings and this is the page they land on, so it says what happened
+  // rather than leaving them at an unexplained sign in screen.
+  elsewhere: 'You signed out everywhere. Sign in again to carry on.',
   // The email door. A token that is past its half hour, or was tampered with.
   expired: 'That link has expired. Ask for a new one below.',
   // The Google door, where there is no link: the state cookie did not survive,

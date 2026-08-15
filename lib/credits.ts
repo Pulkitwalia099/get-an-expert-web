@@ -1,4 +1,4 @@
-import { insertRows, selectRows } from '@/lib/supabase';
+import { insertRows, patchRows, selectRows } from '@/lib/supabase';
 import type { SessionUser } from '@/lib/auth';
 
 // The credit ledger: the writes, and the reads that need the secret key.
@@ -105,12 +105,27 @@ export async function ensureAccount(user: SessionUser): Promise<void> {
   };
   // Sent only when there is something to send. The upsert merges whatever
   // columns it is given, so an email link sign in, which knows nothing but the
-  // address, would otherwise blank the name and photo Google filled in the
-  // last time the same person came through the other door.
-  if (user.name) row.name = user.name;
+  // address, would otherwise blank the photo Google filled in the last time
+  // the same person came through the other door.
   if (user.picture) row.picture = user.picture;
 
   await insertRows('accounts', row, { resolveOn: 'sub' });
+
+  // The name is NOT in that upsert, and that is the fix for a bug the settings
+  // page would otherwise ship with. merge-duplicates means every sign in
+  // overwrites accounts.name with whatever Google holds, so somebody edits
+  // their name on /account, the next order email greets them correctly, and a
+  // week later signing in silently puts Google's version back. Nothing throws
+  // and nothing looks broken.
+  //
+  // So it goes through a patch filtered on the flag setAccountName sets.
+  // Google's name still lands on an account nobody has edited, which is the
+  // behaviour this had before; an edited one is left alone.
+  if (user.name) {
+    await patchRows('accounts', `sub=eq.${encodeURIComponent(user.sub)}&name_locked=is.false`, {
+      name: user.name,
+    });
+  }
 
   await insertRows(
     'credit_entries',

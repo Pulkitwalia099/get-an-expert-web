@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { SESSION_COOKIE, authConfigured, readSession } from '@/lib/auth';
+import { SESSION_COOKIE, authConfigured } from '@/lib/auth';
+import { currentAccount } from '@/lib/accounts';
 import { balanceFor, formatCents } from '@/lib/credits';
 import { withMetrics } from '@/lib/metrics';
 
@@ -11,7 +12,7 @@ import { withMetrics } from '@/lib/metrics';
 // first visit trains everyone to ignore the console.
 
 async function handleGet(req: NextRequest): Promise<NextResponse> {
-  const user = readSession(req.cookies.get(SESSION_COOKIE)?.value);
+  const user = await currentAccount(req.cookies.get(SESSION_COOKIE)?.value);
   if (!user) {
     return NextResponse.json({ signedIn: false, available: authConfigured() });
   }

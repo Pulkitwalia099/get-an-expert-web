@@ -166,6 +166,45 @@ export async function deleteRows(table: string, filter: string): Promise<WriteRe
   }
 }
 
+/**
+ * Updates rows matching a raw PostgREST filter.
+ *
+ * The same rule as deleteRows and for the same reason: PostgREST applies a
+ * PATCH to every row in the table when it is handed no filter, so an empty
+ * one here would rewrite a column across the whole table. Callers pass an
+ * explicit filter and nothing else does.
+ *
+ * This lived in lib/matches.ts, with a comment saying it was kept there until
+ * a second caller needed it. lib/accounts.ts is that caller: editing a name
+ * and taking an address off past orders are both updates to rows we already
+ * wrote.
+ */
+export async function patchRows(
+  table: string,
+  filter: string,
+  patch: Record<string, unknown>,
+): Promise<boolean> {
+  const cfg = config();
+  if (!cfg) return false;
+  if (!filter.trim()) return false;
+  try {
+    const res = await fetch(`${cfg.url}/rest/v1/${table}?${filter}`, {
+      method: 'PATCH',
+      headers: headers(cfg, { Prefer: 'return=minimal' }),
+      body: JSON.stringify(patch),
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+    });
+    if (!res.ok) {
+      console.error(`[midsesh:supabase] ${table} patch failed`, res.status, await res.text());
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error(`[midsesh:supabase] ${table} patch failed`, err);
+    return false;
+  }
+}
+
 // Reads rows with a raw PostgREST query string. Null on any failure.
 export async function selectRows<T>(table: string, query: string): Promise<T[] | null> {
   const cfg = config();

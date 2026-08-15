@@ -6,6 +6,7 @@ import {
   newState,
   readSession,
   safeNext,
+  sessionVersionOf,
   signSession,
   stateMatches,
 } from '@/lib/auth';
@@ -83,6 +84,38 @@ describe('session cookie', () => {
     delete process.env.SESSION_SECRET;
     expect(signSession(USER)).toBeNull();
     expect(authConfigured()).toBe(false);
+  });
+});
+
+// The generation claim behind "sign out everywhere". The rule it belongs to
+// lives in lib/accounts.ts; what is here is the cookie format, kept beside the
+// tampering and expiry cases so anybody changing that format finds it.
+describe('session version claim', () => {
+  it('leaves the claim out entirely when no version is passed', () => {
+    // Writing 0 instead would be a cookie claiming generation 0 against a
+    // stored 3, rejected on its very next use, which is a sign in loop with no
+    // way out. Absent means unknown, and unknown is accepted.
+    expect(sessionVersionOf(signSession(USER)!)).toBeNull();
+  });
+
+  it('round trips a version and leaves the rest of the session alone', () => {
+    const cookie = signSession(USER, Date.now(), 7)!;
+    expect(sessionVersionOf(cookie)).toBe(7);
+    expect(readSession(cookie)).toEqual(USER);
+  });
+
+  it('carries zero as a real answer, not as nothing', () => {
+    // Every account starts at 0. Reading that back as "no claim" would
+    // grandfather every fresh session against its own first revoke.
+    expect(sessionVersionOf(signSession(USER, Date.now(), 0)!)).toBe(0);
+  });
+
+  it('reports no version for a cookie that does not verify', () => {
+    const cookie = signSession(USER, Date.now(), 7)!;
+    expect(sessionVersionOf(`${cookie}x`)).toBeNull();
+    expect(sessionVersionOf(undefined)).toBeNull();
+    const wayLater = Date.now() + 400 * 24 * 60 * 60 * 1000;
+    expect(sessionVersionOf(cookie, wayLater)).toBeNull();
   });
 });
 
@@ -210,7 +243,8 @@ describe('safeNext', () => {
   // through hands a freshly signed in person to somebody else's page at the
   // moment they have most reason to trust what is on screen.
 
-  it('allows the three destinations that exist', () => {
+  it('allows the destinations that exist', () => {
+    expect(safeNext('/account')).toBe('/account');
     expect(safeNext('/dashboard')).toBe('/dashboard');
     expect(safeNext('/orders')).toBe('/orders');
     const order = '/orders/b1029c04-c43d-422b-9000-ff79632847a6';

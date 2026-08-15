@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { askClaude, hasAnthropicKey } from '@/lib/anthropic';
-import { SESSION_COOKIE, readSession } from '@/lib/auth';
+import { currentAccount } from '@/lib/accounts';
+import { SESSION_COOKIE } from '@/lib/auth';
 import { demoExperts } from '@/lib/demo';
 import { exaKey, serpapiKey } from '@/lib/env';
 import { redact } from '@/lib/redact';
@@ -128,7 +129,20 @@ async function handleSearch(req: NextRequest): Promise<NextResponse> {
   // Who is asking decides what comes back. Somebody already signed in has
   // nothing to be gated from, so their set is written as theirs and their
   // cards arrive unlocked. Everyone else gets a payload with no names in it.
-  const user = readSession(req.cookies.get(SESSION_COOKIE)?.value);
+  //
+  // currentAccount, not readSession, even though this is the slowest path on
+  // the site and the round trip is real. It shipped briefly as readSession on
+  // the argument that nothing withheld is revealed here, and that argument is
+  // simply wrong: `locked` below is computed from this value, so a session
+  // that has been signed out everywhere would come back with every name,
+  // photo and profile link unredacted, and would pre-claim the new set to the
+  // account it was just revoked from. That is the exact case the setting
+  // exists for, somebody signing out a lost phone.
+  //
+  // The cost is one Supabase read against a request that already spends
+  // seconds on SerpAPI, Exa and a ranking call, so it is not measurable next
+  // to what this route already does.
+  const user = await currentAccount(req.cookies.get(SESSION_COOKIE)?.value);
 
   // The one place a set becomes a response. Storing and redacting are done
   // together so no caller can hand back records that skipped the redaction.

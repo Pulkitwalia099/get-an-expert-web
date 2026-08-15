@@ -4,7 +4,8 @@ import { cookies } from 'next/headers';
 import Mark from '@/components/Mark';
 import SignInDoors from '@/components/SignInDoors';
 import { inter } from '@/app/fonts';
-import { SESSION_COOKIE, authConfigured, readSession } from '@/lib/auth';
+import { SESSION_COOKIE, authConfigured } from '@/lib/auth';
+import { currentAccount } from '@/lib/accounts';
 import { CONTACT_EMAIL } from '@/lib/contact';
 import { hasEmailKey } from '@/lib/email';
 import { EMAIL_TOKEN_MAX_AGE, emailAuthConfigured } from '@/lib/emailAuth';
@@ -35,7 +36,7 @@ export default async function Orders({
   searchParams: Promise<{ signin?: string }>;
 }) {
   const store = await cookies();
-  const user = readSession(store.get(SESSION_COOKIE)?.value);
+  const user = await currentAccount(store.get(SESSION_COOKIE)?.value);
   const signin = (await searchParams).signin;
   // Both halves have to be true for the email door to work at all: a secret to
   // sign the link with, and a key to send it through. Checked once here so the
@@ -92,6 +93,11 @@ export default async function Orders({
       <div className="paper" aria-hidden="true" />
       <header className="ord-bar">
         <Mark />
+        {/* Orders are the page. /account is where the same person finds their
+            requests beside them and everything they can change. */}
+        <Link href="/account" className="ord-back">
+          Your account
+        </Link>
         <span className="ord-who">
           {user.email}
           {/* A form, not a link: the route is POST only so a prefetch cannot

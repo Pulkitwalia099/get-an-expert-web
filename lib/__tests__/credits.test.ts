@@ -17,7 +17,10 @@ const selectRows = vi.fn<(table: string, query: string) => Promise<unknown[] | n
   async () => [],
 );
 const insertRows = vi.fn<Insert>(async () => ({ ok: true, status: 201 }));
-vi.mock('@/lib/supabase', () => ({ selectRows, insertRows }));
+const patchRows = vi.fn<
+  (table: string, filter: string, patch: Record<string, unknown>) => Promise<boolean>
+>(async () => true);
+vi.mock('@/lib/supabase', () => ({ selectRows, insertRows, patchRows }));
 
 const { accountByEmail, ensureAccount, resolveAccount } = await import('@/lib/credits');
 
@@ -39,6 +42,7 @@ beforeEach(() => {
   selectRows.mockReset();
   selectRows.mockResolvedValue([]);
   insertRows.mockClear();
+  patchRows.mockClear();
 });
 
 describe('accountByEmail', () => {
@@ -104,11 +108,33 @@ describe('ensureAccount', () => {
     expect(row.email).toBe('pulkit@example.com');
   });
 
-  it('still writes a name and photo when it has them', async () => {
+  it('still writes a photo when it has one', async () => {
     await ensureAccount(GOOGLE);
-    const row = insertRows.mock.calls[0][1];
-    expect(row.name).toBe('Pulkit');
-    expect(row.picture).toBe(GOOGLE.picture);
+    expect(insertRows.mock.calls[0][1].picture).toBe(GOOGLE.picture);
+  });
+
+  // The bug the settings page would otherwise have shipped with. The upsert
+  // merges whatever columns it is handed, so a name sent here overwrites
+  // accounts.name on every single sign in: somebody edits their name, the next
+  // order email greets them correctly, and a week later signing in silently
+  // puts Google's version back. Nothing throws and nothing looks broken.
+  it('never sends the name in the upsert, so an edited one cannot be merged over', async () => {
+    await ensureAccount(GOOGLE);
+    expect(insertRows.mock.calls[0][1]).not.toHaveProperty('name');
+  });
+
+  it('patches the name only onto an account nobody has edited', async () => {
+    await ensureAccount(GOOGLE);
+    const [table, filter, patch] = patchRows.mock.calls[0];
+    expect(table).toBe('accounts');
+    expect(filter).toContain('name_locked=is.false');
+    expect(filter).toContain(`sub=eq.${GOOGLE.sub}`);
+    expect(patch).toEqual({ name: 'Pulkit' });
+  });
+
+  it('does not patch a name it does not have', async () => {
+    await ensureAccount(EMAIL_DOOR);
+    expect(patchRows).not.toHaveBeenCalled();
   });
 
   it('grants the welcome credit once, by ref rather than by checking first', async () => {
