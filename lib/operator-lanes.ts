@@ -104,6 +104,29 @@ function promote(lane: Lane, promise: Promised): Lane {
   return promise.late && (lane === 'yours' || lane === 'quotes') ? 'late' : lane;
 }
 
+/**
+ * A row nobody here is holding up carries no promise.
+ *
+ * Lateness is decided once, by the lane, and the promise is brought into line
+ * with that before it leaves this module. Without this the tile and the pill
+ * read the same row two different ways: `promote` deliberately keeps a quiet
+ * customer out of Late, while `promiseFor` still returns red and "3d late", so
+ * the Waiting on them section painted a red warning that the Late tile did not
+ * count and that tapping Late did not show. Two answers to "is this late" is
+ * worse than either answer on its own.
+ *
+ * `age` survives, because how long a sample has sat unanswered is still worth
+ * knowing. It is a duration, not a deadline.
+ */
+function settle(lane: Lane, promise: Promised): Promised {
+  if (lane === 'theirs') return { ...promise, heat: 'green', late: false, label: '' };
+  // Closed loses the age as well. "waiting 8h" on an order that was delivered
+  // eight hours ago is not a wait, it is how long ago it finished, and an
+  // archive that reads like a queue is what the Closed section exists to stop.
+  if (lane === 'closed') return { ...promise, heat: 'green', late: false, label: '', age: '' };
+  return promise;
+}
+
 function startMs(p: Placed<unknown, unknown>): number {
   const ms = new Date(p.promise.startedAt).getTime();
   // A start we could not read sorts to the top of its lane. It is the row
@@ -132,14 +155,14 @@ export function board<O extends OrderInput, Q extends QuoteInput>(
 
   for (const order of orders) {
     const promise = promiseFor(clockStartsAt(order.status, order.createdAt, order.statusAt), now);
-    const base = ORDER_LANE[order.status];
-    placed.push({ kind: 'order', lane: promote(base, promise), promise, order });
+    const lane = promote(ORDER_LANE[order.status], promise);
+    placed.push({ kind: 'order', lane, promise: settle(lane, promise), order });
   }
 
   for (const quote of quotes) {
     const promise = promiseFor(quoteClockStartsAt(quote.status, quote.createdAt), now);
-    const base = QUOTE_LANE[quote.status];
-    placed.push({ kind: 'quote', lane: promote(base, promise), promise, quote });
+    const lane = promote(QUOTE_LANE[quote.status], promise);
+    placed.push({ kind: 'quote', lane, promise: settle(lane, promise), quote });
   }
 
   const inLane = (lane: Lane) => placed.filter((p) => p.lane === lane);
@@ -154,10 +177,16 @@ export function board<O extends OrderInput, Q extends QuoteInput>(
       late: inLane('late').length,
       yours: inLane('yours').length,
       theirs: inLane('theirs').length,
-      // Every request, wherever it ended up. The four tiles are four
-      // questions, not four buckets: "how many requests are live" has to keep
-      // answering 7 while all seven of them are also sitting in Late.
-      quotes: quotes.length,
+      // Every LIVE request, wherever it ended up.
+      //
+      // The four tiles are four questions, not four buckets, so this
+      // deliberately double counts with Late: "how many requests are live" has
+      // to keep answering 7 while all seven of them also sit in Late.
+      //
+      // What it must not count is a request that is finished, because tapping
+      // this tile shows the late and quotes lanes and never the closed one. A
+      // tile reading 9 that opens 7 rows is a tile people stop believing.
+      quotes: placed.filter((p) => p.kind === 'quote' && p.lane !== 'closed').length,
     },
   };
 }

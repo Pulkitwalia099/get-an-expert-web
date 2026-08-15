@@ -149,11 +149,6 @@ function OrderCard({
   promise: Promised;
   onOpen: (id: string) => void;
 }) {
-  // Closed orders draw no clock. There is no promise left to keep on one, and
-  // a red pill on something finished a week ago is noise in the only section
-  // that is allowed to be quiet.
-  const done =
-    order.status === 'delivered' || order.status === 'declined' || order.status === 'refunded';
   return (
     <button className="opq-row" onClick={() => onOpen(order.id)}>
       <span className="opq-row-top">
@@ -161,7 +156,12 @@ function OrderCard({
         <span className={`opq-pill opq-${order.status}`}>{ORDER_QUEUE_LABELS[order.status]}</span>
       </span>
       <span className="opq-row-meta">
-        {!done && <span className={`opq-clock opq-clock-${promise.heat}`}>{promise.label}</span>}
+        {/* The label, not the status, decides whether a clock shows. board()
+            clears it for anything sitting with the customer or already closed,
+            so the pill and the Late tile cannot disagree about one row. */}
+        {promise.label && (
+          <span className={`opq-clock opq-clock-${promise.heat}`}>{promise.label}</span>
+        )}
         {order.email}
         {promise.age ? ` · waiting ${promise.age}` : ''}
       </span>

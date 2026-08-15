@@ -41,7 +41,9 @@ export default function OperatorQuoteRow({
     <div className="opq-quote">
       <span className="opq-row-top">
         <span className="opq-service">{quote.title}</span>
-        <span className={`opq-clock opq-clock-${promise.heat}`}>{promise.label}</span>
+        {promise.label && (
+          <span className={`opq-clock opq-clock-${promise.heat}`}>{promise.label}</span>
+        )}
       </span>
       <span className="opq-row-meta">
         {quote.email} · {people} {people === 1 ? 'person' : 'people'}

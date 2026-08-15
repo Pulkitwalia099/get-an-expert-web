@@ -173,3 +173,50 @@ describe('rowsFor', () => {
     expect(rowsFor(rows, 'late')).toHaveLength(rows.counts.late);
   });
 });
+
+// Added at merge, after review found the tile and the pill disagreeing on the
+// same row. Both of these are about one rule holding in two places at once.
+describe('one answer per row', () => {
+  const at = (iso: string) => new Date(iso).getTime();
+  const NOW = at('2026-08-15T12:00:00Z');
+
+  it('never paints a late clock on a row the Late tile does not count', () => {
+    // A sample sent two days ago. promote() keeps it out of Late on purpose,
+    // because a quiet customer is not the operator being slow, and before this
+    // promiseFor still handed the card a red "1d late" nobody could act on.
+    const b = board(
+      [{ status: 'sample_sent' as const, createdAt: '2026-08-10T12:00:00Z', statusAt: '2026-08-13T12:00:00Z' }],
+      [],
+      NOW,
+    );
+    expect(b.counts.late).toBe(0);
+    expect(b.theirs).toHaveLength(1);
+    expect(b.theirs[0].promise.late).toBe(false);
+    expect(b.theirs[0].promise.label).toBe('');
+    // The age survives, because how long they have been quiet is still worth
+    // knowing. It is a duration, not a deadline.
+    expect(b.theirs[0].promise.age).not.toBe('');
+  });
+
+  it('leaves an archived row with neither a clock nor a wait', () => {
+    const b = board(
+      [{ status: 'delivered' as const, createdAt: '2026-08-01T12:00:00Z', statusAt: '2026-08-14T12:00:00Z' }],
+      [],
+      NOW,
+    );
+    expect(b.closed[0].promise.label).toBe('');
+    expect(b.closed[0].promise.age).toBe('');
+  });
+
+  it('counts on the Quotes tile exactly what tapping it opens', () => {
+    // A tile reading 3 that opens 2 rows is a tile people stop believing.
+    const quotes = [
+      { status: 'open' as const, createdAt: '2026-08-04T12:00:00Z' },
+      { status: 'contacting' as const, createdAt: '2026-08-15T11:00:00Z' },
+      { status: 'closed' as const, createdAt: '2026-08-02T12:00:00Z' },
+    ];
+    const b = board([], quotes, NOW);
+    expect(b.counts.quotes).toBe(rowsFor(b, 'quotes').length);
+    expect(b.counts.quotes).toBe(2);
+  });
+});
