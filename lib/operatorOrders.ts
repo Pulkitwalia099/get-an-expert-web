@@ -259,6 +259,15 @@ async function newestUnder(prefix: string): Promise<string | null> {
 export interface AdvanceInput {
   orderId: string;
   status: OrderStatus;
+  /**
+   * Which of us moved it, as `operator:rohit`.
+   *
+   * Optional and defaulting to plain `operator`, which is what every row
+   * written before there were two of us already says. Supplied by the route
+   * from the session rather than by the browser: an actor a client could set
+   * is a signature anybody can forge.
+   */
+  actor?: string;
   note?: string | null;
   assetUrl?: string | null;
   /**
@@ -409,7 +418,7 @@ export async function advance(input: AdvanceInput): Promise<AdvanceResult> {
     order_id: input.orderId,
     status: input.status,
     note: input.note?.slice(0, 2000) || null,
-    actor: 'operator',
+    actor: input.actor || 'operator',
     asset_url: url,
     // Only onto the event that hands something over. A `working` row carrying
     // a shot list would put frames on the customer's page for a cut that has

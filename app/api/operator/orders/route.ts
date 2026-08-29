@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withMetrics } from '@/lib/metrics';
 import { isOrderStatus } from '@/lib/order-status';
-import { isAuthorised } from '@/lib/operatorAuth';
+import { isAuthorised, operatorActor } from '@/lib/operatorAuth';
 import { advance, detail, queue, recentlyClosed, remove, updateDelivery } from '@/lib/operatorOrders';
 
 // The dashboard's one endpoint: read the queue, read one order, move one on.
@@ -65,6 +65,9 @@ async function handlePost(req: NextRequest): Promise<NextResponse> {
   const result = await advance({
     orderId,
     status,
+    // From the session, never from the payload. An actor the browser could
+    // name is not attribution, it is a field anybody can fill in.
+    actor: operatorActor(req),
     note: text('note'),
     assetUrl: text('assetUrl'),
     draft: text('draft'),

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { NextRequest } from 'next/server';
-import { OPERATOR_COOKIE, isAuthorised, secretMatches, sessionToken } from '../operatorAuth';
+import { OPERATOR_COOKIE, isAuthorised, secretMatches, tokenForSecret } from '../operatorAuth';
 
 function req({ header, cookie }: { header?: string; cookie?: string }): NextRequest {
   return {
@@ -36,22 +36,29 @@ describe('secretMatches', () => {
   });
 });
 
-describe('sessionToken', () => {
+// Was `sessionToken()`, which took no argument because there was only ever one
+// operator. It is now per person, so the secret says whose token to mint.
+describe('tokenForSecret', () => {
   it('is a sha256 hex digest, not the secret', () => {
-    const t = sessionToken();
+    const t = tokenForSecret('let-me-in');
     expect(t).toMatch(/^[0-9a-f]{64}$/);
     expect(t).not.toContain('let-me-in');
   });
 
   it('is stable for the same secret and different for another', () => {
-    const a = sessionToken();
+    const a = tokenForSecret('let-me-in');
+    expect(tokenForSecret('let-me-in')).toBe(a);
     vi.stubEnv('OPERATOR_SECRET', 'something-else');
-    expect(sessionToken()).not.toBe(a);
+    expect(tokenForSecret('something-else')).not.toBe(a);
+  });
+
+  it('is null for a secret that matches nobody', () => {
+    expect(tokenForSecret('not-the-secret')).toBeNull();
   });
 
   it('is null when no secret is configured', () => {
     vi.stubEnv('OPERATOR_SECRET', '');
-    expect(sessionToken()).toBeNull();
+    expect(tokenForSecret('let-me-in')).toBeNull();
   });
 });
 
@@ -61,7 +68,7 @@ describe('isAuthorised', () => {
   });
 
   it('accepts a cookie holding the derived token', () => {
-    expect(isAuthorised(req({ cookie: sessionToken()! }))).toBe(true);
+    expect(isAuthorised(req({ cookie: tokenForSecret('let-me-in')! }))).toBe(true);
   });
 
   it('rejects a cookie holding the raw secret, which is not the token', () => {
@@ -73,7 +80,7 @@ describe('isAuthorised', () => {
   });
 
   it('rejects everything when the secret is unset', () => {
-    const token = sessionToken()!;
+    const token = tokenForSecret('let-me-in')!;
     vi.stubEnv('OPERATOR_SECRET', '');
     expect(isAuthorised(req({ cookie: token }))).toBe(false);
     expect(isAuthorised(req({ header: '' }))).toBe(false);

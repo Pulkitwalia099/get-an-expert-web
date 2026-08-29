@@ -36,8 +36,8 @@ async function auth() {
 describe('operatorCookieValid', () => {
   it('accepts the token the login actually sets', async () => {
     process.env.OPERATOR_SECRET = 'a-real-secret';
-    const { operatorCookieValid, sessionToken } = await auth();
-    expect(operatorCookieValid(sessionToken())).toBe(true);
+    const { operatorCookieValid, tokenForSecret } = await auth();
+    expect(operatorCookieValid(tokenForSecret('a-real-secret'))).toBe(true);
   });
 
   it('refuses a wrong token, the raw secret, and anything empty', async () => {
@@ -54,11 +54,12 @@ describe('operatorCookieValid', () => {
 
   it('denies everyone when no secret is configured', async () => {
     delete process.env.OPERATOR_SECRET;
-    const { operatorCookieValid, sessionToken } = await auth();
-    expect(sessionToken()).toBeNull();
+    const { operatorCookieValid, tokenForSecret } = await auth();
+    expect(tokenForSecret('anything')).toBeNull();
     expect(operatorCookieValid('anything')).toBe(false);
-    // The dangerous case: an unset secret makes sessionToken() null, and a
-    // check written as `token === cookie` would pass for a null cookie.
+    // The dangerous case: no operators configured means the loop matches
+    // nothing, and a check written as `token === cookie` would pass for a
+    // null cookie against a null token.
     expect(operatorCookieValid(null)).toBe(false);
     expect(operatorCookieValid(undefined)).toBe(false);
   });

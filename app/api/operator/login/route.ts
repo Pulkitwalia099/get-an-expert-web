@@ -3,8 +3,7 @@ import { withMetrics } from '@/lib/metrics';
 import {
   OPERATOR_COOKIE,
   OPERATOR_COOKIE_MAX_AGE,
-  secretMatches,
-  sessionToken,
+  tokenForSecret,
 } from '@/lib/operatorAuth';
 import { clientId, rateLimit } from '@/lib/ratelimit';
 
@@ -25,8 +24,10 @@ async function handlePost(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  const token = sessionToken();
-  if (!secretMatches(body.secret) || !token) {
+  // The token is per person, so the cookie says who signed in and deleting
+  // somebody from OPERATOR_SECRET invalidates the one they are holding.
+  const token = tokenForSecret(body.secret);
+  if (!token) {
     return NextResponse.json({ error: 'Wrong secret' }, { status: 401 });
   }
 
