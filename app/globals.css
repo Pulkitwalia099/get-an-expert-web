@@ -2944,6 +2944,8 @@ body:has(.opq) { background: #FBFBF8; }
 @media (prefers-reduced-motion: reduce) {
   .opq-tile { transition: none; }
   .opq-tile:hover:not(:disabled), .opq-tile:active:not(:disabled) { transform: none; }
+}
+
 /* ================================================================ /account
    Milestone three of the design review: one account holding orders and
    requests in one list, with the four settings behind them. Everything below
