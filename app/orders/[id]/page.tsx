@@ -5,12 +5,14 @@ import { notFound, redirect } from 'next/navigation';
 import OrderActions from '@/components/OrderActions';
 import OrderDraft from '@/components/OrderDraft';
 import OrderReferences from '@/components/OrderReferences';
+import CutChoice from '@/components/CutChoice';
 import SampleReview from '@/components/SampleReview';
 import { briefProse, parseReferences } from '@/lib/references';
 import { SESSION_COOKIE } from '@/lib/auth';
 import { currentAccount } from '@/lib/accounts';
 import { CONTACT_EMAIL } from '@/lib/contact';
 import { TEXT_LABELS, TEXT_NOTES, deliveryFor } from '@/lib/delivery';
+import { awaitingChoice, candidatesFor, chosen } from '@/lib/orderCandidates';
 import { draftThread } from '@/lib/orderDrafts';
 import {
   STATUS_LABELS,
@@ -56,7 +58,20 @@ export default async function Order({ params }: { params: Promise<{ id: string }
   // run to find two nulls.
   const assets = text || order.status === 'new' ? null : await assetsFor(id);
   const thread = text && order.status !== 'new' ? await draftThread(id) : null;
-  const showSample = Boolean(assets?.sampleUrl);
+  // Only an order that is actually offering a choice has rows here, and the
+  // lookup is skipped for the two cases that can never have one: a written
+  // deliverable, and an order nothing has been made for yet.
+  const cuts = text || order.status === 'new' ? [] : await candidatesFor(id);
+  const choosing = awaitingChoice(cuts);
+  const picked = chosen(cuts);
+  // The chosen cut is written in as an ordinary `sample_sent` event, so this
+  // normally resolves from `assets` like any other order. The candidate is the
+  // fallback for the one case that write can fail in: the choice is recorded
+  // and the event is not. Losing somebody's decision is the thing worth
+  // avoiding; showing them the cut they picked from a second source is cheap.
+  const sampleUrl = assets?.sampleUrl ?? picked?.sampleUrl ?? null;
+  const sampleFrames = assets?.frames ?? picked?.frames ?? null;
+  const showSample = !choosing && Boolean(sampleUrl);
   const showDownload = order.status === 'delivered' && Boolean(assets?.finalUrl);
   // Only asked for when the buttons are about to render. Every other status
   // would be a query whose answer nothing on the page uses.
@@ -136,11 +151,26 @@ export default async function Order({ params }: { params: Promise<{ id: string }
 
       {order.statusAt && <p className="ord-when-line">Last update {ago(order.statusAt)}</p>}
 
+      {choosing && (
+        <CutChoice
+          id={order.id}
+          cuts={cuts.map((c) => ({
+            slug: c.slug,
+            label: c.label,
+            title: c.title,
+            kind: c.kind,
+            ledBy: c.ledBy,
+            sampleUrl: c.sampleUrl,
+            detail: c.detail,
+          }))}
+        />
+      )}
+
       {showSample && (
         <SampleReview
           id={order.id}
-          sampleUrl={assets!.sampleUrl!}
-          frames={assets!.frames}
+          sampleUrl={sampleUrl!}
+          frames={sampleFrames}
           used={used}
           awaiting={awaitingCustomer(order.status)}
           heading={showDownload ? 'Your sample' : 'Your sample, watermarked'}
@@ -161,7 +191,9 @@ export default async function Order({ params }: { params: Promise<{ id: string }
       {/* Only when the sample is not carrying them. SampleReview owns the two
           buttons on a video order so that tapping a frame can move the player,
           and a LinkedIn draft or an order with no sample yet still needs them. */}
-      {awaitingCustomer(order.status) && !showSample && <OrderActions id={order.id} used={used} />}
+      {awaitingCustomer(order.status) && !showSample && !choosing && (
+        <OrderActions id={order.id} used={used} />
+      )}
 
       {showDownload && (
         <p className="ord-download">
@@ -174,7 +206,7 @@ export default async function Order({ params }: { params: Promise<{ id: string }
       {/* The brief only renders here when there is no sample above to carry it.
           The moment there is one, it belongs next to the thing it was used to
           make, above the decision rather than under it. */}
-      {!showSample && brief}
+      {!showSample && !choosing && brief}
     </main>
   );
 }

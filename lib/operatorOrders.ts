@@ -1,6 +1,7 @@
 import { list } from '@vercel/blob';
 import { deliveryFor } from '@/lib/delivery';
 import { parseFrames, type Frame } from '@/lib/frames';
+import { candidatesFor } from '@/lib/orderCandidates';
 import { appendDraft, draftThread, type DraftThread } from '@/lib/orderDrafts';
 import { notifyCustomer } from '@/lib/orderMail';
 import { isOrderStatus, type OrderStatus } from '@/lib/order-status';
@@ -375,7 +376,23 @@ export async function advance(input: AdvanceInput): Promise<AdvanceResult> {
   }
 
   const url = input.assetUrl ?? (input.status === 'delivered' ? order.parkedFinalUrl : null);
-  if (handover && !text && !url) {
+  // An order offering a choice between cuts has no single sample yet, and it
+  // still has to reach `sample_sent`.
+  //
+  // Not a cosmetic exception. `awaitingCustomer` is true only at that status,
+  // so an order left at `working` while somebody decides is read by the
+  // cockpit as our turn and starts a late clock against a customer who is
+  // doing exactly what we asked. The files exist, they are just in
+  // `mk_order_candidates` rather than on this event, and the one they pick is
+  // written in as an ordinary sample the moment they pick it.
+  //
+  // Deliberately not extended to `delivered`. There is exactly one clean file
+  // at the end whatever happened in the middle, and letting that status
+  // through without one would ship an order with nothing to download.
+  const choosing = handover && !text && !url && input.status === 'sample_sent'
+    ? (await candidatesFor(input.orderId)).length > 0
+    : false;
+  if (handover && !text && !url && !choosing) {
     return {
       ok: false,
       error:
