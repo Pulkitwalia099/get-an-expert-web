@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { SESSION_COOKIE } from '@/lib/auth';
 import { currentAccount } from '@/lib/accounts';
+import { CONTACT_EMAIL } from '@/lib/contact';
+import { operatorRecipients, sendEmail } from '@/lib/email';
 import { withMetrics } from '@/lib/metrics';
 import { chooseCandidate, publishChosenSample } from '@/lib/orderCandidates';
 import { getOrderForEmail } from '@/lib/orderTracking';
 import { clientId, rateLimit } from '@/lib/ratelimit';
 import { matchesOrigin } from '@/lib/sanitize';
+
+const NOTIFY = operatorRecipients(CONTACT_EMAIL);
 
 // Which of the cuts they are taking forward.
 //
@@ -14,9 +18,15 @@ import { matchesOrigin } from '@/lib/sanitize';
 // They run at different points in the order and share no branch: folding this
 // in would put a third meaning behind the same 409 about nothing to review yet.
 //
-// Deliberately sends no email. A choice is not a status move anybody needs to
-// be told about, the order is already sitting at `sample_sent`, and the round
-// that does matter is the change request that follows.
+// Alerts the operators and deliberately does not email the customer. They
+// pressed the button and the page already answered them; a receipt confirming
+// what they just did is noise on an order that has more to say later.
+//
+// It shipped with no alert at all, on the reasoning that the change request
+// afterwards was the only round worth hearing about. That was wrong: which
+// direction a client picked is the thing that decides whose work continues,
+// and leaving it visible only in the cockpit is the same hole the quote
+// requests sat in.
 
 async function handlePost(
   req: NextRequest,
@@ -71,6 +81,41 @@ async function handlePost(
   if (!published) {
     console.error('[midsesh:choose] chose but could not publish the sample', id, result.candidate.slug);
   }
+
+  // Picking a direction is the moment the other cut stops mattering and the
+  // team who made it starts waiting on feedback. Sending nothing left that
+  // visible only to somebody who happened to open the cockpit, which is the
+  // same hole the quote requests sat in for a week.
+  //
+  // Idempotent by the time it gets here: `chooseCandidate` returns early when
+  // the choice is already settled, so a double tap cannot send this twice.
+  //
+  // Awaited so a failure lands in the daily report, and never allowed to fail
+  // the request. The choice is recorded either way and is the part that must
+  // not be lost.
+  const label = result.candidate.label
+    ? `${result.candidate.label}: ${result.candidate.title}`
+    : result.candidate.title;
+  const sent = await sendEmail({
+    to: NOTIFY,
+    subject: `Chose ${label} · ${order.serviceName || 'order'} from ${user.email}`,
+    text: [
+      `Order: ${id}`,
+      `Service: ${order.serviceName || 'unknown'}`,
+      `From: ${user.email}`,
+      '',
+      `Picked: ${label}`,
+      result.candidate.ledBy ? `Made by: ${result.candidate.ledBy}` : '',
+      '',
+      'Nothing to do yet. They give feedback on this cut next, and that sends',
+      'its own email with what they wrote.',
+      '',
+      `Order page: https://midsesh.com/orders/${id}`,
+    ]
+      .filter(Boolean)
+      .join('\n'),
+  });
+  if (!sent) console.error('[midsesh:choose] choice notification failed', id, result.candidate.slug);
 
   return NextResponse.json({ ok: true, slug: result.candidate.slug });
 }

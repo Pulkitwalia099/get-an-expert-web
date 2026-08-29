@@ -3,7 +3,7 @@ import { SESSION_COOKIE } from '@/lib/auth';
 import { currentAccount } from '@/lib/accounts';
 import { CONTACT_EMAIL } from '@/lib/contact';
 import { MAX_DRAFT, deliveryFor } from '@/lib/delivery';
-import { sendEmail } from '@/lib/email';
+import { operatorRecipients, sendEmail } from '@/lib/email';
 import { withMetrics } from '@/lib/metrics';
 import { appendComment, appendDraft } from '@/lib/orderDrafts';
 import { getOrderForEmail } from '@/lib/orderTracking';
@@ -24,7 +24,7 @@ import { matchesOrigin, scrubUntrusted } from '@/lib/sanitize';
 // with the filter in the query, so there is no version of this where the write
 // lands on an order the check did not cover.
 
-const NOTIFY = process.env.BOOKING_NOTIFY_EMAIL || CONTACT_EMAIL;
+const NOTIFY = operatorRecipients(CONTACT_EMAIL);
 
 async function handlePost(
   req: NextRequest,

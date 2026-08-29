@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { SESSION_COOKIE } from '@/lib/auth';
 import { currentAccount } from '@/lib/accounts';
 import { CONTACT_EMAIL } from '@/lib/contact';
-import { sendEmail } from '@/lib/email';
+import { operatorRecipients, sendEmail } from '@/lib/email';
 import { withMetrics } from '@/lib/metrics';
 import { MAX_COMMENT, isOrderAction } from '@/lib/order-status';
 import { MAX_NOTES, compileNotes, isFrameNote } from '@/lib/frames';
+import { candidatesFor, chosen } from '@/lib/orderCandidates';
 import { appendCustomerEvent, assetsFor, getOrderForEmail } from '@/lib/orderTracking';
 import { clientId, rateLimit } from '@/lib/ratelimit';
 import { notifyCustomer } from '@/lib/orderMail';
@@ -23,7 +24,7 @@ import { matchesOrigin, scrubUntrusted } from '@/lib/sanitize';
 // is no version of this where the write happens against an order the check
 // did not cover.
 
-const NOTIFY = process.env.BOOKING_NOTIFY_EMAIL || CONTACT_EMAIL;
+const NOTIFY = operatorRecipients(CONTACT_EMAIL);
 
 async function handlePost(
   req: NextRequest,
@@ -119,19 +120,32 @@ async function handlePost(
   // The email is what actually reaches a human. It is awaited so a failure is
   // visible in the daily report, and it is not allowed to fail the request:
   // the event is recorded, which is the part that must not be lost.
+  // Which cut this is about, when the order offered a choice. On a one cut
+  // order this is null and the email reads exactly as it always did. On a
+  // multi team order it is the difference between knowing somebody wants
+  // changes and knowing which team has to make them.
+  const picked = chosen(await candidatesFor(id));
+  const cut = picked ? (picked.label ? `${picked.label}: ${picked.title}` : picked.title) : null;
+
   const sent = await sendEmail({
     to: NOTIFY,
     subject:
-      action === 'approve'
-        ? `Approved: ${order.serviceName || 'order'} from ${user.email}`
-        : `Changes asked: ${order.serviceName || 'order'} from ${user.email}`,
+      (action === 'approve' ? 'Approved' : 'Changes asked') +
+      (cut ? ` on ${cut}` : '') +
+      `: ${order.serviceName || 'order'} from ${user.email}`,
     text: [
       `Order: ${id}`,
       `Service: ${order.serviceName || 'unknown'}`,
       `From: ${user.email}`,
+      cut ? `Cut: ${cut}` : '',
+      picked?.ledBy ? `Made by: ${picked.ledBy}` : '',
       '',
       action === 'approve' ? 'Approved. Send the clean file.' : `Changes asked for:\n${comment}`,
-    ].join('\n'),
+      '',
+      `Order page: https://midsesh.com/orders/${id}`,
+    ]
+      .filter(Boolean)
+      .join('\n'),
   });
   if (!sent) console.error('[midsesh:orders] action notification failed', id, action);
 
