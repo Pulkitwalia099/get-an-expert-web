@@ -3207,3 +3207,32 @@ body:has(.opq) { background: #FBFBF8; }
 @media (prefers-reduced-motion: reduce) {
   .cc-more summary::before { transition: none; }
 }
+
+/* ---------- Operator preview ---------- */
+/* A banner that has to be impossible to miss and impossible to mistake for
+   the customer's own page. Amber rather than the accent: violet on this page
+   means the step rail and a selected frame, both of which are things the
+   customer sees, and this is the one element that is not theirs. */
+
+.ord-preview {
+  font-size: 13.5px; line-height: 1.55; color: var(--ink-2);
+  background: rgba(217, 142, 40, .09);
+  border: 1px solid rgba(217, 142, 40, .30);
+  border-radius: 12px; padding: 11px 14px; margin-bottom: 18px;
+  max-width: 58ch;
+}
+
+.ord-preview b {
+  color: var(--ink); font-weight: 700;
+  margin-right: 6px;
+}
+
+/* Back to the choice screen. A customer never sees this because a real choice
+   cannot be undone; an operator walking the journey needs to get back. */
+.ord-preview-back {
+  display: inline-block; margin-top: 8px;
+  font-size: 13px; font-weight: 600; color: var(--ink);
+  text-decoration: underline; text-underline-offset: 3px;
+}
+
+.ord-preview-back:active { transform: scale(.97); }

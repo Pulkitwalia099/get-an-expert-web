@@ -26,6 +26,14 @@ if (typeof window !== 'undefined') {
 /** One order, as its owner sees it. Nothing internal survives into this. */
 export interface CustomerOrder {
   id: string;
+  /**
+   * Whose order this is.
+   *
+   * On the customer's own page this is their own address and says nothing they
+   * did not already know. It is here for operator preview, where the whole
+   * question is which account you are looking at.
+   */
+  email: string;
   status: OrderStatus;
   /** What they typed in the name field. Used to greet them in email. */
   name: string | null;
@@ -51,6 +59,7 @@ export interface OrderAssets {
 
 interface CurrentRow {
   id: string;
+  email: string;
   status: string;
   name: string | null;
   status_at: string | null;
@@ -63,7 +72,7 @@ interface CurrentRow {
 }
 
 const COLUMNS =
-  'id,status,status_at,status_note,name,service_name,service_slug,brief,price_cents,created_at';
+  'id,email,status,status_at,status_note,name,service_name,service_slug,brief,price_cents,created_at';
 
 // Postgres uuid. Checked before the value reaches a filter, because
 // selectRows takes a raw query string: an id straight from the URL is
@@ -84,6 +93,7 @@ function normalise(email: string): string {
 function toOrder(row: CurrentRow): CustomerOrder {
   return {
     id: row.id,
+    email: row.email,
     status: isOrderStatus(row.status) ? row.status : 'working',
     name: row.name,
     statusAt: row.status_at,
@@ -139,6 +149,35 @@ export async function getOrderForEmail(
   const rows = await selectRows<CurrentRow>(
     'mk_orders_current',
     `select=${COLUMNS}&id=eq.${id}&email=eq.${encodeURIComponent(address)}&limit=1`,
+  );
+  if (!rows || rows.length === 0) return null;
+  return toOrder(rows[0]);
+}
+
+/**
+ * One order, with no ownership check at all. Operator preview only.
+ *
+ * Every other read in this file puts the customer's address in the query
+ * precisely so the check cannot be forgotten. This one deliberately does not,
+ * which makes it the most dangerous function in the module and the reason it
+ * is named the way it is: nothing called `getOrderForEmail` can be swapped for
+ * it by accident, and a reviewer seeing `Unchecked` in a call site knows to
+ * ask what guards it.
+ *
+ * The guard is the caller's, and there is exactly one: the order page, behind
+ * a valid operator cookie. If a second caller ever appears, the right move is
+ * to give this an explicit operator argument rather than to trust the next
+ * person to remember.
+ *
+ * Read only by construction. It returns a `CustomerOrder` and nothing here or
+ * downstream of it writes, so the worst a bug can do is show an operator a
+ * page they were already allowed to see through the cockpit.
+ */
+export async function getOrderUnchecked(id: string): Promise<CustomerOrder | null> {
+  if (!UUID.test(id)) return null;
+  const rows = await selectRows<CurrentRow>(
+    'mk_orders_current',
+    `select=${COLUMNS}&id=eq.${id}&limit=1`,
   );
   if (!rows || rows.length === 0) return null;
   return toOrder(rows[0]);

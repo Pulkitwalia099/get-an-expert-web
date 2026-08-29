@@ -83,7 +83,22 @@ function Fold({ detail }: { detail: NonNullable<Candidate['detail']> }) {
   );
 }
 
-export default function CutChoice({ id, cuts }: { id: string; cuts: Choice[] }) {
+export default function CutChoice({
+  id,
+  cuts,
+  preview = false,
+}: {
+  id: string;
+  cuts: Choice[];
+  /**
+   * Operator preview. The button navigates instead of writing.
+   *
+   * Nothing is posted at all in this mode, rather than posted and ignored by
+   * the server. There is no request to get wrong, so no bug in a route can
+   * turn a look into a change on somebody's live order.
+   */
+  preview?: boolean;
+}) {
   const router = useRouter();
   const [mode, setMode] = useState<Mode>('idle');
   const [pending, setPending] = useState<string | null>(null);
@@ -91,6 +106,14 @@ export default function CutChoice({ id, cuts }: { id: string; cuts: Choice[] }) 
 
   async function choose(slug: string) {
     if (mode === 'sending') return;
+
+    // Preview carries the pretend choice in the URL and lets the page render
+    // the review screen for real. No fetch, so nothing can be written.
+    if (preview) {
+      router.push(`/orders/${id}?preview=1&as=${encodeURIComponent(slug)}`);
+      return;
+    }
+
     setMode('sending');
     setPending(slug);
     setError('');
@@ -171,7 +194,9 @@ export default function CutChoice({ id, cuts }: { id: string; cuts: Choice[] }) 
       )}
 
       <p className="ord-note">
-        Choosing does not lock anything. You can still tell us what to change after you pick.
+        {preview
+          ? 'Preview: choosing here only changes what this page shows you.'
+          : 'Choosing does not lock anything. You can still tell us what to change after you pick.'}
       </p>
     </section>
   );

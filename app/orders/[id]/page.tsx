@@ -22,7 +22,8 @@ import {
   awaitingCustomer,
   stepFor,
 } from '@/lib/order-status';
-import { assetsFor, getOrderForEmail, revisionsUsed } from '@/lib/orderTracking';
+import { OPERATOR_COOKIE, operatorCookieValid } from '@/lib/operatorAuth';
+import { assetsFor, getOrderForEmail, getOrderUnchecked, revisionsUsed } from '@/lib/orderTracking';
 
 // One order: where it is, the sample when there is one, and the two answers.
 
@@ -33,9 +34,36 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic';
 
-export default async function Order({ params }: { params: Promise<{ id: string }> }) {
+export default async function Order({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const { id } = await params;
   const store = await cookies();
+
+  // Operator preview: any order, exactly as its owner sees it, and nothing a
+  // click does is written down.
+  //
+  // Two conditions, both required. The flag alone does nothing without a valid
+  // operator cookie, so a customer adding ?preview=1 to their own URL gets the
+  // ordinary page, and a link to a preview forwarded to anybody else is just a
+  // link to an order they cannot open.
+  const query = await searchParams;
+  const wants = query.preview;
+  const preview =
+    (wants === '1' || wants === 'true') &&
+    operatorCookieValid(store.get(OPERATOR_COOKIE)?.value);
+  // Which cut to pretend they picked, in preview only.
+  //
+  // A URL parameter rather than component state, because the page decides
+  // between the choice screen and the review screen on the server. Carrying
+  // the pretend choice in the URL means the review screen renders through
+  // exactly the same code a real one does, frames and all, instead of a
+  // second copy of it living inside the chooser for preview's benefit.
+  const pretend = preview && typeof query.as === 'string' ? query.as : null;
   // The session guard is the only thing on this page that changed for the
   // account work. Every status email links straight here, so the deep link and
   // everything it renders stay exactly as they were.
@@ -44,8 +72,16 @@ export default async function Order({ params }: { params: Promise<{ id: string }
   // which is the whole point of carrying a destination through. The id goes
   // through the same allowlist on the way back, so a junk one in the URL ends
   // up on /orders rather than anywhere it should not.
-  if (!user) redirect(`/signin?next=/orders/${id}`);
-  const order = await getOrderForEmail(id, user.email);
+  //
+  // Preview skips the sign in entirely. An operator looking at somebody else's
+  // order has no reason to hold a customer session, and requiring one would
+  // push them towards signing in as the customer, which is the thing this
+  // exists to make unnecessary.
+  if (!user && !preview) redirect(`/signin?next=/orders/${id}`);
+
+  const order = preview
+    ? await getOrderUnchecked(id)
+    : await getOrderForEmail(id, user!.email);
   // Somebody else's order, a bad id, and Supabase being down all end here.
   // A 403 on the first would confirm the id names a real order.
   if (!order) notFound();
@@ -61,7 +97,13 @@ export default async function Order({ params }: { params: Promise<{ id: string }
   // Only an order that is actually offering a choice has rows here, and the
   // lookup is skipped for the two cases that can never have one: a written
   // deliverable, and an order nothing has been made for yet.
-  const cuts = text || order.status === 'new' ? [] : await candidatesFor(id);
+  const realCuts = text || order.status === 'new' ? [] : await candidatesFor(id);
+  // In preview a pretend choice is applied in memory. Nothing is written and
+  // the next request forgets it, which is the whole point.
+  const cuts =
+    pretend && realCuts.some((c) => c.slug === pretend)
+      ? realCuts.map((c) => (c.slug === pretend ? { ...c, chosenAt: 'preview' } : c))
+      : realCuts;
   const choosing = awaitingChoice(cuts);
   const picked = chosen(cuts);
   // The chosen cut is written in as an ordinary `sample_sent` event, so this
@@ -69,8 +111,14 @@ export default async function Order({ params }: { params: Promise<{ id: string }
   // fallback for the one case that write can fail in: the choice is recorded
   // and the event is not. Losing somebody's decision is the thing worth
   // avoiding; showing them the cut they picked from a second source is cheap.
-  const sampleUrl = assets?.sampleUrl ?? picked?.sampleUrl ?? null;
-  const sampleFrames = assets?.frames ?? picked?.frames ?? null;
+  // A pretend choice has written no event, so the candidate leads in preview.
+  // On a real order the event is the source and the candidate is the fallback.
+  const sampleUrl = pretend
+    ? (picked?.sampleUrl ?? assets?.sampleUrl ?? null)
+    : (assets?.sampleUrl ?? picked?.sampleUrl ?? null);
+  const sampleFrames = pretend
+    ? (picked?.frames ?? assets?.frames ?? null)
+    : (assets?.frames ?? picked?.frames ?? null);
   const showSample = !choosing && Boolean(sampleUrl);
   const showDownload = order.status === 'delivered' && Boolean(assets?.finalUrl);
   // Only asked for when the buttons are about to render. Every other status
@@ -126,8 +174,22 @@ export default async function Order({ params }: { params: Promise<{ id: string }
         <Link href="/orders" className="ord-back">
           All orders
         </Link>
-        <span className="ord-who">{user.email}</span>
+        <span className="ord-who">{preview ? order.email ?? 'preview' : user!.email}</span>
       </header>
+
+      {preview && (
+        <div className="ord-preview" role="status">
+          <p>
+            <b>Preview</b> You are looking at {order.email}&apos;s order. Click anything you like.
+            Nothing here is saved, no email is sent, and a reload starts it over.
+          </p>
+          {pretend && (
+            <Link className="ord-preview-back" href={`/orders/${id}?preview=1`}>
+              Back to the choice
+            </Link>
+          )}
+        </div>
+      )}
 
       <p className="ord-eyebrow">{order.serviceName || 'Order'}</p>
       <h1>{(text && TEXT_LABELS[order.status]) || STATUS_LABELS[order.status]}</h1>
@@ -154,6 +216,7 @@ export default async function Order({ params }: { params: Promise<{ id: string }
       {choosing && (
         <CutChoice
           id={order.id}
+          preview={preview}
           cuts={cuts.map((c) => ({
             slug: c.slug,
             label: c.label,
@@ -169,6 +232,7 @@ export default async function Order({ params }: { params: Promise<{ id: string }
       {showSample && (
         <SampleReview
           id={order.id}
+          preview={preview}
           sampleUrl={sampleUrl!}
           frames={sampleFrames}
           used={used}

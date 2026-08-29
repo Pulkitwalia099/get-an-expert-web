@@ -27,8 +27,16 @@ export default function SampleReview({
   awaiting,
   heading,
   context,
+  preview = false,
 }: {
   id: string;
+  /**
+   * Operator preview. Sending shows the sent state and posts nothing.
+   *
+   * The whole component runs as it does for a customer up to the last step,
+   * because the point is to walk the journey. Only the request is missing.
+   */
+  preview?: boolean;
   sampleUrl: string;
   /** The shot list, or null. A sample without one still plays and still takes notes. */
   frames: Frame[] | null;
@@ -162,6 +170,16 @@ export default function SampleReview({
     const payload = pending ? [...notes, { frame: picked, text: pending.slice(0, MAX_NOTE) }] : notes;
     setMode('sending');
     setError('');
+
+    // Preview stops here. Everything above ran, including compiling the notes
+    // in state, so what an operator sees is the real flow. Nothing is posted,
+    // and nothing is refreshed either: asking the server again would replace
+    // this with the order's actual state and undo the walkthrough.
+    if (preview) {
+      setMode('done');
+      return;
+    }
+
     try {
       const res = await fetch(`/api/marketplace/${id}`, {
         method: 'POST',

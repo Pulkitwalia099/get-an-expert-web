@@ -50,6 +50,24 @@ export function secretMatches(supplied: unknown): boolean {
 }
 
 /**
+ * A cookie value on its own is a valid operator session.
+ *
+ * The same check `isAuthorised` makes, minus the header, because a server
+ * component has no NextRequest to hand it. `cookies()` gives a value and
+ * nothing else, and the alternative was reading the cookie in a page and
+ * comparing it there, which is how the constant time compare gets left out.
+ *
+ * No header path on purpose. A header is something a page's own fetch sends;
+ * a page render has none, and accepting one here would be inventing a way in
+ * that nothing uses.
+ */
+export function operatorCookieValid(value: string | undefined | null): boolean {
+  if (!expected()) return false;
+  const token = sessionToken();
+  return Boolean(token && value && sameValue(value, token));
+}
+
+/**
  * The request carries a valid session, by header or by cookie. An unset
  * OPERATOR_SECRET denies everyone: an unguarded switch is worse than an
  * unreachable one.
