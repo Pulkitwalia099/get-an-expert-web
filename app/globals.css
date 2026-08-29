@@ -3135,13 +3135,24 @@ body:has(.opq) { background: #FBFBF8; }
 
 .cc-kind { font-size: 12.5px; color: var(--ink-3); }
 
-/* Shorter than the single sample's 52vh. Two players on one page, and a phone
-   that shows neither of them whole is worse than one that shows both. */
+/* A phone, at about the size of one.
+   These are 1080x1920 vertical ads and they are judged as vertical ads, so the
+   player is sized to a phone held at arm's length rather than stretched to
+   whatever the card is wide. 560px tall puts a 9:16 cut at 315px across, which is about a Pro Max
+   screen at desktop pixel density.
+   Capped against the viewport as well, because two of these have to fit on a
+   laptop beside each other and a player taller than the screen means scrolling
+   to see the end of a shot you are writing a note about.
+   Both max dimensions and auto sizing, never a width: the intrinsic ratio does
+   the work and the browser scales down to fit whichever bound bites first. */
 .cc .ord-stage video {
   display: block; margin: 0 auto;
-  width: auto; height: auto; max-width: 100%; max-height: 42vh;
+  width: auto; height: auto;
+  max-width: 100%; max-height: min(560px, 64vh);
   border-radius: 10px; background: #000;
 }
+
+.cc .ord-stage { display: flex; justify-content: center; }
 
 .cc-choose { width: 100%; }
 
