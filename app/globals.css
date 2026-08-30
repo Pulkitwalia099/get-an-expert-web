@@ -2178,6 +2178,17 @@ a.cta { text-decoration: none; display: inline-block; }
   color: var(--ink-3); margin-bottom: 2px; font-variant-numeric: tabular-nums;
 }
 .ord-step-label { display: block; font-size: 13px; font-weight: 600; letter-spacing: -.01em; }
+/* Done and now looked identical, so the rail reported how far the order had
+   come without ever saying where the person reading it stands. That is the
+   half of it a client actually needs, and it was the missing half. */
+.ord-step-done { opacity: .8; }
+.ord-step-done .ord-step-label { color: var(--ink-2); }
+.ord-step-now .ord-step-n { color: var(--accent); }
+.ord-step-now .ord-step-label { font-weight: 700; }
+.ord-step-here {
+  display: block; margin-top: 3px;
+  font-size: 10.5px; font-weight: 620; color: var(--ink-3);
+}
 @media (max-width: 560px) {
   .ord-rail { grid-template-columns: repeat(2, 1fr); gap: 10px 8px; }
 }
@@ -2479,6 +2490,41 @@ a.cta { text-decoration: none; display: inline-block; }
 
 .oa { margin-top: 24px; }
 .oa-row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* The two answers, numbered, each carrying what it does. Two bare buttons in a
+   row named the options and explained neither, on the one screen whose whole
+   job is to be understood without help. */
+.oa-turn { display: flex; flex-direction: column; }
+.oa-choices {
+  list-style: none; margin: 0; padding: 0; counter-reset: oa;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.oa-choice { counter-increment: oa; display: flex; gap: 12px; }
+.oa-choice::before {
+  content: counter(oa);
+  flex: 0 0 14px; padding-top: 12px;
+  font-size: 11px; font-weight: 700; color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+.oa-choice-b {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 7px; min-width: 0;
+}
+.oa-choice-b p { margin: 0; font-size: 13px; line-height: 1.55; color: var(--ink-3); max-width: 52ch; }
+
+/* How feedback is given, printed in the box that takes it. */
+.oa-how {
+  margin: 0; padding: 0; list-style: none; counter-reset: how;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.oa-how li {
+  counter-increment: how; display: flex; gap: 9px;
+  font-size: 13px; line-height: 1.5; color: var(--ink-3); max-width: 56ch;
+}
+.oa-how li::before {
+  content: counter(how);
+  flex: 0 0 auto; font-weight: 700; color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
 .oa-box { display: flex; flex-direction: column; gap: 10px; animation: msg-in 240ms var(--ease-out) backwards; }
 .oa-label { font-size: 13px; font-weight: 600; letter-spacing: -.01em; }
 .oa-box textarea {

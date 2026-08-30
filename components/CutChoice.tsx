@@ -7,6 +7,11 @@ import type { Candidate } from '@/lib/orderCandidates';
 
 // Two cuts of the same brief, and the one question worth asking about them.
 //
+// The question is which one they prefer, and the button says exactly that. It
+// read "Choose this one" until 30 Aug, which sounded like the decision itself
+// and made the note underneath, promising nothing was locked in, read as a
+// contradiction. Approving is the decision, and it happens on the next screen.
+//
 // Rendered only while a candidate is unchosen. The moment somebody picks, the
 // server writes that cut in as an ordinary sample and this component is gone:
 // the page falls through to SampleReview, which already knows how to take
@@ -178,7 +183,7 @@ export default function CutChoice({
                 onClick={() => choose(cut.slug)}
                 disabled={mode === 'sending'}
               >
-                {sending ? 'Saving' : 'Choose this one'}
+                {sending ? 'Saving' : 'I prefer this one'}
               </button>
 
               {cut.detail && <Fold detail={cut.detail} />}
@@ -195,8 +200,8 @@ export default function CutChoice({
 
       <p className="ord-note">
         {preview
-          ? 'Preview: choosing here only changes what this page shows you.'
-          : 'Choosing does not lock anything. You can still tell us what to change after you pick.'}
+          ? 'Preview: preferring a cut here only changes what this page shows you.'
+          : 'Not sure yet? Open "More about this direction" under either cut for the story, the beats, and what each one trades away.'}
       </p>
     </section>
   );

@@ -15,11 +15,13 @@ import { TEXT_LABELS, TEXT_NOTES, deliveryFor } from '@/lib/delivery';
 import { awaitingChoice, candidatesFor, chosen } from '@/lib/orderCandidates';
 import { draftThread } from '@/lib/orderDrafts';
 import {
+  CHOICE_STEPS,
   STATUS_LABELS,
   STATUS_NOTES,
   STEPS,
   ago,
   awaitingCustomer,
+  choiceStepFor,
   stepFor,
 } from '@/lib/order-status';
 import { OPERATOR_COOKIE, operatorCookieValid } from '@/lib/operatorAuth';
@@ -119,6 +121,20 @@ export default async function Order({
   const sampleFrames = pretend
     ? (picked?.frames ?? assets?.frames ?? null)
     : (assets?.frames ?? picked?.frames ?? null);
+  // Which rail this order gets, and where it sits on it.
+  //
+  // An order offering two cuts is told as the client's own steps, because
+  // Received and In progress are both finished by the time two cuts are on the
+  // screen, and a rail that spends half its width on our side of the work does
+  // not tell somebody what to do next. Every other order keeps the four it had.
+  const hasCuts = cuts.length > 0;
+  // A cut has been preferred and the sign off has not happened yet. The status
+  // is still `sample_sent` on both sides of that, so "Your sample is ready" was
+  // the headline over a sample they had already watched and picked.
+  const signOff = Boolean(picked) && awaitingCustomer(order.status);
+  const railSteps = hasCuts ? CHOICE_STEPS : STEPS;
+  const rail = hasCuts ? choiceStepFor(order.status, Boolean(picked)) : step;
+
   const showSample = !choosing && Boolean(sampleUrl);
   const showDownload = order.status === 'delivered' && Boolean(assets?.finalUrl);
   // Only asked for when the buttons are about to render. Every other status
@@ -192,15 +208,43 @@ export default async function Order({
       )}
 
       <p className="ord-eyebrow">{order.serviceName || 'Order'}</p>
-      <h1>{(text && TEXT_LABELS[order.status]) || STATUS_LABELS[order.status]}</h1>
-      <p className="ord-lede">{(text && TEXT_NOTES[order.status]) || STATUS_NOTES[order.status]}</p>
+      {/* While there are two cuts and no preference yet, the page is about a
+          different question than the status ladder's. "Your sample is ready"
+          over two players reads as one sample somebody miscounted, and the
+          note under it tells them to approve, which is not this step. */}
+      <h1>
+        {choosing
+          ? 'Two cuts, ready to watch'
+          : signOff
+            ? 'Your turn: approve it, or give feedback'
+            : (text && TEXT_LABELS[order.status]) || STATUS_LABELS[order.status]}
+      </h1>
+      <p className="ord-lede">
+        {choosing
+          ? 'Watch both, then tell us which one you prefer. That does not lock anything in. You approve it or send notes on the next screen.'
+          : signOff
+            ? 'This is the cut you preferred. Watch it, then approve it or point at the frames you want changed.'
+            : (text && TEXT_NOTES[order.status]) || STATUS_NOTES[order.status]}
+      </p>
 
-      {step !== null ? (
+      {rail !== null ? (
         <ol className="ord-rail">
-          {STEPS.map((label, i) => (
-            <li key={label} className={i <= step ? 'ord-step ord-step-on' : 'ord-step'}>
+          {railSteps.map((label, i) => (
+            <li
+              key={label}
+              className={
+                i < rail
+                  ? 'ord-step ord-step-on ord-step-done'
+                  : i === rail
+                    ? 'ord-step ord-step-on ord-step-now'
+                    : 'ord-step'
+              }
+            >
               <span className="ord-step-n">{String(i + 1).padStart(2, '0')}</span>
               <span className="ord-step-label">{label}</span>
+              {/* Lit and finished look identical without this, which is what
+                  made the rail decoration rather than a position. */}
+              {i === rail && <span className="ord-step-here">You are here</span>}
             </li>
           ))}
         </ol>
@@ -237,7 +281,13 @@ export default async function Order({
           frames={sampleFrames}
           used={used}
           awaiting={awaitingCustomer(order.status)}
-          heading={showDownload ? 'Your sample' : 'Your sample, watermarked'}
+          heading={
+            showDownload
+              ? 'Your sample'
+              : picked
+                ? 'The cut you preferred, watermarked'
+                : 'Your sample, watermarked'
+          }
           context={brief}
         />
       )}

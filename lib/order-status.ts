@@ -40,6 +40,45 @@ export function isOrderStatus(value: unknown): value is OrderStatus {
 export const STEPS = ['Received', 'In progress', 'Sample ready', 'Done'] as const;
 
 /**
+ * The same rail, told as the client's own steps, for an order offering two cuts.
+ *
+ * Received and In progress are behind them the moment two cuts are on the page,
+ * so those boxes were spending half the rail on work that is already finished.
+ * What a client asked for on 30 Aug is to see the two things they do, in the
+ * order they do them, which is what these four say. Four again, not five, so the
+ * grid it renders into does not change.
+ */
+export const CHOICE_STEPS = [
+  'Two cuts ready',
+  'Pick the one you prefer',
+  'Approve or give feedback',
+  'Done',
+] as const;
+
+/**
+ * Which of those four an order sits on.
+ *
+ * `chosen` rather than a second status, because preferring a cut is not a
+ * status: the order is `sample_sent` on both sides of it. The rail is the only
+ * place that distinction is drawn, and it is drawn from the candidate rows.
+ */
+export function choiceStepFor(status: OrderStatus, chosen: boolean): number | null {
+  switch (status) {
+    case 'new':
+    case 'working':
+      return 0;
+    case 'sample_sent':
+      return chosen ? 2 : 1;
+    case 'approved':
+    case 'delivered':
+      return 3;
+    case 'declined':
+    case 'refunded':
+      return null;
+  }
+}
+
+/**
  * Which step a status sits on, or null for the two that end the ladder early.
  *
  * `approved` and `delivered` share the last step on purpose. From the

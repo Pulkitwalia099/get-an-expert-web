@@ -222,16 +222,54 @@ export default function SampleReview({
     awaiting && (
       <div className="oa">
             {mode === 'idle' ? (
-              <div className="oa-row">
-                <button className="oa-btn oa-solid" type="button" onClick={() => void send('approve')}>
-                  Approve this ad
-                </button>
-                <button className="oa-btn" type="button" onClick={openChanges}>
-                  Request changes
-                </button>
+              /* Two buttons in a row said what the options were and nothing
+                 about what either one does. A client on 30 Aug could not tell
+                 what this screen was for, which is a fair reading of a page
+                 whose only instruction was a 12px line under the player. So the
+                 options are numbered, and each one says what happens after it. */
+              <div className="oa-turn">
+                <span className="ord-sub">Your turn</span>
+                <ol className="oa-choices">
+                  <li className="oa-choice">
+                    <div className="oa-choice-b">
+                      <button
+                        className="oa-btn oa-solid"
+                        type="button"
+                        onClick={() => void send('approve')}
+                      >
+                        Approve this cut
+                      </button>
+                      <p>
+                        You are happy with it. We take the watermark off and send you the clean
+                        file.
+                      </p>
+                    </div>
+                  </li>
+                  <li className="oa-choice">
+                    <div className="oa-choice-b">
+                      <button className="oa-btn" type="button" onClick={openChanges}>
+                        Give feedback
+                      </button>
+                      <p>
+                        Point at any frame, say what should change, and the editor recuts it. One
+                        round of changes is included.
+                      </p>
+                    </div>
+                  </li>
+                </ol>
               </div>
             ) : (
               <div className="oa-box">
+                {/* The box used to open with a scope line and a textarea, and
+                    nothing said this was the feedback step or how the frame
+                    strip took part in it. Three lines is the whole method. */}
+                <span className="ord-sub">Your feedback</span>
+                <ol className="oa-how">
+                  <li>Tap the frame you mean, on the strip under the player.</li>
+                  <li>Write what should change about it.</li>
+                  <li>Add another note if you have one, then send them all at once.</li>
+                </ol>
+
                 {/* Shown before the box, not after the send. A warning that
                     arrives once the request is gone is an excuse. */}
                 {beyond && (
@@ -414,7 +452,7 @@ export default function SampleReview({
           <p className="fr-cue">
             {writing
               ? 'Tap any frame above to point this note at it.'
-              : 'Tap a frame to jump to it. Then approve below, or request changes.'}
+              : 'Tap any frame to jump to that moment. Approve or give feedback below.'}
           </p>
         )}
       </div>
