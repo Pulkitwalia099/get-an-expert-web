@@ -3632,3 +3632,9 @@ body:has(.opq) { background: #FBFBF8; }
   .rv-transcript, .rv-transcript::before { transition: none; }
   .rv-transcript:active { transform: none; }
 }
+
+/* The two buttons, under the cut they decide. Narrower than the page, so the
+   pair wraps rather than overflowing the column. */
+.rv-foot { margin-top: 6px; }
+.rv-foot .oa-row { flex-wrap: wrap; }
+.rv-foot .ord-download { margin-top: 0; }

@@ -343,7 +343,31 @@ export default async function Order({
       {/* Directly under the rail, because on a second round this is the page.
           Only rendered once somebody has actually asked for changes, so a
           first-round order is untouched by it. */}
-      {!choosing && <RevisionTrail revisions={rounds} changes={changes} />}
+      {!choosing && (
+        <RevisionTrail
+          revisions={rounds}
+          changes={changes}
+          // Under the new cut rather than under the page. What is being
+          // approved has to be the thing directly above the button, and at the
+          // foot of the page the nearest video was one of the faces we tried.
+          actions={
+            revisionReady && awaitingCustomer(order.status) ? (
+              <OrderActions id={order.id} used={used} final canDownload={Boolean(downloadUrl)} />
+            ) : revisionReady && showDownload ? (
+              <p className="ord-download">
+                <a
+                  className="oa-btn oa-solid"
+                  href={downloadUrl!}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
+                  Download the clean file
+                </a>
+              </p>
+            ) : null
+          }
+        />
+      )}
 
       {showSample && (
         <SampleReview
@@ -377,16 +401,11 @@ export default async function Order({
       {/* Only when the sample is not carrying them. SampleReview owns the two
           buttons on a video order so that tapping a frame can move the player,
           and a LinkedIn draft or an order with no sample yet still needs them. */}
-      {awaitingCustomer(order.status) && !showSample && !choosing && (
-        <OrderActions
-          id={order.id}
-          used={used}
-          final={revisionReady}
-          canDownload={Boolean(downloadUrl)}
-        />
+      {awaitingCustomer(order.status) && !showSample && !choosing && !revisionReady && (
+        <OrderActions id={order.id} used={used} canDownload={Boolean(downloadUrl)} />
       )}
 
-      {showDownload && (
+      {showDownload && !revisionReady && (
         <p className="ord-download">
           <a className="oa-btn oa-solid" href={downloadUrl!} target="_blank" rel="noreferrer noopener">
             Download the clean file

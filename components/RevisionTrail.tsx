@@ -34,7 +34,16 @@ function bullets(text: string): string[] {
   return marked.map((line) => line.replace(/^[-*•]\s+/, ''));
 }
 
-function Stage({ cut, label }: { cut: RevisionCut; label: string }) {
+function Stage({
+  cut,
+  label,
+  foot,
+}: {
+  cut: RevisionCut;
+  label: string;
+  /** Rendered under this cut. The two buttons, on the one it decides. */
+  foot?: React.ReactNode;
+}) {
   return (
     <div className="rv-side">
       <span className="ord-sub">{label}</span>
@@ -71,12 +80,22 @@ function Stage({ cut, label }: { cut: RevisionCut; label: string }) {
           </ol>
         </details>
       )}
+      {foot && <div className="rv-foot">{foot}</div>}
     </div>
   );
 }
 
 export default function RevisionTrail({
   revisions,
+  /**
+   * The two buttons, or the download once they have decided.
+   *
+   * Rendered under the newest cut rather than under the page, so what is being
+   * approved is the thing directly above the button. At the foot of the page
+   * they sat below the faces we tried, which is a section about a decision
+   * already made, and the nearest video was the wrong one.
+   */
+  actions,
   /**
    * Our line on each thing they asked for, keyed by the version that answered.
    *
@@ -87,6 +106,7 @@ export default function RevisionTrail({
   heading = 'What changed after your notes',
 }: {
   revisions: Revision[];
+  actions?: React.ReactNode;
   changes?: Map<number, Change[]>;
   heading?: string;
 }) {
@@ -96,7 +116,10 @@ export default function RevisionTrail({
     <section className="rv">
       <h2>{heading}</h2>
 
-      {revisions.map((round) => {
+      {revisions.map((round, index) => {
+        // Only the newest round carries them. An older one is settled, and a
+        // button under it would offer a decision on a cut two versions back.
+        const newest = index === revisions.length - 1;
         const listed = round.feedback.lines.flatMap((line) => {
           const split = bullets(line.text);
           return split.length > 0
@@ -189,6 +212,7 @@ export default function RevisionTrail({
                 <Stage
                   cut={round.after}
                   label={`Version ${round.after.version}, watermarked`}
+                  foot={newest ? actions : null}
                 />
               ) : (
                 <div className="rv-side rv-pending">
