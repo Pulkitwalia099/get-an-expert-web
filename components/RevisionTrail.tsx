@@ -53,15 +53,23 @@ function Stage({ cut, label }: { cut: RevisionCut; label: string }) {
         </a>
         .
       </p>
+      {/* The shot list, behind the same control as the feedback. Printed in
+          full it was the tallest thing in the column and pushed the other cut
+          off the screen, which is the one comparison this view exists to make.
+          Somebody reading it wants a specific moment, and that is a thing you
+          go and look for rather than something you scroll past twice. */}
       {cut.frames && cut.frames.length > 0 && (
-        <ol className="rv-shots">
-          {cut.frames.map((frame) => (
-            <li key={frame.n}>
-              <span className="rv-t">{timecode(frame.t)}</span>
-              <span className="rv-name">{frame.name}</span>
-            </li>
-          ))}
-        </ol>
+        <details className="rv-more">
+          <summary className="rv-transcript">View the transcript</summary>
+          <ol className="rv-shots">
+            {cut.frames.map((frame) => (
+              <li key={frame.n}>
+                <span className="rv-t">{timecode(frame.t)}</span>
+                <span className="rv-name">{frame.name}</span>
+              </li>
+            ))}
+          </ol>
+        </details>
       )}
     </div>
   );
@@ -154,7 +162,11 @@ export default function RevisionTrail({
                         A details rather than state, so it works with no
                         JavaScript and the trail stays a server component. */}
                     <details className="rv-more">
-                      <summary className="rv-transcript">Read the transcript</summary>
+                      {/* Their words, not a transcript. The transcript is the
+                          shot list under each player, and calling both the
+                          same thing would send somebody looking for one and
+                          hand them the other. */}
+                      <summary className="rv-transcript">Read full feedback</summary>
                       <ul className="rv-notes rv-notes-fold">{said}</ul>
                     </details>
                   </>

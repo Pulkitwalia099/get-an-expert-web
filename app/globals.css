@@ -3332,7 +3332,10 @@ body:has(.opq) { background: #FBFBF8; }
 
 /* The shot list under each cut. Neutral 2px rail, the thread-of-list-items
    device, never an accent one. */
-.rv-shots { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+.rv-shots {
+  list-style: none; margin: 0; padding: 10px 0 0;
+  display: flex; flex-direction: column; gap: 7px;
+}
 
 .rv-shots li {
   border-left: 2px solid var(--line-2); padding-left: 10px;
