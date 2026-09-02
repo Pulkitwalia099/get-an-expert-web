@@ -15,6 +15,10 @@ import { BEYOND_REVISIONS, INCLUDED_REVISIONS, MAX_COMMENT } from '@/lib/order-s
 // because that is what the price includes and what they are about to spend. On
 // the cut that answered those changes it is not, so the pair becomes approve or
 // reject and nothing on screen offers a revision we have not agreed to.
+//
+// Reject ends the order. That is the whole reason this shape exists and it is
+// the one thing the box has to say out loud, because it is the only control on
+// the page a customer cannot undo from the page.
 
 type Mode = 'idle' | 'commenting' | 'sending' | 'done';
 
@@ -98,6 +102,15 @@ export default function OrderActions({
               {BEYOND_REVISIONS}
             </p>
           )}
+          {/* Said before the button, not after it. Rejecting ends the order and
+              cannot be taken back from this page, and a consequence somebody
+              learns about afterwards is not a warning. */}
+          {final && (
+            <p className="oa-warn" role="status">
+              This closes the order. Nothing is charged, and we will read your notes and
+              reply by email.
+            </p>
+          )}
           <textarea
             id="oa-comment"
             rows={4}
@@ -122,7 +135,7 @@ export default function OrderActions({
               {mode === 'sending'
                 ? 'Sending'
                 : final
-                  ? 'Send'
+                  ? 'Reject and close'
                   : beyond
                     ? 'Send them anyway'
                     : 'Send these notes'}

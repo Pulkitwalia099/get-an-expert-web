@@ -276,10 +276,19 @@ export async function appendCustomerEvent(
    * months cannot backfill what nobody kept.
    */
   notes?: FrameNote[] | null,
+  /**
+   * They were deciding on a recut rather than a first cut.
+   *
+   * Turning one down ends the order instead of handing it back to us. There is
+   * no round after this one to ask for, so a `working` row here would put the
+   * order in the queue promising work nobody agreed to make.
+   */
+  onRecut = false,
 ): Promise<boolean> {
   if (!UUID.test(orderId)) return false;
 
-  const status: OrderStatus = action === 'approve' ? 'approved' : 'working';
+  const status: OrderStatus =
+    action === 'approve' ? 'approved' : onRecut ? 'declined' : 'working';
   const note = comment ? comment.slice(0, MAX_COMMENT) : null;
 
   const written = await insertRows('mk_order_events', {

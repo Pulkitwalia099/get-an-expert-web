@@ -200,6 +200,20 @@ export const REVISION_LABELS = {
   ready: 'Your changes are in',
 } as const;
 
+/**
+ * What the page says once they turned a recut down.
+ *
+ * `declined` already means an order that is not proceeding, and the rail, the
+ * queue and the buttons all behave correctly for it. What it did not have was
+ * a way to say who ended it: `STATUS_LABELS.declined` reads "We are not taking
+ * this one on", which is us, and putting that over somebody else's decision
+ * tells them the wrong story about their own order.
+ */
+export const REJECTED_LABEL = 'Closed';
+
+export const REJECTED_NOTE =
+  'You turned this version down, so the order ends here. Nothing is charged. We have your notes and will reply by email.';
+
 export const REVISION_NOTES = {
   working: 'Your notes are with the editor. The new version lands here and we will email you.',
   ready: 'The new version, with what you asked for beside it.',

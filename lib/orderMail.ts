@@ -155,19 +155,6 @@ function copyFor(
           };
     case 'working':
       if (!afterChanges) return null;
-      // Turning down a recut is not the same as asking for one, and the reply
-      // must not promise a version nobody has agreed to make. It says we have
-      // it and that a person will answer, which is what actually happens next.
-      if (rejected) {
-        return {
-          subject: 'We have your notes',
-          lines: [
-            'Got it, and thank you for being straight with us. Somebody is',
-            'reading this now and will come back to you on this address.',
-          ],
-          cta: 'Your order',
-        };
-      }
       return {
         subject: 'We are on your notes',
         lines: [
@@ -202,6 +189,23 @@ function copyFor(
         cta: watch ? 'Download it' : 'Open it',
       };
     case 'declined':
+      // Turning down a recut ends the order, and this is the receipt for that.
+      // It must not promise a new version: there is no round after this one,
+      // which is the whole reason the button says Reject rather than Request
+      // changes. A person still replies, and saying so is not the same as
+      // promising more work.
+      if (rejected) {
+        return {
+          subject: 'We have your notes',
+          lines: [
+            'Got it, and thank you for saying so plainly. This order is closed',
+            'and nothing has been charged.',
+            '',
+            'One of us is reading your notes now and will reply on this address.',
+          ],
+          cta: 'Your order',
+        };
+      }
       // Vague on purpose. "We are not taking your order" is a subject line
       // read on a phone, in public, with no way to answer it. The reason
       // belongs in the first line, where they are already reading.

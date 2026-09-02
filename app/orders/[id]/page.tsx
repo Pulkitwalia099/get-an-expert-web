@@ -21,6 +21,8 @@ import { changesFor } from '@/lib/orderChanges';
 import { draftThread } from '@/lib/orderDrafts';
 import {
   CHOICE_STEPS,
+  REJECTED_LABEL,
+  REJECTED_NOTE,
   REVISION_LABELS,
   REVISION_NOTES,
   STATUS_LABELS,
@@ -169,6 +171,11 @@ export default async function Order({
   const latest = rounds.length > 0 ? rounds[rounds.length - 1] : null;
   const revisionReady = Boolean(latest?.after && latest.after.url === sampleUrl);
   const revisionPending = Boolean(latest && !latest.after);
+  // They turned the recut down, which ends the order. Told apart from our own
+  // decline by the trail: `declined` is the same status either way, and the
+  // stock copy for it says "We are not taking this one on", which is the wrong
+  // story to tell somebody about a decision they made themselves.
+  const rejectedByThem = order.status === 'declined' && Boolean(latest?.after);
 
   // The trail carries both players side by side, so the standalone one under it
   // would be the same file twice on one page. The two buttons fall through to
@@ -274,24 +281,28 @@ export default async function Order({
       <h1>
         {choosing
           ? 'Two cuts, ready to watch'
-          : revisionReady
+          : rejectedByThem
+            ? REJECTED_LABEL
+            : revisionReady
             ? REVISION_LABELS.ready
             : revisionPending
               ? REVISION_LABELS.working
               : signOff
                 ? 'Your turn: approve it, or give feedback'
-                : (text && TEXT_LABELS[order.status]) || STATUS_LABELS[order.status]}
+                  : (text && TEXT_LABELS[order.status]) || STATUS_LABELS[order.status]}
       </h1>
       <p className="ord-lede">
         {choosing
           ? 'Watch both, then tell us which one you prefer. That does not lock anything in. You approve it or send notes on the next screen.'
-          : revisionReady
+          : rejectedByThem
+            ? REJECTED_NOTE
+            : revisionReady
             ? REVISION_NOTES.ready
             : revisionPending
               ? REVISION_NOTES.working
               : signOff
                 ? 'This is the cut you preferred. Watch it, then approve it or point at the frames you want changed.'
-                : (text && TEXT_NOTES[order.status]) || STATUS_NOTES[order.status]}
+                  : (text && TEXT_NOTES[order.status]) || STATUS_NOTES[order.status]}
       </p>
 
       {rail !== null ? (
@@ -315,7 +326,7 @@ export default async function Order({
             </li>
           ))}
         </ol>
-      ) : (
+      ) : rejectedByThem ? null : (
         <p className="ord-ended">
           This order is closed. If that is not what you expected, write to{' '}
           <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.

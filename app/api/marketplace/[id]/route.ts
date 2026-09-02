@@ -113,7 +113,21 @@ async function handlePost(
     structured = null;
   }
 
-  const written = await appendCustomerEvent(id, action, user.email, comment, structured);
+  // Whether they were looking at a recut rather than a first cut.
+  //
+  // The page calls the second button Reject once the round it answers is
+  // closed, and the action it posts is still `changes`, because up to here the
+  // machinery is the same. What differs is where it lands. Asking for changes
+  // on a first cut hands the order back to us; turning down the recut that
+  // answered those changes ends it, and there is no third state where somebody
+  // is owed work nobody agreed to.
+  //
+  // Read before the event is written, because writing it is what closes the
+  // round the answer is judged against.
+  const trail = await revisionsFor(id);
+  const onRecut = Boolean(trail[trail.length - 1]?.after);
+
+  const written = await appendCustomerEvent(id, action, user.email, comment, structured, onRecut);
   if (!written) {
     return NextResponse.json({ error: 'That did not save. Try again.' }, { status: 502 });
   }
@@ -127,17 +141,6 @@ async function handlePost(
   // changes and knowing which team has to make them.
   const picked = chosen(await candidatesFor(id));
   const cut = picked ? (picked.label ? `${picked.label}: ${picked.title}` : picked.title) : null;
-
-  // Whether they were looking at a recut rather than a first cut.
-  //
-  // The page calls the second button Reject once the round it answers is
-  // closed, and the action it posts is still `changes`, because the machinery
-  // is the same. Only the wording differs, and it differs in both directions:
-  // an alert saying "Changes asked" for somebody who pressed Reject reads as a
-  // revision request, and a receipt promising a new version promises work
-  // nobody agreed to.
-  const trail = await revisionsFor(id);
-  const onRecut = Boolean(trail[trail.length - 1]?.after);
 
   const sent = await sendEmail({
     to: NOTIFY,
@@ -154,7 +157,9 @@ async function handlePost(
       '',
       action === 'approve'
         ? 'Approved. Send the clean file.'
-        : `${onRecut ? 'Rejected. Reason' : 'Changes asked for'}:\n${comment}`,
+        : onRecut
+          ? `Rejected, and the order is now closed. Reason:\n${comment}`
+          : `Changes asked for:\n${comment}`,
       '',
       `Order page: https://midsesh.com/orders/${id}`,
     ]
@@ -174,7 +179,8 @@ async function handlePost(
   const told = await notifyCustomer({
     orderId: id,
     email: user.email,
-    status: action === 'approve' ? 'approved' : 'working',
+    // Rejecting a recut ends the order rather than opening another round.
+    status: action === 'approve' ? 'approved' : onRecut ? 'declined' : 'working',
     serviceName: order.serviceName,
     // What they wrote on the order first, and the name on their Google account
     // second. The order is the more deliberate of the two.
@@ -184,7 +190,10 @@ async function handlePost(
   });
   if (told === 'failed') console.error('[midsesh:orders] customer receipt failed', id, action);
 
-  return NextResponse.json({ ok: true, status: action === 'approve' ? 'approved' : 'working' });
+  return NextResponse.json({
+    ok: true,
+    status: action === 'approve' ? 'approved' : onRecut ? 'declined' : 'working',
+  });
 }
 
 export const POST = withMetrics('order-action', handlePost);

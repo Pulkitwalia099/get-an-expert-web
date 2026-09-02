@@ -90,10 +90,14 @@ export default function RevisionTrail({
   /**
    * The two buttons, or the download once they have decided.
    *
-   * Rendered under the newest cut rather than under the page, so what is being
+   * Rendered under the cut rather than under the page, so what is being
    * approved is the thing directly above the button. At the foot of the page
    * they sat below the faces we tried, which is a section about a decision
    * already made, and the nearest video was the wrong one.
+   *
+   * There is only ever one round to put them on. A first cut can be sent back
+   * once, and turning down the recut that answers it ends the order, so the
+   * page can never stack a second row with its own pair of buttons.
    */
   actions,
   /**
@@ -116,10 +120,7 @@ export default function RevisionTrail({
     <section className="rv">
       <h2>{heading}</h2>
 
-      {revisions.map((round, index) => {
-        // Only the newest round carries them. An older one is settled, and a
-        // button under it would offer a decision on a cut two versions back.
-        const newest = index === revisions.length - 1;
+      {revisions.map((round) => {
         const listed = round.feedback.lines.flatMap((line) => {
           const split = bullets(line.text);
           return split.length > 0
@@ -212,7 +213,7 @@ export default function RevisionTrail({
                 <Stage
                   cut={round.after}
                   label={`Version ${round.after.version}, watermarked`}
-                  foot={newest ? actions : null}
+                  foot={actions}
                 />
               ) : (
                 <div className="rv-side rv-pending">
