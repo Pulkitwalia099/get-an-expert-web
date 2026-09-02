@@ -24,6 +24,7 @@ app/api/presence/  which card to show and whether that person is on
 app/api/call/      ring, status, answer, end
 app/api/operator/  flip a presence switch, guarded by OPERATOR_SECRET
 app/operator/      /operator?secret=…: both switches, ringtone, Answer
+app/operator/orders/[id]/  one round of changes: cut, ticks, faces, preview, send
 components/        Chat, Thread, Composer, ExpertCards, IntroForm, GetUnstuck,
                    Sonar, TypingStatus, flows (per-flow copy + install targets)
 lib/               anthropic, serp, email, validate, ratelimit, insights, demo,
@@ -329,6 +330,114 @@ markup over those two.
   path through `/api/operator/quotes`.
 - Closed is collapsed, newest first, and loses its age. An archive that reads
   like a queue is what that section exists to stop.
+
+## A second round is its own screen
+
+An order page used to replace the cut with the newer one, so a client coming
+back a week later could not tell that version two answered anything. It now
+keeps both on screen with their own notes between them: version one, what we
+changed, version two, read left to right. `components/RevisionTrail.tsx`.
+
+**No table was added for it.** `mk_order_events` already carries the file on a
+`sample_sent` row and the customer's words on the `working` row that follows,
+so `lib/orderRevisions.ts` walks the trail rather than recording it a second
+way. `mk_order_assets` stays exactly what it was, the newest sample, which is
+the right answer for the player that carries the buttons and the exact reason
+version one used to vanish.
+
+Two counting rules hold it up and both were bugs first.
+
+- **Versions count distinct files, not rows.** Two cuts up for review write one
+  row each and the customer's choice writes a third carrying the file they
+  picked. Counting rows numbered the cut somebody chose as version two before
+  anybody had changed anything.
+- **Only a `working` row whose actor names a customer opens a round.** Our own
+  moves back into the queue write the same status, and counting them showed
+  people a round of feedback they never gave.
+
+On a finished round the trail replaces `SampleReview` rather than sitting under
+it, because both cuts are already in the trail and the standalone player was
+the same file twice on one page. The buttons fall through to `OrderActions`,
+the path a LinkedIn order already takes. **That trades away pinning a note to a
+shot**, which `SampleReview` owns. It is worth it on a round where the thing
+under review is a change somebody described in words, and it is the first thing
+to revisit if a client asks for frame-level notes on a recut.
+
+## What we changed, and who writes it
+
+`order_changes` is our line on each thing they asked for, keyed to the version
+that answered it. **Written by hand, never parsed from their note.** Turning
+three paragraphs of feedback into three ticks is an editorial act, and a parser
+guessing at it would tick things nobody did.
+
+`done` is a column because the honest answer is sometimes no. A round where two
+of three landed says so with the reason underneath, and a list that can only
+tick is one a client stops believing the first time it is wrong.
+
+Their exact words are never replaced, only folded. `Read full feedback` opens
+their note verbatim; `View the transcript` under each player opens that cut's
+shot list. Those two labels were each other's for a day, which is the kind of
+mistake that sends somebody looking for one thing and hands them the other.
+
+`order_avatars` is the lineup: the faces generated for a brand and the one that
+got the job. A row is a face **actually generated while making this brand's
+work**. Inventing one afterwards to pad the lineup would turn "here is what we
+evaluated" into a false claim to somebody paying us, which is the same line
+`lib/demo.ts` draws around invented biographies. `note` on a row holds the
+reasoning behind a pick and is deliberately not rendered: the section is
+thumbnails and one line, because a row of cards carrying a paragraph each
+turned a footnote into a second article.
+
+Both tables are `order_*`, not `mk_*`. The orders repo owns every `mk_` table;
+these are written and read here.
+
+## Rohit's side of a round
+
+`/operator/orders/[id]`. The cut, the ticks, the faces, a link that opens the
+customer's own page, then Send. Guarded by the operator cookie on the server
+and 404s a stranger, rather than carrying a second copy of the queue's lock.
+
+**Saving and sending are different buttons on purpose.** The only way to
+preview a recut before was to upload it from the queue, which emailed in the
+same press, so seeing what the client would see meant having already told them
+to look. `/api/operator/round` writes only what the page renders and emails
+nobody; `/api/operator/orders` is still the one thing that moves a status.
+
+Both lists are replaced, not appended. They are what the page shows now rather
+than a history of what it once showed, and an operator fixing a typo in one of
+three ticks expects three ticks afterwards.
+
+The upload puts the clean file under `final/` and the server draws the mark on
+a copy, so approving has something to hand over the moment the sample goes out.
+That is why `showDownload` accepts `approved` as well as `delivered`: waiting
+for a second status made "Approve and download" a button that approved and then
+asked somebody to come back.
+
+## The copy on a second round is not the copy on a first
+
+Three places said the wrong thing to somebody on their second version, and all
+three were the first-cut line arriving again.
+
+- **The rail.** `choiceStepFor` mapped `working` to step 0 whatever else was
+  true, so an order where somebody had watched two cuts, picked one and written
+  three paragraphs rendered "Two cuts ready, you are here". Picking cannot be
+  undone, so it holds at the review step while we recut.
+- **The headline.** `working` reads "In progress. Being made now. Your sample
+  lands within 24 hours", which is for somebody waiting on a first cut.
+  `REVISION_LABELS` and `REVISION_NOTES` replace it with two flat lines. Whose
+  turn it is was the old copy's whole job and it is the wrong question on a
+  screen that exists to show somebody their own notes answered.
+- **The email.** `sample_sent` sent "one round of changes is included" about the
+  round they had just spent. `advance()` asks `hasOpenRound` **before** it
+  writes the event, because writing it is what closes the round. The recut mail
+  carries no count of rounds at all: that is our bookkeeping and it reads as a
+  limit being enforced.
+
+The buttons under a recut are Approve and Reject, and `OrderActions` takes a
+`final` prop rather than being rewritten. On a first cut Request changes stays,
+because that round is what the price includes and what somebody is about to
+spend. On the cut that answered those changes there is no further round to
+offer, so nothing on screen promises one.
 
 ## One account, and settings that do something
 
