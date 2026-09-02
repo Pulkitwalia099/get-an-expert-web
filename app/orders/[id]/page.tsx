@@ -33,6 +33,7 @@ import {
 } from '@/lib/order-status';
 import { OPERATOR_COOKIE, operatorCookieValid } from '@/lib/operatorAuth';
 import { assetsFor, getOrderForEmail, getOrderUnchecked, revisionsUsed } from '@/lib/orderTracking';
+import { parkedFinal } from '@/lib/operatorOrders';
 
 // One order: where it is, the sample when there is one, and the two answers.
 
@@ -142,14 +143,7 @@ export default async function Order({
   const railSteps = hasCuts ? CHOICE_STEPS : STEPS;
   const rail = hasCuts ? choiceStepFor(order.status, Boolean(picked)) : step;
 
-  // Approved counts as well as delivered.
-  //
-  // The clean file is parked by the same upload that made the watermarked one,
-  // so on a video order it is already there when somebody approves. Waiting for
-  // a second status before showing it made "Approve and download" a button that
-  // approved and then asked them to come back.
-  const showDownload =
-    (order.status === 'delivered' || order.status === 'approved') && Boolean(assets?.finalUrl);
+  const settled = order.status === 'delivered' || order.status === 'approved';
   // Only asked for when the buttons are about to render. Every other status
   // would be a query whose answer nothing on the page uses.
   const used = awaitingCustomer(order.status) ? await revisionsUsed(id) : null;
@@ -183,6 +177,25 @@ export default async function Order({
   // on a second round, where the thing being reviewed is a change somebody
   // already described in words.
   const showSample = !choosing && !revisionReady && Boolean(sampleUrl);
+
+  // The clean file, from the view if it has one and from storage if not.
+  //
+  // `mk_order_assets` only learns a `final_url` from a `delivered` event, which
+  // by definition has not happened while somebody is deciding. So the promise on
+  // "Approve and download" could never have been true when it mattered: the
+  // button read that way only after the download was already on the page.
+  //
+  // The parked file is the answer. It is written by the same upload that made
+  // the watermarked sample, under this order's own `final/` prefix, which is the
+  // arrangement `isParkedFinalUrl` already relies on. Looked up only when it is
+  // about to be used or named, because it is a storage call rather than a query.
+  const parked =
+    revisionReady || settled ? await parkedFinal(id) : null;
+  const downloadUrl = assets?.finalUrl ?? parked;
+  // Approved counts as well as delivered. Waiting for a second status made
+  // "Approve and download" a button that approved and then asked them to come
+  // back for the thing it named.
+  const showDownload = settled && Boolean(downloadUrl);
 
   // The links out of the brief, and the prose around them kept as written. A
   // line reading "Reference video:" is the customer labelling their own link
@@ -369,13 +382,13 @@ export default async function Order({
           id={order.id}
           used={used}
           final={revisionReady}
-          canDownload={Boolean(assets?.finalUrl)}
+          canDownload={Boolean(downloadUrl)}
         />
       )}
 
       {showDownload && (
         <p className="ord-download">
-          <a className="oa-btn oa-solid" href={assets!.finalUrl!} target="_blank" rel="noreferrer noopener">
+          <a className="oa-btn oa-solid" href={downloadUrl!} target="_blank" rel="noreferrer noopener">
             Download the clean file
           </a>
         </p>
