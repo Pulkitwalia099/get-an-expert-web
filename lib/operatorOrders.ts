@@ -4,6 +4,7 @@ import { parseFrames, type Frame } from '@/lib/frames';
 import { candidatesFor } from '@/lib/orderCandidates';
 import { appendDraft, draftThread, type DraftThread } from '@/lib/orderDrafts';
 import { notifyCustomer } from '@/lib/orderMail';
+import { hasOpenRound } from '@/lib/orderRevisions';
 import { isOrderStatus, type OrderStatus } from '@/lib/order-status';
 import { deleteRows, insertRows, patchRows, selectRows } from '@/lib/supabase';
 
@@ -33,6 +34,11 @@ export function finalPrefix(orderId: string): string {
 
 export function samplePrefix(orderId: string): string {
   return `orders/${orderId}/sample/`;
+}
+
+/** Where the faces for an order live. Read by the customer's own page. */
+export function avatarPrefix(orderId: string): string {
+  return `orders/${orderId}/avatars/`;
 }
 
 /**
@@ -365,6 +371,13 @@ export async function advance(input: AdvanceInput): Promise<AdvanceResult> {
   // needs a file in storage; a LinkedIn post needs words, and asking it for a
   // file would make the one status it has to pass through unreachable.
   const handover = input.status === 'sample_sent' || input.status === 'delivered';
+  // A recut answering a round of changes, rather than a first cut.
+  //
+  // Read here, before the event is written, because writing it is what closes
+  // the round. It only changes which email goes out, so a Supabase blip costs
+  // the wrong wording rather than the move.
+  const answering =
+    input.status === 'sample_sent' && (await hasOpenRound(input.orderId));
   const text = deliveryFor(order.serviceSlug) === 'text';
 
   if (text) {
@@ -434,6 +447,7 @@ export async function advance(input: AdvanceInput): Promise<AdvanceResult> {
     serviceName: order.serviceName,
     name: order.name,
     brief: order.brief,
+    afterChanges: answering,
   });
 
   return {

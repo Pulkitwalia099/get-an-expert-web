@@ -1,5 +1,6 @@
 import { timecode } from '@/lib/frames';
 import type { Revision, RevisionCut } from '@/lib/orderRevisions';
+import type { Change } from '@/lib/orderChanges';
 
 // What you watched, what you said, and what we did about it.
 //
@@ -68,9 +69,17 @@ function Stage({ cut, label }: { cut: RevisionCut; label: string }) {
 
 export default function RevisionTrail({
   revisions,
+  /**
+   * Our line on each thing they asked for, keyed by the version that answered.
+   *
+   * Empty is the normal state and the column falls back to printing their note,
+   * which is what it did before the ticks existed.
+   */
+  changes = new Map<number, Change[]>(),
   heading = 'What changed after your notes',
 }: {
   revisions: Revision[];
+  changes?: Map<number, Change[]>;
   heading?: string;
 }) {
   if (revisions.length === 0) return null;
@@ -86,6 +95,16 @@ export default function RevisionTrail({
             ? split.map((text) => ({ frame: line.frame, text }))
             : [line];
         });
+        // Keyed to the cut that answered, so a second round cannot render the
+        // first round's list. A round with no answering cut has nothing to
+        // tick yet and falls through to their words.
+        const ticks = (round.after && changes.get(round.after.version)) || [];
+        const said = listed.map((line, i) => (
+          <li key={`${line.frame ?? 'all'}-${i}`}>
+            {line.frame !== null && <span className="rv-frame">Shot {line.frame}</span>}
+            <span className="rv-said">{line.text}</span>
+          </li>
+        ));
 
         return (
           <article className="rv-round" key={round.round}>
@@ -93,20 +112,53 @@ export default function RevisionTrail({
               <Stage cut={round.before} label={`Version ${round.before.version}`} />
 
               <div className="rv-mid">
-                {/* Their words, under a heading that says so. The page carries
-                    our reasoning elsewhere and the two must not blur: this
-                    column is the only place on the order that is theirs. */}
-                <span className="ord-sub">What you asked for</span>
-                <ul className="rv-notes">
-                  {listed.map((line, i) => (
-                    <li key={`${line.frame ?? 'all'}-${i}`}>
-                      {line.frame !== null && (
-                        <span className="rv-frame">Shot {line.frame}</span>
-                      )}
-                      <span className="rv-said">{line.text}</span>
-                    </li>
-                  ))}
-                </ul>
+                {ticks.length > 0 ? (
+                  <>
+                    {/* The answer to their notes, not the notes. Somebody
+                        opening this wants to know whether the thing they asked
+                        for happened, and three paragraphs of their own writing
+                        makes them work that out for themselves. */}
+                    <span className="ord-sub">What we changed</span>
+                    <ul className="rv-ticks">
+                      {ticks.map((change, i) => (
+                        <li
+                          key={`${i}-${change.text.slice(0, 24)}`}
+                          className={change.done ? 'rv-tick rv-done' : 'rv-tick'}
+                        >
+                          {/* The glyph is decoration; the state is the word
+                              beside it, which is the only thing a screen
+                              reader gets. */}
+                          <span className="rv-mark" aria-hidden="true" />
+                          <span className="rv-said">
+                            <span className="rv-only">
+                              {change.done ? 'Done. ' : 'Not done. '}
+                            </span>
+                            {change.text}
+                            {!change.done && change.note && (
+                              <span className="rv-why">{change.note}</span>
+                            )}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    {/* Their words are kept, one tap away. A summary that
+                        replaces the thing it summarises is a summary nobody
+                        can check, and this one is us marking our own work. */}
+                    <details className="rv-more">
+                      <summary>Your notes, exactly as you sent them</summary>
+                      <ul className="rv-notes rv-notes-fold">{said}</ul>
+                    </details>
+                  </>
+                ) : (
+                  <>
+                    {/* No list written yet, so their words carry the column.
+                        This is what every round looked like before the ticks
+                        existed, and it stays the honest fallback. */}
+                    <span className="ord-sub">What you asked for</span>
+                    <ul className="rv-notes">{said}</ul>
+                  </>
+                )}
               </div>
 
               {round.after ? (

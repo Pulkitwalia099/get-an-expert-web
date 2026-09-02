@@ -125,14 +125,29 @@ function copyFor(
         cta: 'Your order',
       };
     case 'sample_sent':
-      return {
-        subject: `Your ${service} is ready to ${watch ? 'watch' : 'review'}`,
-        lines: [
-          `Your ${service} is ready. Take a look, then either approve it or`,
-          'tell us what to change. One round of changes is included.',
-        ],
-        cta: watch ? 'Watch it' : 'Open it',
-      };
+      // A recut is not a first cut, and the first cut's email says "one round
+      // of changes is included" to somebody who has just spent it. This one
+      // says what was done and leaves the checking to the page, where their
+      // notes sit beside the new version.
+      return afterChanges
+        ? {
+            subject: 'Your changes are in',
+            lines: [
+              'The new version is ready. Your notes are listed next to it, so you',
+              'can see what changed and what it changed from.',
+              '',
+              'Approve it, or tell us what still needs work.',
+            ],
+            cta: watch ? 'Watch it' : 'Open it',
+          }
+        : {
+            subject: `Your ${service} is ready to ${watch ? 'watch' : 'review'}`,
+            lines: [
+              `Your ${service} is ready. Take a look, then either approve it or`,
+              'tell us what to change. One round of changes is included.',
+            ],
+            cta: watch ? 'Watch it' : 'Open it',
+          };
     case 'working':
       return afterChanges
         ? {

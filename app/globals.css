@@ -3206,23 +3206,25 @@ body:has(.opq) { background: #FBFBF8; }
 
 .cc-more { border-top: 1px solid var(--line); padding-top: 4px; }
 
-.cc-more summary {
+.cc-more summary, .rv-more summary {
   font-size: 13px; color: var(--ink-3); cursor: pointer; padding: 6px 0;
   list-style: none; display: flex; align-items: center; gap: 7px;
 }
 
-.cc-more summary::-webkit-details-marker { display: none; }
+.cc-more summary::-webkit-details-marker,
+.rv-more summary::-webkit-details-marker { display: none; }
 
-.cc-more summary::before {
+.cc-more summary::before, .rv-more summary::before {
   content: ""; width: 0; height: 0;
   border-left: 5px solid currentColor;
   border-top: 4px solid transparent; border-bottom: 4px solid transparent;
   transition: transform 180ms var(--ease-out); transform-origin: 30% 50%;
 }
 
-.cc-more[open] summary::before { transform: rotate(90deg); }
+.cc-more[open] summary::before,
+.rv-more[open] summary::before { transform: rotate(90deg); }
 
-.cc-more summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+.cc-more summary:focus-visible, .rv-more summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
 
 .cc-fold { display: flex; flex-direction: column; gap: 16px; padding: 6px 0 4px; }
 
@@ -3251,7 +3253,7 @@ body:has(.opq) { background: #FBFBF8; }
 .cc-d { font-size: 13.5px; line-height: 1.5; color: var(--ink-2); }
 
 @media (prefers-reduced-motion: reduce) {
-  .cc-more summary::before { transition: none; }
+  .cc-more summary::before, .rv-more summary::before { transition: none; }
 }
 
 /* ---------- Operator preview ---------- */
@@ -3392,36 +3394,33 @@ body:has(.opq) { background: #FBFBF8; }
    client left off on. The header keeps the narrower column on purpose, so the
    page has a text width and a content width and nothing in between. */
 @media (min-width: 1040px) {
+  /* Still on the band, so its left edge lines up with the trail above rather
+     than stepping in to the header's narrower column. Only the edge is shared:
+     the faces themselves stay small and sit at the start of it. */
   .faces {
     position: relative; left: 50%; transform: translateX(-50%);
     width: min(1060px, calc(100vw - 40px));
   }
-  /* Three faces beside two players want a little more room each than the
-     phone minimum, and a fourth would otherwise wrap alone onto a second row. */
-  .faces-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
 }
 
-.faces-lede {
-  font-size: 14px; line-height: 1.6; color: var(--ink-2);
-  max-width: 58ch; margin: 0 0 16px;
-}
-
+/* Thumbnails, not cards. Sized so three sit in a row well short of the page's
+   width: the lineup is a footnote to the cut above it, and a row of faces as
+   wide as the players reads as the main event. */
 .faces-grid {
   list-style: none; margin: 0; padding: 0;
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px;
+  display: grid; grid-template-columns: repeat(auto-fill, 116px); gap: 14px;
 }
 
-.face-card {
-  display: flex; flex-direction: column; gap: 10px; min-width: 0;
-  background: var(--glass-strong); border: 1px solid var(--line);
-  border-radius: var(--radius-card); padding: 12px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, .04), 0 8px 24px rgba(0, 0, 0, .04);
-}
+/* No card, no panel, no shadow. At this size the frame was most of what you
+   saw. The picture is the content. */
+.face-card { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
 
 /* The one that got the job. A heavier hairline and a plate on the image, not a
    coloured border: the accent is spent once per view and a rail on a rounded
    panel is the tell this design language exists to avoid. */
-.face-on { border-color: var(--line-2); }
+/* The one that got the job. A hairline ring on the picture rather than a
+   border on a card, because there is no card any more. */
+.face-on .face-shot { box-shadow: inset 0 0 0 2px var(--ink); }
 
 .face-shot { position: relative; border-radius: 10px; overflow: hidden; background: rgba(33, 30, 26, .06); }
 
@@ -3432,24 +3431,149 @@ body:has(.opq) { background: #FBFBF8; }
 
 /* Ink, not terracotta. The step rail already spends the accent on this page. */
 .face-badge {
-  position: absolute; left: 8px; bottom: 8px;
-  font-size: 10px; font-weight: 650; letter-spacing: .1em; text-transform: uppercase;
+  position: absolute; left: 6px; bottom: 6px;
+  font-size: 9px; font-weight: 650; letter-spacing: .08em; text-transform: uppercase;
   color: var(--bg); background: rgba(33, 30, 26, .86);
-  padding: 4px 8px; border-radius: 999px;
+  padding: 3px 7px; border-radius: 999px;
   backdrop-filter: blur(6px);
 }
 
-.face-said { display: flex; flex-direction: column; gap: 3px; }
+.face-name { font-size: 12px; font-weight: 620; line-height: 1.3; color: var(--ink-2); }
 
-.face-name { font-size: 14px; font-weight: 700; letter-spacing: -.01em; line-height: 1.25; }
-
-.face-kind { font-size: 11.5px; color: var(--ink-3); }
-
-.face-note { font-size: 12.5px; line-height: 1.55; color: var(--ink-2); margin: 6px 0 0; }
-
-.faces-kit { margin-top: 26px; }
+.faces-kit {
+  font-size: 13px; line-height: 1.6; color: var(--ink-3);
+  max-width: 58ch; margin: 16px 0 0;
+}
 
 /* Carried over from .ord-sample-note, which no longer renders under a finished
    round. Same size and colour so the two pages read as one. */
 .rv-direct { font-size: 12.5px; color: var(--ink-3); margin: 0; }
 .rv-direct a { color: var(--ink-2); text-decoration: underline; text-underline-offset: 3px; }
+
+/* The checklist. What we did about each thing they asked for.
+   The mark is a filled ink disc with a cream tick, the same device .face-badge
+   uses, so "done" costs no accent. Terracotta is spent once per view and the
+   step rail already holds it. */
+.rv-ticks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+
+.rv-tick { display: grid; grid-template-columns: 18px 1fr; gap: 10px; align-items: start; }
+
+.rv-mark {
+  position: relative;
+  width: 18px; height: 18px; border-radius: 999px; margin-top: 1px;
+  border: 1px solid var(--line-2); background: transparent;
+}
+
+/* Drawn rather than typed. A ✓ glyph sits on a different baseline in every
+   fallback face and this one has to centre inside an 18px disc. Two borders on
+   a rotated box is the one construction that lands in the same place
+   everywhere. */
+.rv-done .rv-mark { background: var(--ink); border-color: var(--ink); }
+
+.rv-done .rv-mark::after {
+  content: ""; position: absolute;
+  left: 6px; top: 3.5px; width: 4px; height: 8px;
+  border: solid var(--bg); border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* An outstanding item says so in words underneath, never by absence alone. */
+.rv-why { display: block; font-size: 12.5px; line-height: 1.5; color: var(--ink-3); margin-top: 3px; }
+
+/* Read by a screen reader, never seen. The tick is decoration and carries no
+   state on its own. */
+.rv-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* Their own words, one tap away. Same disclosure device as .cc-more. */
+.rv-more { border-top: 1px solid var(--line); padding-top: 2px; margin-top: 4px; }
+.rv-notes-fold { padding-top: 8px; }
+
+/* ---------- One round, put together ---------- */
+/* Rohit's page. Same tokens as everything else, laid out as the order the work
+   actually happens in: the cut, the list, the faces, look, send. */
+
+.opq-one { max-width: 720px; margin: 0 auto; padding: 20px var(--page-gutter) 80px; }
+
+.rnd-bar {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 6px 0 26px; font-size: 13px;
+}
+
+.rnd-lede { font-size: 14.5px; line-height: 1.6; color: var(--ink-2); max-width: 62ch; margin: 0 0 8px; }
+
+.rnd { margin-top: 8px; }
+
+.rnd-steps { list-style: none; margin: 0; padding: 0; }
+
+.rnd-block {
+  background: var(--glass-strong); border: 1px solid var(--line);
+  border-radius: var(--radius-card); padding: 16px 18px; margin-top: 16px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+
+.rnd-block h2 {
+  font-size: 11px; font-weight: 650; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--ink-3); margin: 0;
+}
+
+.rnd-hint { font-size: 12.5px; line-height: 1.55; color: var(--ink-3); margin: 0; max-width: 62ch; }
+
+.rnd input[type="text"] {
+  font-family: inherit; font-size: 14px; color: var(--ink);
+  background: var(--bg); border: 1px solid var(--line-2); border-radius: 9px;
+  padding: 8px 11px; width: 100%;
+}
+
+.rnd input[type="text"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.rnd input[type="file"] { font-family: inherit; font-size: 12.5px; color: var(--ink-2); }
+
+.rnd-stage { display: flex; justify-content: center; }
+.rnd-stage video {
+  display: block; width: auto; height: auto;
+  max-width: 100%; max-height: min(360px, 44vh);
+  border-radius: 10px; background: #000;
+}
+
+.rnd-tick { display: flex; flex-direction: column; gap: 7px; }
+
+/* The checkbox and its word are one target, so the label is the control. */
+.rnd-check {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 12.5px; color: var(--ink-2); cursor: pointer;
+}
+.rnd-check input { accent-color: var(--ink); }
+
+.rnd-faces { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; }
+
+.rnd-face { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+
+.rnd-face-shot {
+  border-radius: 10px; overflow: hidden; background: rgba(33, 30, 26, .06);
+  aspect-ratio: 3 / 4; display: flex; align-items: center; justify-content: center;
+}
+.rnd-face-shot img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.rnd-face-empty { font-size: 11.5px; color: var(--ink-3); }
+
+.rnd-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; align-items: center; }
+/* The anchor styled as a button has to sit on the same baseline as the two
+   real ones, which it does not get for free. */
+.rnd-row a.opq-btn { display: inline-flex; align-items: center; text-decoration: none; }
+
+.rnd-said { font-size: 13px; color: var(--ink-2); margin-top: 12px; }
+
+.rnd .oa-error { margin-top: 10px; }
+
+@media (hover: hover) and (pointer: fine) {
+  .rnd-row .opq-btn:hover { border-color: var(--ink); }
+}
+
+.rnd-row .opq-btn:active { transform: scale(.97); }
+
+/* Their note, as they typed it. The customer's own page splits the bullets out
+   into a tick list; this one is the raw thing an operator works from, so the
+   line breaks they wrote are the only structure it has. */
+.rnd-block .rv-said { white-space: pre-wrap; }

@@ -2,7 +2,7 @@ import { handleUpload, type HandleUploadBody } from '@vercel/blob/client';
 import { NextRequest, NextResponse } from 'next/server';
 import { withMetrics } from '@/lib/metrics';
 import { isAuthorised } from '@/lib/operatorAuth';
-import { finalPrefix, samplePrefix } from '@/lib/operatorOrders';
+import { avatarPrefix, finalPrefix, samplePrefix } from '@/lib/operatorOrders';
 
 // Hands the browser a short lived token so the file goes straight to Blob.
 //
@@ -43,11 +43,24 @@ async function handlePost(req: NextRequest): Promise<NextResponse> {
         // checked here. Anything else gets no token.
         const [orderId, slot] = (clientPayload ?? '').split(':');
         if (!UUID.test(orderId ?? '')) throw new Error('Unknown order');
-        if (slot !== 'sample' && slot !== 'final') throw new Error('Unknown slot');
+        if (slot !== 'sample' && slot !== 'final' && slot !== 'avatar') {
+          throw new Error('Unknown slot');
+        }
 
-        const prefix = slot === 'final' ? finalPrefix(orderId) : samplePrefix(orderId);
+        const prefix =
+          slot === 'final'
+            ? finalPrefix(orderId)
+            : slot === 'avatar'
+              ? avatarPrefix(orderId)
+              : samplePrefix(orderId);
         return {
-          allowedContentTypes: ['video/*', 'image/*', 'audio/*', 'application/pdf', 'text/*'],
+          // A face is a still or a few seconds of one. Nothing else belongs
+          // under that prefix, and the customer's page renders whatever is
+          // there, so the narrower list is the guard rather than a courtesy.
+          allowedContentTypes:
+            slot === 'avatar'
+              ? ['image/*', 'video/*']
+              : ['video/*', 'image/*', 'audio/*', 'application/pdf', 'text/*'],
           // Under the order's own prefix, and with a random suffix, so two
           // files called final.mp4 cannot overwrite each other and a URL
           // cannot be guessed from the order id alone.

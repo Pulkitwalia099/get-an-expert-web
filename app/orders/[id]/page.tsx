@@ -17,6 +17,7 @@ import { TEXT_LABELS, TEXT_NOTES, deliveryFor } from '@/lib/delivery';
 import { awaitingChoice, candidatesFor, chosen } from '@/lib/orderCandidates';
 import { revisionsFor } from '@/lib/orderRevisions';
 import { avatarsFor } from '@/lib/orderAvatars';
+import { changesFor } from '@/lib/orderChanges';
 import { draftThread } from '@/lib/orderDrafts';
 import {
   CHOICE_STEPS,
@@ -153,9 +154,9 @@ export default async function Order({
   // what anybody else's page looks like. Skipped entirely for a written
   // deliverable and for an order nothing has been made for yet, on the same
   // reasoning as the candidate lookup above.
-  const [rounds, faces] = text || order.status === 'new'
-    ? [[], []]
-    : await Promise.all([revisionsFor(id), avatarsFor(id)]);
+  const [rounds, faces, changes] = text || order.status === 'new'
+    ? [[], [], new Map()]
+    : await Promise.all([revisionsFor(id), avatarsFor(id), changesFor(id)]);
 
   // Where a round of changes has got to.
   //
@@ -322,7 +323,7 @@ export default async function Order({
       {/* Directly under the rail, because on a second round this is the page.
           Only rendered once somebody has actually asked for changes, so a
           first-round order is untouched by it. */}
-      {!choosing && <RevisionTrail revisions={rounds} />}
+      {!choosing && <RevisionTrail revisions={rounds} changes={changes} />}
 
       {showSample && (
         <SampleReview

@@ -177,3 +177,18 @@ export async function revisionsFor(orderId: string): Promise<Revision[]> {
 
   return out;
 }
+
+/**
+ * A round of changes is waiting on a cut from us.
+ *
+ * Asked before the answering event is written, because writing it is what
+ * closes the round. It decides whether the mail that goes out is the first-cut
+ * one or the recut one, and those are different sentences: somebody on their
+ * second version being told "one round of changes is included" has already
+ * used it.
+ */
+export async function hasOpenRound(orderId: string): Promise<boolean> {
+  const rounds = await revisionsFor(orderId);
+  const last = rounds[rounds.length - 1];
+  return Boolean(last && !last.after);
+}
