@@ -10,6 +10,7 @@ import { candidatesFor, chosen } from '@/lib/orderCandidates';
 import { appendCustomerEvent, assetsFor, getOrderForEmail } from '@/lib/orderTracking';
 import { clientId, rateLimit } from '@/lib/ratelimit';
 import { notifyCustomer } from '@/lib/orderMail';
+import { revisionsFor } from '@/lib/orderRevisions';
 import { matchesOrigin, scrubUntrusted } from '@/lib/sanitize';
 
 // The customer's two answers: approve, or ask for changes.
@@ -127,10 +128,21 @@ async function handlePost(
   const picked = chosen(await candidatesFor(id));
   const cut = picked ? (picked.label ? `${picked.label}: ${picked.title}` : picked.title) : null;
 
+  // Whether they were looking at a recut rather than a first cut.
+  //
+  // The page calls the second button Reject once the round it answers is
+  // closed, and the action it posts is still `changes`, because the machinery
+  // is the same. Only the wording differs, and it differs in both directions:
+  // an alert saying "Changes asked" for somebody who pressed Reject reads as a
+  // revision request, and a receipt promising a new version promises work
+  // nobody agreed to.
+  const trail = await revisionsFor(id);
+  const onRecut = Boolean(trail[trail.length - 1]?.after);
+
   const sent = await sendEmail({
     to: NOTIFY,
     subject:
-      (action === 'approve' ? 'Approved' : 'Changes asked') +
+      (action === 'approve' ? 'Approved' : onRecut ? 'Rejected' : 'Changes asked') +
       (cut ? ` on ${cut}` : '') +
       `: ${order.serviceName || 'order'} from ${user.email}`,
     text: [
@@ -140,7 +152,9 @@ async function handlePost(
       cut ? `Cut: ${cut}` : '',
       picked?.ledBy ? `Made by: ${picked.ledBy}` : '',
       '',
-      action === 'approve' ? 'Approved. Send the clean file.' : `Changes asked for:\n${comment}`,
+      action === 'approve'
+        ? 'Approved. Send the clean file.'
+        : `${onRecut ? 'Rejected. Reason' : 'Changes asked for'}:\n${comment}`,
       '',
       `Order page: https://midsesh.com/orders/${id}`,
     ]
@@ -166,6 +180,7 @@ async function handlePost(
     // second. The order is the more deliberate of the two.
     name: order.name ?? user.name,
     afterChanges: action === 'changes',
+    rejected: action === 'changes' && onRecut,
   });
   if (told === 'failed') console.error('[midsesh:orders] customer receipt failed', id, action);
 

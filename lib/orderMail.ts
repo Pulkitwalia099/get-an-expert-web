@@ -74,6 +74,7 @@ function copyFor(
   afterChanges: boolean,
   brief: string | null | undefined,
   firstOrder: boolean,
+  rejected: boolean,
 ): Copy | null {
   const watch = isWatchable(service);
 
@@ -153,16 +154,28 @@ function copyFor(
             cta: watch ? 'Watch it' : 'Open it',
           };
     case 'working':
-      return afterChanges
-        ? {
-            subject: 'We are on your notes',
-            lines: [
-              'Got your notes. We are working on the new version now and will',
-              'send it to this address.',
-            ],
-            cta: 'Your order',
-          }
-        : null;
+      if (!afterChanges) return null;
+      // Turning down a recut is not the same as asking for one, and the reply
+      // must not promise a version nobody has agreed to make. It says we have
+      // it and that a person will answer, which is what actually happens next.
+      if (rejected) {
+        return {
+          subject: 'We have your notes',
+          lines: [
+            'Got it, and thank you for being straight with us. Somebody is',
+            'reading this now and will come back to you on this address.',
+          ],
+          cta: 'Your order',
+        };
+      }
+      return {
+        subject: 'We are on your notes',
+        lines: [
+          'Got your notes. We are working on the new version now and will',
+          'send it to this address.',
+        ],
+        cta: 'Your order',
+      };
     case 'approved':
       return {
         subject: watch ? 'Approved. The final file is next' : 'Approved. The finished work is next',
@@ -270,6 +283,13 @@ export interface OrderMailInput {
   /** True when this `working` event came from the customer asking for changes. */
   afterChanges?: boolean;
   /**
+   * True when they turned down a recut rather than asking for one.
+   *
+   * A separate flag rather than a status, because the event is the same
+   * `working` row either way. Only the sentence changes.
+   */
+  rejected?: boolean;
+  /**
    * True when this is the first order this address has ever placed. Unknown
    * counts as false: a returning customer told they are new is worse than a
    * new one who is not thanked.
@@ -310,6 +330,7 @@ export async function notifyCustomer(input: OrderMailInput): Promise<OrderMailRe
     input.afterChanges === true,
     input.brief,
     input.firstOrder === true,
+    input.rejected === true,
   );
   if (!copy) return 'skipped';
 
