@@ -3386,6 +3386,21 @@ body:has(.opq) { background: #FBFBF8; }
 
 .faces { margin: 40px 0 0; padding-top: 28px; border-top: 1px solid var(--line); }
 
+/* The lineup shares the trail's band rather than sitting in the reading column.
+   Two sections stacked on two different widths reads as a page assembled out of
+   parts, which is the one thing this view cannot afford: it is the same order a
+   client left off on. The header keeps the narrower column on purpose, so the
+   page has a text width and a content width and nothing in between. */
+@media (min-width: 1040px) {
+  .faces {
+    position: relative; left: 50%; transform: translateX(-50%);
+    width: min(1060px, calc(100vw - 40px));
+  }
+  /* Three faces beside two players want a little more room each than the
+     phone minimum, and a fourth would otherwise wrap alone onto a second row. */
+  .faces-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+}
+
 .faces-lede {
   font-size: 14px; line-height: 1.6; color: var(--ink-2);
   max-width: 58ch; margin: 0 0 16px;
@@ -3433,3 +3448,8 @@ body:has(.opq) { background: #FBFBF8; }
 .face-note { font-size: 12.5px; line-height: 1.55; color: var(--ink-2); margin: 6px 0 0; }
 
 .faces-kit { margin-top: 26px; }
+
+/* Carried over from .ord-sample-note, which no longer renders under a finished
+   round. Same size and colour so the two pages read as one. */
+.rv-direct { font-size: 12.5px; color: var(--ink-3); margin: 0; }
+.rv-direct a { color: var(--ink-2); text-decoration: underline; text-underline-offset: 3px; }

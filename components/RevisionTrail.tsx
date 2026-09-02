@@ -42,6 +42,16 @@ function Stage({ cut, label }: { cut: RevisionCut; label: string }) {
             either before somebody presses play. */}
         <video src={cut.url} controls playsInline preload="metadata" />
       </div>
+      {/* Carried over from SampleReview, which no longer renders under a
+          finished round. A codec the browser will not play is the one failure
+          that leaves somebody staring at a black rectangle with no way out. */}
+      <p className="rv-direct">
+        Trouble playing it?{' '}
+        <a href={cut.url} target="_blank" rel="noreferrer noopener">
+          Open it directly
+        </a>
+        .
+      </p>
       {cut.frames && cut.frames.length > 0 && (
         <ol className="rv-shots">
           {cut.frames.map((frame) => (
@@ -100,7 +110,14 @@ export default function RevisionTrail({
               </div>
 
               {round.after ? (
-                <Stage cut={round.after} label={`Version ${round.after.version}`} />
+                // The watermark is named here rather than left to be noticed.
+                // The clean file is what approving buys, and a client who
+                // thinks the mark is in the delivery asks for a fix nobody
+                // needs to make.
+                <Stage
+                  cut={round.after}
+                  label={`Version ${round.after.version}, watermarked`}
+                />
               ) : (
                 <div className="rv-side rv-pending">
                   <span className="ord-sub">The new version</span>

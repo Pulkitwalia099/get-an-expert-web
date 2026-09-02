@@ -65,8 +65,14 @@ export const CHOICE_STEPS = [
 export function choiceStepFor(status: OrderStatus, chosen: boolean): number | null {
   switch (status) {
     case 'new':
-    case 'working':
       return 0;
+    // Asking for changes writes `working`, so a client who had already picked a
+    // cut and sent notes was told they were back at "Two cuts ready, you are
+    // here". Picking is behind them and cannot be undone, so the rail holds at
+    // the review step while we recut. Without `chosen` this is still 0, which
+    // is the honest answer for an order being made before any cut exists.
+    case 'working':
+      return chosen ? 2 : 0;
     case 'sample_sent':
       return chosen ? 2 : 1;
     case 'approved':
@@ -172,3 +178,29 @@ export function ago(iso: string | null): string {
   const days = Math.floor(hours / 24);
   return `${days} day${days === 1 ? '' : 's'} ago`;
 }
+
+/**
+ * The headline once a round of changes is in play.
+ *
+ * The status ladder cannot say this on its own. Asking for changes writes
+ * `working`, whose copy is "In progress. Being made now. Your sample lands
+ * within 24 hours of a complete brief", which is the line for somebody waiting
+ * on a first cut. A client on their second one has already had that, and being
+ * told it again reads as though the order restarted.
+ *
+ * Deliberately flat. Whose turn it is was the whole job of the old copy, and on
+ * this screen it is the wrong question: the page already carries the buttons,
+ * and a headline that instructs somebody who has just been shown their own
+ * notes answered is one line too many.
+ */
+export const REVISION_LABELS = {
+  /** Their notes are in, the recut is not. */
+  working: 'We are on your changes',
+  /** The recut is on the page. */
+  ready: 'Your changes are in',
+} as const;
+
+export const REVISION_NOTES = {
+  working: 'Your notes are with the editor. The new version lands here and we will email you.',
+  ready: 'The new version, with what you asked for beside it.',
+} as const;

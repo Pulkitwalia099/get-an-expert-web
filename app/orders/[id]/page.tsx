@@ -20,6 +20,8 @@ import { avatarsFor } from '@/lib/orderAvatars';
 import { draftThread } from '@/lib/orderDrafts';
 import {
   CHOICE_STEPS,
+  REVISION_LABELS,
+  REVISION_NOTES,
   STATUS_LABELS,
   STATUS_NOTES,
   STEPS,
@@ -139,7 +141,6 @@ export default async function Order({
   const railSteps = hasCuts ? CHOICE_STEPS : STEPS;
   const rail = hasCuts ? choiceStepFor(order.status, Boolean(picked)) : step;
 
-  const showSample = !choosing && Boolean(sampleUrl);
   const showDownload = order.status === 'delivered' && Boolean(assets?.finalUrl);
   // Only asked for when the buttons are about to render. Every other status
   // would be a query whose answer nothing on the page uses.
@@ -155,6 +156,25 @@ export default async function Order({
   const [rounds, faces] = text || order.status === 'new'
     ? [[], []]
     : await Promise.all([revisionsFor(id), avatarsFor(id)]);
+
+  // Where a round of changes has got to.
+  //
+  // Told apart by whether the cut on the page is the one that answered the
+  // notes, rather than by a status. Asking for changes and delivering the
+  // answer are both ordinary rows on the same trail, and the statuses they
+  // write, `working` and `sample_sent`, are the same two a first cut writes.
+  // Only the trail knows the difference.
+  const latest = rounds.length > 0 ? rounds[rounds.length - 1] : null;
+  const revisionReady = Boolean(latest?.after && latest.after.url === sampleUrl);
+  const revisionPending = Boolean(latest && !latest.after);
+
+  // The trail carries both players side by side, so the standalone one under it
+  // would be the same file twice on one page. The two buttons fall through to
+  // OrderActions, which is the path a LinkedIn order already takes. What that
+  // trades away is pinning a note to a shot, which SampleReview owns: worth it
+  // on a second round, where the thing being reviewed is a change somebody
+  // already described in words.
+  const showSample = !choosing && !revisionReady && Boolean(sampleUrl);
 
   // The links out of the brief, and the prose around them kept as written. A
   // line reading "Reference video:" is the customer labelling their own link
@@ -233,16 +253,24 @@ export default async function Order({
       <h1>
         {choosing
           ? 'Two cuts, ready to watch'
-          : signOff
-            ? 'Your turn: approve it, or give feedback'
-            : (text && TEXT_LABELS[order.status]) || STATUS_LABELS[order.status]}
+          : revisionReady
+            ? REVISION_LABELS.ready
+            : revisionPending
+              ? REVISION_LABELS.working
+              : signOff
+                ? 'Your turn: approve it, or give feedback'
+                : (text && TEXT_LABELS[order.status]) || STATUS_LABELS[order.status]}
       </h1>
       <p className="ord-lede">
         {choosing
           ? 'Watch both, then tell us which one you prefer. That does not lock anything in. You approve it or send notes on the next screen.'
-          : signOff
-            ? 'This is the cut you preferred. Watch it, then approve it or point at the frames you want changed.'
-            : (text && TEXT_NOTES[order.status]) || STATUS_NOTES[order.status]}
+          : revisionReady
+            ? REVISION_NOTES.ready
+            : revisionPending
+              ? REVISION_NOTES.working
+              : signOff
+                ? 'This is the cut you preferred. Watch it, then approve it or point at the frames you want changed.'
+                : (text && TEXT_NOTES[order.status]) || STATUS_NOTES[order.status]}
       </p>
 
       {rail !== null ? (
@@ -291,6 +319,11 @@ export default async function Order({
         />
       )}
 
+      {/* Directly under the rail, because on a second round this is the page.
+          Only rendered once somebody has actually asked for changes, so a
+          first-round order is untouched by it. */}
+      {!choosing && <RevisionTrail revisions={rounds} />}
+
       {showSample && (
         <SampleReview
           id={order.id}
@@ -309,11 +342,6 @@ export default async function Order({
           context={brief}
         />
       )}
-
-      {/* The history under the thing it is the history of. Only rendered once
-          somebody has actually asked for changes, so a first-round order is
-          untouched by it. */}
-      {!choosing && <RevisionTrail revisions={rounds} />}
 
       {thread && thread.versions.length > 0 && (
         <OrderDraft
