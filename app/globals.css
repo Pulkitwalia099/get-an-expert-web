@@ -3206,25 +3206,23 @@ body:has(.opq) { background: #FBFBF8; }
 
 .cc-more { border-top: 1px solid var(--line); padding-top: 4px; }
 
-.cc-more summary, .rv-more summary {
+.cc-more summary {
   font-size: 13px; color: var(--ink-3); cursor: pointer; padding: 6px 0;
   list-style: none; display: flex; align-items: center; gap: 7px;
 }
 
-.cc-more summary::-webkit-details-marker,
-.rv-more summary::-webkit-details-marker { display: none; }
+.cc-more summary::-webkit-details-marker { display: none; }
 
-.cc-more summary::before, .rv-more summary::before {
+.cc-more summary::before {
   content: ""; width: 0; height: 0;
   border-left: 5px solid currentColor;
   border-top: 4px solid transparent; border-bottom: 4px solid transparent;
   transition: transform 180ms var(--ease-out); transform-origin: 30% 50%;
 }
 
-.cc-more[open] summary::before,
-.rv-more[open] summary::before { transform: rotate(90deg); }
+.cc-more[open] summary::before { transform: rotate(90deg); }
 
-.cc-more summary:focus-visible, .rv-more summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+.cc-more summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
 
 .cc-fold { display: flex; flex-direction: column; gap: 16px; padding: 6px 0 4px; }
 
@@ -3253,7 +3251,7 @@ body:has(.opq) { background: #FBFBF8; }
 .cc-d { font-size: 13.5px; line-height: 1.5; color: var(--ink-2); }
 
 @media (prefers-reduced-motion: reduce) {
-  .cc-more summary::before, .rv-more summary::before { transition: none; }
+  .cc-more summary::before { transition: none; }
 }
 
 /* ---------- Operator preview ---------- */
@@ -3577,3 +3575,57 @@ body:has(.opq) { background: #FBFBF8; }
    into a tick list; this one is the raw thing an operator works from, so the
    line breaks they wrote are the only structure it has. */
 .rnd-block .rv-said { white-space: pre-wrap; }
+
+/* The middle column, framed like the two players either side. Same ground and
+   hairline as .ord-stage: three columns, three panels, one row. */
+.rv-panel {
+  background: rgba(33, 30, 26, .04);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  padding: 14px 16px;
+}
+
+.rv-panel .rv-ticks li:last-child { margin-bottom: 0; }
+
+/* The transcript, behind a control that looks like one. A summary reads as a
+   link otherwise, and this is the only thing in the column somebody presses. */
+/* Shrink-wrapped, so the pill is the size of its label rather than the size of
+   the column. The details element is the flex child and would otherwise stretch
+   it. */
+.rv-more { align-self: flex-start; }
+
+.rv-transcript {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 12.5px; font-weight: 620; color: var(--ink);
+  border: 1px solid var(--line-2); border-radius: 999px;
+  padding: 7px 14px; cursor: pointer; list-style: none;
+  transition: border-color 160ms var(--ease-out);
+}
+
+.rv-transcript::-webkit-details-marker { display: none; }
+
+/* The same triangle the cut chooser uses, kept because a pill with no marker
+   gives no hint that it opens in place rather than navigating away. */
+.rv-transcript::before {
+  content: ""; width: 0; height: 0;
+  border-left: 5px solid currentColor;
+  border-top: 4px solid transparent; border-bottom: 4px solid transparent;
+  transition: transform 180ms var(--ease-out); transform-origin: 30% 50%;
+}
+
+.rv-more[open] .rv-transcript::before { transform: rotate(90deg); }
+
+.rv-transcript:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.rv-more { border-top: 0; padding-top: 0; margin-top: 2px; }
+
+@media (hover: hover) and (pointer: fine) {
+  .rv-transcript:hover { border-color: var(--ink); }
+}
+
+.rv-transcript:active { transform: scale(.97); }
+
+@media (prefers-reduced-motion: reduce) {
+  .rv-transcript, .rv-transcript::before { transition: none; }
+  .rv-transcript:active { transform: none; }
+}

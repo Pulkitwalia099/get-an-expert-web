@@ -132,11 +132,15 @@ function copyFor(
       return afterChanges
         ? {
             subject: 'Your changes are in',
+            // Says what this is and stops. The count of rounds is deliberately
+            // absent: it is our arithmetic, it reads as a limit being enforced,
+            // and somebody looking at the version they asked for does not need
+            // to be told what it cost them.
             lines: [
-              'The new version is ready. Your notes are listed next to it, so you',
-              'can see what changed and what it changed from.',
+              'Here is the new version, made after the feedback you sent.',
               '',
-              'Approve it, or tell us what still needs work.',
+              'What we changed is listed beside it, next to the version you saw',
+              'before.',
             ],
             cta: watch ? 'Watch it' : 'Open it',
           }

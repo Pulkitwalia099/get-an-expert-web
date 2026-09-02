@@ -142,7 +142,14 @@ export default async function Order({
   const railSteps = hasCuts ? CHOICE_STEPS : STEPS;
   const rail = hasCuts ? choiceStepFor(order.status, Boolean(picked)) : step;
 
-  const showDownload = order.status === 'delivered' && Boolean(assets?.finalUrl);
+  // Approved counts as well as delivered.
+  //
+  // The clean file is parked by the same upload that made the watermarked one,
+  // so on a video order it is already there when somebody approves. Waiting for
+  // a second status before showing it made "Approve and download" a button that
+  // approved and then asked them to come back.
+  const showDownload =
+    (order.status === 'delivered' || order.status === 'approved') && Boolean(assets?.finalUrl);
   // Only asked for when the buttons are about to render. Every other status
   // would be a query whose answer nothing on the page uses.
   const used = awaitingCustomer(order.status) ? await revisionsUsed(id) : null;
@@ -358,7 +365,12 @@ export default async function Order({
           buttons on a video order so that tapping a frame can move the player,
           and a LinkedIn draft or an order with no sample yet still needs them. */}
       {awaitingCustomer(order.status) && !showSample && !choosing && (
-        <OrderActions id={order.id} used={used} />
+        <OrderActions
+          id={order.id}
+          used={used}
+          final={revisionReady}
+          canDownload={Boolean(assets?.finalUrl)}
+        />
       )}
 
       {showDownload && (

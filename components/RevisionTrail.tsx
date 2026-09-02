@@ -119,12 +119,17 @@ export default function RevisionTrail({
                         for happened, and three paragraphs of their own writing
                         makes them work that out for themselves. */}
                     <span className="ord-sub">What we changed</span>
-                    <ul className="rv-ticks">
-                      {ticks.map((change, i) => (
-                        <li
-                          key={`${i}-${change.text.slice(0, 24)}`}
-                          className={change.done ? 'rv-tick rv-done' : 'rv-tick'}
-                        >
+                    {/* Panelled, so the three columns read as three of the
+                        same thing. A bare list between two framed players made
+                        the middle look like a caption on the pair rather than
+                        the answer they came for. */}
+                    <div className="rv-panel">
+                      <ul className="rv-ticks">
+                        {ticks.map((change, i) => (
+                          <li
+                            key={`${i}-${change.text.slice(0, 24)}`}
+                            className={change.done ? 'rv-tick rv-done' : 'rv-tick'}
+                          >
                           {/* The glyph is decoration; the state is the word
                               beside it, which is the only thing a screen
                               reader gets. */}
@@ -139,14 +144,17 @@ export default function RevisionTrail({
                             )}
                           </span>
                         </li>
-                      ))}
-                    </ul>
+                        ))}
+                      </ul>
+                    </div>
 
-                    {/* Their words are kept, one tap away. A summary that
-                        replaces the thing it summarises is a summary nobody
-                        can check, and this one is us marking our own work. */}
+                    {/* Their words are kept, one press away. A summary that
+                        replaces the thing it summarises is a summary nobody can
+                        check, and this one is us marking our own work.
+                        A details rather than state, so it works with no
+                        JavaScript and the trail stays a server component. */}
                     <details className="rv-more">
-                      <summary>Your notes, exactly as you sent them</summary>
+                      <summary className="rv-transcript">Read the transcript</summary>
                       <ul className="rv-notes rv-notes-fold">{said}</ul>
                     </details>
                   </>
