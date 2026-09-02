@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { briefProse, parseReferences } from '../references';
+import { brandFromBrief, briefProse, parseReferences } from '../references';
 
 // Pranav's actual brief, character for character, because it is the one this
 // was built for and every shape in it is a shape real briefs have: a bare URL,
@@ -88,5 +88,34 @@ describe('briefProse', () => {
 
   it('leaves a brief with no links alone', () => {
     expect(briefProse('Shorter hook, and cut the last line')).toBe('Shorter hook, and cut the last line');
+  });
+});
+
+describe('brandFromBrief', () => {
+  it('reads a site somebody typed without a scheme', () => {
+    // Anant's brief, as written. parseReferences finds nothing in it.
+    expect(
+      brandFromBrief('www.mishq.in, need ads showcasing benefits of bra-fitting consultations'),
+    ).toBe('Mishq');
+  });
+
+  it('reads a full url', () => {
+    expect(brandFromBrief('https://kroslo.com/products/kadhai')).toBe('Kroslo');
+  });
+
+  it('skips a reference host and keeps looking for the brand', () => {
+    expect(
+      brandFromBrief('Reference: https://www.instagram.com/p/DbsP5cgRPUn/ | site: kroslo.com'),
+    ).toBe('Kroslo');
+  });
+
+  it('is null when the brief names no site', () => {
+    expect(brandFromBrief('Pulkit knows')).toBeNull();
+    expect(brandFromBrief('')).toBeNull();
+    expect(brandFromBrief(null)).toBeNull();
+  });
+
+  it('is null when every host in the brief is a reference', () => {
+    expect(brandFromBrief('like https://instagram.com/x and https://youtu.be/y')).toBeNull();
   });
 });

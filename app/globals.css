@@ -3282,3 +3282,154 @@ body:has(.opq) { background: #FBFBF8; }
 }
 
 .ord-preview-back:active { transform: scale(.97); }
+
+/* ---------- The revision trail: what you watched, said, and got back ---------- */
+/* Three columns read left to right, because the order is the argument. The old
+   cut has to stay on the page beside the new one: replacing it is what made a
+   second version look like a first one to anybody who came back a week later. */
+
+.rv { margin: 34px 0 0; }
+
+.rv h2, .faces h2 {
+  font-size: 11px; font-weight: 650; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--ink-3); margin-bottom: 10px;
+}
+
+.rv-round + .rv-round { margin-top: 26px; padding-top: 26px; border-top: 1px solid var(--line); }
+
+/* Stacked on a phone, which is the order you would read it in anyway: the cut,
+   what you said about it, then the answer. */
+.rv-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+
+/* Two 9:16 players and a column of notes do not fit the page's 680px column.
+   The section breaks out of it rather than squeezing three things into it,
+   because the comparison is the whole point of this view. left/translateX
+   rather than negative margins so it does not depend on the parent's width. */
+@media (min-width: 1040px) {
+  .rv {
+    position: relative; left: 50%; transform: translateX(-50%);
+    width: min(1060px, calc(100vw - 40px));
+  }
+  .rv-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(210px, 280px) minmax(0, 1fr);
+    gap: 22px; align-items: start;
+  }
+}
+
+.rv-side { display: flex; flex-direction: column; gap: 9px; min-width: 0; }
+
+/* Same phone-sized player the cut chooser uses, for the same reason: these are
+   vertical ads and they are judged as vertical ads. Shorter here because two of
+   them sit beside a column of text that has to stay readable next to them. */
+.rv .ord-stage { display: flex; justify-content: center; }
+
+.rv .ord-stage video {
+  display: block; margin: 0 auto;
+  width: auto; height: auto;
+  max-width: 100%; max-height: min(460px, 56vh);
+  border-radius: 10px; background: #000;
+}
+
+/* The shot list under each cut. Neutral 2px rail, the thread-of-list-items
+   device, never an accent one. */
+.rv-shots { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+
+.rv-shots li {
+  border-left: 2px solid var(--line-2); padding-left: 10px;
+  display: flex; flex-direction: column; gap: 1px;
+}
+
+.rv-t {
+  font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 10px; font-weight: 650; color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.rv-name { font-size: 12.5px; line-height: 1.45; color: var(--ink-2); }
+
+/* The middle column is theirs. It is the only block on the order that is, so it
+   is set on the page's own ground rather than in a card: a panel would make
+   their words look like another thing we published at them. */
+.rv-mid { display: flex; flex-direction: column; gap: 9px; min-width: 0; }
+
+.rv-notes { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+
+.rv-notes li {
+  border-left: 2px solid var(--line-2); padding-left: 12px;
+  display: flex; flex-direction: column; gap: 3px;
+}
+
+.rv-frame {
+  font-size: 10.5px; font-weight: 650; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.rv-said { font-size: 14px; line-height: 1.6; color: var(--ink); }
+
+/* The round we have not answered yet. A dashed slot rather than an empty
+   column, so the gap reads as work in progress instead of a broken player. */
+.rv-slot {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 200px; padding: 20px;
+  border: 1px dashed var(--line-2); border-radius: var(--radius-card);
+  background: rgba(33, 30, 26, .02);
+}
+
+.rv-slot p {
+  font-size: 13px; line-height: 1.6; color: var(--ink-3);
+  text-align: center; max-width: 30ch; margin: 0;
+}
+
+/* ---------- The avatar lineup ---------- */
+/* Under the cuts because it answers a question the cuts raise. A client who can
+   see the alternatives reads the face as a decision rather than as a default. */
+
+.faces { margin: 40px 0 0; padding-top: 28px; border-top: 1px solid var(--line); }
+
+.faces-lede {
+  font-size: 14px; line-height: 1.6; color: var(--ink-2);
+  max-width: 58ch; margin: 0 0 16px;
+}
+
+.faces-grid {
+  list-style: none; margin: 0; padding: 0;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px;
+}
+
+.face-card {
+  display: flex; flex-direction: column; gap: 10px; min-width: 0;
+  background: var(--glass-strong); border: 1px solid var(--line);
+  border-radius: var(--radius-card); padding: 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .04), 0 8px 24px rgba(0, 0, 0, .04);
+}
+
+/* The one that got the job. A heavier hairline and a plate on the image, not a
+   coloured border: the accent is spent once per view and a rail on a rounded
+   panel is the tell this design language exists to avoid. */
+.face-on { border-color: var(--line-2); }
+
+.face-shot { position: relative; border-radius: 10px; overflow: hidden; background: rgba(33, 30, 26, .06); }
+
+.face-shot img, .face-shot video {
+  display: block; width: 100%; height: auto;
+  aspect-ratio: 3 / 4; object-fit: cover; background: #000;
+}
+
+/* Ink, not terracotta. The step rail already spends the accent on this page. */
+.face-badge {
+  position: absolute; left: 8px; bottom: 8px;
+  font-size: 10px; font-weight: 650; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--bg); background: rgba(33, 30, 26, .86);
+  padding: 4px 8px; border-radius: 999px;
+  backdrop-filter: blur(6px);
+}
+
+.face-said { display: flex; flex-direction: column; gap: 3px; }
+
+.face-name { font-size: 14px; font-weight: 700; letter-spacing: -.01em; line-height: 1.25; }
+
+.face-kind { font-size: 11.5px; color: var(--ink-3); }
+
+.face-note { font-size: 12.5px; line-height: 1.55; color: var(--ink-2); margin: 6px 0 0; }
+
+.faces-kit { margin-top: 26px; }

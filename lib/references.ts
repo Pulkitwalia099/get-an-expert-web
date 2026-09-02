@@ -162,3 +162,67 @@ export function briefProse(brief: string | null | undefined): string {
     .filter((line) => line.length > 0)
     .join('\n');
 }
+
+/**
+ * Hosts that are somebody's reference, never their brand.
+ *
+ * A brief pointing at an Instagram reel it wants to look like would otherwise
+ * name the client "Instagram", which is worse than naming nothing.
+ */
+const NOT_A_BRAND = new Set([
+  'instagram.com',
+  'youtube.com',
+  'youtu.be',
+  'tiktok.com',
+  'vimeo.com',
+  'drive.google.com',
+  'docs.google.com',
+  'dropbox.com',
+  'notion.so',
+  'figma.com',
+  'loom.com',
+  'linkedin.com',
+  'x.com',
+  'twitter.com',
+  'facebook.com',
+]);
+
+/**
+ * The client's own brand, read off their brief. Null when it is not obvious.
+ *
+ * Deliberately separate from `parseReferences`, which requires a protocol
+ * because it produces links somebody clicks. People write their own site
+ * without one: "www.mishq.in, need ads showcasing..." is the exact brief this
+ * was written against, and it carries no `https://` anywhere.
+ *
+ * Used only to say a brand's name back to them in prose. Nothing is fetched
+ * and nothing links here, so a wrong guess costs a sentence rather than a
+ * request, and null renders a generic line instead.
+ */
+export function brandFromBrief(brief: string | null | undefined): string | null {
+  if (typeof brief !== 'string' || brief.length === 0) return null;
+
+  // Host-shaped tokens, with or without a scheme or a leading www.
+  const found = brief.match(/(?:https?:\/\/)?(?:[a-z0-9-]+\.)+[a-z]{2,}/gi) ?? [];
+
+  for (const raw of found) {
+    const bare = raw
+      .replace(/^https?:\/\//i, '')
+      .replace(/^www\./i, '')
+      .toLowerCase();
+    const labels = bare.split('.');
+    if (labels.length < 2) continue;
+
+    // Match the suppression list on the registrable pair rather than the whole
+    // host, so `www.instagram.com` and `instagram.com` are both caught.
+    const registrable = labels.slice(-2).join('.');
+    if (NOT_A_BRAND.has(registrable) || NOT_A_BRAND.has(bare)) continue;
+
+    const name = labels[0];
+    // A bare `co` or `www` left over from something odd names nothing.
+    if (name.length < 2 || name === 'www') continue;
+    return name.charAt(0).toUpperCase() + name.slice(1);
+  }
+
+  return null;
+}

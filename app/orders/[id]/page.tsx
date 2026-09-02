@@ -7,12 +7,16 @@ import OrderDraft from '@/components/OrderDraft';
 import OrderReferences from '@/components/OrderReferences';
 import CutChoice from '@/components/CutChoice';
 import SampleReview from '@/components/SampleReview';
-import { briefProse, parseReferences } from '@/lib/references';
+import RevisionTrail from '@/components/RevisionTrail';
+import AvatarLineup from '@/components/AvatarLineup';
+import { brandFromBrief, briefProse, parseReferences } from '@/lib/references';
 import { SESSION_COOKIE } from '@/lib/auth';
 import { currentAccount } from '@/lib/accounts';
 import { CONTACT_EMAIL } from '@/lib/contact';
 import { TEXT_LABELS, TEXT_NOTES, deliveryFor } from '@/lib/delivery';
 import { awaitingChoice, candidatesFor, chosen } from '@/lib/orderCandidates';
+import { revisionsFor } from '@/lib/orderRevisions';
+import { avatarsFor } from '@/lib/orderAvatars';
 import { draftThread } from '@/lib/orderDrafts';
 import {
   CHOICE_STEPS,
@@ -141,11 +145,25 @@ export default async function Order({
   // would be a query whose answer nothing on the page uses.
   const used = awaitingCustomer(order.status) ? await revisionsUsed(id) : null;
 
+  // The rounds of changes, and the faces this brand was cast from.
+  //
+  // Both are empty on an order that has neither, and both render nothing in
+  // that case, so this ships dark and turns on per order rather than changing
+  // what anybody else's page looks like. Skipped entirely for a written
+  // deliverable and for an order nothing has been made for yet, on the same
+  // reasoning as the candidate lookup above.
+  const [rounds, faces] = text || order.status === 'new'
+    ? [[], []]
+    : await Promise.all([revisionsFor(id), avatarsFor(id)]);
+
   // The links out of the brief, and the prose around them kept as written. A
   // line reading "Reference video:" is the customer labelling their own link
   // and is worth more than our guess at what sits behind it.
   const refs = parseReferences(order.brief);
   const prose = briefProse(order.brief);
+  // Only used to say their brand's name back to them under the lineup. Null
+  // there reads as "this brand", so a brief we cannot read costs a word.
+  const brandName = brandFromBrief(order.brief);
 
   // What they asked for, then what we made of it. Built here and handed to
   // SampleReview so the order can follow what somebody is doing: above the two
@@ -292,6 +310,11 @@ export default async function Order({
         />
       )}
 
+      {/* The history under the thing it is the history of. Only rendered once
+          somebody has actually asked for changes, so a first-round order is
+          untouched by it. */}
+      {!choosing && <RevisionTrail revisions={rounds} />}
+
       {thread && thread.versions.length > 0 && (
         <OrderDraft
           id={order.id}
@@ -316,6 +339,10 @@ export default async function Order({
           </a>
         </p>
       )}
+
+      {/* Last, because it is the answer to a question the cuts raise rather
+          than anything somebody has to act on. */}
+      {!choosing && <AvatarLineup avatars={faces} brand={brandName} />}
 
       {/* The brief only renders here when there is no sample above to carry it.
           The moment there is one, it belongs next to the thing it was used to
