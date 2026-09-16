@@ -29,6 +29,7 @@ const SERVER_ONLY = [
   'operatorOrders',
   'operatorQuotes',
   'orderDrafts',
+  'planChoices',
   'watermark',
   'accounts',
   // Server-only by inheritance rather than by its own guard: it imports

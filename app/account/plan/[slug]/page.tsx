@@ -11,6 +11,7 @@ import { currentAccount } from '@/lib/accounts';
 import { SESSION_COOKIE } from '@/lib/auth';
 import { CONTACT_EMAIL } from '@/lib/contact';
 import { OPERATOR_COOKIE, operatorCookieValid } from '@/lib/operatorAuth';
+import { readChoice } from '@/lib/planChoices';
 import { ownsPlan, planBySlug } from '@/lib/plans';
 
 // A monthly plan, in the account of the one person it is for.
@@ -54,6 +55,11 @@ export default async function PlanPage({ params }: { params: Promise<{ slug: str
   }
   const who = user?.email ?? (preview ? 'Preview' : 'Operator view');
 
+  // What they already answered, if anything, so a return visit opens on the
+  // confirmation rather than the question.
+  const choice = await readChoice(plan.slug, plan.email);
+  const chosen = choice ? { cadence: choice.cadence, startOn: choice.startOn } : null;
+
   return (
     <main className={`ord acct plan ${inter.className}`}>
       <div className="paper" aria-hidden="true" />
@@ -75,7 +81,7 @@ export default async function PlanPage({ params }: { params: Promise<{ slug: str
         <p className="ord-eyebrow">The package</p>
         <h2 className="plan-h">Pick a cadence</h2>
         <p className="plan-sub">Start on 4. At the end of month 1 we set the cadence for the months after. Change it any month.</p>
-        <PlanChooser slug={plan.slug} tiers={plan.tiers} chosen={null} live={false} />
+        <PlanChooser slug={plan.slug} tiers={plan.tiers} chosen={chosen} />
       </section>
 
       <section className="plan-sec">
@@ -148,9 +154,6 @@ export default async function PlanPage({ params }: { params: Promise<{ slug: str
           <li>
             <strong>The fitting offer as it stands.</strong> The booking link, the price, and the one thing a first time
             customer should know.
-          </li>
-          <li>
-            <strong>A start date.</strong>
           </li>
         </ul>
         <p className="plan-sub">
