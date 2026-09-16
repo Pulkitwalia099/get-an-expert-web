@@ -164,6 +164,15 @@ const MISHQ: Plan = {
       media: { src: '/media/ugc-reel.mp4', poster: '/media/ugc-reel-poster.jpg' },
     },
     {
+      slug: 'product',
+      title: 'Product in hand',
+      line: 'To camera, then the phone turns to show the screen. For Mishq the screen is the booking page.',
+      job: 'Booking',
+      length: '10 to 15s',
+      status: 'ours',
+      media: { src: `${MEDIA}/product.mp4`, poster: `${MEDIA}/product.jpg` },
+    },
+    {
       slug: 'trend',
       title: 'Trend rebuild',
       line: 'A reel that is working right now, rebuilt for Mishq. This one could become "every wrong size bra’s nightmare".',
