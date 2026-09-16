@@ -3654,11 +3654,11 @@ body:has(.opq) { background: #FBFBF8; }
 
 /* ----- the cadence */
 .plan-choose { margin-top: 14px; display: flex; flex-direction: column; gap: 14px; }
-.plan-tiers { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-@media (max-width: 480px) { .plan-tiers { grid-template-columns: 1fr; } }
+.plan-tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+@media (max-width: 600px) { .plan-tiers { grid-template-columns: 1fr; } }
 .plan-tier {
   font: inherit; text-align: left; cursor: pointer; color: var(--ink);
-  display: flex; flex-direction: column; gap: 6px; padding: 18px;
+  display: flex; flex-direction: column; gap: 6px; padding: 16px;
   background: var(--glass-strong); border: 1px solid var(--line);
   border-radius: var(--radius-card);
   box-shadow: 0 1px 2px rgba(0, 0, 0, .04), 0 8px 24px rgba(0, 0, 0, .04);

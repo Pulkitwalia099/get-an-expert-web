@@ -94,13 +94,15 @@ const MISHQ: Plan = {
   slug: 'mishq',
   brand: 'Mishq',
   email: 'avpuri@gmail.com',
-  title: 'Eight videos a month for Mishq',
+  title: 'Four videos a month for Mishq',
   lede: 'You approved your first cut on 2 September. This is the plan to keep that going every month.',
   tiers: [
-    { name: 'Starter pack', videos: 8, priceCents: 39500, start: true },
-    // About $47 a video against $49 on the starter: a little off for the
-    // bigger commitment, not so much that the starter looks like a trap.
-    { name: 'Popular', videos: 12, priceCents: 56500, start: false },
+    { name: 'Starter pack', videos: 4, priceCents: 19900, start: true },
+    // $395 is the figure the site already quotes for a pack.
+    { name: 'Popular', videos: 8, priceCents: 39500, start: false },
+    // About $47 a video against $49 on the other two: a little off for the
+    // bigger commitment, not so much that the smaller packs look like a trap.
+    { name: 'Pro', videos: 12, priceCents: 56500, start: false },
   ],
   rules: [
     { text: 'A video is 30 seconds.', right: null },

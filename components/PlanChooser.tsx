@@ -33,7 +33,7 @@ export default function PlanChooser({
   rules: PlanRule[];
   chosen: Chosen | null;
 }) {
-  const start = tiers.find((t) => t.start)?.videos ?? tiers[0]?.videos ?? 8;
+  const start = tiers.find((t) => t.start)?.videos ?? tiers[0]?.videos ?? 4;
   const [options] = useState<StartOption[]>(() => startOptions());
   const [pick, setPick] = useState<number>(chosen?.cadence ?? start);
   const [startOn, setStartOn] = useState<string>(chosen?.startOn ?? options[0]?.iso ?? '');
