@@ -124,23 +124,52 @@ export default async function PlanPage({ params }: { params: Promise<{ slug: str
       <section className="plan-sec">
         <p className="ord-eyebrow">Why midsesh</p>
         <h2 className="plan-h">What you get that a tool cannot give you</h2>
-        <ol className="plan-why">
-          <li>
-            <strong>The mix that works right now.</strong> Quality comes from the right models and the right workflow:
-            storyboard, hook, cut. What works changes every four to six weeks. Our team tracks it full time, so your
-            brand always gets the mix that is working today.
-          </li>
-          <li>
-            <strong>No credits burned on attempts.</strong> Self-serve tools have a long learning curve, and most of
-            the credits go on regenerating until something is usable. We charge for the finished video, not the tries,
-            so you stay on what is at the top of your list.
-          </li>
-          <li>
-            <strong>An engine that learns your brand.</strong> Our systems keep track of what works for {plan.brand} and
-            what does not. Next is an intelligence layer that plans creative strategy across paid and organic from that
-            data. It is in the works, and every plan gets it when it lands.
-          </li>
-        </ol>
+        <div className="plan-why">
+          <div className="plan-why-tile">
+            <span className="plan-why-ic" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 3l9 5-9 5-9-5 9-5z" />
+                <path d="M3 12l9 5 9-5" />
+                <path d="M3 16l9 5 9-5" />
+              </svg>
+            </span>
+            <span className="plan-why-k">The latest tech and execution</span>
+            <h3>The mix that works right now</h3>
+            <p>
+              Quality comes from the right models and the right workflow: storyboard, hook, cut. What works changes
+              every four to six weeks. Our team tracks it full time, so your brand always gets the mix that is working
+              today.
+            </p>
+          </div>
+          <div className="plan-why-tile">
+            <span className="plan-why-ic" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" />
+              </svg>
+            </span>
+            <span className="plan-why-k">Your energy and dollars</span>
+            <h3>No credits burned on attempts</h3>
+            <p>
+              Self-serve tools have a long learning curve, and most of the credits go on regenerating until something is
+              usable. We charge for the finished video, not the tries, so you stay on what is at the top of your list.
+            </p>
+          </div>
+          <div className="plan-why-tile">
+            <span className="plan-why-ic" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 17l6-6 4 4 8-8" />
+                <path d="M14 7h7v7" />
+              </svg>
+            </span>
+            <span className="plan-why-k">An engine that scales</span>
+            <h3>It learns your brand</h3>
+            <p>
+              Our systems keep track of what works for {plan.brand} and what does not. Next is an intelligence layer
+              that plans creative strategy across paid and organic from that data. It is in the works, and every plan
+              gets it when it lands.
+            </p>
+          </div>
+        </div>
         <p className="plan-sub">
           Execution at scale, experts for judgment and taste, and data for what to make next. That is what we are
           building, over the next few months, and this plan is where it starts.

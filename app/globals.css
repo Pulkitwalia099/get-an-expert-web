@@ -3800,8 +3800,20 @@ body:has(.opq) { background: #FBFBF8; }
 @media (prefers-reduced-motion: reduce) { .plan-track, .plan-tier, .plan-dot { transition: none; } }
 
 /* ----- the words */
-.plan-why { margin: 14px 0 0; padding: 0 0 0 22px; display: flex; flex-direction: column; gap: 12px; font-size: 14px; line-height: 1.55; color: var(--ink-2); }
-.plan-why strong { color: var(--ink); font-weight: 650; }
+.plan-why { margin: 14px 0 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+@media (max-width: 640px) { .plan-why { grid-template-columns: 1fr; } }
+.plan-why-tile {
+  display: flex; flex-direction: column; gap: 6px; padding: 16px;
+  background: var(--glass-strong); border: 1px solid var(--line); border-radius: var(--radius-card);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .04), 0 8px 24px rgba(0, 0, 0, .04);
+}
+.plan-why-ic {
+  width: 36px; height: 36px; border-radius: 999px; display: grid; place-items: center;
+  color: var(--accent); background: var(--accent-tint); margin-bottom: 4px;
+}
+.plan-why-k { font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+.plan-why-tile h3 { margin: 0; font-size: 15.5px; font-weight: 700; letter-spacing: -.01em; }
+.plan-why-tile p { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--ink-2); }
 .plan-steps { margin: 14px 0 0; padding: 0 0 0 22px; display: flex; flex-direction: column; gap: 10px; font-size: 14px; line-height: 1.55; color: var(--ink-2); }
 .plan-steps strong, .plan-needs strong { color: var(--ink); font-weight: 650; }
 .plan-needs { margin: 14px 0 0; padding: 0 0 0 20px; display: flex; flex-direction: column; gap: 10px; font-size: 14px; line-height: 1.55; color: var(--ink-2); }
