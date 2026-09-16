@@ -3815,8 +3815,9 @@ body:has(.opq) { background: #FBFBF8; }
   width: 36px; height: 36px; border-radius: 999px; display: grid; place-items: center;
   color: var(--accent); background: var(--accent-tint); margin-bottom: 4px;
 }
-.plan-why-k { font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
-.plan-why-tile h3 { margin: 0; font-size: 15.5px; font-weight: 700; letter-spacing: -.01em; }
+.plan-why-k { font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); white-space: nowrap; }
+.plan-why-tile h3 { margin: 0; font-size: 15.5px; font-weight: 700; letter-spacing: -.01em; line-height: 1.25; min-height: 2.5em; }
+@media (max-width: 640px) { .plan-why-tile h3 { min-height: 0; } }
 .plan-why-tile p { margin: 0; font-size: 14px; line-height: 1.5; color: var(--ink-2); }
 .plan-steps { margin: 14px 0 0; padding: 0 0 0 22px; display: flex; flex-direction: column; gap: 10px; font-size: 14px; line-height: 1.55; color: var(--ink-2); }
 .plan-steps strong, .plan-needs strong { color: var(--ink); font-weight: 650; }

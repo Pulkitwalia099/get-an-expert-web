@@ -106,7 +106,7 @@ export default async function PlanPage({ params }: { params: Promise<{ slug: str
                 <path d="M3 16l9 5 9-5" />
               </svg>
             </span>
-            <span className="plan-why-k">The latest tech and execution</span>
+            <span className="plan-why-k">Tech and execution</span>
             <h3>The mix that works right now</h3>
             <p>
               The right models and the right workflow, and both change every four to six weeks. Our team keeps on top
@@ -119,7 +119,7 @@ export default async function PlanPage({ params }: { params: Promise<{ slug: str
                 <path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" />
               </svg>
             </span>
-            <span className="plan-why-k">Your energy and dollars</span>
+            <span className="plan-why-k">Energy and dollars</span>
             <h3>No credits burned on attempts</h3>
             <p>
               Self-serve tools spend most of their credits on regenerations. We charge for the finished video, not the
@@ -133,7 +133,7 @@ export default async function PlanPage({ params }: { params: Promise<{ slug: str
                 <path d="M14 7h7v7" />
               </svg>
             </span>
-            <span className="plan-why-k">An engine that scales</span>
+            <span className="plan-why-k">Engine that scales</span>
             <h3>It learns your brand</h3>
             <p>
               Our systems keep track of what works for {plan.brand} and what does not. An intelligence layer that
