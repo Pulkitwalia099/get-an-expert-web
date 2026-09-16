@@ -127,6 +127,7 @@ export default async function PlanPage({ params }: { params: Promise<{ slug: str
             </p>
           </div>
           <div className="plan-why-tile">
+            <span className="plan-why-soon">Launching soon</span>
             <span className="plan-why-ic" aria-hidden="true">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M3 17l6-6 4 4 8-8" />
@@ -136,8 +137,8 @@ export default async function PlanPage({ params }: { params: Promise<{ slug: str
             <span className="plan-why-k">Engine that scales</span>
             <h3>It learns your brand</h3>
             <p>
-              Our systems keep track of what works for {plan.brand} and what does not. An intelligence layer that
-              plans creative across paid and organic is launching soon.
+              Our systems keep track of what works for {plan.brand} and what does not. Next, an intelligence layer
+              that plans creative across paid and organic.
             </p>
           </div>
         </div>
