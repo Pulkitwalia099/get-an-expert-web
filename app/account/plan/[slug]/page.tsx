@@ -40,13 +40,19 @@ export default async function PlanPage({ params }: { params: Promise<{ slug: str
   if (!plan) notFound();
 
   const store = await cookies();
-  const operator = operatorCookieValid(store.get(OPERATOR_COOKIE)?.value);
+  // A preview deploy shows the page to anyone who has the URL, so a draft can
+  // be passed around for review without an operator secret changing hands.
+  // Pulkit asked for this on 15 Sep: preview hostnames are unguessable and
+  // the plan holds nothing a customer email does not already carry.
+  // Production never takes this branch.
+  const preview = process.env.VERCEL_ENV === 'preview';
+  const operator = preview || operatorCookieValid(store.get(OPERATOR_COOKIE)?.value);
   const user = operator ? null : await currentAccount(store.get(SESSION_COOKIE)?.value);
   if (!operator) {
     if (!user) redirect(`/signin?next=/account/plan/${plan.slug}`);
     if (!ownsPlan(plan, user.email)) notFound();
   }
-  const who = user?.email ?? 'Operator view';
+  const who = user?.email ?? (preview ? 'Preview' : 'Operator view');
 
   return (
     <main className={`ord acct plan ${inter.className}`}>
