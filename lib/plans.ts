@@ -10,7 +10,9 @@
 // but the carousel and the chooser are client components and read the same
 // objects, so nothing here may import a server-only module or carry a secret.
 // The reference reels are creators' work, shown here as references at
-// Pulkit's say so, credited on the slide and linked to the original.
+// Pulkit's say so. Only the trend rebuild links to its original, because
+// that slide's whole point is a reel that exists and what we would make
+// from it; the other references stand on their own.
 //
 // The customer's email is not a secret: it is the address every order email
 // already goes to, and it is what decides whose account the page belongs in.
@@ -123,7 +125,6 @@ const MISHQ: Plan = {
       media: {
         src: `${MEDIA}/talking-head.mp4`,
         poster: `${MEDIA}/talking-head.jpg`,
-        original: { code: 'DcbdZShTGoZ', by: 'Barsol Media' },
       },
     },
     {
@@ -176,7 +177,6 @@ const MISHQ: Plan = {
       media: {
         src: `${MEDIA}/founder.mp4`,
         poster: `${MEDIA}/founder.jpg`,
-        original: { code: 'DcRLe4auTk0', by: 'Beni Media' },
       },
     },
   ],
