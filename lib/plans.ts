@@ -97,12 +97,9 @@ const MISHQ: Plan = {
     { videos: 8, priceCents: 39500, start: false },
   ],
   rules: [
-    { text: 'A video is up to 30 seconds. Under 15 counts as half. Up to 60 counts as two.', right: null },
-    { text: 'A clip you shoot yourself and we edit counts as one video, up to 60 seconds.', right: '1 video' },
-    { text: 'Extra video in any month.', right: '$50' },
-    { text: 'One edit on every video.', right: 'Included' },
-    { text: 'The first video in any new format can be rejected outright. It does not count.', right: 'Not counted' },
-    { text: 'Unused videos roll over one month. Month to month, cancel any month.', right: null },
+    { text: 'A video is 30 seconds.', right: null },
+    { text: 'Under 15 seconds counts as half a video.', right: null },
+    { text: 'Over 30 seconds, up to 60, counts as two.', right: null },
   ],
   months: [
     { label: 'Month 1', text: 'Set up for quality. The faces, the voice, the caption style. Every video is also an asset we reuse.' },
