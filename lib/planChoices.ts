@@ -25,11 +25,19 @@ interface Row {
   updated_at: string;
 }
 
-/** The current choice on a plan, null when there is none or Supabase did not answer. */
+/**
+ * The customer's current choice on a plan, null when there is none or
+ * Supabase did not answer.
+ *
+ * Only a row the customer wrote counts. An operator or a preview viewer
+ * pressing Confirm files a row too, with `actor` saying so, and that row
+ * must not open the customer's page on "Confirmed" for a choice they never
+ * made. The test rows are for the alert email and the table, not the page.
+ */
 export async function readChoice(planSlug: string, email: string): Promise<PlanChoice | null> {
   const rows = await selectRows<Row>(
     'plan_choices',
-    `select=cadence,start_on,actor,updated_at&plan_slug=eq.${encodeURIComponent(planSlug)}&email=eq.${encodeURIComponent(email)}&limit=1`,
+    `select=cadence,start_on,actor,updated_at&plan_slug=eq.${encodeURIComponent(planSlug)}&email=eq.${encodeURIComponent(email)}&actor=like.customer:*&limit=1`,
   );
   const row = rows?.[0];
   if (!row) return null;
