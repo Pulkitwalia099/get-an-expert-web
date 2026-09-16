@@ -93,7 +93,6 @@ export default function PlanChooser({
               onClick={() => setPick(t.videos)}
             >
               <span className={t.start ? 'plan-tier-tag' : 'plan-tier-tag plan-tier-tag-pop'}>{t.name}</span>
-              {t.start && <span className="plan-tier-rec">Recommended for {brand}</span>}
               <span className="plan-tier-n">
                 {t.videos}
                 <small> videos a month</small>
@@ -102,6 +101,7 @@ export default function PlanChooser({
                 {tierPrice(t)}
                 <small> a month</small>
               </span>
+              {t.start && <span className="plan-tier-rec">Recommended for {brand}</span>}
             </button>
           );
         })}
