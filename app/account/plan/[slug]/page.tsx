@@ -206,8 +206,8 @@ export default async function PlanPage({ params }: { params: Promise<{ slug: str
       <section className="plan-sec" id="package">
         <p className="ord-eyebrow">The package</p>
         <h2 className="plan-h">Pick a cadence and a start date</h2>
-        <p className="plan-sub">Start on 4. At the end of month 1 we set the cadence for the months after. Change it any month.</p>
-        <PlanChooser slug={plan.slug} tiers={plan.tiers} rules={plan.rules} chosen={chosen} />
+        <p className="plan-sub">Start on the starter pack. At the end of month 1 we set the cadence for the months after. Change it any month.</p>
+        <PlanChooser slug={plan.slug} brand={plan.brand} tiers={plan.tiers} rules={plan.rules} chosen={chosen} />
       </section>
 
       <p className="acct-foot">

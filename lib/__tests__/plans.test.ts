@@ -15,6 +15,7 @@ describe('plans', () => {
         expect(Number.isInteger(tier.priceCents)).toBe(true);
         expect(tier.priceCents % 100).toBe(0);
         expect(tierPrice(tier)).toMatch(/^\$\d+$/);
+        expect(tier.name.length).toBeGreaterThan(0);
       }
       expect(plan.tiers.filter((t) => t.start)).toHaveLength(1);
     }

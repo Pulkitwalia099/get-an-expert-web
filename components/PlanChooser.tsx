@@ -22,16 +22,18 @@ export interface Chosen {
 
 export default function PlanChooser({
   slug,
+  brand,
   tiers,
   rules,
   chosen,
 }: {
   slug: string;
+  brand: string;
   tiers: PlanTier[];
   rules: PlanRule[];
   chosen: Chosen | null;
 }) {
-  const start = tiers.find((t) => t.start)?.videos ?? tiers[0]?.videos ?? 4;
+  const start = tiers.find((t) => t.start)?.videos ?? tiers[0]?.videos ?? 8;
   const [options] = useState<StartOption[]>(() => startOptions());
   const [pick, setPick] = useState<number>(chosen?.cadence ?? start);
   const [startOn, setStartOn] = useState<string>(chosen?.startOn ?? options[0]?.iso ?? '');
@@ -90,7 +92,8 @@ export default function PlanChooser({
               className={on ? 'plan-tier plan-tier-on' : 'plan-tier'}
               onClick={() => setPick(t.videos)}
             >
-              {t.start && <span className="plan-tier-tag">Start here</span>}
+              <span className={t.start ? 'plan-tier-tag' : 'plan-tier-tag plan-tier-tag-pop'}>{t.name}</span>
+              {t.start && <span className="plan-tier-rec">Recommended for {brand}</span>}
               <span className="plan-tier-n">
                 {t.videos}
                 <small> videos a month</small>

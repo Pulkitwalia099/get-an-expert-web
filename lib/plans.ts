@@ -47,6 +47,8 @@ export interface PlanFormat {
 }
 
 export interface PlanTier {
+  /** The name on the card: "Starter pack", "Popular". */
+  name: string;
   /** Videos a month. */
   videos: number;
   /** Integer cents. Never a float, never parsed back out of copy. */
@@ -92,11 +94,13 @@ const MISHQ: Plan = {
   slug: 'mishq',
   brand: 'Mishq',
   email: 'avpuri@gmail.com',
-  title: 'Four videos a month for Mishq',
+  title: 'Eight videos a month for Mishq',
   lede: 'You approved your first cut on 2 September. This is the plan to keep that going every month.',
   tiers: [
-    { videos: 4, priceCents: 19900, start: true },
-    { videos: 8, priceCents: 39500, start: false },
+    { name: 'Starter pack', videos: 8, priceCents: 39500, start: true },
+    // About $47 a video against $49 on the starter: a little off for the
+    // bigger commitment, not so much that the starter looks like a trap.
+    { name: 'Popular', videos: 12, priceCents: 56500, start: false },
   ],
   rules: [
     { text: 'A video is 30 seconds.', right: null },
