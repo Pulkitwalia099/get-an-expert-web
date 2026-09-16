@@ -137,7 +137,7 @@ export default async function PlanPage({ params }: { params: Promise<{ slug: str
             <h3>It learns your brand</h3>
             <p>
               Our systems keep track of what works for {plan.brand} and what does not. An intelligence layer that
-              plans creative across paid and organic is in the works, launching over the coming months.
+              plans creative across paid and organic is launching soon.
             </p>
           </div>
         </div>
