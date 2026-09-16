@@ -118,12 +118,15 @@ const MISHQ: Plan = {
     { text: 'Unused videos roll over one month. Month to month, cancel any month.', right: null },
   ],
   months: [
-    { label: 'Month 1', text: 'The faces, the voice, the caption style. Every video is also an asset we reuse.' },
+    { label: 'Month 1', text: 'Set up for quality. The faces, the voice, the caption style. Every video is also an asset we reuse.' },
     {
       label: 'Month 2',
-      text: 'Same faces, different formats. Each comes back with its numbers. One page on what earned its place.',
+      text: 'Experiment. Same faces, different formats. Each comes back with its numbers, and you get one page on what earned its place.',
     },
-    { label: 'Month 3 on', text: 'The two formats that scored get two slots each. The lowest is dropped.' },
+    {
+      label: 'Month 3 on',
+      text: 'Double down. The formats that scored get more slots, and from here the results compound month on month.',
+    },
   ],
   formats: [
     {

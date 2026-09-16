@@ -28,13 +28,13 @@ export default function PlanArc() {
           Month 3 onward
         </text>
         <text className="plan-arc-ttl" x="0" y="216">
-          Set up the faces and formats
+          Set up for quality
         </text>
         <text className="plan-arc-ttl" x="248" y="216">
-          Test which formats move
+          Experiment
         </text>
         <text className="plan-arc-ttl" x="488" y="216">
-          Double what worked
+          Double down, then compound
         </text>
         <path className="plan-arc-build" d="M8,60 C120,64 180,120 240,140 C320,166 420,176 712,182" />
         <path className="plan-arc-know" d="M8,184 C120,182 200,160 300,120 C400,80 520,58 712,50" />
@@ -43,7 +43,7 @@ export default function PlanArc() {
           Time we spend building assets
         </text>
         <text className="plan-arc-leg" x="440" y="46" textAnchor="end">
-          What we know works for the brand
+          What we know works for you
         </text>
       </svg>
     </div>

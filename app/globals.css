@@ -3793,6 +3793,8 @@ body:has(.opq) { background: #FBFBF8; }
 @media (prefers-reduced-motion: reduce) { .plan-track, .plan-tier, .plan-dot { transition: none; } }
 
 /* ----- the words */
+.plan-why { margin: 14px 0 0; padding: 0 0 0 22px; display: flex; flex-direction: column; gap: 12px; font-size: 14px; line-height: 1.55; color: var(--ink-2); }
+.plan-why strong { color: var(--ink); font-weight: 650; }
 .plan-steps { margin: 14px 0 0; padding: 0 0 0 22px; display: flex; flex-direction: column; gap: 10px; font-size: 14px; line-height: 1.55; color: var(--ink-2); }
 .plan-steps strong, .plan-needs strong { color: var(--ink); font-weight: 650; }
 .plan-needs { margin: 14px 0 0; padding: 0 0 0 20px; display: flex; flex-direction: column; gap: 10px; font-size: 14px; line-height: 1.55; color: var(--ink-2); }

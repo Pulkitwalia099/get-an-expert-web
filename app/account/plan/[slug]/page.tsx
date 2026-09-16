@@ -86,7 +86,7 @@ export default async function PlanPage({ params }: { params: Promise<{ slug: str
 
       <section className="plan-sec">
         <p className="ord-eyebrow">The ramp</p>
-        <h2 className="plan-h">Months 1 and 2 are for finding out. Month 3 is when it works.</h2>
+        <h2 className="plan-h">Month 1 sets up quality. Month 2 experiments. Month 3 doubles down.</h2>
         <PlanArc />
         <ul className="plan-months">
           {plan.months.map((m) => (
@@ -118,6 +118,32 @@ export default async function PlanPage({ params }: { params: Promise<{ slug: str
         <p className="plan-sub">
           You have tested one of these. We add formats as they prove themselves and keep the ones that score for{' '}
           {plan.brand}.
+        </p>
+      </section>
+
+      <section className="plan-sec">
+        <p className="ord-eyebrow">Why midsesh</p>
+        <h2 className="plan-h">What you get that a tool cannot give you</h2>
+        <ol className="plan-why">
+          <li>
+            <strong>The mix that works right now.</strong> Quality comes from the right models and the right workflow:
+            storyboard, hook, cut. What works changes every four to six weeks. Our team tracks it full time, so your
+            brand always gets the mix that is working today.
+          </li>
+          <li>
+            <strong>No credits burned on attempts.</strong> Self-serve tools have a long learning curve, and most of
+            the credits go on regenerating until something is usable. We charge for the finished video, not the tries,
+            so you stay on what is at the top of your list.
+          </li>
+          <li>
+            <strong>An engine that learns your brand.</strong> Our systems keep track of what works for {plan.brand} and
+            what does not. Next is an intelligence layer that plans creative strategy across paid and organic from that
+            data. It is in the works, and every plan gets it when it lands.
+          </li>
+        </ol>
+        <p className="plan-sub">
+          Execution at scale, experts for judgment and taste, and data for what to make next. That is what we are
+          building, over the next few months, and this plan is where it starts.
         </p>
       </section>
 
@@ -157,8 +183,8 @@ export default async function PlanPage({ params }: { params: Promise<{ slug: str
           </li>
         </ul>
         <p className="plan-sub">
-          Posting stays with you unless you ask us to take it on. Paid promotion is not in the price. We report on the
-          videos; we do not promise a follower count.
+          Posting stays with you unless you ask us to take it on. Paid promotion is not in the price. Every video comes
+          back with its numbers each month, so the plan is judged on what it produces.
         </p>
       </section>
 
