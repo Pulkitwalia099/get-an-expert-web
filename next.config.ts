@@ -36,6 +36,12 @@ const MARKETPLACE = 'https://agon-agent-eight.vercel.app';
 // page is videos, and none of them played.
 const TIKTOK = 'https://www.tiktok.com';
 
+// The plan page in a customer's account embeds Instagram's own player for a
+// reference reel we did not make, so the creator's name stays on it. The
+// embed is an iframe, and without this entry the browser draws its blocked
+// panel where the reel should be, exactly as TikTok did above.
+const INSTAGRAM = 'https://www.instagram.com';
+
 // The marketplace at the apex loads Inter and JetBrains Mono from Google
 // Fonts. style-src did not name the stylesheet host and font-src did not name
 // the file host, so the browser blocked both and the whole site rendered in
@@ -63,7 +69,7 @@ const CSP = [
   "img-src 'self' https: data: blob:",
   `font-src 'self' data: ${GOOGLE_FONTS_FILES}`,
   `connect-src 'self' ${POSTHOG} ${DAILY} ${CAL}`,
-  `frame-src 'self' ${DAILY} ${CAL} ${TIKTOK}`,
+  `frame-src 'self' ${DAILY} ${CAL} ${TIKTOK} ${INSTAGRAM}`,
   `media-src 'self' blob: ${BLOB} ${DAILY}`,
   "worker-src 'self' blob:",
   "object-src 'none'",

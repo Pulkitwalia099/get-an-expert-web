@@ -124,12 +124,16 @@ function sameValue(a: string, b: string): boolean {
 // The uuid belongs to /orders/<id> and to nothing else, so it is spelled
 // inside that one alternative rather than bolted onto every branch.
 //
+// /account/plan/<slug> is the fifth. The email that carries a customer's
+// monthly plan signs them in and lands them on it, and the slug is a lowercase
+// word from lib/plans.ts, never a uuid, which is why its pattern is its own.
+//
 // Case sensitive on the path words and case insensitive only on the uuid,
 // which is the only part that legitimately varies. Next routes case
 // sensitively, so a blanket /i flag here would admit /Dashboard and then land
 // somebody on a 404 with a fresh session cookie and no idea what happened.
 const SAFE_NEXT =
-  /^\/(account|dashboard|orders|orders\/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$/;
+  /^\/(account|account\/plan\/[a-z0-9-]{1,40}|dashboard|orders|orders\/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$/;
 
 /** The destination if it is one we allow, otherwise null so callers pick their own default. */
 export function safeNext(raw: string | null | undefined): string | null {

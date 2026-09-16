@@ -249,6 +249,13 @@ describe('safeNext', () => {
     expect(safeNext('/orders')).toBe('/orders');
     const order = '/orders/b1029c04-c43d-422b-9000-ff79632847a6';
     expect(safeNext(order)).toBe(order);
+    expect(safeNext('/account/plan/mishq')).toBe('/account/plan/mishq');
+  });
+
+  it('refuses a plan slug that is not a lowercase word', () => {
+    expect(safeNext('/account/plan/')).toBeNull();
+    expect(safeNext('/account/plan/Mishq')).toBeNull();
+    expect(safeNext('/account/plan/mishq/x')).toBeNull();
   });
 
   it('refuses another origin, however it is spelled', () => {
