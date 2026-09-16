@@ -3701,7 +3701,9 @@ body:has(.opq) { background: #FBFBF8; }
 }
 .plan-change:active { transform: scale(.97); }
 
-.plan-rules { list-style: none; margin: 14px 0 0; padding: 0; border-top: 1px solid var(--line); }
+.plan-rules { list-style: none; margin: 4px 0 6px; padding: 0; border-top: 1px solid var(--line); }
+.plan-status { font-size: 14px; color: var(--ink-2); margin: -10px 0 0; }
+.plan-status a { color: var(--ink); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
 .plan-rules li {
   display: flex; justify-content: space-between; gap: 16px; align-items: baseline;
   padding: 11px 0; border-bottom: 1px solid var(--line); font-size: 14px; line-height: 1.5;

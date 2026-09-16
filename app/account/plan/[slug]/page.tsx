@@ -11,6 +11,7 @@ import { currentAccount } from '@/lib/accounts';
 import { SESSION_COOKIE } from '@/lib/auth';
 import { CONTACT_EMAIL } from '@/lib/contact';
 import { OPERATOR_COOKIE, operatorCookieValid } from '@/lib/operatorAuth';
+import { labelFor } from '@/lib/plan-dates';
 import { readChoice } from '@/lib/planChoices';
 import { ownsPlan, planBySlug } from '@/lib/plans';
 
@@ -76,40 +77,12 @@ export default async function PlanPage({ params }: { params: Promise<{ slug: str
       </p>
       <h1>{plan.title}</h1>
       <p className="ord-lede">{plan.lede}</p>
-
-      <section className="plan-sec">
-        <p className="ord-eyebrow">The package</p>
-        <h2 className="plan-h">Pick a cadence</h2>
-        <p className="plan-sub">Start on 4. At the end of month 1 we set the cadence for the months after. Change it any month.</p>
-        <PlanChooser slug={plan.slug} tiers={plan.tiers} chosen={chosen} />
-      </section>
-
-      <section className="plan-sec">
-        <p className="ord-eyebrow">The ramp</p>
-        <h2 className="plan-h">Month 1 sets up quality. Month 2 experiments. Month 3 doubles down.</h2>
-        <PlanArc />
-        <ul className="plan-months">
-          {plan.months.map((m) => (
-            <li key={m.label}>
-              <span className="plan-month-l">{m.label}</span>
-              <span>{m.text}</span>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <section className="plan-sec">
-        <p className="ord-eyebrow">Terms of the package</p>
-        <h2 className="plan-h">What a month includes</h2>
-        <ul className="plan-rules">
-          {plan.rules.map((r) => (
-            <li key={r.text}>
-              <span>{r.text}</span>
-              {r.right && <span className="plan-rule-r">{r.right}</span>}
-            </li>
-          ))}
-        </ul>
-      </section>
+      {chosen && (
+        <p className="plan-status">
+          Confirmed: {chosen.cadence} videos a month, starting {labelFor(chosen.startOn)}.{' '}
+          <a href="#package">Change</a>
+        </p>
+      )}
 
       <section className="plan-sec">
         <p className="ord-eyebrow">Formats</p>
@@ -175,6 +148,20 @@ export default async function PlanPage({ params }: { params: Promise<{ slug: str
       </section>
 
       <section className="plan-sec">
+        <p className="ord-eyebrow">The ramp</p>
+        <h2 className="plan-h">Month 1 sets up quality. Month 2 experiments. Month 3 doubles down.</h2>
+        <PlanArc />
+        <ul className="plan-months">
+          {plan.months.map((m) => (
+            <li key={m.label}>
+              <span className="plan-month-l">{m.label}</span>
+              <span>{m.text}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="plan-sec">
         <p className="ord-eyebrow">Each video</p>
         <h2 className="plan-h">How it works</h2>
         <ol className="plan-steps">
@@ -202,7 +189,7 @@ export default async function PlanPage({ params }: { params: Promise<{ slug: str
           <li>
             <strong>Performance access to the Instagram account.</strong>{' '}
             Add midsesh as a partner in Meta Business Suite with &ldquo;View performance&rdquo; only. No password changes hands and you can remove us any time. We send
-            the steps once you choose.
+            the steps once you confirm.
           </li>
           <li>
             <strong>The fitting offer as it stands.</strong> The booking link, the price, and the one thing a first time
@@ -213,6 +200,13 @@ export default async function PlanPage({ params }: { params: Promise<{ slug: str
           Posting stays with you unless you ask us to take it on. Paid promotion is not in the price. Every video comes
           back with its numbers each month, so the plan is judged on what it produces.
         </p>
+      </section>
+
+      <section className="plan-sec" id="package">
+        <p className="ord-eyebrow">The package</p>
+        <h2 className="plan-h">Pick a cadence and a start date</h2>
+        <p className="plan-sub">Start on 4. At the end of month 1 we set the cadence for the months after. Change it any month.</p>
+        <PlanChooser slug={plan.slug} tiers={plan.tiers} rules={plan.rules} chosen={chosen} />
       </section>
 
       <p className="acct-foot">

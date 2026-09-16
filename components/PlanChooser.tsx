@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { labelFor, startOptions, type StartOption } from '@/lib/plan-dates';
-import { tierPrice, type PlanTier } from '@/lib/plans';
+import { tierPrice, type PlanRule, type PlanTier } from '@/lib/plans';
 
 // Two cadences, four start dates, one button.
 //
@@ -23,10 +23,12 @@ export interface Chosen {
 export default function PlanChooser({
   slug,
   tiers,
+  rules,
   chosen,
 }: {
   slug: string;
   tiers: PlanTier[];
+  rules: PlanRule[];
   chosen: Chosen | null;
 }) {
   const start = tiers.find((t) => t.start)?.videos ?? tiers[0]?.videos ?? 4;
@@ -101,6 +103,14 @@ export default function PlanChooser({
           );
         })}
       </div>
+      <ul className="plan-rules" aria-label="What a month includes">
+        {rules.map((r) => (
+          <li key={r.text}>
+            <span>{r.text}</span>
+            {r.right && <span className="plan-rule-r">{r.right}</span>}
+          </li>
+        ))}
+      </ul>
       <label className="plan-start">
         <span className="plan-start-l">Start date</span>
         <select
