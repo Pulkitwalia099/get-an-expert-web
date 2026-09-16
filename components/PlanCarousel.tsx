@@ -179,14 +179,7 @@ export default function PlanCarousel({ formats }: { formats: PlanFormat[] }) {
                   </a>
                 )}
                 {f.media.kind === 'file' && f.media.original && (
-                  <a
-                    className="plan-orig"
-                    href={instagramUrl(f.media.original.code)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    By {f.media.original.by}, shared with their permission. Open the original.
-                  </a>
+                  <span className="plan-meta">By {f.media.original.by}</span>
                 )}
               </div>
             </div>
