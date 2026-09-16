@@ -96,7 +96,7 @@ export default async function PlanPage({ params }: { params: Promise<{ slug: str
 
       <section className="plan-sec">
         <p className="ord-eyebrow">Why midsesh</p>
-        <h2 className="plan-h">What you get that a tool cannot give you</h2>
+        <h2 className="plan-h">What a self-serve tool cannot give you</h2>
         <div className="plan-why">
           <div className="plan-why-tile">
             <span className="plan-why-ic" aria-hidden="true">
@@ -109,8 +109,8 @@ export default async function PlanPage({ params }: { params: Promise<{ slug: str
             <span className="plan-why-k">The latest tech and execution</span>
             <h3>The mix that works right now</h3>
             <p>
-              The right models and the right workflow, and both change every four to six weeks. Our team tracks it full
-              time, so you always get what is working now.
+              The right models and the right workflow, and both change every four to six weeks. Our team keeps on top
+              of it, so your videos are made the way that is working now.
             </p>
           </div>
           <div className="plan-why-tile">
@@ -123,7 +123,7 @@ export default async function PlanPage({ params }: { params: Promise<{ slug: str
             <h3>No credits burned on attempts</h3>
             <p>
               Self-serve tools spend most of their credits on regenerations. We charge for the finished video, not the
-              tries, so your time stays on your business.
+              tries, so your time and money stay on your business.
             </p>
           </div>
           <div className="plan-why-tile">
@@ -136,14 +136,14 @@ export default async function PlanPage({ params }: { params: Promise<{ slug: str
             <span className="plan-why-k">An engine that scales</span>
             <h3>It learns your brand</h3>
             <p>
-              Our systems track what works for {plan.brand} and what does not. An intelligence layer that plans
-              creative across paid and organic is launching soon.
+              Our systems keep track of what works for {plan.brand} and what does not. An intelligence layer that
+              plans creative across paid and organic is in the works, launching over the coming months.
             </p>
           </div>
         </div>
         <p className="plan-sub">
           Execution at scale, experts for judgment and taste, and data for what to make next. That is what we are
-          building, over the next few months, and this plan is where it starts.
+          building, and this plan is where it starts.
         </p>
       </section>
 
@@ -197,8 +197,9 @@ export default async function PlanPage({ params }: { params: Promise<{ slug: str
           </li>
         </ul>
         <p className="plan-sub">
-          Posting stays with you unless you ask us to take it on. Paid promotion is not in the price. Every video comes
-          back with its numbers each month, so the plan is judged on what it produces.
+          Posting stays with you unless you ask us to take it on. Paid promotion is not in the price. With performance
+          access in place, every video comes back with its numbers each month, so the plan is judged on what it
+          produces.
         </p>
       </section>
 

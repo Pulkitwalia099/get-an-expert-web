@@ -12,7 +12,7 @@ export default function PlanArc() {
       <svg
         viewBox="0 0 720 226"
         role="img"
-        aria-label="Three phases across three months: set up, test, compound. Time spent building assets falls; what we know works rises."
+        aria-label="Three phases across three months: set up, experiment, double down. Time spent building assets falls; what we know works rises."
       >
         <rect className="plan-arc-band" x="480" y="34" width="240" height="160" rx="8" />
         <line className="plan-arc-grid" x1="240" y1="34" x2="240" y2="194" />
@@ -34,7 +34,7 @@ export default function PlanArc() {
           Experiment
         </text>
         <text className="plan-arc-ttl" x="488" y="216">
-          Double down, then compound
+          Double down, build on it
         </text>
         <path className="plan-arc-build" d="M8,60 C120,64 180,120 240,140 C320,166 420,176 712,182" />
         <path className="plan-arc-know" d="M8,184 C120,182 200,160 300,120 C400,80 520,58 712,50" />

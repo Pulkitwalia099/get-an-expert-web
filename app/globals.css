@@ -3646,13 +3646,14 @@ body:has(.opq) { background: #FBFBF8; }
    and the reel carousel in the homepage's phone frame. */
 
 .plan { max-width: 720px; }
-.plan-sec { margin-top: 44px; }
+.plan-sec { margin-top: 48px; }
 .plan-sec .ord-eyebrow { margin-bottom: 6px; }
+.plan-sec > .plan-sub + * { margin-top: 14px; }
 .plan-h { font-size: 20px; font-weight: 650; letter-spacing: -.02em; margin: 0 0 8px; text-wrap: balance; }
 .plan-sub { font-size: 14px; color: var(--ink-2); line-height: 1.55; margin: 8px 0 0; max-width: 58ch; }
 
 /* ----- the cadence */
-.plan-choose { margin-top: 16px; display: flex; flex-direction: column; gap: 14px; }
+.plan-choose { margin-top: 14px; display: flex; flex-direction: column; gap: 14px; }
 .plan-tiers { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 @media (max-width: 480px) { .plan-tiers { grid-template-columns: 1fr; } }
 .plan-tier {
@@ -3687,7 +3688,7 @@ body:has(.opq) { background: #FBFBF8; }
 .plan-choose-foot { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 .plan-choose-note { font-size: 12.5px; color: var(--ink-3); max-width: 34ch; line-height: 1.45; }
 .plan-chosen {
-  margin-top: 16px; padding: 18px 20px; border-radius: var(--radius-card);
+  margin-top: 14px; padding: 18px 20px; border-radius: var(--radius-card);
   background: var(--accent-tint); border: 1px solid var(--line-2);
   font-size: 14px; color: var(--ink-2); line-height: 1.55;
   display: flex; flex-direction: column; gap: 6px; align-items: flex-start;
@@ -3701,7 +3702,7 @@ body:has(.opq) { background: #FBFBF8; }
 }
 .plan-change:active { transform: scale(.97); }
 
-.plan-rules { list-style: none; margin: 4px 0 6px; padding: 0; border-top: 1px solid var(--line); }
+.plan-rules { list-style: none; margin: 2px 0 4px; padding: 0; border-top: 1px solid var(--line); }
 .plan-status { font-size: 14px; color: var(--ink-2); margin: -10px 0 0; }
 .plan-status a { color: var(--ink); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
 .plan-rules li {
@@ -3714,6 +3715,7 @@ body:has(.opq) { background: #FBFBF8; }
 .plan-arc {
   margin-top: 14px; padding: 16px 16px 8px; overflow-x: auto;
   background: var(--glass-strong); border: 1px solid var(--line); border-radius: var(--radius-card);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .04), 0 8px 24px rgba(0, 0, 0, .04);
 }
 .plan-arc svg { display: block; width: 100%; height: auto; min-width: 520px; }
 .plan-arc-band { fill: var(--accent-tint); }
@@ -3805,7 +3807,7 @@ body:has(.opq) { background: #FBFBF8; }
 .plan-why { margin: 14px 0 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 @media (max-width: 640px) { .plan-why { grid-template-columns: 1fr; } }
 .plan-why-tile {
-  display: flex; flex-direction: column; gap: 6px; padding: 16px;
+  display: flex; flex-direction: column; gap: 6px; padding: 18px 18px 20px;
   background: var(--glass-strong); border: 1px solid var(--line); border-radius: var(--radius-card);
   box-shadow: 0 1px 2px rgba(0, 0, 0, .04), 0 8px 24px rgba(0, 0, 0, .04);
 }
@@ -3815,7 +3817,7 @@ body:has(.opq) { background: #FBFBF8; }
 }
 .plan-why-k { font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
 .plan-why-tile h3 { margin: 0; font-size: 15.5px; font-weight: 700; letter-spacing: -.01em; }
-.plan-why-tile p { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--ink-2); }
+.plan-why-tile p { margin: 0; font-size: 14px; line-height: 1.5; color: var(--ink-2); }
 .plan-steps { margin: 14px 0 0; padding: 0 0 0 22px; display: flex; flex-direction: column; gap: 10px; font-size: 14px; line-height: 1.55; color: var(--ink-2); }
 .plan-steps strong, .plan-needs strong { color: var(--ink); font-weight: 650; }
 .plan-needs { margin: 14px 0 0; padding: 0 0 0 20px; display: flex; flex-direction: column; gap: 10px; font-size: 14px; line-height: 1.55; color: var(--ink-2); }

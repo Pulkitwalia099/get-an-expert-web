@@ -91,7 +91,7 @@ const MISHQ: Plan = {
   brand: 'Mishq',
   email: 'avpuri@gmail.com',
   title: 'Four videos a month for Mishq',
-  lede: 'You approved the Team B cut on 2 September. This is the plan to keep that going every month.',
+  lede: 'You approved your first cut on 2 September. This is the plan to keep that going every month.',
   tiers: [
     { videos: 4, priceCents: 19900, start: true },
     { videos: 8, priceCents: 39500, start: false },
@@ -105,11 +105,11 @@ const MISHQ: Plan = {
     { label: 'Month 1', text: 'Set up for quality. The faces, the voice, the caption style. Every video is also an asset we reuse.' },
     {
       label: 'Month 2',
-      text: 'Experiment. Same faces, different formats. Each comes back with its numbers, and you get one page on what earned its place.',
+      text: 'Experiment. Same faces, different formats. Each comes back with its numbers, and you get a short read on what earned its place.',
     },
     {
       label: 'Month 3 on',
-      text: 'Double down. The formats that scored get more slots, and from here the results compound month on month.',
+      text: 'Double down. The formats that scored get more slots, and each month builds on what the last one learned.',
     },
   ],
   formats: [
@@ -156,7 +156,7 @@ const MISHQ: Plan = {
     {
       slug: 'trend',
       title: 'Trend rebuild',
-      line: 'A reel that is working right now, rebuilt for Mishq. This one becomes "every wrong size bra’s nightmare".',
+      line: 'A reel that is working right now, rebuilt for Mishq. This one could become "every wrong size bra’s nightmare".',
       job: 'Reach',
       length: '6 to 15s',
       status: 'reference',

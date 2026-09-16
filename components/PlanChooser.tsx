@@ -64,8 +64,8 @@ export default function PlanChooser({
           Confirmed: {done.cadence} videos a month, starting {labelFor(done.startOn)}.
         </p>
         <p>
-          <strong>What happens next.</strong> We send you the first video type we recommend, with the script. From
-          there we get going.
+          <strong>What happens next.</strong> We send you the first video type we recommend, with the script, in the
+          next few days. From there we get going.
         </p>
         <p>Nothing is charged now. You pay once the month&rsquo;s videos are delivered.</p>
         <button type="button" className="plan-change" onClick={() => setDone(null)}>

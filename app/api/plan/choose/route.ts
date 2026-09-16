@@ -110,7 +110,7 @@ async function handlePost(req: NextRequest): Promise<NextResponse> {
         `You chose ${tier.videos} videos a month for ${plan.brand}, starting ${when}.`,
         '',
         'WHAT HAPPENS NEXT',
-        'We send you the first video type we recommend, with the script. From there we get going.',
+        'We send you the first video type we recommend, with the script, in the next few days. From there we get going.',
         'Nothing is charged now. You pay once the month’s videos are delivered.',
         '',
         `Your plan: ${link}`,
