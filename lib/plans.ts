@@ -9,10 +9,8 @@
 // Browser safe on purpose. The page that renders it is a server component,
 // but the carousel and the chooser are client components and read the same
 // objects, so nothing here may import a server-only module or carry a secret.
-// Two of the reference reels are creators' work hosted here with their
-// permission, trimmed of their end cards at the creators' own say so, and
-// credited on the slide. Without that permission a reel we did not make plays
-// through Instagram's embed instead, which is what the third one does.
+// The reference reels are creators' work, shown here as references at
+// Pulkit's say so, credited on the slide and linked to the original.
 //
 // The customer's email is not a secret: it is the address every order email
 // already goes to, and it is what decides whose account the page belongs in.
@@ -20,28 +18,17 @@
 export type FormatStatus = 'tested' | 'ours' | 'reference' | 'ready';
 
 /** What plays in the phone frame for a format. */
-export type FormatMedia =
-  | {
-      /** A cut we made. Served from our own origin and autoplays muted. */
-      kind: 'file';
-      src: string;
-      poster: string;
-      /**
-       * Set when the cut is a creator's, hosted here with their permission.
-       * The slide credits them by name and links to the reel it came from.
-       */
-      original?: { code: string; by: string };
-    }
-  | {
-      /**
-       * A reel somebody else made. Shown as a still until tapped, then played
-       * through Instagram's own embed so the creator's name stays on it. We do
-       * not host a copy of work that is not ours.
-       */
-      kind: 'instagram';
-      code: string;
-      poster: string;
-    };
+export interface FormatMedia {
+  /** Served from our own origin and autoplays muted. */
+  src: string;
+  poster: string;
+  /**
+   * Set when the cut is a creator's, shown here as a reference. The slide
+   * credits them by name and links to the reel it came from, with its
+   * thumbnail, so the original is one tap away and never mistaken for ours.
+   */
+  original?: { code: string; by: string };
+}
 
 export interface PlanFormat {
   slug: string;
@@ -132,12 +119,11 @@ const MISHQ: Plan = {
     {
       slug: 'talking-head',
       title: 'Talking head',
-      line: 'The face you approved, to camera, with the words moving on screen. One complaint, one fix.',
+      line: 'An AI avatar, or your own raw phone footage, cut with the words moving on screen and more than one angle. This reference was made from simple raw footage.',
       job: 'Trust',
       length: '20 to 30s',
       status: 'reference',
       media: {
-        kind: 'file',
         src: `${MEDIA}/talking-head.mp4`,
         poster: `${MEDIA}/talking-head.jpg`,
         original: { code: 'DcbdZShTGoZ', by: 'Barsol Media' },
@@ -150,7 +136,7 @@ const MISHQ: Plan = {
       job: 'Booking',
       length: '20 to 30s',
       status: 'tested',
-      media: { kind: 'file', src: `${MEDIA}/team-b.mp4`, poster: `${MEDIA}/team-b.jpg` },
+      media: { src: `${MEDIA}/team-b.mp4`, poster: `${MEDIA}/team-b.jpg` },
     },
     {
       slug: 'storyboard',
@@ -159,7 +145,7 @@ const MISHQ: Plan = {
       job: 'Booking',
       length: '20 to 30s',
       status: 'ours',
-      media: { kind: 'file', src: `${MEDIA}/storyboard.mp4`, poster: `${MEDIA}/storyboard.jpg` },
+      media: { src: `${MEDIA}/storyboard.mp4`, poster: `${MEDIA}/storyboard.jpg` },
     },
     {
       slug: 'street',
@@ -168,7 +154,7 @@ const MISHQ: Plan = {
       job: 'Trust',
       length: '15 to 30s',
       status: 'ours',
-      media: { kind: 'file', src: '/media/ugc-reel.mp4', poster: '/media/ugc-reel-poster.jpg' },
+      media: { src: '/media/ugc-reel.mp4', poster: '/media/ugc-reel-poster.jpg' },
     },
     {
       slug: 'trend',
@@ -177,7 +163,11 @@ const MISHQ: Plan = {
       job: 'Reach',
       length: '6 to 15s',
       status: 'reference',
-      media: { kind: 'instagram', code: 'DbJ-vlZoLRS', poster: `${MEDIA}/trend.jpg` },
+      media: {
+        src: `${MEDIA}/trend.mp4`,
+        poster: `${MEDIA}/trend.jpg`,
+        original: { code: 'DbJ-vlZoLRS', by: 'alinborodin.ugc' },
+      },
     },
     {
       slug: 'founder',
@@ -187,7 +177,6 @@ const MISHQ: Plan = {
       length: 'up to 60s, counts as one',
       status: 'reference',
       media: {
-        kind: 'file',
         src: `${MEDIA}/founder.mp4`,
         poster: `${MEDIA}/founder.jpg`,
         original: { code: 'DcRLe4auTk0', by: 'Beni Media' },
@@ -220,9 +209,4 @@ export function tierPrice(tier: PlanTier): string {
 /** The public reel a reference format points at, so the page can credit it. */
 export function instagramUrl(code: string): string {
   return `https://www.instagram.com/reel/${code}/`;
-}
-
-/** Instagram's embed for the same reel, the one thing the iframe is allowed to load. */
-export function instagramEmbed(code: string): string {
-  return `https://www.instagram.com/reel/${code}/embed`;
 }

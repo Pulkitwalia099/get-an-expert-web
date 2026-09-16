@@ -1,28 +1,24 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { FORMAT_STATUS_LABELS, instagramEmbed, instagramUrl, type PlanFormat } from '@/lib/plans';
+import { FORMAT_STATUS_LABELS, instagramUrl, type PlanFormat } from '@/lib/plans';
 
 // One reel per format, one at a time, in the phone frame the homepage uses.
 //
-// Only the centre slide plays. A cut we made autoplays muted and hands over to
-// the next slide when it ends; a reel somebody else made sits as a still until
-// tapped, then plays through Instagram's own embed with the creator's name on
-// it, or as a file we host when the creator has said we may, credited on the
-// slide. Hovering, focusing a control or hiding the tab stops the clock,
-// and anyone who asked for less motion gets no autoplay and no auto advance,
-// same as the hero.
+// Only the centre slide plays, muted, and hands over to the next slide when it
+// ends. A reference reel is credited under the text with a thumbnail that
+// links to the original, so the creator's work is never mistaken for ours.
+// Hovering, focusing a control or hiding the tab stops the clock, and anyone
+// who asked for less motion gets no autoplay and no auto advance, same as the
+// hero.
 //
 // Built here rather than reused from public/services/coverflow.js because that
 // one is vanilla JS over static HTML and fights React for the DOM the moment
 // it is mounted inside a component.
 
-const DWELL_MS = 7000;
-
 export default function PlanCarousel({ formats }: { formats: PlanFormat[] }) {
   const n = formats.length;
   const [i, setI] = useState(0);
-  const [opened, setOpened] = useState<Record<string, boolean>>({});
   const [held, setHeld] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [reduce, setReduce] = useState(false);
@@ -53,16 +49,9 @@ export default function PlanCarousel({ formats }: { formats: PlanFormat[] }) {
     });
   }, [i, reduce, hidden, muted]);
 
-  // The clock for slides that cannot end on their own.
+  // Every slide is a video that ends on its own, so the only clock is the
+  // one that starts the next one; nothing here needs a timer.
   const paused = held || hidden || reduce;
-  useEffect(() => {
-    if (paused) return;
-    const f = formats[i];
-    if (f.media.kind === 'file') return;
-    if (f.media.kind === 'instagram' && opened[f.slug]) return;
-    const t = setTimeout(() => go(i + 1), DWELL_MS);
-    return () => clearTimeout(t);
-  }, [i, paused, opened, formats, go]);
 
   function onTouchStart(e: React.TouchEvent) {
     touchX.current = e.touches[0]?.clientX ?? null;
@@ -110,56 +99,33 @@ export default function PlanCarousel({ formats }: { formats: PlanFormat[] }) {
               inert={!on}
             >
               <div className="plan-phone">
-                {f.media.kind === 'file' && (
-                  <>
-                    <video
-                      ref={(el) => {
-                        videos.current[k] = el;
-                      }}
-                      src={f.media.src}
-                      poster={f.media.poster}
-                      muted
-                      playsInline
-                      preload={on ? 'auto' : 'metadata'}
-                      onEnded={() => {
-                        if (!paused) go(k + 1);
-                      }}
-                      aria-label={
-                        f.media.original ? `${f.title}, a reel by ${f.media.original.by}` : `${f.title}, a video we made`
-                      }
-                    />
-                    {on && (
-                      <button
-                        type="button"
-                        className="plan-snd"
-                        onClick={toggleSound}
-                        aria-pressed={!muted}
-                        aria-label={muted ? 'Unmute this video' : 'Mute this video'}
-                      >
-                        {muted ? 'Sound off' : 'Sound on'}
-                      </button>
-                    )}
-                  </>
+                <video
+                  ref={(el) => {
+                    videos.current[k] = el;
+                  }}
+                  src={f.media.src}
+                  poster={f.media.poster}
+                  muted
+                  playsInline
+                  preload={on ? 'auto' : 'metadata'}
+                  onEnded={() => {
+                    if (!paused) go(k + 1);
+                  }}
+                  aria-label={
+                    f.media.original ? `${f.title}, a reel by ${f.media.original.by}` : `${f.title}, a video we made`
+                  }
+                />
+                {on && (
+                  <button
+                    type="button"
+                    className="plan-snd"
+                    onClick={toggleSound}
+                    aria-pressed={!muted}
+                    aria-label={muted ? 'Unmute this video' : 'Mute this video'}
+                  >
+                    {muted ? 'Sound off' : 'Sound on'}
+                  </button>
                 )}
-                {f.media.kind === 'instagram' &&
-                  (opened[f.slug] ? (
-                    <iframe
-                      src={instagramEmbed(f.media.code)}
-                      title={`${f.title} reference on Instagram`}
-                      allow="autoplay; encrypted-media"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <button
-                      type="button"
-                      className="plan-play"
-                      onClick={() => setOpened((o) => ({ ...o, [f.slug]: true }))}
-                      aria-label={`Play the ${f.title} reference on Instagram`}
-                    >
-                      <img src={f.media.poster} alt="" />
-                      <span className="plan-play-pill">Play on Instagram</span>
-                    </button>
-                  ))}
               </div>
               <div className="plan-slide-txt">
                 <span className={`plan-chip plan-chip-${f.status}`}>{FORMAT_STATUS_LABELS[f.status]}</span>
@@ -168,18 +134,19 @@ export default function PlanCarousel({ formats }: { formats: PlanFormat[] }) {
                 <span className="plan-meta">
                   {f.job} · {f.length}
                 </span>
-                {f.media.kind === 'instagram' && (
+                {f.media.original && (
                   <a
                     className="plan-orig"
-                    href={instagramUrl(f.media.code)}
+                    href={instagramUrl(f.media.original.code)}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    Open the original on Instagram
+                    <img src={f.media.poster} alt="" />
+                    <span>
+                      <span className="plan-orig-t">Original reel by {f.media.original.by}</span>
+                      <span className="plan-orig-s">Open on Instagram</span>
+                    </span>
                   </a>
-                )}
-                {f.media.kind === 'file' && f.media.original && (
-                  <span className="plan-meta">By {f.media.original.by}</span>
                 )}
               </div>
             </div>

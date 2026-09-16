@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import {
   FORMAT_STATUS_LABELS,
   PLANS,
-  instagramEmbed,
   ownsPlan,
   planBySlug,
   plansForEmail,
@@ -31,24 +30,16 @@ describe('plans', () => {
         // A format on the page has to have something to play, or the claim
         // is a card with nothing behind it.
         expect(f.media).toBeTruthy();
-        if (f.media.kind === 'file' && f.media.original) {
-          // A creator's cut is credited and linked, never shown as ours.
+        if (f.media.original) {
+          // A creator's cut is credited and linked, never shown as ours. The
+          // shortcode is the only variable in the link, so it is held to the
+          // alphabet lib/references.ts allows.
           expect(f.status).toBe('reference');
           expect(f.media.original.by.length).toBeGreaterThan(0);
           expect(f.media.original.code).toMatch(/^[A-Za-z0-9_-]{5,20}$/);
         }
-        if (f.media.kind === 'instagram') {
-          // The shortcode is the only variable in the iframe URL, so it is
-          // held to the same alphabet lib/references.ts allows.
-          expect(f.media.code).toMatch(/^[A-Za-z0-9_-]{5,20}$/);
-          expect(instagramEmbed(f.media.code)).toBe(
-            `https://www.instagram.com/reel/${f.media.code}/embed`,
-          );
-        }
-        if (f.media.kind === 'file') {
-          expect(f.media.src.startsWith('/')).toBe(true);
-          expect(f.media.poster.startsWith('/')).toBe(true);
-        }
+        expect(f.media.src.startsWith('/')).toBe(true);
+        expect(f.media.poster.startsWith('/')).toBe(true);
       }
     }
   });
