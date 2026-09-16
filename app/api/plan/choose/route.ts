@@ -54,7 +54,7 @@ async function handlePost(req: NextRequest): Promise<NextResponse> {
   const tier = plan.tiers.find((t) => t.videos === payload.videos);
   if (!tier) return NextResponse.json({ error: 'Pick a cadence from the plan' }, { status: 400 });
 
-  const startOn = parseStartOn(payload.startOn);
+  const startOn = parseStartOn(payload.startOn, plan.startFrom);
   if (!startOn) return NextResponse.json({ error: 'Pick a start date from the list' }, { status: 400 });
 
   // Who is this. The owner first, then us.

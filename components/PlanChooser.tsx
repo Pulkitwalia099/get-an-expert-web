@@ -7,9 +7,9 @@ import { tierPrice, type PlanRule, type PlanTier } from '@/lib/plans';
 // Two cadences, four start dates, one button.
 //
 // `chosen` is what the server already holds, so a customer coming back sees
-// their answer rather than the question. The dates are computed here from
-// the browser's clock and checked again on the server with a day of slack,
-// so the list somebody picked from is the list that is accepted.
+// their answer rather than the question. The dates come from the plan's own
+// first date, here and on the server, so the list somebody picked from is
+// the list that is accepted.
 //
 // Nothing here charges anything. A confirmation is a row and two emails, and
 // the copy under the button says so, because "Confirm" next to a price reads
@@ -23,18 +23,20 @@ export interface Chosen {
 export default function PlanChooser({
   slug,
   brand,
+  startFrom,
   tiers,
   rules,
   chosen,
 }: {
   slug: string;
   brand: string;
+  startFrom: string;
   tiers: PlanTier[];
   rules: PlanRule[];
   chosen: Chosen | null;
 }) {
   const start = tiers.find((t) => t.start)?.videos ?? tiers[0]?.videos ?? 4;
-  const [options] = useState<StartOption[]>(() => startOptions());
+  const [options] = useState<StartOption[]>(() => startOptions(startFrom));
   const [pick, setPick] = useState<number>(chosen?.cadence ?? start);
   const [startOn, setStartOn] = useState<string>(chosen?.startOn ?? options[0]?.iso ?? '');
   const [done, setDone] = useState<Chosen | null>(chosen);

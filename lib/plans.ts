@@ -75,6 +75,8 @@ export interface Plan {
   email: string;
   title: string;
   lede: string;
+  /** The first start date on offer, YYYY-MM-DD. Three more follow, three days apart. */
+  startFrom: string;
   tiers: PlanTier[];
   rules: PlanRule[];
   months: PlanMonth[];
@@ -96,6 +98,7 @@ const MISHQ: Plan = {
   email: 'avpuri@gmail.com',
   title: 'Four videos a month for Mishq',
   lede: 'You approved your first cut on 2 September. This is the plan to keep that going every month.',
+  startFrom: '2026-09-22',
   tiers: [
     { name: 'Starter pack', videos: 4, priceCents: 19900, start: true },
     // $395 is the figure the site already quotes for a pack.

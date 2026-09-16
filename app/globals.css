@@ -3766,13 +3766,6 @@ body:has(.opq) { background: #FBFBF8; }
 .plan-slide-txt h3 { margin: 4px 0 0; font-size: 18px; font-weight: 700; letter-spacing: -.02em; }
 .plan-slide-txt p { margin: 0; font-size: 14px; color: var(--ink-2); line-height: 1.5; }
 .plan-meta { font-size: 12.5px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
-.plan-chip {
-  font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
-  padding: 4px 10px; border-radius: 999px; width: max-content;
-  color: var(--ink-3); background: var(--glass); border: 1px solid var(--line);
-}
-@media (max-width: 560px) { .plan-chip { margin: 0 auto; } }
-.plan-chip-tested, .plan-chip-ours { color: var(--accent); background: var(--accent-tint); border-color: var(--line-2); }
 .plan-orig {
   margin-top: 8px; display: inline-flex; align-items: center; gap: 10px; width: max-content; max-width: 100%;
   padding: 6px 12px 6px 6px; border-radius: 12px; text-decoration: none; color: var(--ink);

@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { FORMAT_STATUS_LABELS, instagramUrl, type PlanFormat } from '@/lib/plans';
+import { instagramUrl, type PlanFormat } from '@/lib/plans';
 
 // One reel per format, one at a time, in the phone frame the homepage uses.
 //
@@ -128,7 +128,6 @@ export default function PlanCarousel({ formats }: { formats: PlanFormat[] }) {
                 )}
               </div>
               <div className="plan-slide-txt">
-                <span className={`plan-chip plan-chip-${f.status}`}>{FORMAT_STATUS_LABELS[f.status]}</span>
                 <h3>{f.title}</h3>
                 <p>{f.line}</p>
                 <span className="plan-meta">
