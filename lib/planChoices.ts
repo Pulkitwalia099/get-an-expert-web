@@ -47,10 +47,11 @@ export async function readChoice(planSlug: string, email: string): Promise<PlanC
 /**
  * Record a choice. True when the row landed.
  *
- * Upserts on (plan_slug, email), so a second confirmation overwrites the
- * first rather than sitting beside it. `updated_at` is set here rather than
- * by a trigger, because the merge writes every column it is handed and a
- * trigger is one more thing to apply by hand.
+ * Upserts on (plan_slug, email, actor), so a second confirmation by the same
+ * hand overwrites the first rather than sitting beside it, and a test press
+ * by us can never overwrite the customer's own row. `updated_at` is set here
+ * rather than by a trigger, because the merge writes every column it is
+ * handed and a trigger is one more thing to apply by hand.
  */
 export async function recordChoice(input: {
   planSlug: string;
@@ -69,7 +70,7 @@ export async function recordChoice(input: {
       actor: input.actor,
       updated_at: new Date().toISOString(),
     },
-    { resolveOn: 'plan_slug,email' },
+    { resolveOn: 'plan_slug,email,actor' },
   );
   return res.ok;
 }

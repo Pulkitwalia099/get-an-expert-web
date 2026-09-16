@@ -2,7 +2,8 @@
 --
 -- One row per plan per address. A second confirmation updates the row rather
 -- than adding one, so a double tap, a retried fetch and a change of mind all
--- leave one answer, and the current answer is the row.
+-- leave one answer, and the current answer is the row. (The next migration
+-- adds `actor` to that key; see 20260916000000_plan_choices_per_actor.sql.)
 --
 -- The plan itself is not here. Its copy, tiers and formats live in
 -- lib/plans.ts, keyed by `plan_slug`, because one customer's plan is reviewed
