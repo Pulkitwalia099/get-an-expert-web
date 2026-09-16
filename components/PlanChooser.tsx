@@ -88,7 +88,6 @@ export default function PlanChooser({
                 {tierPrice(t)}
                 <small> a month</small>
               </span>
-              <span className="plan-tier-note">{t.note}</span>
             </button>
           );
         })}

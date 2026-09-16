@@ -9,6 +9,11 @@
 // Browser safe on purpose. The page that renders it is a server component,
 // but the carousel and the chooser are client components and read the same
 // objects, so nothing here may import a server-only module or carry a secret.
+// Two of the reference reels are creators' work hosted here with their
+// permission, trimmed of their end cards at the creators' own say so, and
+// credited on the slide. Without that permission a reel we did not make plays
+// through Instagram's embed instead, which is what the third one does.
+//
 // The customer's email is not a secret: it is the address every order email
 // already goes to, and it is what decides whose account the page belongs in.
 
@@ -21,6 +26,11 @@ export type FormatMedia =
       kind: 'file';
       src: string;
       poster: string;
+      /**
+       * Set when the cut is a creator's, hosted here with their permission.
+       * The slide credits them by name and links to the reel it came from.
+       */
+      original?: { code: string; by: string };
     }
   | {
       /**
@@ -43,8 +53,8 @@ export interface PlanFormat {
   /** Typical length, as copy. */
   length: string;
   status: FormatStatus;
-  /** Null renders a typographic card until a sample exists. */
-  media: FormatMedia | null;
+  /** Every format on the page has something to play. A name with nothing behind it is not a sample. */
+  media: FormatMedia;
 }
 
 export interface PlanTier {
@@ -52,8 +62,6 @@ export interface PlanTier {
   videos: number;
   /** Integer cents. Never a float, never parsed back out of copy. */
   priceCents: number;
-  /** Second line under the price. */
-  note: string;
   /** The one we suggest starting on. */
   start: boolean;
 }
@@ -98,13 +106,8 @@ const MISHQ: Plan = {
   title: 'Four videos a month for Mishq',
   lede: 'You approved the Team B cut on 2 September. This is the plan to keep that going every month.',
   tiers: [
-    {
-      videos: 4,
-      priceCents: 19900,
-      note: 'Monthly plan included for months 1 and 2, then $99 a month.',
-      start: true,
-    },
-    { videos: 8, priceCents: 39500, note: 'Monthly plan included, every month.', start: false },
+    { videos: 4, priceCents: 19900, start: true },
+    { videos: 8, priceCents: 39500, start: false },
   ],
   rules: [
     { text: 'A video is up to 30 seconds. Under 15 counts as half. Up to 60 counts as two.', right: null },
@@ -160,7 +163,12 @@ const MISHQ: Plan = {
       job: 'Trust',
       length: '20 to 30s',
       status: 'reference',
-      media: { kind: 'instagram', code: 'DcbdZShTGoZ', poster: `${MEDIA}/talking-head.jpg` },
+      media: {
+        kind: 'file',
+        src: `${MEDIA}/talking-head.mp4`,
+        poster: `${MEDIA}/talking-head.jpg`,
+        original: { code: 'DcbdZShTGoZ', by: 'Barsol Media' },
+      },
     },
     {
       slug: 'founder',
@@ -169,34 +177,12 @@ const MISHQ: Plan = {
       job: 'Trust',
       length: 'up to 60s, counts as one',
       status: 'reference',
-      media: { kind: 'instagram', code: 'DcRLe4auTk0', poster: `${MEDIA}/founder.jpg` },
-    },
-    {
-      slug: 'product',
-      title: 'Product in scene',
-      line: 'Hands, product, one line on screen, no face.',
-      job: 'Reach',
-      length: '6 to 15s',
-      status: 'ready',
-      media: null,
-    },
-    {
-      slug: 'explainer',
-      title: 'Explainer',
-      line: '"3 signs your bra is the wrong size." Built to be saved.',
-      job: 'Saves',
-      length: '30 to 45s',
-      status: 'ready',
-      media: null,
-    },
-    {
-      slug: 'skit',
-      title: 'Skit',
-      line: 'Ten seconds of the problem, played up, then the fitting walks in.',
-      job: 'Shares',
-      length: '10 to 20s',
-      status: 'ready',
-      media: null,
+      media: {
+        kind: 'file',
+        src: `${MEDIA}/founder.mp4`,
+        poster: `${MEDIA}/founder.jpg`,
+        original: { code: 'DcRLe4auTk0', by: 'Beni Media' },
+      },
     },
   ],
 };

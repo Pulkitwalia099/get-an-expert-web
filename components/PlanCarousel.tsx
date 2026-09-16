@@ -8,8 +8,8 @@ import { FORMAT_STATUS_LABELS, instagramEmbed, instagramUrl, type PlanFormat } f
 // Only the centre slide plays. A cut we made autoplays muted and hands over to
 // the next slide when it ends; a reel somebody else made sits as a still until
 // tapped, then plays through Instagram's own embed with the creator's name on
-// it; a format with no sample yet is a typographic card that moves on after a
-// few seconds. Hovering, focusing a control or hiding the tab stops the clock,
+// it, or as a file we host when the creator has said we may, credited on the
+// slide. Hovering, focusing a control or hiding the tab stops the clock,
 // and anyone who asked for less motion gets no autoplay and no auto advance,
 // same as the hero.
 //
@@ -58,8 +58,8 @@ export default function PlanCarousel({ formats }: { formats: PlanFormat[] }) {
   useEffect(() => {
     if (paused) return;
     const f = formats[i];
-    if (f.media?.kind === 'file') return;
-    if (f.media?.kind === 'instagram' && opened[f.slug]) return;
+    if (f.media.kind === 'file') return;
+    if (f.media.kind === 'instagram' && opened[f.slug]) return;
     const t = setTimeout(() => go(i + 1), DWELL_MS);
     return () => clearTimeout(t);
   }, [i, paused, opened, formats, go]);
@@ -110,7 +110,7 @@ export default function PlanCarousel({ formats }: { formats: PlanFormat[] }) {
               inert={!on}
             >
               <div className="plan-phone">
-                {f.media?.kind === 'file' && (
+                {f.media.kind === 'file' && (
                   <>
                     <video
                       ref={(el) => {
@@ -124,7 +124,9 @@ export default function PlanCarousel({ formats }: { formats: PlanFormat[] }) {
                       onEnded={() => {
                         if (!paused) go(k + 1);
                       }}
-                      aria-label={`${f.title}, a video we made`}
+                      aria-label={
+                        f.media.original ? `${f.title}, a reel by ${f.media.original.by}` : `${f.title}, a video we made`
+                      }
                     />
                     {on && (
                       <button
@@ -139,7 +141,7 @@ export default function PlanCarousel({ formats }: { formats: PlanFormat[] }) {
                     )}
                   </>
                 )}
-                {f.media?.kind === 'instagram' &&
+                {f.media.kind === 'instagram' &&
                   (opened[f.slug] ? (
                     <iframe
                       src={instagramEmbed(f.media.code)}
@@ -158,11 +160,6 @@ export default function PlanCarousel({ formats }: { formats: PlanFormat[] }) {
                       <span className="plan-play-pill">Play on Instagram</span>
                     </button>
                   ))}
-                {f.media === null && (
-                  <div className="plan-blank">
-                    <span>{f.title}</span>
-                  </div>
-                )}
               </div>
               <div className="plan-slide-txt">
                 <span className={`plan-chip plan-chip-${f.status}`}>{FORMAT_STATUS_LABELS[f.status]}</span>
@@ -171,7 +168,7 @@ export default function PlanCarousel({ formats }: { formats: PlanFormat[] }) {
                 <span className="plan-meta">
                   {f.job} · {f.length}
                 </span>
-                {f.media?.kind === 'instagram' && (
+                {f.media.kind === 'instagram' && (
                   <a
                     className="plan-orig"
                     href={instagramUrl(f.media.code)}
@@ -179,6 +176,16 @@ export default function PlanCarousel({ formats }: { formats: PlanFormat[] }) {
                     rel="noopener noreferrer"
                   >
                     Open the original on Instagram
+                  </a>
+                )}
+                {f.media.kind === 'file' && f.media.original && (
+                  <a
+                    className="plan-orig"
+                    href={instagramUrl(f.media.original.code)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    By {f.media.original.by}, shared with their permission. Open the original.
                   </a>
                 )}
               </div>
