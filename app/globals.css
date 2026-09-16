@@ -3647,6 +3647,7 @@ body:has(.opq) { background: #FBFBF8; }
 
 .plan { max-width: 720px; }
 .plan-sec { margin-top: 44px; }
+.plan-sec .ord-eyebrow { margin-bottom: 6px; }
 .plan-h { font-size: 20px; font-weight: 650; letter-spacing: -.02em; margin: 0 0 8px; text-wrap: balance; }
 .plan-sub { font-size: 14px; color: var(--ink-2); line-height: 1.55; margin: 8px 0 0; max-width: 58ch; }
 
@@ -3689,7 +3690,7 @@ body:has(.opq) { background: #FBFBF8; }
 }
 .plan-change:active { transform: scale(.97); }
 
-.plan-rules { list-style: none; margin: 18px 0 0; padding: 0; border-top: 1px solid var(--line); }
+.plan-rules { list-style: none; margin: 14px 0 0; padding: 0; border-top: 1px solid var(--line); }
 .plan-rules li {
   display: flex; justify-content: space-between; gap: 16px; align-items: baseline;
   padding: 11px 0; border-bottom: 1px solid var(--line); font-size: 14px; line-height: 1.5;

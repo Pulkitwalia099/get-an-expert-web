@@ -130,9 +130,23 @@ const MISHQ: Plan = {
   ],
   formats: [
     {
-      slug: 'team-b',
-      title: 'Your Team B cut',
-      line: 'Phone shot, to camera, the fitting as the fix. Approved on 2 September, delivered clean.',
+      slug: 'talking-head',
+      title: 'Talking head',
+      line: 'The face you approved, to camera, with the words moving on screen. One complaint, one fix.',
+      job: 'Trust',
+      length: '20 to 30s',
+      status: 'reference',
+      media: {
+        kind: 'file',
+        src: `${MEDIA}/talking-head.mp4`,
+        poster: `${MEDIA}/talking-head.jpg`,
+        original: { code: 'DcbdZShTGoZ', by: 'Barsol Media' },
+      },
+    },
+    {
+      slug: 'ugc',
+      title: 'UGC ad',
+      line: 'Phone shot, to camera, the fitting as the fix. The cut you approved on 2 September.',
       job: 'Booking',
       length: '20 to 30s',
       status: 'tested',
@@ -141,7 +155,7 @@ const MISHQ: Plan = {
     {
       slug: 'storyboard',
       title: 'Storyboard ad',
-      line: 'A scripted problem and the fitting as the fix, shot cinematic. The Mirror cut from the same brief.',
+      line: 'A scripted scene, the problem played out, the fitting as the fix. The Mirror cut from the same brief.',
       job: 'Booking',
       length: '20 to 30s',
       status: 'ours',
@@ -164,20 +178,6 @@ const MISHQ: Plan = {
       length: '6 to 15s',
       status: 'reference',
       media: { kind: 'instagram', code: 'DbJ-vlZoLRS', poster: `${MEDIA}/trend.jpg` },
-    },
-    {
-      slug: 'talking-head',
-      title: 'Talking head',
-      line: 'The face you approved, to camera, with the words moving on screen. One complaint, one fix.',
-      job: 'Trust',
-      length: '20 to 30s',
-      status: 'reference',
-      media: {
-        kind: 'file',
-        src: `${MEDIA}/talking-head.mp4`,
-        poster: `${MEDIA}/talking-head.jpg`,
-        original: { code: 'DcbdZShTGoZ', by: 'Barsol Media' },
-      },
     },
     {
       slug: 'founder',

@@ -66,20 +66,14 @@ export default async function PlanPage({ params }: { params: Promise<{ slug: str
       <p className="ord-lede">{plan.lede}</p>
 
       <section className="plan-sec">
+        <p className="ord-eyebrow">The package</p>
         <h2 className="plan-h">Pick a cadence</h2>
         <p className="plan-sub">Start on 4. At the end of month 1 we set the cadence for the months after. Change it any month.</p>
         <PlanChooser slug={plan.slug} tiers={plan.tiers} chosen={null} live={false} />
-        <ul className="plan-rules">
-          {plan.rules.map((r) => (
-            <li key={r.text}>
-              <span>{r.text}</span>
-              {r.right && <span className="plan-rule-r">{r.right}</span>}
-            </li>
-          ))}
-        </ul>
       </section>
 
       <section className="plan-sec">
+        <p className="ord-eyebrow">The ramp</p>
         <h2 className="plan-h">Months 1 and 2 are for finding out. Month 3 is when it works.</h2>
         <PlanArc />
         <ul className="plan-months">
@@ -93,6 +87,20 @@ export default async function PlanPage({ params }: { params: Promise<{ slug: str
       </section>
 
       <section className="plan-sec">
+        <p className="ord-eyebrow">Terms of the package</p>
+        <h2 className="plan-h">What a month includes</h2>
+        <ul className="plan-rules">
+          {plan.rules.map((r) => (
+            <li key={r.text}>
+              <span>{r.text}</span>
+              {r.right && <span className="plan-rule-r">{r.right}</span>}
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="plan-sec">
+        <p className="ord-eyebrow">Formats</p>
         <h2 className="plan-h">What we can make</h2>
         <PlanCarousel formats={plan.formats} />
         <p className="plan-sub">
@@ -102,6 +110,7 @@ export default async function PlanPage({ params }: { params: Promise<{ slug: str
       </section>
 
       <section className="plan-sec">
+        <p className="ord-eyebrow">Each video</p>
         <h2 className="plan-h">How it works</h2>
         <ol className="plan-steps">
           <li>
@@ -123,6 +132,7 @@ export default async function PlanPage({ params }: { params: Promise<{ slug: str
       </section>
 
       <section className="plan-sec">
+        <p className="ord-eyebrow">To start</p>
         <h2 className="plan-h">What we need from you</h2>
         <ul className="plan-needs">
           <li>
