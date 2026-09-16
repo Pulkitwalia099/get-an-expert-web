@@ -96,7 +96,7 @@ export default async function PlanPage({ params }: { params: Promise<{ slug: str
 
       <section className="plan-sec">
         <p className="ord-eyebrow">Why midsesh</p>
-        <h2 className="plan-h">What a self-serve tool cannot give you</h2>
+        <h2 className="plan-h">An engine that works for you, and keeps getting better</h2>
         <div className="plan-why">
           <div className="plan-why-tile">
             <span className="plan-why-ic" aria-hidden="true">
