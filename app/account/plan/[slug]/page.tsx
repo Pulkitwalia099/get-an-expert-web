@@ -136,9 +136,8 @@ export default async function PlanPage({ params }: { params: Promise<{ slug: str
             <span className="plan-why-k">The latest tech and execution</span>
             <h3>The mix that works right now</h3>
             <p>
-              Quality comes from the right models and the right workflow: storyboard, hook, cut. What works changes
-              every four to six weeks. Our team tracks it full time, so your brand always gets the mix that is working
-              today.
+              The right models and the right workflow, and both change every four to six weeks. Our team tracks it full
+              time, so you always get what is working now.
             </p>
           </div>
           <div className="plan-why-tile">
@@ -150,8 +149,8 @@ export default async function PlanPage({ params }: { params: Promise<{ slug: str
             <span className="plan-why-k">Your energy and dollars</span>
             <h3>No credits burned on attempts</h3>
             <p>
-              Self-serve tools have a long learning curve, and most of the credits go on regenerating until something is
-              usable. We charge for the finished video, not the tries, so you stay on what is at the top of your list.
+              Self-serve tools spend most of their credits on regenerations. We charge for the finished video, not the
+              tries, so your time stays on your business.
             </p>
           </div>
           <div className="plan-why-tile">
@@ -164,9 +163,8 @@ export default async function PlanPage({ params }: { params: Promise<{ slug: str
             <span className="plan-why-k">An engine that scales</span>
             <h3>It learns your brand</h3>
             <p>
-              Our systems keep track of what works for {plan.brand} and what does not. Next is an intelligence layer
-              that plans creative strategy across paid and organic from that data. It is in the works, and every plan
-              gets it when it lands.
+              Our systems track what works for {plan.brand} and what does not. An intelligence layer that plans
+              creative across paid and organic is launching soon.
             </p>
           </div>
         </div>
