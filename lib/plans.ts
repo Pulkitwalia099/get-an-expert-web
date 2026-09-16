@@ -130,12 +130,21 @@ const MISHQ: Plan = {
   ],
   formats: [
     {
-      slug: 'storyboard',
-      title: 'Storyboard ad',
-      line: 'A scripted problem and the fitting as the fix. The format your first cut was.',
+      slug: 'team-b',
+      title: 'Your Team B cut',
+      line: 'Phone shot, to camera, the fitting as the fix. Approved on 2 September, delivered clean.',
       job: 'Booking',
       length: '20 to 30s',
       status: 'tested',
+      media: { kind: 'file', src: `${MEDIA}/team-b.mp4`, poster: `${MEDIA}/team-b.jpg` },
+    },
+    {
+      slug: 'storyboard',
+      title: 'Storyboard ad',
+      line: 'A scripted problem and the fitting as the fix, shot cinematic. The Mirror cut from the same brief.',
+      job: 'Booking',
+      length: '20 to 30s',
+      status: 'ours',
       media: { kind: 'file', src: `${MEDIA}/storyboard.mp4`, poster: `${MEDIA}/storyboard.jpg` },
     },
     {
