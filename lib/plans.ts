@@ -171,7 +171,7 @@ const MISHQ: Plan = {
       title: 'Founder to camera',
       line: 'You shoot on a phone from our shot list. We cut the hook, the captions and the b-roll. Raw on the left, finished on the right.',
       job: 'Trust',
-      length: 'up to 60s, counts as one',
+      length: 'up to 60s',
       status: 'reference',
       media: {
         src: `${MEDIA}/founder.mp4`,
