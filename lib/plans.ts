@@ -114,10 +114,7 @@ const MISHQ: Plan = {
     { text: 'A clip you shoot yourself and we edit counts as one video, up to 60 seconds.', right: '1 video' },
     { text: 'Extra video in any month.', right: '$50' },
     { text: 'One edit on every video.', right: 'Included' },
-    {
-      text: 'The first video in a format new to Mishq can be rejected whole if the format does not suit the brand.',
-      right: 'Not counted',
-    },
+    { text: 'The first video in any new format can be rejected outright. It does not count.', right: 'Not counted' },
     { text: 'Unused videos roll over one month. Month to month, cancel any month.', right: null },
   ],
   months: [

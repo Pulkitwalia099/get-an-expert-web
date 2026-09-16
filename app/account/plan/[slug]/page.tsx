@@ -120,21 +120,20 @@ export default async function PlanPage({ params }: { params: Promise<{ slug: str
         <h2 className="plan-h">How it works</h2>
         <ol className="plan-steps">
           <li>
-            <strong>We align on the video type and the script.</strong>
+            <strong>We agree what to promote.</strong> Which service, which product, and what the month is for.
           </li>
           <li>
-            <strong>We share the assets and frames.</strong> Or a raw storyboard or the reference video, depending on the
-            type you picked.
+            <strong>We agree the video type and the script.</strong>
           </li>
           <li>
-            <strong>We share the first iteration.</strong> You get a maximum of one edit. Our best effort is always to get
-            it right in one go.
+            <strong>We share the assets and frames.</strong> Or the storyboard, or the reference video, depending on the
+            type.
+          </li>
+          <li>
+            <strong>We share the first cut.</strong> One edit is included. We aim to get it right the first time.
           </li>
         </ol>
-        <p className="plan-sub">
-          If a call would make the feedback easier at any point, say so. For the first few months we are happy to do it
-          on a call.
-        </p>
+        <p className="plan-sub">If a call would help at any point, say so. In the first few months we are glad to do it on a call.</p>
       </section>
 
       <section className="plan-sec">
