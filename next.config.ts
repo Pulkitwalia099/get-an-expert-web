@@ -171,6 +171,11 @@ const nextConfig: NextConfig = {
         // old pitch, and two pages arguing the same case on one domain is how
         // a visitor ends up on the one nobody is maintaining.
         { source: '/experts', destination: `${MARKETPLACE}/experts` },
+        // Every service on one page, so the new home can lead with one thing
+        // and still hand a LinkedIn or launch video buyer a door. Shipped
+        // before any link to it, because a path missing from this list 404s
+        // at the apex while working fine on the marketplace's own host.
+        { source: '/services', destination: `${MARKETPLACE}/services` },
         // The social card its meta tags name, plus the crawler files. All
         // three are absolute URLs on this host, so without these they 404 and
         // every share of midsesh.com comes back as a bare link.
