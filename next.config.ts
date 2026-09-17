@@ -30,6 +30,10 @@ const CAL = 'https://app.cal.com https://cal.com';
 // way it does.
 const MARKETPLACE = 'https://agon-agent-eight.vercel.app';
 
+// The homepage preview, project midsesh-preview. Temporary: it goes when the
+// new home ships at the apex.
+const PREVIEW = 'https://midsesh-preview.vercel.app';
+
 // Every card on /setups embeds TikTok's official player in an iframe. Without
 // this the browser refuses the frame and shows its own "This content is
 // blocked" panel where the video should be, which is what shipped: the whole
@@ -176,6 +180,12 @@ const nextConfig: NextConfig = {
         // before any link to it, because a path missing from this list 404s
         // at the apex while working fine on the marketplace's own host.
         { source: '/services', destination: `${MARKETPLACE}/services` },
+        // The proposed new home, served as a preview for feedback while the
+        // real one is built in the marketplace repo. A static site of its own,
+        // and its files sit under /content/ on that host on purpose: this repo
+        // serves its own /media, and the preview's clips would collide with it.
+        { source: '/content', destination: `${PREVIEW}/` },
+        { source: '/content/:path*', destination: `${PREVIEW}/content/:path*` },
         // The social card its meta tags name, plus the crawler files. All
         // three are absolute URLs on this host, so without these they 404 and
         // every share of midsesh.com comes back as a bare link.
