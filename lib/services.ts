@@ -8,6 +8,8 @@
 // grid or the quieter Launching soon row. Flipping one value moves a card
 // between them, and nothing else has to be touched.
 
+import { CONTENT_SERVICES } from '@/lib/contentServices';
+
 export type ServiceStatus = 'live' | 'beta' | 'soon';
 
 export type Service = {
@@ -143,7 +145,7 @@ export const LIVE_SERVICES = SERVICES.filter((s) => s.status !== 'soon');
 export const SOON_SERVICES = SERVICES.filter((s) => s.status === 'soon');
 
 export function serviceBySlug(slug: string): Service | undefined {
-  return SERVICES.find((s) => s.slug === slug);
+  return SERVICES.find((s) => s.slug === slug) ?? CONTENT_SERVICES.find((s) => s.slug === slug);
 }
 
 // Who is behind the company. Lifted from the live site's Backing component so

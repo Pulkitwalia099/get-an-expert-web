@@ -180,11 +180,12 @@ const nextConfig: NextConfig = {
         // before any link to it, because a path missing from this list 404s
         // at the apex while working fine on the marketplace's own host.
         { source: '/services', destination: `${MARKETPLACE}/services` },
-        // The proposed new home, served as a preview for feedback while the
-        // real one is built in the marketplace repo. A static site of its own,
-        // and its files sit under /content/ on that host on purpose: this repo
-        // serves its own /media, and the preview's clips would collide with it.
-        { source: '/content', destination: `${PREVIEW}/` },
+        // The proposed new home is versioned in this repo now, so its order
+        // form and links can use the same API and routes as the rest of the
+        // site. Its media remains on the preview host under /content/ to avoid
+        // colliding with this repo's own /media and to keep large clips out of
+        // the Next.js deployment.
+        { source: '/content', destination: '/content.html' },
         { source: '/content/:path*', destination: `${PREVIEW}/content/:path*` },
         // The social card its meta tags name, plus the crawler files. All
         // three are absolute URLs on this host, so without these they 404 and
