@@ -170,7 +170,7 @@ html{scroll-behavior:auto}body{margin:0;background:#fbfbf8}#content-revamp{max-w
 @media(max-width:520px){#content-revamp .website-source{aspect-ratio:auto;min-height:230px}#content-revamp .source-brand{margin:14px 0}#content-revamp .website-source strong{font-size:28px}#content-revamp .case-tabs button span{font-size:12px}#content-revamp .case-tabs{gap:10px}}
 
 /* Follow horizontal touch drags without trapping vertical page scroll. */
-#content-revamp .gallery.carousel{touch-action:pan-y pinch-zoom}
+#content-revamp .gallery.carousel{touch-action:pan-y pinch-zoom;height:calc(var(--tile-width) * 1.778 + 115px)}
 #content-revamp .gallery.carousel .sample{translate:var(--swipe-drag,0px) 0;transition:transform .58s cubic-bezier(.22,.8,.24,1),opacity .45s ease,translate .2s ease}
 #content-revamp .gallery.carousel.is-dragging .sample{transition:none}
 @media(prefers-reduced-motion:reduce){#content-revamp .gallery.carousel .sample{transition:none}}

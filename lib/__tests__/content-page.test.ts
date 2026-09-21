@@ -28,7 +28,7 @@ describe('/content launch', () => {
   });
   it('keeps the founder-first page concise and puts the trial before monthly plans', () => {
     expect(html).toContain('You built the product.<br><span>Now get it seen.</span>');
-    expect(html).toContain('Yes, this is all AI.');
+    expect(html).toContain('AI production. Expert direction.');
     expect(html).toContain('Expert steers at checkpoints');
     expect(html).toContain('Introductory offer');
     expect(html.match(/>Give it a shot for \$39 ↗<\/button>/g)).toHaveLength(5);
@@ -50,6 +50,19 @@ describe('/content launch', () => {
     for (const [, target] of html.matchAll(/aria-controls="([^"]+)"/g)) {
       expect(html).toContain('id="' + target + '"');
     }
+  });
+  it('includes the two footage edits with real assets and accurate format descriptions', () => {
+    expect(html.match(/class="sample"/g)).toHaveLength(7);
+    for (const file of ['founder', 'talking-head']) {
+      for (const ext of ['mp4', 'jpg']) {
+        const path = '/media/plans/mishq/' + file + '.' + ext;
+        expect(html).toContain(path);
+        expect(existsSync(new URL('../../public' + path, import.meta.url))).toBe(true);
+      }
+    }
+    expect(html).toContain('Raw → finished');
+    expect(html).toContain('A talking-head story with animated type and visual cutaways.');
+    expect(html).not.toContain('Yes, this is all AI.');
   });
   it('resolves every in-page link and referenced local script and stylesheet', () => {
     const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map((m) => m[1]);

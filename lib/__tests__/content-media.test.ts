@@ -42,12 +42,12 @@ class Node {
   play() { this.paused = false; this.emit('play'); return Promise.resolve(); }
   pause() { if (!this.paused) { this.paused = true; this.emit('pause'); } }
 }
-function browser({ reduced = false, saveData = false } = {}) {
+function browser({ reduced = false, saveData = false, count = 5 } = {}) {
   vi.useFakeTimers();
   const root = new Node(), document = Object.assign(new Node(), { activeElement: new Node() });
   const names = ['#portfolio-grid', '#portfolio-prev', '#portfolio-next', '#portfolio-rotation', '#show-more', '#portfolio-count', '#cr-work', '#content-order-dialog', '#cr-product', '.gallery-controls', '#cr-loop', '#loop-replay', '#loop-join', '#loop-waitlist', '#loop-email', '.dialog-close'];
   names.forEach(name => { root.selectors[name] = new Node(); });
-  const cards = Array.from({ length: 5 }, (_, i) => {
+  const cards = Array.from({ length: count }, (_, i) => {
     const card = new Node(), video = new Node();
     video.card = card; video.parentElement = new Node();
     video.attrs['aria-label'] = 'Video ' + i;
@@ -84,6 +84,18 @@ function browser({ reduced = false, saveData = false } = {}) {
 }
 afterEach(() => vi.useRealTimers());
 describe('content media interactions', () => {
+  it('cycles seven items while keeping only the five coverflow positions visible', () => {
+    const page = browser({ count: 7 }); page.show();
+    for (let i = 0; i < 7; i++) {
+      expect(page.cards[i].dataset.slot).toBe('0');
+      expect(page.cards.filter(card => !card.hidden)).toHaveLength(5);
+      expect(page.cards.filter(card => !card.hidden).map(card => Number(card.dataset.slot)).sort()).toEqual([-1, -2, 0, 1, 2].sort());
+      page.node('#portfolio-next').emit('click');
+    }
+    expect(page.cards[0].dataset.slot).toBe('0');
+    page.node('#portfolio-prev').emit('click');
+    expect(page.cards[6].dataset.slot).toBe('0');
+  });
   it('swipes in both directions, suppresses post-drag taps and preserves vertical scrolling', () => {
     const page = browser(); page.show(); const gallery = page.node('#portfolio-grid');
     const gesture = (dx: number, dy: number) => {

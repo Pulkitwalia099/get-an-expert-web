@@ -92,6 +92,7 @@ function renderCarousel(){
   if(offset>cards.length/2)offset-=cards.length;
   if(offset<-cards.length/2)offset+=cards.length;
   card.dataset.slot=String(offset);
+  card.hidden=Math.abs(offset)>2;
   const playable=index===active,selector=card.querySelector('.select-video');
   selector.tabIndex=index!==active?0:-1;
   selector.setAttribute('aria-hidden',String(index===active));
