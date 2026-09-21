@@ -26,7 +26,7 @@ describe('monthly content selector', () => {
       choices.forEach((choice, i) => { choice.checked = i === index; });
       choices[index].change();
       expect(strong.textContent).toBe(price);
-      expect(link.href).toBe('mailto:midsesh.social@gmail.com?subject=' + encodeURIComponent(count + ' videos per month'));
+      expect(link.href).toBe('mailto:midsesh.social@gmail.com?subject=' + encodeURIComponent('Request: ' + count + ' videos per month'));
       expect(link.label).toContain(count + ' videos per month');
     }
   });

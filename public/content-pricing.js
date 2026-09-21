@@ -12,8 +12,8 @@ function updatePlan(){
  const amount=Number(choice.dataset.price);
  if(!Number.isFinite(amount)||amount<=0)return;
  price.querySelector('strong').textContent=new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(amount);
- discuss.href='mailto:midsesh.social@gmail.com?subject='+encodeURIComponent(choice.value+' videos per month');
- discuss.setAttribute('aria-label','Discuss the '+choice.value+' videos per month plan');
+ discuss.href='mailto:midsesh.social@gmail.com?subject='+encodeURIComponent('Request: '+choice.value+' videos per month');
+ discuss.setAttribute('aria-label','Request the '+choice.value+' videos per month plan');
 }
 choices.forEach(input=>input.addEventListener('change',updatePlan));
 updatePlan();

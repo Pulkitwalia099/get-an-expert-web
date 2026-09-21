@@ -15,11 +15,18 @@ class Node {
   open = false; paused = true; muted = true; defaultMuted = true; controls = true;
   parentElement!: Node; card: Node | null = null; tabIndex = 0;
   classList = { toggle() {}, remove() {}, add() {} };
+  style = { setProperty() {}, removeProperty() {} };
+  setPointerCapture() {}
+  hasPointerCapture() { return true; }
+  releasePointerCapture() {}
   addEventListener(name: string, fn: Function) { (this.events[name] ||= []).push(fn); }
   emit(name: string, data = {}) { this.events[name]?.forEach(fn => fn({ target: this, ...data })); }
   setAttribute(name: string, value: string) { this.attrs[name] = value; }
   getAttribute(name: string) { return this.attrs[name]; }
-  querySelector(name: string) { return this.selectors[name]; }
+  querySelector(name: string) {
+    if (name === 'dialog[open]') return Object.values(this.selectors).find(node => node.open);
+    return this.selectors[name];
+  }
   querySelectorAll(name: string) {
     if (name === '.media-controls button') return this.selectors.video.parentElement.children[0]?.children || [];
     return this.lists[name] || [];
@@ -49,7 +56,8 @@ function browser({ reduced = false, saveData = false } = {}) {
   });
   const videos = cards.map(card => card.selectors.video);
   const start = new Node();
-  root.lists = { video: videos, '.sample': cards, '.start': [start] };
+  root.lists = { video: videos, 'video:not([data-sync-video])': videos, '.sample': cards, '.start': [start] };
+  root.selectors['#content-order-dialog'].selectors['.dialog-close'] = root.selectors['.dialog-close'];
   const motion = Object.assign(new Node(), { matches: reduced });
   const connection = Object.assign(new Node(), { saveData });
   const observers: { callback: Function; nodes: Node[] }[] = [];
@@ -76,6 +84,30 @@ function browser({ reduced = false, saveData = false } = {}) {
 }
 afterEach(() => vi.useRealTimers());
 describe('content media interactions', () => {
+  it('swipes in both directions, suppresses post-drag taps and preserves vertical scrolling', () => {
+    const page = browser(); page.show(); const gallery = page.node('#portfolio-grid');
+    const gesture = (dx: number, dy: number) => {
+      gallery.emit('pointerdown', { pointerType: 'touch', pointerId: 1, clientX: 200, clientY: 200 });
+      gallery.emit('pointermove', { pointerType: 'touch', pointerId: 1, clientX: 200 + dx, clientY: 200 + dy });
+      gallery.emit('pointerup', { pointerType: 'touch', pointerId: 1, clientX: 200 + dx, clientY: 200 + dy });
+    };
+    gesture(-80, 5); expect(page.cards[1].dataset.slot).toBe('0');
+    const preventDefault = vi.fn(), stopImmediatePropagation = vi.fn();
+    gallery.emit('click', { preventDefault, stopImmediatePropagation });
+    expect(stopImmediatePropagation).toHaveBeenCalledOnce();
+    gesture(80, 5); expect(page.cards[0].dataset.slot).toBe('0');
+    gesture(-10, 90); expect(page.cards[0].dataset.slot).toBe('0');
+    gesture(-15, 2); expect(page.cards[0].dataset.slot).toBe('0');
+    vi.advanceTimersByTime(10000); expect(page.cards[0].dataset.slot).toBe('0');
+  });
+  it('does not change slides when a touch gesture is cancelled', () => {
+    const page = browser(); page.show(); const gallery = page.node('#portfolio-grid');
+    gallery.emit('pointerdown', { pointerType: 'touch', pointerId: 1, clientX: 200, clientY: 200 });
+    gallery.emit('pointermove', { pointerType: 'touch', pointerId: 1, clientX: 100, clientY: 202 });
+    gallery.emit('pointercancel');
+    gallery.emit('pointerup', { pointerType: 'touch', pointerId: 1, clientX: 100, clientY: 202 });
+    expect(page.cards[0].dataset.slot).toBe('0');
+  });
   it('rotates visible work and plays only the selected video, muted', () => {
     const page = browser(); page.show();
     expect(page.videos[0].paused).toBe(false);

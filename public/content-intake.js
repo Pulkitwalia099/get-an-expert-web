@@ -24,6 +24,17 @@
     };
   }
 
+  function monthlyPayload(count, product, email) {
+    const prices = { 8: 395, 12: 565, 24: 1090 };
+    if (!Object.prototype.hasOwnProperty.call(prices, count)) throw new Error('Choose a valid monthly plan.');
+    if (!emailPattern.test(email.trim())) throw new Error('Add a valid email address.');
+    return {
+      type: 'contact', name: '', email: email.trim(), purpose: 'Monthly content plan request',
+      message: 'Plan: ' + count + ' videos per month\nMonthly price: $' + prices[count] +
+        '\nProduct link: ' + normaliseProductLink(product) + '\nRequest only; no subscription started.',
+    };
+  }
+
   function waitlistPayload(email) {
     if (!emailPattern.test(email.trim())) throw new Error('Add a valid email address.');
     return {
@@ -55,7 +66,7 @@
   }
 
   // Exposed for contract tests as well as the page; never contains credentials.
-  global.MidseshContentIntake = { normaliseProductLink, orderPayload, waitlistPayload, submitSignup };
+  global.MidseshContentIntake = { normaliseProductLink, orderPayload, monthlyPayload, waitlistPayload, submitSignup };
   if (!global.document) return;
   const root = document.getElementById('content-revamp');
   if (!root) return;

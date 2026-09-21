@@ -2,16 +2,16 @@
 'use strict';
 const root=document.getElementById('content-revamp');
 if(!root)return;
-const videos=[...root.querySelectorAll('video')];
+const videos=[...root.querySelectorAll('video:not([data-sync-video])')];
 const cards=[...root.querySelectorAll('.sample')];
 const gallery=root.querySelector('#portfolio-grid');
 const previous=root.querySelector('#portfolio-prev'),next=root.querySelector('#portfolio-next');
-const rotation=root.querySelector('#portfolio-rotation'),more=root.querySelector('#show-more');
+const rotation=root.querySelector('#portfolio-rotation');
 const count=root.querySelector('#portfolio-count'),work=root.querySelector('#cr-work');
 const dialog=root.querySelector('#content-order-dialog'),product=root.querySelector('#cr-product');
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
 const visibleVideos=new Set(),userPaused=new WeakSet(),automaticPauses=new WeakSet(),manualPlayback=new WeakSet();
-let active=0,expanded=false,rotationPaused=false,galleryVisible=false,hovered=false,timer=null;
+let active=0,rotationPaused=false,galleryVisible=false,hovered=false,timer=null;
 const icons={
  play:'<path d="m6 4 13 8-13 8Z"/>',
  pause:'<path d="M8 5v14M16 5v14"/>',
@@ -25,12 +25,12 @@ function stopAutomatic(video){
 function pauseAll(except){videos.forEach(video=>{if(video!==except)stopAutomatic(video);});}
 function holdRotation(){rotationPaused=true;syncRotation();}
 function updateAutoplay(){
- const blocked=document.hidden||dialog.open;
+ const blocked=document.hidden||!!root.querySelector('dialog[open]');
  const limitAutoplay=reducedMotion.matches||navigator.connection?.saveData;
  const audible=videos.find(video=>!video.paused&&!video.muted);
  videos.forEach(video=>{
   const card=video.closest('.sample');
-  const eligible=!blocked&&visibleVideos.has(video)&&video.getClientRects().length>0&&(!card||expanded||card.dataset.slot==='0');
+  const eligible=!blocked&&visibleVideos.has(video)&&video.getClientRects().length>0&&(!card||card.dataset.slot==='0');
   if(!eligible){manualPlayback.delete(video);stopAutomatic(video);return;}
   if(limitAutoplay&&!manualPlayback.has(video)){stopAutomatic(video);return;}
   if(!audible&&!userPaused.has(video)&&video.paused){video.muted=true;video.play().catch(()=>{});}
@@ -86,22 +86,19 @@ videos.forEach(video=>{
 });
 function renderCarousel(){
  active=(active+cards.length)%cards.length;
- gallery.classList.toggle('carousel',!expanded);
+ gallery.classList.add('carousel');
  cards.forEach((card,index)=>{
   let offset=index-active;
   if(offset>cards.length/2)offset-=cards.length;
   if(offset<-cards.length/2)offset+=cards.length;
   card.dataset.slot=String(offset);
-  const playable=expanded||index===active,selector=card.querySelector('.select-video');
-  selector.tabIndex=!expanded&&index!==active?0:-1;
-  selector.setAttribute('aria-hidden',String(expanded||index===active));
+  const playable=index===active,selector=card.querySelector('.select-video');
+  selector.tabIndex=index!==active?0:-1;
+  selector.setAttribute('aria-hidden',String(index===active));
   card.querySelectorAll('.media-controls button').forEach(button=>{button.tabIndex=playable?0:-1;});
   if(!playable)stopAutomatic(card.querySelector('video'));
  });
- count.textContent=expanded?'Showing all '+cards.length+' videos':String(active+1).padStart(2,'0')+' / '+String(cards.length).padStart(2,'0')+' · '+cards[active].querySelector('h3').textContent;
- root.querySelector('.gallery-controls').hidden=expanded;
- more.textContent=expanded?'Back to carousel ←':'View all work ↗';
- more.setAttribute('aria-expanded',String(expanded));
+ count.textContent=String(active+1).padStart(2,'0')+' / '+String(cards.length).padStart(2,'0')+' · '+cards[active].querySelector('h3').textContent;
  updateAutoplay();syncRotation();
 }
 function move(direction,manual=true){
@@ -109,7 +106,7 @@ function move(direction,manual=true){
  pauseAll();active+=direction;renderCarousel();
 }
 function canRotate(){
- return !rotationPaused&&!expanded&&galleryVisible&&!hovered&&!document.hidden&&!dialog.open
+ return !rotationPaused&&galleryVisible&&!hovered&&!document.hidden&&!root.querySelector('dialog[open]')
   &&!reducedMotion.matches&&!navigator.connection?.saveData
   &&!work.contains(document.activeElement)&&!videos.some(video=>!video.paused&&!video.muted);
 }
@@ -126,25 +123,48 @@ rotation.addEventListener('click',()=>{rotationPaused=!rotationPaused;syncRotati
 previous.addEventListener('click',()=>move(-1));next.addEventListener('click',()=>move(1));
 cards.forEach((card,index)=>card.querySelector('.select-video').addEventListener('click',()=>{holdRotation();pauseAll();active=index;renderCarousel();}));
 gallery.addEventListener('keydown',event=>{
- if(event.target===gallery&&!expanded&&(event.key==='ArrowRight'||event.key==='ArrowLeft')){
+ if(event.target===gallery&&(event.key==='ArrowRight'||event.key==='ArrowLeft')){
   event.preventDefault();move(event.key==='ArrowRight'?1:-1);
  }
 });
-let pointerStart=null;
+let pointerStart=null,suppressClickUntil=0;
+function resetDrag(){
+ gallery.classList.remove('is-dragging');
+ gallery.style.removeProperty('--swipe-drag');
+}
 gallery.addEventListener('pointerdown',event=>{
- if(!expanded&&event.pointerType==='touch')pointerStart={x:event.clientX,y:event.clientY};
+ if(event.pointerType!=='touch'||event.isPrimary===false)return;
+ pointerStart={x:event.clientX,y:event.clientY,id:event.pointerId,dragging:false};
+});
+gallery.addEventListener('pointermove',event=>{
+ if(!pointerStart||event.pointerId!==pointerStart.id)return;
+ const dx=event.clientX-pointerStart.x,dy=event.clientY-pointerStart.y;
+ if(!pointerStart.dragging){
+  if(Math.abs(dy)>12&&Math.abs(dy)>Math.abs(dx)){pointerStart=null;return;}
+  if(Math.abs(dx)<8||Math.abs(dx)<Math.abs(dy)*1.2)return;
+  pointerStart.dragging=true;holdRotation();
+  gallery.setPointerCapture(event.pointerId);
+  gallery.classList.add('is-dragging');
+ }
+ gallery.style.setProperty('--swipe-drag',Math.max(-100,Math.min(100,dx*.5))+'px');
 });
 gallery.addEventListener('pointerup',event=>{
- if(!pointerStart)return;
- const dx=event.clientX-pointerStart.x,dy=event.clientY-pointerStart.y;pointerStart=null;
- if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)*1.4)move(dx<0?1:-1);
+ if(!pointerStart||event.pointerId!==pointerStart.id)return;
+ const gesture=pointerStart,dx=event.clientX-gesture.x,dy=event.clientY-gesture.y;
+ pointerStart=null;resetDrag();
+ if(gallery.hasPointerCapture(event.pointerId))gallery.releasePointerCapture(event.pointerId);
+ if(gesture.dragging)suppressClickUntil=Date.now()+400;
+ if(Math.abs(dx)>30&&Math.abs(dx)>Math.abs(dy)*1.2)move(dx<0?1:-1);
 });
-gallery.addEventListener('pointercancel',()=>{pointerStart=null;});
+gallery.addEventListener('pointercancel',()=>{pointerStart=null;resetDrag();});
+gallery.addEventListener('lostpointercapture',()=>{pointerStart=null;resetDrag();});
+gallery.addEventListener('click',event=>{
+ if(Date.now()<suppressClickUntil){event.preventDefault();event.stopImmediatePropagation();}
+},true);
 work.addEventListener('pointerenter',event=>{if(event.pointerType==='mouse'){hovered=true;syncRotation();}});
 work.addEventListener('pointerleave',()=>{hovered=false;syncRotation();});
 work.addEventListener('focusin',syncRotation);
 work.addEventListener('focusout',()=>setTimeout(syncRotation,0));
-more.addEventListener('click',()=>{holdRotation();pauseAll();expanded=!expanded;renderCarousel();});
 new IntersectionObserver(entries=>{
  galleryVisible=entries.some(entry=>entry.isIntersecting&&entry.intersectionRatio>=.3);syncRotation();
 },{threshold:[0,.3]}).observe(gallery);
@@ -185,7 +205,7 @@ root.querySelector('#loop-join').addEventListener('click',()=>{
  root.querySelector('#loop-join').setAttribute('aria-expanded','true');root.querySelector('#loop-email').focus();
 });
 root.querySelectorAll('.start').forEach(button=>button.addEventListener('click',()=>{pauseAll();dialog.showModal();product.focus();syncRotation();}));
-root.querySelector('.dialog-close').addEventListener('click',()=>dialog.close());
+dialog.querySelector('.dialog-close').addEventListener('click',()=>dialog.close());
 dialog.addEventListener('close',()=>{updateAutoplay();syncRotation();});
 dialog.addEventListener('click',event=>{
  if(event.target===dialog){

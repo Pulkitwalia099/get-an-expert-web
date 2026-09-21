@@ -22,7 +22,9 @@ describe('/content launch', () => {
     }
     for (const price of ['$395', '$565', '$1,090']) expect(html).toContain(price);
     expect(html).toContain('No payment is taken here.');
-    expect(html).toContain('Analysis and content plan shown are illustrative.');
+    expect(html).toContain('Launching soon');
+    expect(html).not.toContain('Analysis and content plan shown are illustrative.');
+    expect(html).not.toContain('Illustrative analysis · Not live performance data');
   });
   it('keeps the founder-first page concise and puts the trial before monthly plans', () => {
     expect(html).toContain('You built the product.<br><span>Now get it seen.</span>');
@@ -41,6 +43,8 @@ describe('/content launch', () => {
   it('keeps browser scripts syntactically valid and all tab targets present', () => {
     new vm.Script(readFileSync(new URL('../../public/content-page.js', import.meta.url), 'utf8'));
     new vm.Script(intakeSource);
+    new vm.Script(readFileSync(new URL('../../public/content-comparison.js', import.meta.url), 'utf8'));
+    new vm.Script(readFileSync(new URL('../../public/content-monthly.js', import.meta.url), 'utf8'));
     new vm.Script(readFileSync(new URL('../../public/content-pricing.js', import.meta.url), 'utf8'));
     for (const [, target] of html.matchAll(/aria-controls="([^"]+)"/g)) {
       expect(html).toContain('id="' + target + '"');
@@ -88,6 +92,31 @@ describe('/content launch', () => {
     await expect(api.submitSignup(payload)).resolves.toMatchObject({ notified: true });
     expect(fetch).toHaveBeenCalledTimes(1);
     expect(fetch).toHaveBeenCalledWith('/api/signup', expect.objectContaining({ method: 'POST', body: JSON.stringify(payload) }));
+  });
+  it('keeps monthly requests separate from paid orders and carries the selected plan', () => {
+    const api = client();
+    for (const [count, price] of [[8, 395], [12, 565], [24, 1090]]) {
+      const payload = api.monthlyPayload(String(count), 'example.com', ' buyer@example.com ');
+      expect(payload).toMatchObject({ type: 'contact', email: 'buyer@example.com', purpose: 'Monthly content plan request' });
+      expect(payload).not.toHaveProperty('serviceSlug');
+      expect(payload).not.toHaveProperty('orderKind');
+      expect(payload.message).toContain(count + ' videos per month');
+      expect(payload.message).toContain('$' + price);
+      expect(payload.message).toContain('https://example.com/');
+    }
+    expect(() => api.monthlyPayload('100', 'example.com', 'buyer@example.com')).toThrow();
+    expect(() => api.monthlyPayload('8', 'javascript:alert(1)', 'buyer@example.com')).toThrow();
+    expect(() => api.monthlyPayload('8', 'example.com', 'invalid')).toThrow();
+  });
+  it('uses real sources, concise categories and a shared transition comparison', () => {
+    for (const removed of ['View all work', 'Your product could be next.', 'Discuss this plan', 'Make the fitting feel like the fix']) expect(html).not.toContain(removed);
+    for (const category of ['Lingerie · India', 'Consumer app · US', 'Apparel · Middle East']) expect(html).toContain(category);
+    expect(html).toContain('https://mishq.in/pages/book-bra-fitting');
+    expect(html).toContain('id="monthly-request-form"');
+    expect(html).toContain('Submit request');
+    const starts = [...html.matchAll(/data-sync-video data-start="([\d.]+)"/g)].map(m => Number(m[1]));
+    expect(starts).toEqual([3.6, 2.375]);
+    expect(6.6 - starts[0]).toBeCloseTo(5.375 - starts[1], 8);
   });
   it.each([
     { ok: true, status: 200, data: { ok: true, notified: false } },

@@ -41,4 +41,17 @@ describe('content signup integration', () => {
     expect(recordMarketplaceOrder).toHaveBeenCalledWith(expect.objectContaining({ kind: 'notify', serviceSlug: 'loop-agent', priceCents: null }));
     expect(notifyCustomer).not.toHaveBeenCalled();
   });
+  it('records a monthly inquiry as contact, not an order or subscription', async () => {
+    const req = request('', '');
+    req.json = async () => ({ type: 'contact', email: 'test@example.com',
+      purpose: 'Monthly content plan request',
+      message: 'Plan: 12 videos per month\nMonthly price: $565\nProduct link: https://example.com' });
+    const response = await POST(req);
+    expect(response.status).toBe(200);
+    expect(recordMarketplaceOrder).toHaveBeenCalledWith(expect.objectContaining({
+      kind: 'contact', priceCents: null, serviceName: 'Monthly content plan request',
+    }));
+    expect(notifyCustomer).not.toHaveBeenCalled();
+    expect(sendEmail).toHaveBeenCalledOnce();
+  });
 });
