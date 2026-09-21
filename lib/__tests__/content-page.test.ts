@@ -29,7 +29,9 @@ describe('/content launch', () => {
     expect(html).toContain('Yes, this is all AI.');
     expect(html).toContain('Expert steers at checkpoints');
     expect(html).toContain('Introductory offer');
-    expect(html.indexOf('class="pricebox"')).toBeLessThan(html.indexOf('class="monthly-plans"'));
+    expect(html.indexOf('class="pricebox"')).toBeLessThan(html.indexOf('id="monthly-pricing"'));
+    expect(html).not.toContain('class="monthly-plans"');
+    expect(html).toContain('Work that looks native.<br>Not generated.');
     for (const redundant of ['Start with your product link.', 'The transformation', 'The actual starting brief', 'Four beats shape the story.', 'Real client videos. Autoplay', 'class="format-label"']) {
       expect(html).not.toContain(redundant);
     }
@@ -39,6 +41,7 @@ describe('/content launch', () => {
   it('keeps browser scripts syntactically valid and all tab targets present', () => {
     new vm.Script(readFileSync(new URL('../../public/content-page.js', import.meta.url), 'utf8'));
     new vm.Script(intakeSource);
+    new vm.Script(readFileSync(new URL('../../public/content-pricing.js', import.meta.url), 'utf8'));
     for (const [, target] of html.matchAll(/aria-controls="([^"]+)"/g)) {
       expect(html).toContain('id="' + target + '"');
     }

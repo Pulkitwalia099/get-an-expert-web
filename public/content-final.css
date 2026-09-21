@@ -127,3 +127,22 @@ html{scroll-behavior:auto}body{margin:0;background:#fbfbf8}#content-revamp{max-w
 #content-revamp .rotation-toggle{margin-right:auto}
 #content-revamp .ai-note{font-size:12px;padding:8px 11px}
 }
+
+/* A single secondary monthly selector, with the trial as the main action. */
+#content-revamp .offer-monthly{max-width:420px;padding-top:10px}
+#content-revamp .monthly-selector{display:flex;gap:6px;border:0;margin:18px 0;padding:0}
+#content-revamp .monthly-selector legend{font-size:12px;color:var(--muted);margin-bottom:10px;padding:0}
+#content-revamp .monthly-selector label{position:relative;flex:1;cursor:pointer}
+#content-revamp .monthly-selector input{position:absolute;opacity:0;width:100%;height:100%;inset:0;margin:0;cursor:pointer}
+#content-revamp .monthly-selector label>span{display:flex;align-items:center;justify-content:center;min-height:44px;border:1px solid var(--line);border-radius:8px;font-size:14px;font-weight:600;background:transparent}
+#content-revamp .monthly-selector input:checked+span{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+#content-revamp .monthly-selector input:focus-visible+span{outline:2px solid var(--purple);outline-offset:3px}
+#content-revamp .monthly-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+#content-revamp #monthly-price{white-space:nowrap}
+#content-revamp #monthly-price strong{font-size:32px;font-weight:650;letter-spacing:-1px;font-variant-numeric:tabular-nums}
+#content-revamp #monthly-price>span{font-size:12px;color:var(--muted)}
+#content-revamp #monthly-discuss{font-size:12px;text-decoration:underline;text-underline-offset:3px;padding:12px 0}
+#content-revamp .offer-monthly .monthly-credit{margin-top:16px;font-size:11px}
+@media(max-width:730px){#content-revamp .offer-monthly{max-width:none;border-top:1px solid var(--line);padding-top:22px}}
+
+@media(max-width:730px){#content-revamp #cr-work .headrow{flex-direction:column;align-items:stretch;gap:12px}#content-revamp #cr-work .headrow>div:first-child{width:100%}}
