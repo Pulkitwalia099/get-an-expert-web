@@ -31,6 +31,7 @@ describe('/content launch', () => {
     expect(html).toContain('Yes, this is all AI.');
     expect(html).toContain('Expert steers at checkpoints');
     expect(html).toContain('Introductory offer');
+    expect(html.match(/>Give it a shot for \$39 ↗<\/button>/g)).toHaveLength(5);
     expect(html.indexOf('class="pricebox"')).toBeLessThan(html.indexOf('id="monthly-pricing"'));
     expect(html).not.toContain('class="monthly-plans"');
     expect(html).toContain('Work that looks native.<br>Not generated.');
