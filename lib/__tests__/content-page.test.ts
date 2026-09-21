@@ -21,8 +21,20 @@ describe('/content launch', () => {
       expect(html).toContain('id="' + name + '"');
     }
     for (const price of ['$395', '$565', '$1,090']) expect(html).toContain(price);
-    expect(html).toContain('No payment taken here.');
+    expect(html).toContain('No payment is taken here.');
     expect(html).toContain('Analysis and content plan shown are illustrative.');
+  });
+  it('keeps the founder-first page concise and puts the trial before monthly plans', () => {
+    expect(html).toContain('You built the product.<br><span>Now get it seen.</span>');
+    expect(html).toContain('Yes, this is all AI.');
+    expect(html).toContain('Expert steers at checkpoints');
+    expect(html).toContain('Introductory offer');
+    expect(html.indexOf('class="pricebox"')).toBeLessThan(html.indexOf('class="monthly-plans"'));
+    for (const redundant of ['Start with your product link.', 'The transformation', 'The actual starting brief', 'Four beats shape the story.', 'Real client videos. Autoplay', 'class="format-label"']) {
+      expect(html).not.toContain(redundant);
+    }
+    const hero = html.slice(html.indexOf('class="hero hero-final"'), html.indexOf('id="cr-work"'));
+    expect(hero).not.toContain('Start with one video for $39.');
   });
   it('keeps browser scripts syntactically valid and all tab targets present', () => {
     new vm.Script(readFileSync(new URL('../../public/content-page.js', import.meta.url), 'utf8'));

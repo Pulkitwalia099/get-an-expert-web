@@ -65,3 +65,65 @@ html{scroll-behavior:auto}body{margin:0;background:#fbfbf8}#content-revamp{max-w
 #content-revamp .form-status[data-error=true]{color:#a12d2d}
 @media(prefers-reduced-motion:reduce){#content-revamp *,#content-revamp *:before,#content-revamp *:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 
+
+/* Founder-first story and compact, expert-led production flow. */
+#content-revamp .ai-note{position:relative;width:max-content;margin:10px 12px 20px auto;transform:rotate(-4deg);padding:11px 15px;background:#fffef8;color:#0a0a0a;border:1px solid #0a0a0a12;border-radius:3px;box-shadow:0 5px 16px #0a0a0a16;font-size:13px;font-weight:650;pointer-events:none}
+#content-revamp .ai-note:before{content:"";position:absolute;width:36px;height:13px;background:#e8dfce9c;left:calc(50% - 18px);top:-7px;transform:rotate(3deg)}
+#content-revamp .portfolio-media{clip-path:inset(0 round 18px);-webkit-mask-image:linear-gradient(#fff,#fff);contain:paint}
+#content-revamp .portfolio-media video{display:block;border-radius:18px;clip-path:inset(0 round 18px)}
+#content-revamp .case-frame:has(video){position:relative;clip-path:inset(0 round 14px)}
+#content-revamp .media-controls{position:absolute;inset:auto 8px 8px;display:flex;justify-content:space-between;z-index:4;pointer-events:none}
+#content-revamp .media-controls button{pointer-events:auto;min-height:44px;min-width:44px;padding:8px 10px;border:1px solid #ffffff40;border-radius:50px;background:#101010cf;color:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px}
+#content-revamp .media-controls svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#content-revamp .media-status{position:absolute;inset:40% 12px auto;text-align:center;color:#fff;background:#101010e8;padding:12px;border-radius:8px;font-size:12px;z-index:5}
+#content-revamp .gallery.carousel .sample:not([data-slot="0"]) .media-controls{visibility:hidden}
+#content-revamp .rotation-toggle{border:0;background:none;color:var(--muted);font-size:12px;padding:10px 4px;cursor:pointer;min-height:44px}
+#content-revamp .gallery-controls{align-items:center}
+#content-revamp .flow-intro{max-width:610px}
+#content-revamp .production-flow{list-style:none;padding:0;margin:32px 0 0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:30px}
+#content-revamp .production-flow>li{position:relative;min-width:0}
+#content-revamp .flow-visual{height:220px;display:flex;align-items:center;justify-content:center;flex-direction:column;position:relative;background:#f2f1ed;border-radius:3px}
+#content-revamp .production-flow>li:not(:last-child) .flow-visual:after{content:"→";position:absolute;right:-24px;top:calc(50% - 12px);color:#82817c;font-size:22px}
+#content-revamp .product-link{font-size:12px;background:#fff;border:1px solid #dfded8;border-radius:6px;padding:9px 16px;box-shadow:0 3px 8px #00000004}
+#content-revamp .product-link span{color:var(--purple);margin-right:8px}
+#content-revamp .flow-arrow{color:#9c9b95;font-size:18px;padding:3px}
+#content-revamp .brief-sheet{background:#fff;padding:14px 18px;width:172px;transform:rotate(-3deg);box-shadow:0 4px 10px #00000008;border:1px solid #e7e6df}
+#content-revamp .brief-sheet>span{font:8px ui-monospace,monospace;letter-spacing:1px;color:#74736e}
+#content-revamp .brief-sheet b{display:block;font-size:16px;letter-spacing:-.5px;margin:7px 0}
+#content-revamp .brief-sheet i{display:block;background:#e7e6df;height:3px;margin-top:5px;width:90%}
+#content-revamp .brief-sheet i:last-child{width:65%}
+#content-revamp .agent-work{display:flex;gap:6px}
+#content-revamp .agent-work span{font-size:11px;padding:10px 13px;border:1px solid #deddd7;border-radius:4px;background:#fff}
+#content-revamp .direction-mark{display:flex;align-items:center;gap:8px;margin:20px 0}
+#content-revamp .direction-mark>span{font-size:23px;color:var(--purple)}
+#content-revamp .direction-mark b{font-size:11px;font-weight:500}
+#content-revamp .edit-track{display:flex;gap:4px;width:76%;padding:10px 0;border-top:1px solid #d8d7d0;border-bottom:1px solid #d8d7d0}
+#content-revamp .edit-track i{height:24px;border-radius:3px;background:#ccc8d8;flex:1}
+#content-revamp .edit-track i:nth-child(2n){flex:1.5;background:#ab97de}
+#content-revamp .finished-cut{position:relative;height:168px;aspect-ratio:9/16;transform:rotate(5deg);border:4px solid #fff;box-shadow:0 5px 12px #0002;border-radius:8px;overflow:hidden}
+#content-revamp .finished-cut img{width:100%;height:100%;object-fit:cover}
+#content-revamp .finished-cut>span{position:absolute;inset:0;display:grid;place-content:center;color:#fff;text-shadow:0 1px 10px #000;font-size:25px}
+#content-revamp .approval-stamp{position:absolute;bottom:25px;right:16px;font-size:11px;background:#fff;padding:9px 11px;border:1px solid #deddd7;border-radius:4px;transform:rotate(-4deg)}
+#content-revamp .flow-checkpoint{position:relative;font-size:11px;font-weight:600;padding:16px 0;border-bottom:1px solid #dcdadf;margin-bottom:18px}
+#content-revamp .flow-checkpoint>span{color:var(--purple);margin-right:6px;font-size:8px}
+#content-revamp .production-flow h3{font-size:17px;letter-spacing:-.4px;margin:0 0 8px}
+#content-revamp .production-flow h3>span{color:var(--muted);font:11px ui-monospace,monospace;margin-right:8px}
+#content-revamp .production-flow p{font-size:13px;margin:0;max-width:290px}
+#content-revamp .offer{grid-template-areas:"intro price" "monthly price";gap:16px 44px;align-items:start}
+#content-revamp .offer-intro{grid-area:intro}
+#content-revamp .offer .pricebox{grid-area:price;align-self:center}
+#content-revamp .offer-monthly{grid-area:monthly}
+#content-revamp .offer-monthly>h3{font-size:15px;margin:0 0 6px}
+#content-revamp .offer-monthly>.small{margin:0}
+@media(max-width:730px){
+#content-revamp .offer{grid-template-areas:"intro" "price" "monthly";gap:22px}
+#content-revamp .production-flow{grid-template-columns:1fr;gap:28px}
+#content-revamp .flow-visual{height:205px}
+#content-revamp .production-flow>li:not(:last-child) .flow-visual:after{display:none}
+#content-revamp .production-flow>li:not(:last-child):after{content:"↓";display:block;margin-top:18px;color:#a4a29b;font-size:24px}
+#content-revamp .production-flow p{max-width:none}
+#content-revamp .flow-checkpoint{padding:12px 0;margin-bottom:12px}
+#content-revamp .gallery-controls{width:100%;justify-content:flex-end}
+#content-revamp .rotation-toggle{margin-right:auto}
+#content-revamp .ai-note{font-size:12px;padding:8px 11px}
+}
