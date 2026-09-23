@@ -162,6 +162,7 @@ const nextConfig: NextConfig = {
     return {
       beforeFiles: [
         { source: '/', destination: `${MARKETPLACE}/` },
+        { source: '/marketplace', destination: `${MARKETPLACE}/` },
         { source: '/contact', destination: `${MARKETPLACE}/contact` },
         // The founder page. It lives over there because it has to look like the
         // site it is linked from, and every footer that links to it is on that
