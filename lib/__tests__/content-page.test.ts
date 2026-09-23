@@ -12,6 +12,15 @@ function client(fetch = vi.fn()) {
 }
 
 describe('/content launch', () => {
+  it('opens with the UGC ad, followed by the street interview and the remaining work', () => {
+    const samples = [...html.matchAll(/<article class="sample"[\s\S]*?<\/article>/g)].map(match => match[0]);
+    expect(samples.map(sample => sample.match(/<h3>(.*?)<\/h3>/)?.[1])).toEqual([
+      'UGC video', 'Street interview', 'Trend rebuild', 'Storyboard video',
+      'Product in hand', 'Raw → finished', 'Talking head edit',
+    ]);
+    expect(samples[0]).toContain('/content/video/ugc.mp4');
+    expect(samples[1]).toContain('/content/video/street.mp4');
+  });
   it('ships the approved story without duplicate hero proof or hidden monthly pricing', () => {
     expect(html).toContain('Your product-to-content engine');
     expect(html).toContain('id="content-order-dialog"');
