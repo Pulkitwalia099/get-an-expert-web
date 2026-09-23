@@ -21,8 +21,8 @@ describe('monthly content selector', () => {
     };
     vm.runInNewContext(script, { document: { getElementById: () => section }, Intl });
     expect(selector.disabled).toBe(false);
-    expect(strong.textContent).toBe('$395');
-    for (const [index, count, price] of [[0, '8', '$395'], [1, '12', '$565'], [2, '24', '$1,090']] as const) {
+    expect(strong.textContent).toBe('$499');
+    for (const [index, count, price] of [[0, '8', '$499'], [1, '12', '$699'], [2, '24', '$1,299']] as const) {
       choices.forEach((choice, i) => { choice.checked = i === index; });
       choices[index].change();
       expect(strong.textContent).toBe(price);
@@ -34,6 +34,6 @@ describe('monthly content selector', () => {
     expect(html.match(/type="radio" name="monthly-videos"/g)).toHaveLength(3);
     expect(html).toContain('<legend>Videos per month</legend>');
     expect(html).toContain('id="monthly-price" aria-live="polite" aria-atomic="true"');
-    expect(html).toContain('8 videos: $395/month · 12 videos: $565/month · 24 videos: $1,090/month.');
+    expect(html).toContain('8 videos: $499/month · 12 videos: $699/month · 24 videos: $1,299/month.');
   });
 });

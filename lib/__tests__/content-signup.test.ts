@@ -45,7 +45,7 @@ describe('content signup integration', () => {
     const req = request('', '');
     req.json = async () => ({ type: 'contact', email: 'test@example.com',
       purpose: 'Monthly content plan request',
-      message: 'Plan: 12 videos per month\nMonthly price: $565\nProduct link: https://example.com' });
+      message: 'Plan: 12 videos per month\nMonthly price: $699\nProduct link: https://example.com' });
     const response = await POST(req);
     expect(response.status).toBe(200);
     expect(recordMarketplaceOrder).toHaveBeenCalledWith(expect.objectContaining({

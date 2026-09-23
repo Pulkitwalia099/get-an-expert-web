@@ -20,7 +20,7 @@ describe('/content launch', () => {
     for (const name of ['case-mishq', 'case-future', 'case-kaftan']) {
       expect(html).toContain('id="' + name + '"');
     }
-    for (const price of ['$395', '$565', '$1,090']) expect(html).toContain(price);
+    for (const price of ['$499', '$699', '$1,299']) expect(html).toContain(price);
     expect(html).toContain('No payment is taken here.');
     expect(html).toContain('Launching soon');
     expect(html).not.toContain('Analysis and content plan shown are illustrative.');
@@ -109,7 +109,7 @@ describe('/content launch', () => {
   });
   it('keeps monthly requests separate from paid orders and carries the selected plan', () => {
     const api = client();
-    for (const [count, price] of [[8, 395], [12, 565], [24, 1090]]) {
+    for (const [count, price] of [[8, 499], [12, 699], [24, 1299]]) {
       const payload = api.monthlyPayload(String(count), 'example.com', ' buyer@example.com ');
       expect(payload).toMatchObject({ type: 'contact', email: 'buyer@example.com', purpose: 'Monthly content plan request' });
       expect(payload).not.toHaveProperty('serviceSlug');
@@ -121,6 +121,19 @@ describe('/content launch', () => {
     expect(() => api.monthlyPayload('100', 'example.com', 'buyer@example.com')).toThrow();
     expect(() => api.monthlyPayload('8', 'javascript:alert(1)', 'buyer@example.com')).toThrow();
     expect(() => api.monthlyPayload('8', 'example.com', 'invalid')).toThrow();
+  });
+  it('quotes the same monthly prices in the selector and request payload', () => {
+    const api = client();
+    const offers = [...html.matchAll(/name="monthly-videos" value="(\d+)" data-price="(\d+)"/g)];
+    expect(offers).toHaveLength(3);
+    let previousUnitPrice = Infinity;
+    for (const [, count, price] of offers) {
+      const payload = api.monthlyPayload(count, 'example.com', 'buyer@example.com');
+      expect(payload.message).toContain('Monthly price: $' + price + '\n');
+      const unitPrice = Number(price) / Number(count);
+      expect(unitPrice).toBeLessThan(previousUnitPrice);
+      previousUnitPrice = unitPrice;
+    }
   });
   it('uses real sources, concise categories and a shared transition comparison', () => {
     for (const removed of ['View all work', 'Your product could be next.', 'Discuss this plan', 'Make the fitting feel like the fix']) expect(html).not.toContain(removed);

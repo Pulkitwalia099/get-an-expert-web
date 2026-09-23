@@ -25,7 +25,7 @@
   }
 
   function monthlyPayload(count, product, email) {
-    const prices = { 8: 395, 12: 565, 24: 1090 };
+    const prices = { 8: 499, 12: 699, 24: 1299 };
     if (!Object.prototype.hasOwnProperty.call(prices, count)) throw new Error('Choose a valid monthly plan.');
     if (!emailPattern.test(email.trim())) throw new Error('Add a valid email address.');
     return {

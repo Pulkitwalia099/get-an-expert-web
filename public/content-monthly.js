@@ -15,7 +15,7 @@ link.addEventListener('click',event=>{
  const next=choice?.value||'8';
  if(completed&&next!==count){completed=false;form.reset();status.hidden=true;button.disabled=false;button.textContent='Submit request ↗';}
  count=next;
- root.querySelector('#monthly-request-summary').textContent=count+' videos · '+new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(Number(choice?.dataset.price||395))+' / month';
+ root.querySelector('#monthly-request-summary').textContent=count+' videos · '+new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(Number(choice?.dataset.price||499))+' / month';
  dialog.showModal();product.focus();
 });
 dialog.querySelector('.monthly-close').addEventListener('click',()=>dialog.close());
