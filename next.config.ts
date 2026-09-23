@@ -24,14 +24,14 @@ const DAILY_ROOM_ORIGIN = 'https://midsesh.daily.co';
 const DAILY = 'https://*.daily.co wss://*.daily.co';
 const CAL = 'https://app.cal.com https://cal.com';
 
-// The new marketplace, served at the apex through the rewrites at the bottom
+// The marketplace, served at /marketplace through the rewrites at the bottom
 // of this file. Its stable production alias, not a deployment URL: agon-agent
 // .vercel.app belongs to somebody else's project, which is why this reads the
 // way it does.
 const MARKETPLACE = 'https://agon-agent-eight.vercel.app';
 
-// The homepage preview, project midsesh-preview. Temporary: it goes when the
-// new home ships at the apex.
+// Existing content media stays on this host. Moving the page must not move
+// its video URLs or collide with this app's /media files.
 const PREVIEW = 'https://midsesh-preview.vercel.app';
 
 // Every card on /setups embeds TikTok's official player in an iframe. Without
@@ -132,12 +132,14 @@ const nextConfig: NextConfig = {
   // destination has already moved twice.
   async redirects() {
     return [
-      { source: '/setup', destination: '/', permanent: false },
-      { source: '/setups', destination: '/', permanent: false },
+      { source: '/setup', destination: '/marketplace', permanent: false },
+      { source: '/setups', destination: '/marketplace', permanent: false },
+      { source: '/content', destination: '/', permanent: false },
+      { source: '/content.html', destination: '/', permanent: false },
     ];
   },
-  // The apex serves the new marketplace, which is a separate Vite app in its
-  // own repo and its own Vercel project. It is rewritten in rather than folded
+  // /marketplace serves the existing Vite app in its own repo and Vercel
+  // project. It is rewritten in rather than folded
   // in, because that app is Tailwind 4 with framer-motion and this repo runs
   // six runtime dependencies and hand written CSS. Folding it in means either
   // three dependencies enter the repo that refuses them, or its whole visual
@@ -161,7 +163,7 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return {
       beforeFiles: [
-        { source: '/', destination: `${MARKETPLACE}/` },
+        { source: '/', destination: '/content.html' },
         { source: '/marketplace', destination: `${MARKETPLACE}/` },
         { source: '/contact', destination: `${MARKETPLACE}/contact` },
         // The founder page. It lives over there because it has to look like the
@@ -181,12 +183,10 @@ const nextConfig: NextConfig = {
         // before any link to it, because a path missing from this list 404s
         // at the apex while working fine on the marketplace's own host.
         { source: '/services', destination: `${MARKETPLACE}/services` },
-        // The proposed new home is versioned in this repo now, so its order
-        // form and links can use the same API and routes as the rest of the
-        // site. Its media remains on the preview host under /content/ to avoid
+        // The new home is versioned here and uses the existing signup API.
+        // Its media remains on the preview host under /content/ to avoid
         // colliding with this repo's own /media and to keep large clips out of
         // the Next.js deployment.
-        { source: '/content', destination: '/content.html' },
         { source: '/content/:path*', destination: `${PREVIEW}/content/:path*` },
         // The social card its meta tags name, plus the crawler files. All
         // three are absolute URLs on this host, so without these they 404 and
