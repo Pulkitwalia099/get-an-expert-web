@@ -28,13 +28,11 @@ function pauseAll(except){videos.forEach(video=>{if(video!==except)stopAutomatic
 function holdRotation(){rotationPaused=true;syncRotation();}
 function updateAutoplay(){
  const blocked=document.hidden||!!root.querySelector('dialog[open]');
- const limitAutoplay=reducedMotion.matches||navigator.connection?.saveData;
  const audible=videos.find(video=>!video.paused&&!video.muted);
  videos.forEach(video=>{
   const card=video.closest('.sample');
   const eligible=!blocked&&visibleVideos.has(video)&&video.getClientRects().length>0&&(!card||card.dataset.slot==='0');
   if(!eligible){manualPlayback.delete(video);stopAutomatic(video);return;}
-  if(limitAutoplay&&!manualPlayback.has(video)){stopAutomatic(video);return;}
   if(!audible&&!userPaused.has(video)&&video.paused){video.muted=true;players.get(video).request();}
  });
 }

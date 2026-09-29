@@ -196,14 +196,13 @@ describe('content media interactions', () => {
     vi.advanceTimersByTime(7000); expect(page.cards[0].dataset.slot).toBe('0');
     expect(page.videos.every(v => v.paused)).toBe(true);
   });
-  it.each([{ reduced: true }, { saveData: true }])('respects preferences while allowing explicit playback: %j', (preferences) => {
+  it.each([{ reduced: true }, { saveData: true }])('still autoplays muted videos but keeps the carousel from rotating: %j', (preferences) => {
     const page = browser(preferences); page.show();
     vi.advanceTimersByTime(15000);
-    expect(page.videos.every(v => v.paused)).toBe(true);
-    expect(page.node('#portfolio-rotation').disabled).toBe(true);
-    page.controls(0)[0].emit('click');
-    page.document.emit('visibilitychange');
     expect(page.videos[0].paused).toBe(false);
+    expect(page.videos[0].muted).toBe(true);
+    expect(page.cards[0].dataset.slot).toBe('0');
+    expect(page.node('#portfolio-rotation').disabled).toBe(true);
     page.visibility(page.videos[0], 0);
     expect(page.videos[0].paused).toBe(true);
   });
