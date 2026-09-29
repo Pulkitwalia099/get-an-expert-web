@@ -13,7 +13,7 @@ describe('homepage and marketplace routing', () => {
     expect(await routes()).toContainEqual({ source: '/', destination: '/content.html' });
     expect(await routes()).not.toContainEqual({ source: '/', destination: 'https://agon-agent-eight.vercel.app/' });
   });
-  it('redirects old page URLs, never their video or image paths', async () => {
+  it('redirects old pages without a catch-all media redirect', async () => {
     const redirects = await config.redirects!();
     for (const source of ['/content', '/content.html']) {
       expect(redirects).toContainEqual({ source, destination: '/', permanent: false });
@@ -22,6 +22,12 @@ describe('homepage and marketplace routing', () => {
       expect(redirects).toContainEqual({ source, destination: '/marketplace', permanent: false });
     }
     expect(redirects.some(rule => rule.source.includes(':path'))).toBe(false);
+  });
+  it('moves the six legacy MP4 URLs onto native byte-range serving', async () => {
+    const redirects = await config.redirects!();
+    for (const name of ['ugc', 'street', 'storyboard', 'product', 'viral', 'kaftan-v2']) {
+      expect(redirects).toContainEqual({ source: `/content/video/${name}.mp4`, destination: `/media/content/${name}.mp4`, permanent: false });
+    }
   });
   it('uses the homepage canonical and exposes marketplace navigation', () => {
     const html = readFileSync(new URL('../../public/content.html', import.meta.url), 'utf8');

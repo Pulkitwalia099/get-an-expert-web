@@ -30,8 +30,8 @@ const CAL = 'https://app.cal.com https://cal.com';
 // way it does.
 const MARKETPLACE = 'https://agon-agent-eight.vercel.app';
 
-// Existing content media stays on this host. Moving the page must not move
-// its video URLs or collide with this app's /media files.
+// Images remain here. Videos are native /media/content assets: the external
+// rewrite cached partial byte ranges as whole MP4 responses on mobile.
 const PREVIEW = 'https://midsesh-preview.vercel.app';
 
 // Every card on /setups embeds TikTok's official player in an iframe. Without
@@ -136,6 +136,11 @@ const nextConfig: NextConfig = {
       { source: '/setups', destination: '/marketplace', permanent: false },
       { source: '/content', destination: '/', permanent: false },
       { source: '/content.html', destination: '/', permanent: false },
+      ...['ugc', 'street', 'storyboard', 'product', 'viral', 'kaftan-v2'].map(name => ({
+        source: `/content/video/${name}.mp4`,
+        destination: `/media/content/${name}.mp4`,
+        permanent: false,
+      })),
     ];
   },
   // /marketplace serves the existing Vite app in its own repo and Vercel

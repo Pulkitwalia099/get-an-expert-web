@@ -76,6 +76,8 @@ html{scroll-behavior:auto}body{margin:0;background:#fbfbf8}#content-revamp{max-w
 #content-revamp .media-controls button{pointer-events:auto;min-height:44px;min-width:44px;padding:8px 10px;border:1px solid #ffffff40;border-radius:50px;background:#101010cf;color:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px}
 #content-revamp .media-controls svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 #content-revamp .media-status{position:absolute;inset:40% 12px auto;text-align:center;color:#fff;background:#101010e8;padding:12px;border-radius:8px;font-size:12px;z-index:5}
+#content-revamp .media-status a{display:block;color:#fff;text-decoration:underline;padding:14px 8px;min-height:44px}
+#content-revamp .media-status a[hidden]{display:none}
 #content-revamp .gallery.carousel .sample:not([data-slot="0"]) .media-controls{visibility:hidden}
 #content-revamp .rotation-toggle{border:0;background:none;color:var(--muted);font-size:12px;padding:10px 4px;cursor:pointer;min-height:44px}
 #content-revamp .gallery-controls{align-items:center}

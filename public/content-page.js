@@ -11,6 +11,7 @@ const count=root.querySelector('#portfolio-count'),work=root.querySelector('#cr-
 const dialog=root.querySelector('#content-order-dialog'),product=root.querySelector('#cr-product');
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
 const visibleVideos=new Set(),userPaused=new WeakSet(),automaticPauses=new WeakSet(),manualPlayback=new WeakSet();
+const players=new WeakMap();
 let active=0,rotationPaused=false,galleryVisible=false,hovered=false,timer=null;
 const icons={
  play:'<path d="m6 4 13 8-13 8Z"/>',
@@ -20,6 +21,7 @@ const icons={
 };
 function icon(name){return '<svg viewBox="0 0 24 24" aria-hidden="true">'+icons[name]+'</svg>';}
 function stopAutomatic(video){
+ players.get(video)?.cancel();
  if(!video.paused){automaticPauses.add(video);video.pause();}
 }
 function pauseAll(except){videos.forEach(video=>{if(video!==except)stopAutomatic(video);});}
@@ -33,7 +35,7 @@ function updateAutoplay(){
   const eligible=!blocked&&visibleVideos.has(video)&&video.getClientRects().length>0&&(!card||card.dataset.slot==='0');
   if(!eligible){manualPlayback.delete(video);stopAutomatic(video);return;}
   if(limitAutoplay&&!manualPlayback.has(video)){stopAutomatic(video);return;}
-  if(!audible&&!userPaused.has(video)&&video.paused){video.muted=true;video.play().catch(()=>{});}
+  if(!audible&&!userPaused.has(video)&&video.paused){video.muted=true;players.get(video).request();}
  });
 }
 videos.forEach(video=>{
@@ -47,6 +49,33 @@ videos.forEach(video=>{
  play.type=sound.type='button';
  play.className='media-play';sound.className='media-sound';
  const status=document.createElement('span');status.className='media-status';status.hidden=true;status.setAttribute('role','status');
+ const message=document.createElement('span'),fallback=document.createElement('a');
+ fallback.textContent='Open video ↗';fallback.href=video.querySelector('source').getAttribute('src');
+ fallback.target='_blank';fallback.rel='noopener';fallback.hidden=true;
+ status.append(message,fallback);
+ let requestId=0,loadingTimer=null;
+ const player={busy:false,failed:false,reload:false,request:playRequested,cancel};
+ players.set(video,player);
+ function showStatus(text,retry=false){
+  message.textContent=text;fallback.hidden=!retry;
+  if(status.hidden)status.hidden=false;
+ }
+ function clearLoading(){
+  clearTimeout(loadingTimer);loadingTimer=null;player.busy=false;
+ }
+ function cancel(){
+  requestId++;clearLoading();
+  if(!player.failed&&!status.hidden)status.hidden=true;
+ }
+ function failed(text,reload=false){
+  player.failed=true;player.reload=reload;userPaused.add(video);
+  stopAutomatic(video);showStatus(text,true);updateControls();syncRotation();
+ }
+ function loading(){
+  if(player.failed||player.busy)return;
+  player.busy=true;showStatus('Loading video…');syncRotation();
+  loadingTimer=setTimeout(()=>failed('Tap play to retry.',true),15000);
+ }
  function updateControls(){
   play.innerHTML=icon(video.paused?'play':'pause');
   play.setAttribute('aria-label',(video.paused?'Play ':'Pause ')+label);
@@ -55,23 +84,40 @@ videos.forEach(video=>{
   sound.setAttribute('aria-pressed',String(!video.muted));
  }
  function playRequested(){
-  userPaused.delete(video);manualPlayback.add(video);status.hidden=true;
-  video.play().catch(()=>{status.textContent='Couldn’t play. Tap play to retry.';status.hidden=false;updateControls();});
+  if(player.busy||player.failed)return;
+  const attempt=++requestId;
+  loading();
+  video.play().catch(error=>{
+   if(attempt!==requestId)return;
+   failed(error.name==='NotAllowedError'?'Tap play to watch.':'Tap play to retry.',error.name!=='NotAllowedError');
+  });
+ }
+ function manualPlay(){
+  userPaused.delete(video);manualPlayback.add(video);player.failed=false;
+  if(player.reload){player.reload=false;video.load();}
+  playRequested();
  }
  play.addEventListener('click',()=>{
   holdRotation();
-  if(video.paused)playRequested();
-  else{manualPlayback.delete(video);userPaused.add(video);video.pause();}
+  if(video.paused)manualPlay();
+  else{manualPlayback.delete(video);userPaused.add(video);stopAutomatic(video);}
  });
  sound.addEventListener('click',()=>{
   holdRotation();video.muted=!video.muted;
-  if(!video.muted){pauseAll(video);if(video.paused)playRequested();}
+  if(!video.muted){pauseAll(video);if(video.paused)manualPlay();}
  });
  video.addEventListener('play',()=>{
-  status.hidden=true;updateControls();
+  updateControls();
   if(!video.muted)pauseAll(video);
   syncRotation();
  });
+ video.addEventListener('playing',()=>{
+  clearLoading();player.failed=false;
+  if(!status.hidden)status.hidden=true;
+  updateControls();syncRotation();
+ });
+ video.addEventListener('waiting',()=>{if(!video.paused)loading();});
+ video.addEventListener('stalled',()=>{if(!video.paused&&video.readyState<3)loading();});
  video.addEventListener('pause',()=>{
   if(automaticPauses.has(video))automaticPauses.delete(video);
   else if(visibleVideos.has(video))userPaused.add(video);
@@ -81,7 +127,7 @@ videos.forEach(video=>{
   if(!video.muted&&!video.paused)pauseAll(video);
   updateControls();syncRotation();
  });
- video.addEventListener('error',()=>{status.textContent='Video unavailable. Please try again later.';status.hidden=false;});
+ video.addEventListener('error',()=>failed('Tap play to retry.',true));
  controls.append(play,sound);video.parentElement.append(controls,status);updateControls();
 });
 function renderCarousel(){
@@ -107,7 +153,9 @@ function move(direction,manual=true){
  pauseAll();active+=direction;renderCarousel();
 }
 function canRotate(){
- return !rotationPaused&&galleryVisible&&!hovered&&!document.hidden&&!root.querySelector('dialog[open]')
+ const video=cards[active].querySelector('video'),player=players.get(video);
+ return !video.paused&&video.readyState>=3&&!player.busy&&!player.failed
+  &&!rotationPaused&&galleryVisible&&!hovered&&!document.hidden&&!root.querySelector('dialog[open]')
   &&!reducedMotion.matches&&!navigator.connection?.saveData
   &&!work.contains(document.activeElement)&&!videos.some(video=>!video.paused&&!video.muted);
 }

@@ -12,14 +12,27 @@ function client(fetch = vi.fn()) {
 }
 
 describe('/content launch', () => {
+  it('ships every video locally with mobile-safe markup and fast-start metadata', () => {
+    expect(html).not.toContain('/content/video/');
+    const videos = [...html.matchAll(/<video\b[\s\S]*?<\/video>/g)].map(match => match[0]);
+    expect(videos).toHaveLength(11);
+    for (const video of videos) {
+      expect(video).toContain('muted playsinline preload="none"');
+      const path = video.match(/<source src="([^"]+)"/)![1];
+      const bytes = readFileSync(new URL('../../public' + path, import.meta.url));
+      expect(bytes.length).toBeGreaterThan(1000000);
+      expect(bytes.indexOf('moov')).toBeGreaterThan(0);
+      expect(bytes.indexOf('moov')).toBeLessThan(bytes.indexOf('mdat'));
+    }
+  });
   it('opens with the UGC ad, followed by the street interview and the remaining work', () => {
     const samples = [...html.matchAll(/<article class="sample"[\s\S]*?<\/article>/g)].map(match => match[0]);
     expect(samples.map(sample => sample.match(/<h3>(.*?)<\/h3>/)?.[1])).toEqual([
       'UGC video', 'Street interview', 'Trend rebuild', 'Storyboard video',
       'Product in hand', 'Raw → finished', 'Talking head edit',
     ]);
-    expect(samples[0]).toContain('/content/video/ugc.mp4');
-    expect(samples[1]).toContain('/content/video/street.mp4');
+    expect(samples[0]).toContain('/media/content/ugc.mp4');
+    expect(samples[1]).toContain('/media/content/street.mp4');
   });
   it('ships the approved story without duplicate hero proof or hidden monthly pricing', () => {
     expect(html).toContain('Your product-to-content engine');

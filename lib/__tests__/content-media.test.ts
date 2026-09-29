@@ -13,6 +13,7 @@ class Node {
   lists: Record<string, Node[]> = {};
   className = ''; textContent = ''; innerHTML = ''; hidden = false; disabled = false;
   open = false; paused = true; muted = true; defaultMuted = true; controls = true;
+  readyState = 4;
   parentElement!: Node; card: Node | null = null; tabIndex = 0;
   classList = { toggle() {}, remove() {}, add() {} };
   style = { setProperty() {}, removeProperty() {} };
@@ -39,7 +40,8 @@ class Node {
   focus() {}
   showModal() { this.open = true; }
   close() { this.open = false; this.emit('close'); }
-  play() { this.paused = false; this.emit('play'); return Promise.resolve(); }
+  play() { this.paused = false; this.emit('play'); this.emit('playing'); return Promise.resolve(); }
+  load() {}
   pause() { if (!this.paused) { this.paused = true; this.emit('pause'); } }
 }
 function browser({ reduced = false, saveData = false, count = 5 } = {}) {
@@ -51,6 +53,7 @@ function browser({ reduced = false, saveData = false, count = 5 } = {}) {
     const card = new Node(), video = new Node();
     video.card = card; video.parentElement = new Node();
     video.attrs['aria-label'] = 'Video ' + i;
+    video.selectors.source = Object.assign(new Node(), { attrs: { src: '/media/content/ugc.mp4' } });
     card.selectors = { video, '.select-video': new Node(), h3: Object.assign(new Node(), { textContent: 'Video ' + i }) };
     return card;
   });
@@ -84,6 +87,48 @@ function browser({ reduced = false, saveData = false, count = 5 } = {}) {
 }
 afterEach(() => vi.useRealTimers());
 describe('content media interactions', () => {
+  it('waits for playback and buffering recovery before rotating', () => {
+    const page = browser();
+    page.videos[0].play = () => { page.videos[0].paused = false; page.videos[0].emit('play'); return new Promise(() => {}); };
+    page.show();
+    vi.advanceTimersByTime(7000);
+    expect(page.cards[0].dataset.slot).toBe('0');
+    page.videos[0].emit('playing');
+    vi.advanceTimersByTime(5000);
+    page.videos[0].emit('waiting');
+    vi.advanceTimersByTime(7000);
+    expect(page.cards[0].dataset.slot).toBe('0');
+    page.videos[0].emit('playing');
+    vi.advanceTimersByTime(6500);
+    expect(page.cards[1].dataset.slot).toBe('0');
+  });
+  it('offers a manual retry when autoplay is blocked, without a retry loop', async () => {
+    const page = browser();
+    const play = vi.spyOn(page.videos[0], 'play').mockRejectedValueOnce({ name: 'NotAllowedError' });
+    page.show(); await Promise.resolve();
+    const status = page.videos[0].parentElement.children[1];
+    expect(status.hidden).toBe(false);
+    expect(status.children[0].textContent).toBe('Tap play to watch.');
+    page.document.emit('visibilitychange');
+    expect(play).toHaveBeenCalledTimes(1);
+    page.controls(0)[0].emit('click');
+    expect(page.videos[0].paused).toBe(false);
+    expect(status.hidden).toBe(true);
+  });
+  it('times out a hung request and reloads on explicit retry', () => {
+    const page = browser();
+    vi.spyOn(page.videos[0], 'play').mockImplementationOnce(() => { page.videos[0].paused = false; return new Promise(() => {}); });
+    const load = vi.spyOn(page.videos[0], 'load');
+    page.show(); vi.advanceTimersByTime(15000);
+    const status = page.videos[0].parentElement.children[1];
+    expect(status.children[0].textContent).toBe('Tap play to retry.');
+    expect(status.children[1].hidden).toBe(false);
+    expect(page.videos[0].paused).toBe(true);
+    expect(page.cards[0].dataset.slot).toBe('0');
+    page.controls(0)[0].emit('click');
+    expect(load).toHaveBeenCalledOnce();
+    expect(status.hidden).toBe(true);
+  });
   it('cycles seven items while keeping only the five coverflow positions visible', () => {
     const page = browser({ count: 7 }); page.show();
     for (let i = 0; i < 7; i++) {
